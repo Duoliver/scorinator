@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Barlow+Semi+Condensed:wght@700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; }
+    a { color: var(--color-accent, #17551C); }
+    a:hover { color: var(--color-fg, #1A1A1A); }
+  </style>
+</helmet>
+<div style="--color-bg:#F2F2F0; --color-surface:#FFFFFF; --color-fg:#1A1A1A; --color-fg-muted:#5C5C5C; --color-accent:#17551C; --color-accent-fg:#FFFFFF; --color-error:#8C1414; --color-error-fg:#FFFFFF; --color-warning:#D9A900; --color-warning-fg:#1A1A1A; --font-heading:'Barlow',sans-serif; --font-condensed:'Barlow Semi Condensed',sans-serif; --font-body:'Barlow',sans-serif; --font-mono:'JetBrains Mono',monospace; background:var(--color-bg); color:var(--color-fg); font-family:var(--font-body); min-height:100vh; display:flex;">
+
+  <nav style="width:220px; flex:none; background:var(--color-surface); border-right:2px solid var(--color-fg); display:flex; flex-direction:column; padding:24px 0;">
+    <div style="font-family:var(--font-condensed); font-weight:700; font-size:20px; letter-spacing:0.06em; text-transform:uppercase; padding:0 20px 28px;">Footballer</div>
+    <a href="Footballer - Leagues Dashboard.dc.html" style="display:flex; align-items:center; gap:10px; padding:12px 20px; font-family:var(--font-heading); font-weight:600; font-size:15px; text-decoration:none; color:var(--color-fg);">Leagues</a>
+    <a href="Footballer - Teams.dc.html" style="display: flex; align-items: center; gap: 10px; padding: 12px 20px; font-family: var(--font-heading); font-weight: 600; font-size: 15px; text-decoration: none; color: #1A1A1A">Teams</a>
+    <a href="Footballer - File Manager.dc.html" style="display:flex; align-items:center; gap:10px; padding:12px 20px; font-family:var(--font-heading); font-weight:600; font-size:15px; text-decoration:none; background:var(--color-fg); color:var(--color-surface);">File</a>
+  </nav>
+
+  <div style="flex:1; padding:40px 48px; display:flex; flex-direction:column; gap:32px; max-width:900px;">
+    <div>
+      <h1 style="margin:0 0 6px; font-family:var(--font-heading); font-weight:700; font-size:32px;">File</h1>
+      <p style="margin:0; color:var(--color-fg-muted); font-size:15px;">Save/load your progress, and import or export team lists and results.</p>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:20px;">
+
+      <div style="background:var(--color-surface); border:2px solid var(--color-fg); box-shadow:4px 4px 0 var(--color-fg); padding:24px; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap;">
+        <div>
+          <h3 style="margin:0 0 4px; font-family:var(--font-heading); font-weight:700; font-size:18px;">Save league</h3>
+          <p style="margin:0; font-size:13px; color:var(--color-fg-muted);">Writes teams, fixtures, results and config to a re-importable JSON file.</p>
+        </div>
+        <button style="font-family:var(--font-heading); font-weight:700; font-size:14px; text-transform:uppercase; letter-spacing:0.02em; padding:12px 20px; border:2px solid var(--color-fg); background:var(--color-accent); color:var(--color-accent-fg); box-shadow:3px 3px 0 var(--color-fg); cursor:pointer; white-space:nowrap;" style-hover="transform:translate(-1px,-1px); box-shadow:4px 4px 0 var(--color-fg);">Save as .json</button>
+      </div>
+
+      <div style="background:var(--color-surface); border:2px solid var(--color-fg); box-shadow:4px 4px 0 var(--color-fg); padding:24px; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap;">
+        <div>
+          <h3 style="margin:0 0 4px; font-family:var(--font-heading); font-weight:700; font-size:18px;">Load league</h3>
+          <p style="margin:0; font-size:13px; color:var(--color-fg-muted);">Resume exactly where you left off from a previously saved JSON file.</p>
+        </div>
+        <button style="font-family:var(--font-heading); font-weight:700; font-size:14px; text-transform:uppercase; letter-spacing:0.02em; padding:12px 20px; border:2px solid var(--color-fg); background:var(--color-surface); color:var(--color-fg); box-shadow:3px 3px 0 var(--color-fg); cursor:pointer; white-space:nowrap;" style-hover="transform:translate(-1px,-1px); box-shadow:4px 4px 0 var(--color-fg);">Load .json…</button>
+      </div>
+
+      <div style="height:2px; background:var(--color-fg); margin:4px 0;"></div>
+
+      <div style="background:var(--color-surface); border:2px solid var(--color-fg); box-shadow:4px 4px 0 var(--color-fg); padding:24px; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap;">
+        <div>
+          <h3 style="margin:0 0 4px; font-family:var(--font-heading); font-weight:700; font-size:18px;">Import teams</h3>
+          <p style="margin:0; font-size:13px; color:var(--color-fg-muted);">CSV columns: ID/slug, Name, Colours, Tier, City.</p>
+        </div>
+        <button style="font-family:var(--font-heading); font-weight:700; font-size:14px; text-transform:uppercase; letter-spacing:0.02em; padding:12px 20px; border:2px solid var(--color-fg); background:var(--color-surface); color:var(--color-fg); box-shadow:3px 3px 0 var(--color-fg); cursor:pointer; white-space:nowrap;" style-hover="transform:translate(-1px,-1px); box-shadow:4px 4px 0 var(--color-fg);">Import .csv…</button>
+      </div>
+
+      <div style="background:var(--color-surface); border:2px solid var(--color-fg); box-shadow:4px 4px 0 var(--color-fg); padding:24px; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap;">
+        <div>
+          <h3 style="margin:0 0 4px; font-family:var(--font-heading); font-weight:700; font-size:18px;">Export teams</h3>
+          <p style="margin:0; font-size:13px; color:var(--color-fg-muted);">Back up or reuse your current team list elsewhere.</p>
+        </div>
+        <button style="font-family:var(--font-heading); font-weight:700; font-size:14px; text-transform:uppercase; letter-spacing:0.02em; padding:12px 20px; border:2px solid var(--color-fg); background:var(--color-surface); color:var(--color-fg); box-shadow:3px 3px 0 var(--color-fg); cursor:pointer; white-space:nowrap;" style-hover="transform:translate(-1px,-1px); box-shadow:4px 4px 0 var(--color-fg);">Export .csv</button>
+      </div>
+
+      <div style="background:var(--color-surface); border:2px solid var(--color-fg); box-shadow:4px 4px 0 var(--color-fg); padding:24px; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap;">
+        <div>
+          <h3 style="margin:0 0 4px; font-family:var(--font-heading); font-weight:700; font-size:18px;">Export results</h3>
+          <p style="margin:0; font-size:13px; color:var(--color-fg-muted);">Read-only, human-readable summary — for reading, not re-importing.</p>
+        </div>
+        <button style="font-family:var(--font-heading); font-weight:700; font-size:14px; text-transform:uppercase; letter-spacing:0.02em; padding:12px 20px; border:2px solid var(--color-fg); background:var(--color-surface); color:var(--color-fg); box-shadow:3px 3px 0 var(--color-fg); cursor:pointer; white-space:nowrap;" style-hover="transform:translate(-1px,-1px); box-shadow:4px 4px 0 var(--color-fg);">Export .txt</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+</x-dc>
+</body>
+</html>

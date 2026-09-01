@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Barlow+Semi+Condensed:wght@700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; }
+    a { color: var(--color-accent, #17551C); }
+    a:hover { color: var(--color-fg, #1A1A1A); }
+  </style>
+</helmet>
+<div style="--color-bg:#F2F2F0; --color-surface:#FFFFFF; --color-fg:#1A1A1A; --color-fg-muted:#5C5C5C; --color-accent:#17551C; --color-accent-fg:#FFFFFF; --color-error:#8C1414; --color-error-fg:#FFFFFF; --color-warning:#D9A900; --color-warning-fg:#1A1A1A; --font-heading:'Barlow',sans-serif; --font-condensed:'Barlow Semi Condensed',sans-serif; --font-body:'Barlow',sans-serif; --font-mono:'JetBrains Mono',monospace; background:var(--color-bg); color:var(--color-fg); font-family:var(--font-body); min-height:100vh; display:flex;">
+
+  <nav style="width:220px; flex:none; background:var(--color-surface); border-right:2px solid var(--color-fg); display:flex; flex-direction:column; padding:24px 0;">
+    <div style="font-family:var(--font-condensed); font-weight:700; font-size:20px; letter-spacing:0.06em; text-transform:uppercase; padding:0 20px 28px;">Footballer</div>
+    <a href="Footballer - Leagues Dashboard.dc.html" style="display: flex; align-items: center; gap: 10px; padding: 12px 20px; font-family: var(--font-heading); font-weight: 600; font-size: 15px; text-decoration: none; color: #1A1A1A">Leagues</a>
+    <a href="#" style="display:flex; align-items:center; gap:10px; padding:12px 20px; font-family:var(--font-heading); font-weight:600; font-size:15px; text-decoration:none; background:var(--color-fg); color:var(--color-surface);">Teams</a>
+    <a href="Footballer - File Manager.dc.html" style="display:flex; align-items:center; gap:10px; padding:12px 20px; font-family:var(--font-heading); font-weight:600; font-size:15px; text-decoration:none; color:var(--color-fg);">File</a>
+  </nav>
+
+  <div style="flex:1; padding:40px 48px; display:flex; flex-direction:column; gap:28px; max-width:1040px;">
+    <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:16px; flex-wrap:wrap;">
+      <div>
+        <div style="font-family:var(--font-condensed); font-weight:700; font-size:13px; letter-spacing:0.1em; text-transform:uppercase; color:var(--color-accent);">Roster</div>
+        <h1 style="margin:6px 0 0; font-family:var(--font-heading); font-weight:700; font-size:32px;">Teams</h1>
+      </div>
+      <div style="display:flex; gap:12px;">
+        <input placeholder="Search teams…" style="font-family:var(--font-body); font-size:15px; padding:11px 12px; border:2px solid var(--color-fg); background:var(--color-surface); color:var(--color-fg); width:220px;">
+        <button onClick="{{ openCreate }}" style="font-family:var(--font-heading); font-weight:700; font-size:14px; text-transform:uppercase; letter-spacing:0.03em; padding:12px 20px; border:2px solid var(--color-fg); background:var(--color-accent); color:var(--color-accent-fg); box-shadow:4px 4px 0 var(--color-fg); cursor:pointer; white-space:nowrap;" style-hover="transform:translate(-2px,-2px); box-shadow:6px 6px 0 var(--color-fg);">+ New team</button>
+      </div>
+    </div>
+
+    <!-- LIST -->
+    <div style="border:2px solid var(--color-fg); background:var(--color-surface); display:flex; flex-direction:column;">
+      <div style="display:grid; grid-template-columns:28px 1fr 90px 1fr 90px; gap:14px; padding:10px 16px; border-bottom:2px solid var(--color-fg); background:var(--color-fg); color:var(--color-surface); font-family:var(--font-condensed); font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:0.05em;">
+        <span></span><span>Name</span><span>Tier</span><span>Slug</span><span></span>
+      </div>
+      <sc-for list="{{ teams }}" as="t" hint-placeholder-count="6">
+        <div style="display:grid; grid-template-columns:28px 1fr 90px 1fr 90px; gap:14px; align-items:center; padding:12px 16px; border-bottom:2px solid var(--color-fg);">
+          <div style="width:18px; height:18px; border:2px solid var(--color-fg); background:{{ t.colour }};"></div>
+          <div style="font-weight:600; font-size:15px;">{{ t.name }}</div>
+          <span style="font-family:var(--font-mono); font-weight:700; font-size:12px; padding:3px 8px; border:2px solid var(--color-fg); background:var(--color-fg); color:var(--color-surface); width:fit-content;">{{ t.tier }}</span>
+          <span style="font-family:var(--font-mono); font-size:13px; color:var(--color-fg-muted);">{{ t.slug }}</span>
+          <div style="display:flex; gap:8px; justify-content:flex-end;">
+            <button onClick="{{ t.onEdit }}" style="font-family:var(--font-heading); font-weight:700; font-size:12px; text-transform:uppercase; padding:6px 10px; border:2px solid var(--color-fg); background:var(--color-surface); color:var(--color-fg); cursor:pointer;" style-hover="background:var(--color-fg); color:var(--color-surface);">Edit</button>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+    <div style="font-size:13px; color:var(--color-fg-muted);">{{ teamCount }} teams</div>
+  </div>
+
+  <!-- CREATE / EDIT DRAWER -->
+  <sc-if value="{{ drawerOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeDrawer }}" style="position:fixed; inset:0; background:rgba(26,26,26,0.35); z-index:10;"></div>
+    <div style="position:fixed; top:0; right:0; bottom:0; width:420px; background:var(--color-surface); border-left:3px solid var(--color-fg); box-shadow:-6px 0 0 rgba(26,26,26,0.08); z-index:11; padding:32px; display:flex; flex-direction:column; gap:22px; overflow-y:auto;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+        <h2 style="margin:0; font-family:var(--font-heading); font-weight:700; font-size:24px;">{{ drawerTitle }}</h2>
+        <button onClick="{{ closeDrawer }}" style="border:2px solid var(--color-fg); background:var(--color-surface); width:32px; height:32px; font-size:16px; cursor:pointer;" style-hover="background:var(--color-fg); color:var(--color-surface);">✕</button>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:6px;">
+        <label style="font-family:var(--font-condensed); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Team name</label>
+        <input value="{{ form.name }}" onChange="{{ setName }}" placeholder="e.g. Salt Marsh United" style="font-family:var(--font-body); font-size:16px; padding:12px 14px; border:2px solid var(--color-fg); background:var(--color-surface); color:var(--color-fg);" style-focus="outline:none; border-color:var(--color-accent); box-shadow:3px 3px 0 var(--color-accent);">
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:6px;">
+        <label style="font-family:var(--font-condensed); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Slug (auto-generated)</label>
+        <input value="{{ form.slug }}" disabled="" style="font-family:var(--font-mono); font-size:14px; padding:12px 14px; border:2px solid var(--color-fg); background:var(--color-bg); color:var(--color-fg-muted);">
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <label style="font-family:var(--font-condensed); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Colour</label>
+        <div style="display:grid; grid-template-columns:repeat(8,1fr); gap:8px;">
+          <sc-for list="{{ palette }}" as="c" hint-placeholder-count="16">
+            <button onClick="{{ c.onPick }}" style="width:100%; aspect-ratio:1; background:{{ c.hex }}; border:{{ c.border }}; cursor:pointer; padding:0;"></button>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <label style="font-family:var(--font-condensed); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Tier</label>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <sc-for list="{{ tiers }}" as="tr" hint-placeholder-count="7">
+            <button onClick="{{ tr.onPick }}" style="font-family:var(--font-mono); font-weight:700; font-size:14px; padding:9px 14px; border:2px solid var(--color-fg); background:{{ tr.bg }}; color:{{ tr.fg }}; cursor:pointer;">{{ tr.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="margin-top:auto; display:flex; gap:12px; padding-top:12px; border-top:2px solid var(--color-fg);">
+        <button onClick="{{ closeDrawer }}" style="flex:1; font-family:var(--font-heading); font-weight:700; font-size:14px; text-transform:uppercase; letter-spacing:0.03em; padding:13px; border:2px solid var(--color-fg); background:transparent; color:var(--color-fg); cursor:pointer;" style-hover="background:var(--color-fg); color:var(--color-surface);">Cancel</button>
+        <button onClick="{{ saveTeam }}" style="flex:1; font-family:var(--font-heading); font-weight:700; font-size:14px; text-transform:uppercase; letter-spacing:0.03em; padding:13px; border:2px solid var(--color-fg); background:var(--color-accent); color:var(--color-accent-fg); box-shadow:4px 4px 0 var(--color-fg); cursor:pointer;" style-hover="transform:translate(-2px,-2px); box-shadow:6px 6px 0 var(--color-fg);">{{ saveLabel }}</button>
+      </div>
+    </div>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const PALETTE = ['#E53935','#7B1E1E','#FB8C00','#F9A825','#FDD835','#827717','#2E7D32','#00897B','#039BE5','#1A237E','#1E88E5','#6A1B9A','#D81B60','#212121','#9E9E9E','#FAFAFA'];
+const TIERS = ['S','A','B','C','D','E','F'];
+
+class Component extends DCLogic {
+  state = {
+    teams: [
+      { name: 'Salt Marsh United', slug: 'salt-marsh-utd', colour: '#039BE5', tier: 'A' },
+      { name: 'Redbrick Athletic', slug: 'redbrick-ath', colour: '#E53935', tier: 'B' },
+      { name: 'Northgate FC', slug: 'northgate-fc', colour: '#212121', tier: 'B' },
+      { name: 'Pinecrest Rovers', slug: 'pinecrest-rov', colour: '#2E7D32', tier: 'C' },
+      { name: 'Harborview SC', slug: 'harborview-sc', colour: '#F9A825', tier: 'A' },
+      { name: 'Ashfield Town', slug: 'ashfield-twn', colour: '#6A1B9A', tier: 'C' },
+      { name: 'Millbrook Wanderers', slug: 'millbrook-wnd', colour: '#00897B', tier: 'D' },
+    ],
+    drawerOpen: false,
+    editIndex: null,
+    form: { name: '', slug: '', colour: PALETTE[0], tier: 'C' },
+  };
+
+  slugify(name) {
+    return name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'new-team';
+  }
+
+  openCreate() {
+    this.setState({ drawerOpen: true, editIndex: null, form: { name: '', slug: '', colour: PALETTE[0], tier: 'C' } });
+  }
+
+  openEdit(i) {
+    const t = this.state.teams[i];
+    this.setState({ drawerOpen: true, editIndex: i, form: { name: t.name, slug: t.slug, colour: t.colour, tier: t.tier } });
+  }
+
+  closeDrawer() { this.setState({ drawerOpen: false }); }
+
+  setName(e) {
+    const name = e.target.value;
+    this.setState((s) => ({ form: { ...s.form, name, slug: this.slugify(name) } }));
+  }
+
+  saveTeam() {
+    const f = this.state.form;
+    if (!f.name.trim()) return this.closeDrawer();
+    this.setState((s) => {
+      const teams = [...s.teams];
+      const record = { name: f.name, slug: f.slug || this.slugify(f.name), colour: f.colour, tier: f.tier };
+      if (s.editIndex === null) teams.push(record); else teams[s.editIndex] = record;
+      return { teams, drawerOpen: false };
+    });
+  }
+
+  renderVals() {
+    const fg = 'var(--color-fg)';
+    return {
+      teams: this.state.teams.map((t, i) => ({ ...t, onEdit: () => this.openEdit(i) })),
+      teamCount: this.state.teams.length,
+      drawerOpen: this.state.drawerOpen,
+      drawerTitle: this.state.editIndex === null ? 'New team' : 'Edit team',
+      saveLabel: this.state.editIndex === null ? 'Create team' : 'Save changes',
+      openCreate: () => this.openCreate(),
+      closeDrawer: () => this.closeDrawer(),
+      setName: (e) => this.setName(e),
+      saveTeam: () => this.saveTeam(),
+      form: this.state.form,
+      palette: PALETTE.map((hex) => ({
+        hex,
+        border: this.state.form.colour === hex ? `3px solid var(--color-accent)` : `2px solid ${fg}`,
+        onPick: () => this.setState((s) => ({ form: { ...s.form, colour: hex } })),
+      })),
+      tiers: TIERS.map((label) => ({
+        label,
+        bg: this.state.form.tier === label ? 'var(--color-accent)' : 'var(--color-surface)',
+        fg: this.state.form.tier === label ? 'var(--color-accent-fg)' : 'var(--color-fg)',
+        onPick: () => this.setState((s) => ({ form: { ...s.form, tier: label } })),
+      })),
+    };
+  }
+}
+
+</script>
+</body>
+</html>

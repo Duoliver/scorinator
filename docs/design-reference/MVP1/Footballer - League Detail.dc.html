@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Barlow+Semi+Condensed:wght@700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; }
+    a { color: var(--color-accent, #17551C); }
+    a:hover { color: var(--color-fg, #1A1A1A); }
+  </style>
+</helmet>
+<div style="--color-bg:#F2F2F0; --color-surface:#FFFFFF; --color-fg:#1A1A1A; --color-fg-muted:#5C5C5C; --color-accent:#17551C; --color-accent-fg:#FFFFFF; --color-error:#8C1414; --color-error-fg:#FFFFFF; --color-warning:#D9A900; --color-warning-fg:#1A1A1A; --font-heading:'Barlow',sans-serif; --font-condensed:'Barlow Semi Condensed',sans-serif; --font-body:'Barlow',sans-serif; --font-mono:'JetBrains Mono',monospace; background:var(--color-bg); color:var(--color-fg); font-family:var(--font-body); min-height:100vh; display:flex;">
+
+  <nav style="width:220px; flex:none; background:var(--color-surface); border-right:2px solid var(--color-fg); display:flex; flex-direction:column; padding:24px 0;">
+    <div style="font-family:var(--font-condensed); font-weight:700; font-size:20px; letter-spacing:0.06em; text-transform:uppercase; padding:0 20px 28px;">Footballer</div>
+    <a href="Footballer - Leagues Dashboard.dc.html" style="display:flex; align-items:center; gap:10px; padding:12px 20px; font-family:var(--font-heading); font-weight:600; font-size:15px; text-decoration:none; background:var(--color-fg); color:var(--color-surface);">Leagues</a>
+    <a href="Footballer - Teams.dc.html" style="display: flex; align-items: center; gap: 10px; padding: 12px 20px; font-family: var(--font-heading); font-weight: 600; font-size: 15px; text-decoration: none; color: #1A1A1A">Teams</a>
+    <a href="Footballer - File Manager.dc.html" style="display:flex; align-items:center; gap:10px; padding:12px 20px; font-family:var(--font-heading); font-weight:600; font-size:15px; text-decoration:none; color:var(--color-fg);">File</a>
+  </nav>
+
+  <div style="flex:1; padding:40px 48px; display:flex; flex-direction:column; gap:24px; max-width:1120px;">
+    <div>
+      <a href="Footballer - Leagues Dashboard.dc.html" style="font-size:13px; text-decoration:none;">← Leagues</a>
+      <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-top:8px;">
+        <div>
+          <h1 style="margin:0 0 6px; font-family:var(--font-heading); font-weight:700; font-size:34px;">Coastal Premier</h1>
+          <div style="font-size:13px; color:var(--color-fg-muted);">Round robin (two-way) · 8 teams · Home adv. on · 3/1/0 pts</div>
+        </div>
+        <span style="font-family:var(--font-mono); font-weight:700; font-size:12px; padding:5px 10px; border:2px solid var(--color-fg); background:var(--color-fg); color:var(--color-surface); white-space:nowrap;">Matchday 7 / 16</span>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div style="display:flex; border:2px solid var(--color-fg); width:fit-content;">
+      <button onClick="{{ showStandings }}" style="padding:12px 26px; font-family:var(--font-condensed); font-weight:700; font-size:13px; text-transform:uppercase; letter-spacing:0.04em; border:none; border-right:2px solid var(--color-fg); cursor:pointer; background:{{ standingsBg }}; color:{{ standingsFg }};">Standings</button>
+      <button onClick="{{ showFixtures }}" style="padding:12px 26px; font-family:var(--font-condensed); font-weight:700; font-size:13px; text-transform:uppercase; letter-spacing:0.04em; border:none; cursor:pointer; background:{{ fixturesBg }}; color:{{ fixturesFg }};">Fixtures</button>
+    </div>
+
+    <!-- STANDINGS -->
+    <sc-if value="{{ isStandings }}" hint-placeholder-val="{{ true }}">
+      <div style="border:2px solid var(--color-fg); background:var(--color-surface); overflow-x:auto;">
+        <div style="display:grid; grid-template-columns:40px 1fr 44px 44px 44px 44px 52px 52px 52px 56px; gap:10px; padding:10px 16px; border-bottom:2px solid var(--color-fg); background:var(--color-fg); color:var(--color-surface); font-family:var(--font-condensed); font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:0.04em; min-width:760px;">
+          <span>#</span><span>Team</span><span>P</span><span>W</span><span>D</span><span>L</span><span>GF</span><span>GA</span><span>GD</span><span>Pts</span>
+        </div>
+        <sc-for list="{{ standings }}" as="s" hint-placeholder-count="8">
+          <div style="display:grid; grid-template-columns:40px 1fr 44px 44px 44px 44px 52px 52px 52px 56px; gap:10px; align-items:center; padding:10px 16px; border-bottom:2px solid var(--color-fg); font-size:14px; min-width:760px; background:{{ s.rowBg }};">
+            <span style="font-family:var(--font-mono); font-weight:700;">{{ s.pos }}</span>
+            <div style="display:flex; align-items:center; gap:10px; font-weight:600;">
+              <div style="width:14px; height:14px; border:2px solid var(--color-fg); background:{{ s.colour }}; flex:none;"></div>
+              {{ s.name }}
+            </div>
+            <span>{{ s.p }}</span><span>{{ s.w }}</span><span>{{ s.d }}</span><span>{{ s.l }}</span>
+            <span style="font-family:var(--font-mono);">{{ s.gf }}</span>
+            <span style="font-family:var(--font-mono);">{{ s.ga }}</span>
+            <span style="font-family:var(--font-mono);">{{ s.gd }}</span>
+            <span style="font-family:var(--font-mono); font-weight:700;">{{ s.pts }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <!-- FIXTURES -->
+    <sc-if value="{{ isFixtures }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; flex-direction:column; gap:18px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <button onClick="{{ prevMd }}" style="width:36px; height:36px; border:2px solid var(--color-fg); background:var(--color-surface); font-size:15px; cursor:pointer;" style-hover="background:var(--color-fg); color:var(--color-surface);">←</button>
+            <div style="font-family:var(--font-heading); font-weight:700; font-size:18px; min-width:130px; text-align:center;">Matchday {{ md }}</div>
+            <button onClick="{{ nextMd }}" style="width:36px; height:36px; border:2px solid var(--color-fg); background:var(--color-surface); font-size:15px; cursor:pointer;" style-hover="background:var(--color-fg); color:var(--color-surface);">→</button>
+          </div>
+          <button onClick="{{ scorinateAll }}" style="font-family:var(--font-heading); font-weight:700; font-size:14px; text-transform:uppercase; letter-spacing:0.03em; padding:12px 20px; border:2px solid var(--color-fg); background:var(--color-accent); color:var(--color-accent-fg); box-shadow:4px 4px 0 var(--color-fg); cursor:pointer;" style-hover="transform:translate(-2px,-2px); box-shadow:6px 6px 0 var(--color-fg);">⚽ Scorinate matchday</button>
+        </div>
+
+        <div style="border:2px solid var(--color-fg); background:var(--color-surface); display:flex; flex-direction:column;">
+          <sc-for list="{{ matches }}" as="m" hint-placeholder-count="4">
+            <div style="display:grid; grid-template-columns:1fr auto 1fr 130px; align-items:center; gap:16px; padding:16px 20px; border-bottom:2px solid var(--color-fg);">
+              <div style="display:flex; align-items:center; gap:10px; justify-content:flex-end; font-weight:600; font-size:15px; text-align:right;">
+                {{ m.home.name }}
+                <div style="width:14px; height:14px; border:2px solid var(--color-fg); background:{{ m.home.colour }}; flex:none;"></div>
+                
+              </div>
+              <div style="font-family:var(--font-mono); font-weight:700; font-size:20px; min-width:70px; text-align:center;">{{ m.scoreLabel }}</div>
+              <div style="display:flex; align-items:center; gap:10px; font-weight:600; font-size:15px;">
+                
+                <div style="width:14px; height:14px; border:2px solid var(--color-fg); background:{{ m.away.colour }}; flex:none;"></div>
+                {{ m.away.name }}
+              </div>
+              <button onClick="{{ m.onScorinate }}" style="font-family:var(--font-heading); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:0.02em; padding:9px 14px; border:2px solid var(--color-fg); background:{{ m.actionBg }}; color:{{ m.actionFg }}; cursor:pointer; white-space:nowrap;" style-hover="transform:translate(-1px,-1px); box-shadow:3px 3px 0 var(--color-fg);">{{ m.actionLabel }}</button>
+            </div>
+          </sc-for>
+          <sc-if value="{{ hasBye }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; align-items:center; justify-content:center; gap:10px; padding:14px 20px; font-size:14px; color:var(--color-fg-muted);">
+              <span style="font-family:var(--font-mono); font-weight:700; font-size:11px; padding:3px 8px; border:2px solid var(--color-fg); background:var(--color-warning); color:var(--color-warning-fg);">Bye</span>
+              {{ byeTeam }}
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const TEAMS = [
+  { name: 'Salt Marsh United', colour: '#039BE5', tier: 'A' },
+  { name: 'Redbrick Athletic', colour: '#E53935', tier: 'B' },
+  { name: 'Northgate FC', colour: '#212121', tier: 'B' },
+  { name: 'Pinecrest Rovers', colour: '#2E7D32', tier: 'C' },
+  { name: 'Harborview SC', colour: '#F9A825', tier: 'A' },
+  { name: 'Ashfield Town', colour: '#6A1B9A', tier: 'C' },
+  { name: 'Millbrook Wanderers', colour: '#00897B', tier: 'D' },
+  { name: 'Kingsford Rangers', colour: '#D81B60', tier: 'B' },
+];
+
+const STANDINGS_ROWS = [
+  { name: 'Salt Marsh United', colour: '#039BE5', p: 7, w: 6, d: 1, l: 0, gf: 17, ga: 5 },
+  { name: 'Harborview SC', colour: '#F9A825', p: 7, w: 5, d: 1, l: 1, gf: 14, ga: 7 },
+  { name: 'Kingsford Rangers', colour: '#D81B60', p: 7, w: 4, d: 2, l: 1, gf: 12, ga: 8 },
+  { name: 'Redbrick Athletic', colour: '#E53935', p: 7, w: 3, d: 2, l: 2, gf: 10, ga: 9 },
+  { name: 'Northgate FC', colour: '#212121', p: 7, w: 3, d: 1, l: 3, gf: 9, ga: 10 },
+  { name: 'Ashfield Town', colour: '#6A1B9A', p: 7, w: 2, d: 2, l: 3, gf: 8, ga: 11 },
+  { name: 'Pinecrest Rovers', colour: '#2E7D32', p: 7, w: 1, d: 2, l: 4, gf: 6, ga: 13 },
+  { name: 'Millbrook Wanderers', colour: '#00897B', p: 7, w: 0, d: 1, l: 6, gf: 4, ga: 17 },
+];
+
+const FIXTURES = {
+  1: [
+    { home: TEAMS[0], away: TEAMS[1], score: [2, 1] },
+    { home: TEAMS[2], away: TEAMS[3], score: [0, 0] },
+    { home: TEAMS[4], away: TEAMS[5], score: [3, 1] },
+    { home: TEAMS[6], away: TEAMS[7], score: [1, 2] },
+  ],
+  7: [
+    { home: TEAMS[3], away: TEAMS[0], score: null },
+    { home: TEAMS[1], away: TEAMS[4], score: null },
+    { home: TEAMS[6], away: TEAMS[2], score: null },
+    { home: TEAMS[5], away: TEAMS[7], score: null },
+  ],
+};
+
+class Component extends DCLogic {
+  state = { tab: 'standings', md: 7, fixtures: FIXTURES };
+
+  scorinateMatch(md, i) {
+    this.setState((s) => {
+      const fixtures = { ...s.fixtures, [md]: s.fixtures[md].map((m, idx) => idx === i ? { ...m, score: [Math.floor(Math.random() * 4), Math.floor(Math.random() * 4)] } : m) };
+      return { fixtures };
+    });
+  }
+
+  scorinateAll() {
+    this.setState((s) => {
+      const list = s.fixtures[s.md] || [];
+      const fixtures = { ...s.fixtures, [s.md]: list.map((m) => ({ ...m, score: [Math.floor(Math.random() * 4), Math.floor(Math.random() * 4)] })) };
+      return { fixtures };
+    });
+  }
+
+  renderVals() {
+    const accent = 'var(--color-accent)', surface = 'var(--color-surface)', fg = 'var(--color-fg)', accentFg = 'var(--color-accent-fg)';
+    const standings = STANDINGS_ROWS.map((s, i) => ({
+      pos: i + 1, ...s, gd: s.gf - s.ga, pts: s.w * 3 + s.d,
+      rowBg: 'var(--color-surface)',
+    }));
+    const list = this.state.fixtures[this.state.md] || [];
+    const isOdd = TEAMS.length % 2 === 1;
+    const matches = list.map((m, i) => {
+      const done = !!m.score;
+      return {
+        home: m.home, away: m.away,
+        scoreLabel: done ? `${m.score[0]} – ${m.score[1]}` : 'vs',
+        actionLabel: done ? 'Re-scorinate' : 'Scorinate',
+        actionBg: done ? surface : accent,
+        actionFg: done ? fg : accentFg,
+        onScorinate: () => this.scorinateMatch(this.state.md, i),
+      };
+    });
+    return {
+      isStandings: this.state.tab === 'standings',
+      isFixtures: this.state.tab === 'fixtures',
+      standingsBg: this.state.tab === 'standings' ? accent : surface,
+      standingsFg: this.state.tab === 'standings' ? accentFg : fg,
+      fixturesBg: this.state.tab === 'fixtures' ? accent : surface,
+      fixturesFg: this.state.tab === 'fixtures' ? accentFg : fg,
+      showStandings: () => this.setState({ tab: 'standings' }),
+      showFixtures: () => this.setState({ tab: 'fixtures' }),
+      standings,
+      md: this.state.md,
+      matches,
+      hasBye: isOdd,
+      byeTeam: isOdd ? 'Kingsford Rangers sits out' : '',
+      prevMd: () => this.setState((s) => ({ md: Math.max(1, s.md - 1) })),
+      nextMd: () => this.setState((s) => ({ md: Math.min(16, s.md + 1) })),
+      scorinateAll: () => this.scorinateAll(),
+    };
+  }
+}
+
+</script>
+</body>
+</html>

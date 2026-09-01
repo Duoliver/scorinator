@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Semi+Condensed:wght@700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; }
+    a { color: var(--color-accent, #17551C); text-decoration: underline; }
+    a:hover { color: var(--color-fg, #1A1A1A); }
+  </style>
+</helmet>
+<div style="--color-bg:#F2F2F0; --color-surface:#FFFFFF; --color-fg:#1A1A1A; --color-fg-muted:#5C5C5C; --color-border:#1A1A1A; --color-accent:#17551C; --color-accent-fg:#FFFFFF; --color-error:#8C1414; --color-error-fg:#FFFFFF; --color-warning:#D9A900; --color-warning-fg:#1A1A1A; --font-heading:'Barlow',sans-serif; --font-condensed:'Barlow Semi Condensed',sans-serif; --font-body:'Barlow',sans-serif; --font-mono:'JetBrains Mono',monospace; background:var(--color-bg); color:var(--color-fg); font-family:var(--font-body); min-height:100vh; padding:56px 48px; box-sizing:border-box;">
+  <div style="max-width:1160px; margin:0 auto; display:flex; flex-direction:column; gap:64px;">
+
+    <header style="display:flex; flex-direction:column; gap:8px; border-bottom:3px solid var(--color-fg); padding-bottom:24px;">
+      <div style="font-family:var(--font-condensed); font-weight:700; font-size:15px; letter-spacing:0.12em; text-transform:uppercase; color:var(--color-accent);">Footballer — Design Foundations</div>
+      <h1 style="margin:0; font-family:var(--font-heading); font-weight:700; font-size:44px; letter-spacing:-0.01em;">Base components</h1>
+      <p style="margin:0; font-size:16px; color:var(--color-fg-muted); max-width:640px;">Neubrutalist system: sharp corners, solid borders, hard offset shadows. All foreground/background and text/accent pairings meet WCAG AAA (7:1+).</p>
+    </header>
+
+    <!-- COLOR -->
+    <section style="display:flex; flex-direction:column; gap:20px;">
+      <h2 style="margin:0; font-family:var(--font-heading); font-weight:700; font-size:24px;">Colour</h2>
+      <div style="display:flex; gap:24px; flex-wrap:wrap;">
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <div style="width:120px; height:80px; background:var(--color-bg); border:2px solid var(--color-fg); box-shadow:4px 4px 0 var(--color-fg);"></div>
+          <div style="font-family:var(--font-mono); font-size:12px;">bg&nbsp;·&nbsp;#F2F2F0</div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <div style="width:120px; height:80px; background:var(--color-surface); border:2px solid var(--color-fg); box-shadow:4px 4px 0 var(--color-fg);"></div>
+          <div style="font-family:var(--font-mono); font-size:12px;">surface&nbsp;·&nbsp;#FFFFFF</div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <div style="width:120px; height:80px; background:var(--color-fg); border:2px solid var(--color-fg); box-shadow:4px 4px 0 var(--color-fg);"></div>
+          <div style="font-family:var(--font-mono); font-size:12px;">fg&nbsp;·&nbsp;#1A1A1A</div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <div style="width:120px; height:80px; background:var(--color-accent); border:2px solid var(--color-fg); box-shadow:4px 4px 0 var(--color-fg);"></div>
+          <div style="font-family:var(--font-mono); font-size:12px;">accent&nbsp;·&nbsp;#17551C</div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <div style="width:120px; height:80px; background:var(--color-error); border:2px solid var(--color-fg); box-shadow:4px 4px 0 var(--color-fg);"></div>
+          <div style="font-family:var(--font-mono); font-size:12px;">error&nbsp;·&nbsp;#8C1414</div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <div style="width:120px; height:80px; background:var(--color-warning); border:2px solid var(--color-fg); box-shadow:4px 4px 0 var(--color-fg);"></div>
+          <div style="font-family:var(--font-mono); font-size:12px;">warning&nbsp;·&nbsp;#D9A900</div>
+        </div>
+      </div>
+      <p style="margin:0; font-size:13px; color:var(--color-fg-muted); max-width:640px;">White text sits on accent/error (AAA on both). Warning is used with near-black text only — it's too light for white text to pass AAA.</p>
+    </section>
+
+    <!-- TYPE -->
+    <section style="display:flex; flex-direction:column; gap:20px;">
+      <h2 style="margin:0; font-family:var(--font-heading); font-weight:700; font-size:24px;">Typography</h2>
+      <div style="display:flex; flex-direction:column; gap:18px;">
+        <div style="font-family:var(--font-heading); font-weight:700; font-size:40px;">Barlow Bold — Headings</div>
+        <div style="font-family:var(--font-condensed); font-weight:700; font-size:22px; letter-spacing:0.02em; text-transform:uppercase;">Barlow Semi Condensed Bold — dense table headers</div>
+        <div style="font-family:var(--font-body); font-weight:400; font-size:17px; max-width:640px;">Barlow Regular — body copy. Standings, fixtures, and setup forms read at this weight for comfortable scanning across dense screens.</div>
+        <div style="font-family:var(--font-mono); font-weight:500; font-size:18px; letter-spacing:0.01em;">JetBrains Mono — 2 – 1 · TM-014 · #17551C</div>
+      </div>
+    </section>
+
+    <!-- BUTTONS -->
+    <section style="display:flex; flex-direction:column; gap:20px;">
+      <h2 style="margin:0; font-family:var(--font-heading); font-weight:700; font-size:24px;">Buttons</h2>
+      <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:center;">
+        <button style="font-family:var(--font-heading); font-weight:700; font-size:15px; text-transform:uppercase; letter-spacing:0.03em; padding:13px 24px; border:2px solid var(--color-fg); border-radius:0; background:var(--color-accent); color:var(--color-accent-fg); box-shadow:4px 4px 0 var(--color-fg); cursor:pointer;" style-hover="transform:translate(-2px,-2px); box-shadow:6px 6px 0 var(--color-fg);" style-active="transform:translate(2px,2px); box-shadow:0px 0px 0 var(--color-fg);">Primary</button>
+        <button style="font-family:var(--font-heading); font-weight:700; font-size:15px; text-transform:uppercase; letter-spacing:0.03em; padding:13px 24px; border:2px solid var(--color-fg); border-radius:0; background:var(--color-surface); color:var(--color-fg); box-shadow:4px 4px 0 var(--color-fg); cursor:pointer;" style-hover="transform:translate(-2px,-2px); box-shadow:6px 6px 0 var(--color-fg);" style-active="transform:translate(2px,2px); box-shadow:0px 0px 0 var(--color-fg);">Secondary</button>
+        <button style="font-family:var(--font-heading); font-weight:700; font-size:15px; text-transform:uppercase; letter-spacing:0.03em; padding:13px 24px; border:2px solid var(--color-fg); border-radius:0; background:var(--color-error); color:var(--color-error-fg); box-shadow:4px 4px 0 var(--color-fg); cursor:pointer;" style-hover="transform:translate(-2px,-2px); box-shadow:6px 6px 0 var(--color-fg);" style-active="transform:translate(2px,2px); box-shadow:0px 0px 0 var(--color-fg);">Destructive</button>
+        <button style="font-family:var(--font-heading); font-weight:700; font-size:15px; text-transform:uppercase; letter-spacing:0.03em; padding:13px 24px; border:2px solid var(--color-fg); border-radius:0; background:transparent; color:var(--color-fg); cursor:pointer;" style-hover="background:var(--color-fg); color:var(--color-surface);">Ghost</button>
+        <button disabled="" style="font-family:var(--font-heading); font-weight:700; font-size:15px; text-transform:uppercase; letter-spacing:0.03em; padding:13px 24px; border:2px solid var(--color-fg); border-radius:0; background:var(--color-surface); color:var(--color-fg-muted); opacity:0.5; cursor:not-allowed;">Disabled</button>
+      </div>
+      <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:center;">
+        <button style="font-family:var(--font-heading); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:0.03em; padding:8px 14px; border:2px solid var(--color-fg); background:var(--color-accent); color:var(--color-accent-fg); box-shadow:3px 3px 0 var(--color-fg); cursor:pointer;" style-hover="transform:translate(-1px,-1px); box-shadow:4px 4px 0 var(--color-fg);">Small</button>
+        <button style="font-family:var(--font-heading); font-weight:700; font-size:19px; text-transform:uppercase; letter-spacing:0.03em; padding:17px 32px; border:2px solid var(--color-fg); background:var(--color-accent); color:var(--color-accent-fg); box-shadow:5px 5px 0 var(--color-fg); cursor:pointer;" style-hover="transform:translate(-2px,-2px); box-shadow:7px 7px 0 var(--color-fg);">Large</button>
+      </div>
+    </section>
+
+    <!-- INPUTS -->
+    <section style="display:flex; flex-direction:column; gap:20px;">
+      <h2 style="margin:0; font-family:var(--font-heading); font-weight:700; font-size:24px;">Inputs</h2>
+      <div style="display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:24px; max-width:900px;">
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <label style="font-family:var(--font-condensed); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Text input</label>
+          <input placeholder="League name" style="font-family:var(--font-body); font-size:15px; padding:11px 12px; border:2px solid var(--color-fg); border-radius:0; background:var(--color-surface); color:var(--color-fg);" style-focus="outline:none; border-color:var(--color-accent); box-shadow:3px 3px 0 var(--color-accent);" />
+        </div>
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <label style="font-family:var(--font-condensed); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Select</label>
+          <div style="position:relative;">
+            <select style="width:100%; font-family:var(--font-body); font-size:15px; padding:11px 12px; border:2px solid var(--color-fg); border-radius:0; background:var(--color-surface); color:var(--color-fg); appearance:none;" style-focus="outline:none; border-color:var(--color-accent); box-shadow:3px 3px 0 var(--color-accent);">
+              <option>Round robin (two-way)</option>
+              <option>Round robin (single duels)</option>
+            </select>
+            <span style="position:absolute; right:12px; top:11px; pointer-events:none;">▾</span>
+          </div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <label style="font-family:var(--font-condensed); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Points (W / D / L)</label>
+          <div style="display:flex; gap:6px;">
+            <input value="3" style="width:100%; font-family:var(--font-mono); font-size:15px; padding:11px 8px; text-align:center; border:2px solid var(--color-fg); background:var(--color-surface); color:var(--color-fg);" />
+            <input value="1" style="width:100%; font-family:var(--font-mono); font-size:15px; padding:11px 8px; text-align:center; border:2px solid var(--color-fg); background:var(--color-surface); color:var(--color-fg);" />
+            <input value="0" style="width:100%; font-family:var(--font-mono); font-size:15px; padding:11px 8px; text-align:center; border:2px solid var(--color-fg); background:var(--color-surface); color:var(--color-fg);" />
+          </div>
+        </div>
+      </div>
+      <div style="display:flex; gap:40px; align-items:center; flex-wrap:wrap;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div style="width:22px; height:22px; border:2px solid var(--color-fg); background:var(--color-accent); color:var(--color-accent-fg); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700;">✓</div>
+          <span style="font-size:14px;">Checked</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div style="width:22px; height:22px; border:2px solid var(--color-fg); background:var(--color-surface);"></div>
+          <span style="font-size:14px;">Unchecked</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div style="width:52px; height:26px; border:2px solid var(--color-fg); background:var(--color-accent); position:relative;">
+            <div style="position:absolute; top:2px; right:2px; width:18px; height:18px; background:var(--color-surface); border:2px solid var(--color-fg);"></div>
+          </div>
+          <span style="font-size:14px;">Home advantage — on</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div style="width:52px; height:26px; border:2px solid var(--color-fg); background:var(--color-surface); position:relative;">
+            <div style="position:absolute; top:2px; left:2px; width:18px; height:18px; background:var(--color-fg); border:2px solid var(--color-fg);"></div>
+          </div>
+          <span style="font-size:14px;">Home advantage — off</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- BADGES -->
+    <section style="display:flex; flex-direction:column; gap:20px;">
+      <h2 style="margin:0; font-family:var(--font-heading); font-weight:700; font-size:24px;">Tags &amp; badges</h2>
+      <div style="display:flex; flex-direction:column; gap:16px;">
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <span style="font-family:var(--font-mono); font-weight:700; font-size:13px; padding:5px 10px; border:2px solid var(--color-fg); background:var(--color-fg); color:var(--color-surface);">S</span>
+          <span style="font-family:var(--font-mono); font-weight:700; font-size:13px; padding:5px 10px; border:2px solid var(--color-fg); background:var(--color-fg); color:var(--color-surface);">A</span>
+          <span style="font-family:var(--font-mono); font-weight:700; font-size:13px; padding:5px 10px; border:2px solid var(--color-fg); background:var(--color-fg); color:var(--color-surface);">B</span>
+          <span style="font-family:var(--font-mono); font-weight:700; font-size:13px; padding:5px 10px; border:2px solid var(--color-fg); background:var(--color-fg); color:var(--color-surface);">C</span>
+          <span style="font-family:var(--font-mono); font-weight:700; font-size:13px; padding:5px 10px; border:2px solid var(--color-fg); background:var(--color-fg); color:var(--color-surface);">D</span>
+          <span style="font-family:var(--font-mono); font-weight:700; font-size:13px; padding:5px 10px; border:2px solid var(--color-fg); background:var(--color-fg); color:var(--color-surface);">E</span>
+          <span style="font-family:var(--font-mono); font-weight:700; font-size:13px; padding:5px 10px; border:2px solid var(--color-fg); background:var(--color-fg); color:var(--color-surface);">F</span>
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <span style="font-family:var(--font-condensed); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:0.04em; padding:6px 12px; border:2px solid var(--color-fg); background:var(--color-accent); color:var(--color-accent-fg);">Win</span>
+          <span style="font-family:var(--font-condensed); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:0.04em; padding:6px 12px; border:2px solid var(--color-fg); background:var(--color-surface); color:var(--color-fg);">Draw</span>
+          <span style="font-family:var(--font-condensed); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:0.04em; padding:6px 12px; border:2px solid var(--color-fg); background:var(--color-error); color:var(--color-error-fg);">Loss</span>
+          <span style="font-family:var(--font-condensed); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:0.04em; padding:6px 12px; border:2px solid var(--color-fg); background:var(--color-warning); color:var(--color-warning-fg);">Bye</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- PALETTE -->
+    <section style="display:flex; flex-direction:column; gap:20px;">
+      <h2 style="margin:0; font-family:var(--font-heading); font-weight:700; font-size:24px;">Team colour palette</h2>
+      <p style="margin:0; font-size:13px; color:var(--color-fg-muted);">16-colour palette teams pick from (placeholder values per MVP3, pending final review).</p>
+      <div style="display:flex; gap:14px; flex-wrap:wrap;">
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px;"><div style="width:48px; height:48px; background:#E53935; border:2px solid var(--color-fg);"></div><span style="font-family:var(--font-mono); font-size:10px;">Red</span></div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px;"><div style="width:48px; height:48px; background:#7B1E1E; border:2px solid var(--color-fg);"></div><span style="font-family:var(--font-mono); font-size:10px;">Maroon</span></div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px;"><div style="width:48px; height:48px; background:#FB8C00; border:2px solid var(--color-fg);"></div><span style="font-family:var(--font-mono); font-size:10px;">Orange</span></div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px;"><div style="width:48px; height:48px; background:#F9A825; border:2px solid var(--color-fg);"></div><span style="font-family:var(--font-mono); font-size:10px;">Gold</span></div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px;"><div style="width:48px; height:48px; background:#FDD835; border:2px solid var(--color-fg);"></div><span style="font-family:var(--font-mono); font-size:10px;">Yellow</span></div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px;"><div style="width:48px; height:48px; background:#827717; border:2px solid var(--color-fg);"></div><span style="font-family:var(--font-mono); font-size:10px;">Olive</span></div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px;"><div style="width:48px; height:48px; background:#2E7D32; border:2px solid var(--color-fg);"></div><span style="font-family:var(--font-mono); font-size:10px;">Green</span></div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px;"><div style="width:48px; height:48px; background:#00897B; border:2px solid var(--color-fg);"></div><span style="font-family:var(--font-mono); font-size:10px;">Teal</span></div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px;"><div style="width:48px; height:48px; background:#039BE5; border:2px solid var(--color-fg);"></div><span style="font-family:var(--font-mono); font-size:10px;">Sky</span></div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px;"><div style="width:48px; height:48px; background:#1A237E; border:2px solid var(--color-fg);"></div><span style="font-family:var(--font-mono); font-size:10px;">Navy</span></div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px;"><div style="width:48px; height:48px; background:#1E88E5; border:2px solid var(--color-fg);"></div><span style="font-family:var(--font-mono); font-size:10px;">Blue</span></div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px;"><div style="width:48px; height:48px; background:#6A1B9A; border:2px solid var(--color-fg);"></div><span style="font-family:var(--font-mono); font-size:10px;">Purple</span></div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px;"><div style="width:48px; height:48px; background:#D81B60; border:2px solid var(--color-fg);"></div><span style="font-family:var(--font-mono); font-size:10px;">Pink</span></div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px;"><div style="width:48px; height:48px; background:#212121; border:2px solid var(--color-fg);"></div><span style="font-family:var(--font-mono); font-size:10px;">Black</span></div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px;"><div style="width:48px; height:48px; background:#9E9E9E; border:2px solid var(--color-fg);"></div><span style="font-family:var(--font-mono); font-size:10px;">Grey</span></div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px;"><div style="width:48px; height:48px; background:#FAFAFA; border:2px solid var(--color-fg);"></div><span style="font-family:var(--font-mono); font-size:10px;">White</span></div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+</x-dc>
+</body>
+</html>

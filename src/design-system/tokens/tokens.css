@@ -8,8 +8,9 @@
  * automated contrast check and other non-CSS consumers) — a test asserts
  * the two stay in sync, so update both files together.
  *
- * Fonts (Barlow, Barlow Semi Condensed, JetBrains Mono) are loaded by the
- * app shell, not here — this file only declares the fallback stacks.
+ * Fonts (Barlow, Barlow Semi Condensed, JetBrains Mono) are self-hosted from
+ * /public/fonts/ and declared in `fonts.css`, not here — this file only
+ * declares the family names and fallback stacks.
  */
 :root {
   /* Colour */

@@ -8,7 +8,7 @@
 
 ## Tech Stack
 
-- **Frontend:** Tauri + Preact (with preact-router) + Tailwind
+- **Frontend:** Tauri + Preact (with preact-router)
 - **Language:** TypeScript
 - **Bundler:** Vite
 - **Data:** lightweight, file-based format — importable/exportable, no external DB server. JSON for leagues/teams/database exports (each entity carries a permanent UUID for cross-file identity), CSV for quick team-list bulk editing, plain text for read-only result exports.

@@ -49,7 +49,6 @@ function Section({
 }
 
 function App(): JSX.Element {
-  const [tab, setTab] = useState('standings');
   const [name, setName] = useState('');
 
   return (
@@ -106,31 +105,28 @@ function App(): JSX.Element {
       </Section>
 
       <Section title="Tabs + Table">
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '1rem',
-            width: '100%',
-          }}
-        >
+        <div style={{ width: '100%' }}>
           <Tabs
+            defaultTab="standings"
             tabs={[
-              { id: 'standings', label: 'Standings' },
-              { id: 'fixtures', label: 'Fixtures' },
+              {
+                id: 'standings',
+                label: 'Standings',
+                content: (
+                  <Table
+                    columns={standingsColumns}
+                    rows={standingsRows}
+                    rowKey={(r) => r.id}
+                  />
+                ),
+              },
+              {
+                id: 'fixtures',
+                label: 'Fixtures',
+                content: <p>Fixtures tab — no data wired up in this preview.</p>,
+              },
             ]}
-            activeId={tab}
-            onChange={setTab}
           />
-          {tab === 'standings' ? (
-            <Table
-              columns={standingsColumns}
-              rows={standingsRows}
-              rowKey={(r) => r.id}
-            />
-          ) : (
-            <p>Fixtures tab — no data wired up in this preview.</p>
-          )}
         </div>
       </Section>
     </main>

@@ -1,3 +1,9 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
 .tabs {
   display: flex;
   border: var(--border-width) solid var(--color-border);

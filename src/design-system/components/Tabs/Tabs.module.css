@@ -6,10 +6,10 @@
 }
 
 .tab {
-  padding: 0.75rem 1.625rem;
+  padding: var(--space-3) var(--space-6);
   font-family: var(--font-condensed);
   font-weight: 700;
-  font-size: 0.8125rem;
+  font-size: var(--font-size-md);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   border: none;

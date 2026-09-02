@@ -36,6 +36,19 @@
   --font-body: 'Barlow', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
+  /*
+   * Font sizes — the handoff bundle's screens use several very close but
+   * not-quite-matching values (11/12/13/14/15/19px) rather than a real
+   * type scale. Named/documented here as-is so every size in use is a
+   * token, not a magic number hardcoded per component.
+   */
+  --font-size-xs: 0.6875rem; /* 11px */
+  --font-size-sm: 0.75rem; /* 12px */
+  --font-size-md: 0.8125rem; /* 13px */
+  --font-size-lg: 0.875rem; /* 14px */
+  --font-size-xl: 0.9375rem; /* 15px */
+  --font-size-2xl: 1.1875rem; /* 19px */
+
   /* Borders — neubrutalist: sharp corners, solid weighted strokes */
   --radius: 0;
   --border-width: 0.125rem;
@@ -51,10 +64,14 @@
   --shadow-accent-sm: 0.1875rem 0.1875rem 0 var(--color-accent);
 
   /*
-   * Spacing — not enumerated as an explicit scale in the brief; derived
-   * from the step sizes actually used across the handoff bundle's
-   * screens. Flagged in the task 0 progress report as a reconciliation
-   * judgment call rather than a value taken verbatim from a spec table.
+   * Spacing — not enumerated as an explicit scale in the brief. The
+   * handoff bundle's own padding/gap values don't reliably land on this
+   * grid either (5px, 6px, 10px, 11px, 13px, 17px, 26px all show up) —
+   * treated as prototype drift rather than intentional, so every
+   * component's spacing is snapped to the nearest step below instead of
+   * reproducing those exact pixel values. Flagged in the task 0 progress
+   * report as a reconciliation judgment call rather than a value taken
+   * verbatim from a spec table.
    */
   --space-1: 0.25rem;
   --space-2: 0.5rem;

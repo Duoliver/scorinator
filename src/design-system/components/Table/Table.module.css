@@ -7,13 +7,13 @@
 .headerRow {
   display: grid;
   gap: var(--space-3);
-  padding: 0.625rem var(--space-4);
+  padding: var(--space-3) var(--space-4);
   border-bottom: var(--border-width) solid var(--color-border);
   background: var(--color-fg);
   color: var(--color-surface);
   font-family: var(--font-condensed);
   font-weight: 700;
-  font-size: 0.6875rem;
+  font-size: var(--font-size-xs);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -22,9 +22,9 @@
   display: grid;
   gap: var(--space-3);
   align-items: center;
-  padding: 0.625rem var(--space-4);
+  padding: var(--space-3) var(--space-4);
   border-bottom: var(--border-width) solid var(--color-border);
-  font-size: 0.875rem;
+  font-size: var(--font-size-lg);
 }
 
 .row:last-child {

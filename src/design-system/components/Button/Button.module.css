@@ -24,8 +24,8 @@
 
 /* Sizes */
 .sm {
-  font-size: 0.75rem;
-  padding: 0.5rem 0.875rem;
+  font-size: var(--font-size-sm);
+  padding: var(--space-2) var(--space-4);
   box-shadow: var(--shadow-offset-sm);
 }
 .sm:hover:not(:disabled) {
@@ -34,8 +34,8 @@
 }
 
 .md {
-  font-size: 0.9375rem;
-  padding: 0.8125rem 1.5rem;
+  font-size: var(--font-size-xl);
+  padding: var(--space-3) var(--space-6);
   box-shadow: var(--shadow-offset-md);
 }
 .md:hover:not(:disabled) {
@@ -44,8 +44,8 @@
 }
 
 .lg {
-  font-size: 1.1875rem;
-  padding: 1.0625rem 2rem;
+  font-size: var(--font-size-2xl);
+  padding: var(--space-4) var(--space-8);
   box-shadow: var(--shadow-offset-lg);
 }
 .lg:hover:not(:disabled) {

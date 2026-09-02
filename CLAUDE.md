@@ -61,11 +61,12 @@ General source specs live in [docs](/docs/):
 - [`Design reference`](/docs/design-reference/) — The Claude Design handoff bundle (rendered prototype screens) for each MVP — [see its own readme](/docs/design-reference/README.md) on how these are and aren't used
 - [`TDD`](/docs/tdd) — Workflow and strategies by layer. Mandatory adherence
 - [`Future features`](/docs/scorinator-future-features.md) — explicitly out of scope, do not implement
+- [`Coding standards`](/docs/coding-standards.md) — general implementation rules that apply across modules (not module-specific — those live with their module below)
 
 Module-specific documentation lives in that module's root.
 - [`ENGINE`](/src/engine/ENGINE.md) — scorinator engine determinism requirements
 - [`PERSISTENCE`](/src/persistence/PERSISTENCE.md) — persistence/storage architecture
-The **`design-system/`** module does not have a dedicated spec doc as of yet. Please, refer to the general `Design reference` doc and raise questions when needed. No silent solving.
+- [`DESIGN_SYSTEM`](/src/design-system/DESIGN_SYSTEM.md) — tokens/primitives implementation rules (fonts, units, spacing)
 
 ---
 

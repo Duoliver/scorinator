@@ -13,7 +13,7 @@
 }
 
 .button:active:not(:disabled) {
-  transform: translate(2px, 2px);
+  transform: translate(0.125rem, 0.125rem);
   box-shadow: 0 0 0 var(--color-fg) !important;
 }
 
@@ -24,32 +24,32 @@
 
 /* Sizes */
 .sm {
-  font-size: 12px;
-  padding: 8px 14px;
+  font-size: 0.75rem;
+  padding: 0.5rem 0.875rem;
   box-shadow: var(--shadow-offset-sm);
 }
 .sm:hover:not(:disabled) {
-  transform: translate(-1px, -1px);
+  transform: translate(-0.0625rem, -0.0625rem);
   box-shadow: var(--shadow-offset-hover-sm);
 }
 
 .md {
-  font-size: 15px;
-  padding: 13px 24px;
+  font-size: 0.9375rem;
+  padding: 0.8125rem 1.5rem;
   box-shadow: var(--shadow-offset-md);
 }
 .md:hover:not(:disabled) {
-  transform: translate(-2px, -2px);
+  transform: translate(-0.125rem, -0.125rem);
   box-shadow: var(--shadow-offset-hover-md);
 }
 
 .lg {
-  font-size: 19px;
-  padding: 17px 32px;
+  font-size: 1.1875rem;
+  padding: 1.0625rem 2rem;
   box-shadow: var(--shadow-offset-lg);
 }
 .lg:hover:not(:disabled) {
-  transform: translate(-2px, -2px);
+  transform: translate(-0.125rem, -0.125rem);
   box-shadow: var(--shadow-offset-hover-lg);
 }
 

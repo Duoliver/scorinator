@@ -17,7 +17,7 @@ One row per task. Keep this table current — it's the first thing a new session
 | # | Task | Module | Status | Started | Completed | Report | Notes |
 |---|------|--------|--------|---------|-----------|--------|-------|
 | 0 | Extract design-system: tokens + primitives from design brief + Claude Design handoff bundle (see CLAUDE.md §4) | `design-system/` | ⬜ Not started | | | | Needs the handoff bundle placed in the repo first — see note below. |
-| 1 | Repo scaffold: module folders per CLAUDE.md §1, vitest config | `/` | ⬜ Not started | | | | |
+| 1 | Repo scaffold: module folders per `module-boundaries` doc, vitest config | `/` | ⬜ Not started | | | | |
 | 2 | Tier→OVR range mapping + roll logic | `engine/tier-ovr` | ⬜ Not started | | | | |
 | 3 | Two-way round-robin fixture generation (incl. odd-team bye) | `engine/fixtures` | ⬜ Not started | | | | |
 | 4 | Standings calc (configurable points, live update) | `engine/standings` | ⬜ Not started | | | | |
@@ -43,7 +43,7 @@ For any task more involved than a one-line fix, write a short report to `/progre
 
 - **What was built** — one or two sentences.
 - **Test approach** — what's covered, what kind (unit/integration/statistical), anything intentionally left untested and why.
-- **Decisions made** — especially anything from a CLAUDE.md §6 open item, or any other judgment call a future session should know about rather than rediscover.
+- **Decisions made** — especially anything from a `CLAUDE.md` open item, or any other judgment call a future session should know about rather than rediscover.
 - **What's left / what's next** — even for a "done" task, note anything adjacent that was noticed but out of scope for this task.
 
 If a task was stopped without finishing, the report should say so plainly — what's done, what's broken or missing, and what decision or input is needed to continue. A blocked task's report is more important than a finished one's, since it's the thing preventing the next session from re-doing failed work blind.
@@ -52,7 +52,7 @@ If a task was stopped without finishing, the report should say so plainly — wh
 
 ## Open questions
 
-Running list of anything flagged per CLAUDE.md §6/§7 that needs a decision from the user before work can proceed on it. Newest at the top. Remove an item once it's resolved and note the resolution inline in the relevant task's report rather than deleting the history silently.
+Running list of anything flagged per `CLAUDE.md` open items section that needs a decision from the user before work can proceed on it. Newest at the top. Remove an item once it's resolved and note the resolution inline in the relevant task's report rather than deleting the history silently.
 
 *(none yet)*
 

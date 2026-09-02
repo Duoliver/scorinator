@@ -1,6 +1,6 @@
 # MVP1 — First Tasks, Worked Example
 
-This is a concrete example of the CLAUDE.md §2 workflow applied to the
+This is a concrete example of the `tdd` doc workflow applied to the
 first two rows of PROGRESS.md's status board, so the first session (or
 you, reviewing its output) has a worked pattern to check against — not a
 prescription to follow to the letter. Sessions should still write their
@@ -19,7 +19,7 @@ single source of truth."
 (`S = 90–99`) and says "default ranges ship with MVP1" without listing
 all seven. This is a small open item — propose a full S–F table (evenly
 spaced, non-overlapping, matching the S=90–99 anchor) in the session
-report rather than picking silently, per CLAUDE.md §2.
+report rather than picking silently, per `tdd` doc.
 
 **Test cases to write first:**
 

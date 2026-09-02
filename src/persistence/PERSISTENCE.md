@@ -1,4 +1,4 @@
-# Scorinator — Technical Caveats (for Claude Code)
+# Scorinator — Persistence layer technical Caveats (for Claude Code)
 
 Implementation-level decisions that sit underneath MVP 1–4's functional specs. This doc doesn't change any user-facing behavior — it's the "how" for things the MVP docs already committed to at the "what" level.
 

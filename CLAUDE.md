@@ -13,21 +13,59 @@
 - **Bundler:** Vite
 - **Data:** lightweight, file-based format — importable/exportable, no external DB server. JSON for leagues/teams/database exports (each entity carries a permanent UUID for cross-file identity), CSV for quick team-list bulk editing, plain text for read-only result exports.
 
+## Build, Test & Lint Commands
+
+### Pre-session setup
+Before starting work on a new session, run:
+```bash
+npm install        # ensures all deps are current
+npm run type-check # catch TS errors before writing tests
+npm test           # run the full test suite; should pass before work begins
+npm run lint       # check for lint violations (warnings only, no blocker)
+```
+
+### During development
+While actively working on a task:
+```bash
+npm test -- --watch              # continuous test mode
+npm run lint:fix                 # auto-fix lint + format issues
+npm run format                   # format code with Prettier
+```
+
+### Before finishing a task
+When closing out work on a task, run the full suite:
+```bash
+npm run lint                     # catch style issues
+npm run type-check               # final TypeScript check
+npm test                         # full test suite — confirm no regressions
+npm run test:coverage            # optional: check coverage, flag gaps
+```
+
+### Tauri-specific (desktop app)
+```bash
+npm run tauri:dev                # launches the app in dev mode with hot reload
+npm run tauri:build              # builds for distribution (slow, do once at end)
+```
+
 ---
 
 ## Documentation
 
-Source specs live in [docs](/docs/):
+General source specs live in [docs](/docs/):
 - The four MVPs, in build order
   - [`MVP1`](/docs/scorinator-mvp1.md)
   - [`MVP2`](/docs/scorinator-mvp2.md)
   - [`MVP3`](/docs/scorinator-mvp3.md)
   - [`MVP4`](/docs/scorinator-mvp4.md)
-- [`Technical caveats`](/docs/scorinator-technical-caveats.md) — persistence/storage architecture
 - [`Module boundaries`](/docs/module-boundaries.md) — project structure. Do not restructure without discussion
 - [`Design reference`](/docs/design-reference/) — The Claude Design handoff bundle (rendered prototype screens) for each MVP — [see its own readme](/docs/design-reference/README.md) on how these are and aren't used
 - [`TDD`](/docs/tdd) — Workflow and strategies by layer. Mandatory adherence
 - [`Future features`](/docs/scorinator-future-features.md) — explicitly out of scope, do not implement
+
+Module-specific documentation lives in that module's root.
+- [`ENGINE`](/src/engine/ENGINE.md) — scorinator engine determinism requirements
+- [`PERSISTENCE`](/src/persistence/PERSISTENCE.md) — persistence/storage architecture
+The **`design-system/`** module does not have a dedicated spec doc as of yet. Please, refer to the general `Design reference` doc and raise questions when needed. No silent solving.
 
 ---
 

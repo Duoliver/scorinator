@@ -1,0 +1,42 @@
+.table {
+  border: var(--border-width) solid var(--color-border);
+  background: var(--color-surface);
+  overflow-x: auto;
+}
+
+.headerRow {
+  display: grid;
+  gap: var(--space-3);
+  padding: 10px var(--space-4);
+  border-bottom: var(--border-width) solid var(--color-border);
+  background: var(--color-fg);
+  color: var(--color-surface);
+  font-family: var(--font-condensed);
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.row {
+  display: grid;
+  gap: var(--space-3);
+  align-items: center;
+  padding: 10px var(--space-4);
+  border-bottom: var(--border-width) solid var(--color-border);
+  font-size: 14px;
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+.alignLeft {
+  text-align: left;
+}
+.alignCenter {
+  text-align: center;
+}
+.alignRight {
+  text-align: right;
+}

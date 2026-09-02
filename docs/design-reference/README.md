@@ -16,3 +16,7 @@
 **Why this matters:** without this separation, a task like "build the team creation form" tends to become "read the whole handoff bundle and build a fully styled, fully wired screen in one pass" — which bypasses TDD for the UI layer entirely and tends to reintroduce coupling between domain logic and presentation that the `module-boundaries` docs are meant to prevent.
 
 **Automated check:** once `design-system/` tokens exist, add a test that checks the brief's WCAG AAA contrast requirement (text/background, text/accent pairings) programmatically against the token values — this is cheap to automate and should fail the build if a future token edit regresses contrast.
+
+---
+
+**Known contrast exception (`--color-fg-muted`):** the Foundations reference screen states all foreground/background pairings meet AAA (7:1+), but `--color-fg-muted` (#5C5C5C) on `--color-surface` (#FFFFFF) actually measures ~6.69:1 — it clears AA (4.5:1) and AAA-large-text, but not AAA normal-text. Confirmed with the user (2026-09-02): `fg-muted` is intended for disabled/de-emphasized elements, not primary body text, so the value is being kept as-is rather than darkened. The design-system's automated AAA contrast test (`src/design-system/contrast.test.ts`) excludes this pairing from its strict 7:1 checks accordingly — don't use `fg-muted` for text that needs to read as fully legible/primary content.

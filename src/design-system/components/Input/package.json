@@ -1,0 +1,7 @@
+{
+  "name": "@design-system/input",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./Input.tsx",
+  "types": "./Input.tsx"
+}

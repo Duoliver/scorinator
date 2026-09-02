@@ -1,0 +1,29 @@
+.tabs {
+  display: flex;
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius);
+  width: fit-content;
+}
+
+.tab {
+  padding: 12px 26px;
+  font-family: var(--font-condensed);
+  font-weight: 700;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border: none;
+  border-right: var(--border-width) solid var(--color-border);
+  cursor: pointer;
+  background: var(--color-surface);
+  color: var(--color-fg);
+}
+
+.tab:last-child {
+  border-right: none;
+}
+
+.tabActive {
+  background: var(--color-accent);
+  color: var(--color-accent-fg);
+}

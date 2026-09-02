@@ -16,7 +16,7 @@ One row per task. Keep this table current — it's the first thing a new session
 
 | # | Task | Module | Status | Started | Completed | Report | Notes |
 |---|------|--------|--------|---------|-----------|--------|-------|
-| 0 | Extract design-system: tokens + primitives from design brief + Claude Design handoff bundle (see `docs/design-reference`) | `design-system/` | ⬜ Not started | | | | Needs the handoff bundle placed in the repo first — see note below. |
+| 0 | Extract design-system: tokens + primitives from design brief + Claude Design handoff bundle (see `docs/design-reference`) | `design-system/` | ✅ Done | 2026-09-02 | 2026-09-02 | [000](/progress-reports/000-design-system-extraction.md) | Included minimal vitest+jsdom scaffolding (subset of Task 1) since primitives need their own tests. |
 | 1 | Repo scaffold: module folders per `module-boundaries` doc, vitest config | `/` | ⬜ Not started | | | | |
 | 2 | Tier→OVR range mapping + roll logic | `engine/tier-ovr` | ⬜ Not started | | | | |
 | 3 | Two-way round-robin fixture generation (incl. odd-team bye) | `engine/fixtures` | ⬜ Not started | | | | |
@@ -62,4 +62,6 @@ Running list of anything flagged per `CLAUDE.md` open items section that needs a
 
 Short-form record of resolved judgment calls, so they don't get silently re-litigated by a later session. Newest at top.
 
-*(none yet)*
+- **2026-09-02 (Task 0):** `--color-fg-muted` (#5C5C5C) is kept as-is despite measuring ~6.69:1 on `--color-surface` (short of the Foundations screen's claimed blanket AAA 7:1) — confirmed with the user it's for disabled/de-emphasized elements only, not primary text. See `docs/design-reference/README.md`'s "Known contrast exception" note and `progress-reports/000-design-system-extraction.md`.
+- **2026-09-02 (Task 0):** 16-colour team palette shown in the Foundations screen was deliberately *not* extracted into `design-system/` tokens — it's explicitly captioned "placeholder... pending final review" and is MVP3 scope. Extract it when MVP3 is approved, not before.
+- **2026-09-02 (Task 0):** Styled `design-system/` primitives with plain CSS Modules (Vite's built-in `*.module.css` support) rather than Tailwind. `CLAUDE.md` lists Tailwind in the tech stack, but it isn't installed/configured anywhere in the repo — wiring it is a separate decision, out of scope for this task.

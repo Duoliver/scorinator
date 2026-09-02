@@ -1,0 +1,64 @@
+/*
+ * Design tokens — reconciled from the Claude Design handoff bundle
+ * (docs/design-reference/MVP1/Footballer - Foundations.dc.html) plus the
+ * neubrutalist direction described in the design brief (sharp corners,
+ * solid 2px borders, hard offset shadows, WCAG AAA text/background pairs).
+ *
+ * `tokens.ts` mirrors the colour values below (needed as plain JS for the
+ * automated contrast check and other non-CSS consumers) — a test asserts
+ * the two stay in sync, so update both files together.
+ *
+ * Fonts (Barlow, Barlow Semi Condensed, JetBrains Mono) are loaded by the
+ * app shell, not here — this file only declares the fallback stacks.
+ */
+:root {
+  /* Colour */
+  --color-bg: #f2f2f0;
+  --color-surface: #ffffff;
+  --color-fg: #1a1a1a;
+  --color-fg-muted: #5c5c5c;
+  --color-border: var(--color-fg);
+  --color-accent: #17551c;
+  --color-accent-fg: #ffffff;
+  --color-error: #8c1414;
+  --color-error-fg: #ffffff;
+  --color-warning: #d9a900;
+  --color-warning-fg: #1a1a1a;
+
+  /* Typography */
+  --font-heading: 'Barlow', sans-serif;
+  --font-condensed: 'Barlow Semi Condensed', sans-serif;
+  --font-body: 'Barlow', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Borders — neubrutalist: sharp corners, solid weighted strokes */
+  --radius: 0;
+  --border-width: 2px;
+  --border-width-heavy: 3px;
+
+  /* Shadow — hard offset, no blur, always cast in --color-fg */
+  --shadow-offset-sm: 3px 3px 0 var(--color-fg);
+  --shadow-offset-md: 4px 4px 0 var(--color-fg);
+  --shadow-offset-lg: 5px 5px 0 var(--color-fg);
+  --shadow-offset-hover-sm: 4px 4px 0 var(--color-fg);
+  --shadow-offset-hover-md: 6px 6px 0 var(--color-fg);
+  --shadow-offset-hover-lg: 7px 7px 0 var(--color-fg);
+  --shadow-accent-sm: 3px 3px 0 var(--color-accent);
+
+  /*
+   * Spacing — not enumerated as an explicit scale in the brief; derived
+   * from the step sizes actually used across the handoff bundle's
+   * screens. Flagged in the task 0 progress report as a reconciliation
+   * judgment call rather than a value taken verbatim from a spec table.
+   */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+}

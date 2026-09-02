@@ -1,0 +1,50 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius);
+  white-space: nowrap;
+}
+
+/* Tone: dark (mono, tier letters) */
+.dark {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 13px;
+  padding: 5px 10px;
+  background: var(--color-fg);
+  color: var(--color-surface);
+}
+
+/* Tones sharing the condensed/uppercase result-tag treatment */
+.accent,
+.neutral,
+.error,
+.warning {
+  font-family: var(--font-condensed);
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 6px 12px;
+}
+
+.accent {
+  background: var(--color-accent);
+  color: var(--color-accent-fg);
+}
+
+.neutral {
+  background: var(--color-surface);
+  color: var(--color-fg);
+}
+
+.error {
+  background: var(--color-error);
+  color: var(--color-error-fg);
+}
+
+.warning {
+  background: var(--color-warning);
+  color: var(--color-warning-fg);
+}

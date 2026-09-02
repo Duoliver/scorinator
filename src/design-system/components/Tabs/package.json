@@ -1,0 +1,7 @@
+{
+  "name": "@design-system/tabs",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./Tabs.tsx",
+  "types": "./Tabs.tsx"
+}

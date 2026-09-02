@@ -1,0 +1,7 @@
+{
+  "name": "@design-system/badge",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./Badge.tsx",
+  "types": "./Badge.tsx"
+}

@@ -1,15 +1,8 @@
+import type TabsProps from './types';
+import type { TabItem } from './types';
 import styles from './Tabs.module.css';
 
-export interface TabItem {
-  id: string;
-  label: string;
-}
-
-export interface TabsProps {
-  tabs: TabItem[];
-  activeId: string;
-  onChange: (id: string) => void;
-}
+export type { TabsProps, TabItem };
 
 export function Tabs({ tabs, activeId, onChange }: TabsProps) {
   return (

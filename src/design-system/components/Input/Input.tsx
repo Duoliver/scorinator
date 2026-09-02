@@ -1,15 +1,9 @@
 import { useId } from 'preact/hooks';
 import type { TargetedEvent } from 'preact';
+import type InputProps from './types';
 import styles from './Input.module.css';
 
-export interface InputProps {
-  label?: string;
-  value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-  type?: 'text' | 'number' | 'email';
-  id?: string;
-}
+export type { InputProps };
 
 export function Input({
   label,

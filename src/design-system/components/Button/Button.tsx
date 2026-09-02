@@ -1,17 +1,8 @@
-import type { ComponentChildren, TargetedMouseEvent } from 'preact';
+import type ButtonProps from './types';
+import type { ButtonVariant, ButtonSize } from './types';
 import styles from './Button.module.css';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'destructive' | 'ghost';
-export type ButtonSize = 'sm' | 'md' | 'lg';
-
-export interface ButtonProps {
-  children: ComponentChildren;
-  variant?: ButtonVariant;
-  size?: ButtonSize;
-  disabled?: boolean;
-  type?: 'button' | 'submit' | 'reset';
-  onClick?: (event: TargetedMouseEvent<HTMLButtonElement>) => void;
-}
+export type { ButtonProps, ButtonVariant, ButtonSize };
 
 export function Button({
   children,

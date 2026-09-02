@@ -1,22 +1,8 @@
-import type { ComponentChildren } from 'preact';
+import type TableProps from './types';
+import type { TableColumn, TableAlign } from './types';
 import styles from './Table.module.css';
 
-export type TableAlign = 'left' | 'center' | 'right';
-
-export interface TableColumn<Row> {
-  key: string;
-  header: string;
-  /** CSS grid track for this column's width. Defaults to "1fr". */
-  width?: string;
-  align?: TableAlign;
-  render?: (row: Row) => ComponentChildren;
-}
-
-export interface TableProps<Row> {
-  columns: TableColumn<Row>[];
-  rows: Row[];
-  rowKey: (row: Row) => string;
-}
+export type { TableProps, TableColumn, TableAlign };
 
 const alignClass: Record<TableAlign, string> = {
   left: styles.alignLeft,

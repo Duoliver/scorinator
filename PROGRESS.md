@@ -16,7 +16,7 @@ One row per task. Keep this table current — it's the first thing a new session
 
 | # | Task | Module | Status | Started | Completed | Report | Notes |
 |---|------|--------|--------|---------|-----------|--------|-------|
-| 0 | Extract design-system: tokens + primitives from design brief + Claude Design handoff bundle (see CLAUDE.md §4) | `design-system/` | ⬜ Not started | | | | Needs the handoff bundle placed in the repo first — see note below. |
+| 0 | Extract design-system: tokens + primitives from design brief + Claude Design handoff bundle (see `docs/design-reference`) | `design-system/` | ⬜ Not started | | | | Needs the handoff bundle placed in the repo first — see note below. |
 | 1 | Repo scaffold: module folders per `module-boundaries` doc, vitest config | `/` | ⬜ Not started | | | | |
 | 2 | Tier→OVR range mapping + roll logic | `engine/tier-ovr` | ⬜ Not started | | | | |
 | 3 | Two-way round-robin fixture generation (incl. odd-team bye) | `engine/fixtures` | ⬜ Not started | | | | |
@@ -29,7 +29,7 @@ One row per task. Keep this table current — it's the first thing a new session
 | 10 | Results .txt export | `adapters/json-io` or new | ⬜ Not started | | | | |
 | 11+ | *(MVP2 tasks — add once MVP1 engine work is stable; don't pre-populate speculatively)* | | | | | | |
 
-**Note on Task 0:** Task 0 (`design-system/` extraction) doesn't block Tasks 1–3 in principle — the engine layer has no dependency on it — but it does block any `features/` work, so it's numbered first as a reminder to do it before UI wiring starts, not necessarily before engine tasks. Place the Claude Design handoff bundle export somewhere in the repo (e.g. `/docs/design-reference/`) before starting Task 0, and note the actual path in that task's report once done — this file will otherwise assume it isn't confirmed yet.
+**Note on Task 0:** Task 0 (`design-system/` extraction) doesn't block Tasks 1–3 in principle — the engine layer has no dependency on it — but it does block any `features/` work, so it's numbered first as a reminder to do it before UI wiring starts, not necessarily before engine tasks. The Claude Design handoff bundle export for MVP1 is placed at `/docs/design-reference/MVP1`. See its own `README.md` for further instructions on its usage.
 
 **Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input — see Open Questions) · ✅ Done
 

@@ -1,3 +1,4 @@
+import type { JSX } from 'preact';
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
@@ -11,7 +12,7 @@ describe('Input', () => {
 
   it('calls onChange with the new value as the user types', async () => {
     const onChange = vi.fn();
-    function Controlled() {
+    function Controlled(): JSX.Element {
       return <Input label="League name" value="" onChange={onChange} />;
     }
     render(<Controlled />);

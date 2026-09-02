@@ -1,3 +1,4 @@
+import type { JSX } from 'preact';
 import type ButtonProps from './types';
 import type { ButtonVariant, ButtonSize } from './types';
 import styles from './Button.module.css';
@@ -11,7 +12,7 @@ export function Button({
   disabled = false,
   type = 'button',
   onClick,
-}: ButtonProps) {
+}: ButtonProps): JSX.Element {
   return (
     <button
       type={type}

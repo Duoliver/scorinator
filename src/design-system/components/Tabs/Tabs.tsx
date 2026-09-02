@@ -1,10 +1,11 @@
+import type { JSX } from 'preact';
 import type TabsProps from './types';
 import type { TabItem } from './types';
 import styles from './Tabs.module.css';
 
 export type { TabsProps, TabItem };
 
-export function Tabs({ tabs, activeId, onChange }: TabsProps) {
+export function Tabs({ tabs, activeId, onChange }: TabsProps): JSX.Element {
   return (
     <div class={styles.tabs} role="tablist">
       {tabs.map((tab) => {

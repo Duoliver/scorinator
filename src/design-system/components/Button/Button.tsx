@@ -1,4 +1,4 @@
-import type { ComponentChildren, JSX } from 'preact';
+import type { ComponentChildren, TargetedMouseEvent } from 'preact';
 import styles from './Button.module.css';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'destructive' | 'ghost';
@@ -10,7 +10,7 @@ export interface ButtonProps {
   size?: ButtonSize;
   disabled?: boolean;
   type?: 'button' | 'submit' | 'reset';
-  onClick?: (event: JSX.TargetedMouseEvent<HTMLButtonElement>) => void;
+  onClick?: (event: TargetedMouseEvent<HTMLButtonElement>) => void;
 }
 
 export function Button({

@@ -1,5 +1,5 @@
 import { useId } from 'preact/hooks';
-import type { JSX } from 'preact';
+import type { TargetedEvent } from 'preact';
 import styles from './Input.module.css';
 
 export interface InputProps {
@@ -22,7 +22,7 @@ export function Input({
   const generatedId = useId();
   const inputId = id ?? generatedId;
 
-  const handleChange = (event: JSX.TargetedEvent<HTMLInputElement, Event>) => {
+  const handleChange = (event: TargetedEvent<HTMLInputElement, Event>) => {
     onChange(event.currentTarget.value);
   };
 

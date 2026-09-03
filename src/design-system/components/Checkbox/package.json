@@ -1,0 +1,7 @@
+{
+  "name": "@design-system/checkbox",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./Checkbox.tsx",
+  "types": "./Checkbox.tsx"
+}

@@ -5,7 +5,9 @@
       "Bash(npm run *)",
       "Bash(npx --yes playwright install chromium)",
       "Bash(lsof -ti:1420 -sTCP:LISTEN)",
-      "Bash(xargs -r kill)"
+      "Bash(xargs -r kill)",
+      "Bash(node screenshot2.mjs)",
+      "Bash(curl -sf http://localhost:1420)"
     ]
   }
 }

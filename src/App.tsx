@@ -4,8 +4,10 @@ import {
   Badge,
   Button,
   Card,
+  Checkbox,
   Input,
   Select,
+  Switch,
   Table,
   Tabs,
   type TableColumn,
@@ -53,6 +55,8 @@ function App(): JSX.Element {
   const [name, setName] = useState('');
   const [pointsWin, setPointsWin] = useState('3');
   const [format, setFormat] = useState('round-robin-two-way');
+  const [includeByes, setIncludeByes] = useState(true);
+  const [homeAdvantage, setHomeAdvantage] = useState(true);
 
   return (
     <main
@@ -117,6 +121,14 @@ function App(): JSX.Element {
             { label: 'Round robin (single duels)', value: 'round-robin-single' },
           ]}
         />
+      </Section>
+
+      <Section title="Checkbox">
+        <Checkbox label="Include byes" checked={includeByes} onChange={setIncludeByes} />
+      </Section>
+
+      <Section title="Switch">
+        <Switch label="Home advantage" checked={homeAdvantage} onChange={setHomeAdvantage} />
       </Section>
 
       <Section title="Card">

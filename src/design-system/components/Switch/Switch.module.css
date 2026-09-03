@@ -1,0 +1,52 @@
+.root {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  cursor: pointer;
+}
+
+.input {
+  position: absolute;
+  width: 3.25rem;
+  height: 1.625rem;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.track {
+  position: relative;
+  width: 3.25rem;
+  height: 1.625rem;
+  flex-shrink: 0;
+  border: var(--border-width) solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.knob {
+  position: absolute;
+  top: var(--border-width);
+  left: var(--border-width);
+  width: 1.125rem;
+  height: 1.125rem;
+  background: var(--color-fg);
+  border: var(--border-width) solid var(--color-border);
+}
+
+.input:checked ~ .track {
+  background: var(--color-accent);
+}
+
+.input:checked ~ .track .knob {
+  left: auto;
+  right: var(--border-width);
+  background: var(--color-surface);
+}
+
+.input:focus-visible ~ .track {
+  box-shadow: var(--shadow-accent-sm);
+}
+
+.label {
+  font-size: var(--font-size-lg);
+}

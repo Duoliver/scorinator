@@ -19,4 +19,10 @@ export type { InputProps } from './components/Input';
 export { Select } from './components/Select';
 export type { SelectProps, SelectOption } from './components/Select';
 
+export { Checkbox } from './components/Checkbox';
+export type { CheckboxProps } from './components/Checkbox';
+
+export { Switch } from './components/Switch';
+export type { SwitchProps } from './components/Switch';
+
 export { colors, aaaTextPairs } from './tokens';

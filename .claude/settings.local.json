@@ -7,7 +7,8 @@
       "Bash(lsof -ti:1420 -sTCP:LISTEN)",
       "Bash(xargs -r kill)",
       "Bash(node screenshot2.mjs)",
-      "Bash(curl -sf http://localhost:1420)"
+      "Bash(curl -sf http://localhost:1420)",
+      "Bash(node screenshot3.mjs)"
     ]
   }
 }

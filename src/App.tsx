@@ -1,5 +1,5 @@
-import type { JSX } from 'preact';
-import { useState } from 'preact/hooks';
+import type { JSX, RefObject } from 'preact';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import {
   Badge,
   Button,
@@ -12,6 +12,7 @@ import {
   Tabs,
   type TableColumn,
 } from './design-system';
+import type { FieldHandle } from './design-system/field';
 
 interface StandingsRow {
   id: string;
@@ -51,9 +52,31 @@ function Section({
   );
 }
 
+function PointsPreview({
+  pointsRef,
+}: {
+  pointsRef: RefObject<FieldHandle<string>>;
+}): JSX.Element {
+  const [display, setDisplay] = useState('');
+
+  useEffect(() => {
+    const handle = pointsRef.current;
+    if (!handle) return;
+    setDisplay(handle.getValue());
+    return handle.subscribe(setDisplay);
+  }, [pointsRef]);
+
+  return (
+    <span style={{ fontSize: '0.875rem', color: 'var(--color-fg-muted)' }}>
+      Currently: {display}
+    </span>
+  );
+}
+
 function App(): JSX.Element {
-  const [name, setName] = useState('');
-  const [pointsWin, setPointsWin] = useState('3');
+  const nameRef = useRef<FieldHandle<string>>(null);
+  const pointsRef = useRef<FieldHandle<string>>(null);
+  const [loggedValues, setLoggedValues] = useState<string | null>(null);
   const [format, setFormat] = useState('round-robin-two-way');
   const [includeByes, setIncludeByes] = useState(true);
   const [homeAdvantage, setHomeAdvantage] = useState(true);
@@ -94,21 +117,30 @@ function App(): JSX.Element {
       </Section>
 
       <Section title="Input">
-        <Input
-          label="Team name"
-          value={name}
-          onChange={setName}
-          placeholder="e.g. Salt Marsh United"
-        />
+        <Input label="Team name" placeholder="e.g. Salt Marsh United" ref={nameRef} />
         <Input
           label="Points (W)"
-          value={pointsWin}
-          onChange={setPointsWin}
+          defaultValue="3"
           type="number"
           min={0}
           max={10}
           step={1}
+          ref={pointsRef}
         />
+        <PointsPreview pointsRef={pointsRef} />
+        <Button
+          size="sm"
+          onClick={() =>
+            setLoggedValues(
+              `Team name: ${nameRef.current?.getValue() ?? ''} · Points (W): ${pointsRef.current?.getValue() ?? ''}`,
+            )
+          }
+        >
+          Log values
+        </Button>
+        <span style={{ fontSize: '0.875rem', color: 'var(--color-fg-muted)' }}>
+          {loggedValues ?? ''}
+        </span>
       </Section>
 
       <Section title="Select">

@@ -1,0 +1,7 @@
+{
+  "name": "@design-system/select",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./Select.tsx",
+  "types": "./Select.tsx"
+}

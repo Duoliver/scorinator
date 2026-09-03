@@ -16,4 +16,7 @@ export type { TabsProps, TabItem } from './components/Tabs';
 export { Input } from './components/Input';
 export type { InputProps } from './components/Input';
 
+export { Select } from './components/Select';
+export type { SelectProps, SelectOption } from './components/Select';
+
 export { colors, aaaTextPairs } from './tokens';

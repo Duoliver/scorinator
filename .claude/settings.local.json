@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx vitest *)",
+      "Bash(npm run *)",
+      "Bash(npx --yes playwright install chromium)",
+      "Bash(lsof -ti:1420 -sTCP:LISTEN)",
+      "Bash(xargs -r kill)"
+    ]
+  }
+}

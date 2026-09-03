@@ -5,4 +5,7 @@ export default interface InputProps {
   placeholder?: string;
   type?: 'text' | 'number' | 'email';
   id?: string;
+  min?: number;
+  max?: number;
+  step?: number;
 }

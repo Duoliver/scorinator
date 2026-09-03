@@ -30,4 +30,38 @@ describe('Input', () => {
     render(<Input value="3" onChange={() => {}} placeholder="W" />);
     expect(screen.getByPlaceholderText('W')).toBeInTheDocument();
   });
+
+  it('renders a numeric input with type="number"', () => {
+    render(<Input label="Points (W)" value="3" onChange={() => {}} type="number" />);
+    expect(screen.getByLabelText('Points (W)')).toHaveAttribute('type', 'number');
+  });
+
+  it('passes min/max/step through to the numeric input', () => {
+    render(
+      <Input
+        label="Points (W)"
+        value="3"
+        onChange={() => {}}
+        type="number"
+        min={0}
+        max={10}
+        step={1}
+      />,
+    );
+    const input = screen.getByLabelText('Points (W)');
+    expect(input).toHaveAttribute('min', '0');
+    expect(input).toHaveAttribute('max', '10');
+    expect(input).toHaveAttribute('step', '1');
+  });
+
+  it('calls onChange with the new value as a string for a numeric input', async () => {
+    const onChange = vi.fn();
+    function Controlled(): JSX.Element {
+      return <Input label="Points (W)" value="3" onChange={onChange} type="number" />;
+    }
+    render(<Controlled />);
+    await userEvent.clear(screen.getByLabelText('Points (W)'));
+    await userEvent.type(screen.getByLabelText('Points (W)'), '5');
+    expect(onChange).toHaveBeenLastCalledWith('5');
+  });
 });

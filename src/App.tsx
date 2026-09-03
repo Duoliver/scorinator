@@ -5,6 +5,7 @@ import {
   Button,
   Card,
   Input,
+  Select,
   Table,
   Tabs,
   type TableColumn,
@@ -50,6 +51,8 @@ function Section({
 
 function App(): JSX.Element {
   const [name, setName] = useState('');
+  const [pointsWin, setPointsWin] = useState('3');
+  const [format, setFormat] = useState('round-robin-two-way');
 
   return (
     <main
@@ -92,6 +95,27 @@ function App(): JSX.Element {
           value={name}
           onChange={setName}
           placeholder="e.g. Salt Marsh United"
+        />
+        <Input
+          label="Points (W)"
+          value={pointsWin}
+          onChange={setPointsWin}
+          type="number"
+          min={0}
+          max={10}
+          step={1}
+        />
+      </Section>
+
+      <Section title="Select">
+        <Select
+          label="Format"
+          value={format}
+          onChange={setFormat}
+          options={[
+            { label: 'Round robin (two-way)', value: 'round-robin-two-way' },
+            { label: 'Round robin (single duels)', value: 'round-robin-single' },
+          ]}
         />
       </Section>
 

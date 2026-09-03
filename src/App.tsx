@@ -73,13 +73,35 @@ function PointsPreview({
   );
 }
 
+function FormatPreview({
+  formatRef,
+}: {
+  formatRef: RefObject<FieldHandle<string>>;
+}): JSX.Element {
+  const [isSingleDuels, setIsSingleDuels] = useState(false);
+
+  useEffect(() => {
+    const handle = formatRef.current;
+    if (!handle) return;
+    const sync = (value: string): void => setIsSingleDuels(value === 'round-robin-single');
+    sync(handle.getValue());
+    return handle.subscribe(sync);
+  }, [formatRef]);
+
+  return (
+    <span style={{ fontSize: '0.875rem', color: 'var(--color-fg-muted)' }}>
+      {isSingleDuels ? 'Single-duels mode: each pair meets once, not twice.' : ''}
+    </span>
+  );
+}
+
 function App(): JSX.Element {
   const nameRef = useRef<FieldHandle<string>>(null);
   const pointsRef = useRef<FieldHandle<string>>(null);
+  const formatRef = useRef<FieldHandle<string>>(null);
+  const includeByesRef = useRef<FieldHandle<boolean>>(null);
+  const homeAdvantageRef = useRef<FieldHandle<boolean>>(null);
   const [loggedValues, setLoggedValues] = useState<string | null>(null);
-  const [format, setFormat] = useState('round-robin-two-way');
-  const [includeByes, setIncludeByes] = useState(true);
-  const [homeAdvantage, setHomeAdvantage] = useState(true);
 
   return (
     <main
@@ -146,21 +168,22 @@ function App(): JSX.Element {
       <Section title="Select">
         <Select
           label="Format"
-          value={format}
-          onChange={setFormat}
+          defaultValue="round-robin-two-way"
           options={[
             { label: 'Round robin (two-way)', value: 'round-robin-two-way' },
             { label: 'Round robin (single duels)', value: 'round-robin-single' },
           ]}
+          ref={formatRef}
         />
+        <FormatPreview formatRef={formatRef} />
       </Section>
 
       <Section title="Checkbox">
-        <Checkbox label="Include byes" checked={includeByes} onChange={setIncludeByes} />
+        <Checkbox label="Include byes" defaultChecked ref={includeByesRef} />
       </Section>
 
       <Section title="Switch">
-        <Switch label="Home advantage" checked={homeAdvantage} onChange={setHomeAdvantage} />
+        <Switch label="Home advantage" defaultChecked ref={homeAdvantageRef} />
       </Section>
 
       <Section title="Card">

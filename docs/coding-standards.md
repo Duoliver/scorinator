@@ -50,3 +50,14 @@ export function Badge({ children, tone = 'neutral' }: BadgeProps) {
 ```
 
 A generic component's props interface is still a plain `export default interface Props<Row> { ... }` in `types.ts` — TypeScript allows a generic default export the same way (see `design-system/components/Table/types.ts` for a real example: `TableProps<Row>` as the default export, `TableColumn<Row>` as a named one it depends on). Types used only internally by `types.ts` itself are named exports there, re-exported from the component file the same way only if a consumer actually needs them.
+
+## No `!important` in CSS
+
+`!important` is prohibited in this codebase's stylesheets. It's a specificity escape hatch that hides the real conflict instead of resolving it, and it silently outranks any rule a later change adds — including a future `!important` someone reaches for to fight the first one.
+
+When two rules of equal specificity need to apply in a particular state (e.g. a pseudo-class combo like `:hover:active`, or a variant class meant to override a size class), resolve it structurally instead:
+
+- Match the specificity of the rule you need to beat, and rely on source order (later wins on a tie) — place your rule after it.
+- Or raise specificity deliberately (e.g. an extra class or attribute selector) rather than forcing it with `!important`.
+
+See `design-system/components/Button/Button.module.css` for a worked example: `.ghost`'s box-shadow suppression is restated in `.ghost:hover` and `.ghost:active` (matching the specificity of the size-class hover/active rules it must override) and placed after them in the file, instead of using `!important`.

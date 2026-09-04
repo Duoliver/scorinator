@@ -71,6 +71,66 @@ describe('calculateStandings', () => {
     expect(table.map((r) => r.team)).toEqual(['Bravo', 'Alpha', 'Delta', 'Charlie']);
   });
 
+  it('breaks a full points/GD/GF tie with a single head-to-head win', () => {
+    const roster = ['Bravo', 'Alpha', 'Charlie', 'Delta'];
+    const results: MatchResult<string>[] = [
+      { home: 'Alpha', away: 'Bravo', homeGoals: 1, awayGoals: 0 }, // only leg played so far: Alpha win
+      { home: 'Alpha', away: 'Charlie', homeGoals: 1, awayGoals: 1 },
+      { home: 'Bravo', away: 'Charlie', homeGoals: 2, awayGoals: 0 },
+      { home: 'Bravo', away: 'Delta', homeGoals: 0, awayGoals: 0 },
+    ];
+    const table = calculateStandings(roster, results);
+    // Alpha and Bravo both finish on 4 points, GD 1, GF 2 — a full tie
+    // ahead of head-to-head. Alpha's sole head-to-head win puts it first,
+    // even though Bravo comes first in the roster.
+    expect(row('Alpha', table).points).toBe(row('Bravo', table).points);
+    expect(row('Alpha', table).goalDifference).toBe(row('Bravo', table).goalDifference);
+    expect(row('Alpha', table).goalsFor).toBe(row('Bravo', table).goalsFor);
+    expect(table.map((r) => r.team)).toEqual(['Alpha', 'Bravo', 'Delta', 'Charlie']);
+  });
+
+  it('breaks a full points/GD/GF tie with aggregate head-to-head goals, after a 1-1 split', () => {
+    const roster = ['Bravo', 'Alpha', 'Charlie', 'Delta'];
+    const results: MatchResult<string>[] = [
+      { home: 'Alpha', away: 'Bravo', homeGoals: 3, awayGoals: 1 }, // leg 1: Alpha win
+      { home: 'Bravo', away: 'Alpha', homeGoals: 2, awayGoals: 1 }, // leg 2: Bravo win
+      { home: 'Alpha', away: 'Charlie', homeGoals: 2, awayGoals: 1 },
+      { home: 'Bravo', away: 'Delta', homeGoals: 3, awayGoals: 0 },
+    ];
+    const table = calculateStandings(roster, results);
+    // Both finish on 6 points, GD 2, GF 6 — a full tie, and a 1-1
+    // head-to-head split. Alpha scored 4 against Bravo, Bravo scored 3
+    // against Alpha, so Alpha's higher aggregate puts it first.
+    expect(row('Alpha', table).points).toBe(row('Bravo', table).points);
+    expect(row('Alpha', table).goalDifference).toBe(row('Bravo', table).goalDifference);
+    expect(row('Alpha', table).goalsFor).toBe(row('Bravo', table).goalsFor);
+    expect(table.map((r) => r.team)).toEqual(['Alpha', 'Bravo', 'Charlie', 'Delta']);
+  });
+
+  it('falls through to roster order after a 1-1 split with equal aggregate goals', () => {
+    const roster = ['Bravo', 'Alpha', 'Charlie', 'Delta'];
+    const results: MatchResult<string>[] = [
+      { home: 'Alpha', away: 'Bravo', homeGoals: 2, awayGoals: 1 }, // leg 1: Alpha win
+      { home: 'Bravo', away: 'Alpha', homeGoals: 2, awayGoals: 1 }, // leg 2: Bravo win
+    ];
+    const table = calculateStandings(roster, results);
+    // Both finish 3 points, GD 0, GF 3, a 1-1 split, and an equal 3-3
+    // aggregate. Nothing left to break the tie except roster order.
+    expect(row('Alpha', table).points).toBe(row('Bravo', table).points);
+    expect(table.map((r) => r.team).slice(0, 2)).toEqual(['Bravo', 'Alpha']);
+  });
+
+  it('falls through to roster order when the two teams have not played each other yet', () => {
+    const roster = ['Bravo', 'Alpha', 'Charlie', 'Delta'];
+    const results: MatchResult<string>[] = [
+      { home: 'Alpha', away: 'Charlie', homeGoals: 2, awayGoals: 0 },
+      { home: 'Bravo', away: 'Delta', homeGoals: 2, awayGoals: 0 },
+    ];
+    const table = calculateStandings(roster, results);
+    expect(row('Alpha', table).points).toBe(row('Bravo', table).points);
+    expect(table.map((r) => r.team).slice(0, 2)).toEqual(['Bravo', 'Alpha']);
+  });
+
   it('reflects an updated result set on recalculation, as a re-scorinate would', () => {
     const before: MatchResult<string>[] = [{ home: 'Alpha', away: 'Bravo', homeGoals: 1, awayGoals: 1 }];
     const after: MatchResult<string>[] = [{ home: 'Alpha', away: 'Bravo', homeGoals: 3, awayGoals: 0 }];

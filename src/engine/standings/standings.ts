@@ -11,6 +11,8 @@ export const DEFAULT_POINTS_CONFIG: Readonly<PointsConfig> = { win: 3, draw: 1, 
  * the table reflects that snapshot. That is what "live update" (MVP1 spec)
  * and re-scorinate's "just overwrite + recalc" (Task 7) come down to at
  * this layer — there is no standings-side state to keep in sync by hand.
+ * The same `results` list also backs the head-to-head tie-break below —
+ * standings needs no state beyond what this call already receives.
  */
 export function calculateStandings<TeamId>(
   teams: readonly TeamId[],
@@ -36,7 +38,7 @@ export function calculateStandings<TeamId>(
     applyResult(rows, result, pointsConfig);
   }
 
-  return [...rows.values()].sort((a, b) => compareRows(a, b, teams));
+  return [...rows.values()].sort((a, b) => compareRows(a, b, teams, results));
 }
 
 function applyResult<TeamId>(
@@ -80,15 +82,58 @@ function applyResult<TeamId>(
   }
 }
 
-// Points desc, then goal difference desc, then goals for desc, then the
-// team's position in the input roster — deterministic, no RNG involved.
+// Points desc, then goal difference desc, then goals for desc, then head
+// to head, then the team's position in the input roster — deterministic,
+// no RNG involved.
 function compareRows<TeamId>(
   a: StandingsRow<TeamId>,
   b: StandingsRow<TeamId>,
-  teams: readonly TeamId[]
+  teams: readonly TeamId[],
+  results: readonly MatchResult<TeamId>[]
 ): number {
   if (b.points !== a.points) return b.points - a.points;
   if (b.goalDifference !== a.goalDifference) return b.goalDifference - a.goalDifference;
   if (b.goalsFor !== a.goalsFor) return b.goalsFor - a.goalsFor;
+
+  const headToHead = compareHeadToHead(a.team, b.team, results);
+  if (headToHead !== 0) return headToHead;
+
   return teams.indexOf(a.team) - teams.indexOf(b.team);
+}
+
+// Direct confrontation: only reached once points, goal difference, and
+// goals for are already tied. Looks at the matches played between exactly
+// these two teams (none, one, or two in an ongoing two-way round robin).
+// Whoever won more of those matches ranks first. A 0-0 or 1-1 split on
+// wins falls back to the aggregate goals each scored against the other,
+// the same number as their aggregate goal difference against each other
+// (their conceded goals are, by definition, the other's scored goals in
+// this closed two-team subset). Still tied after that: fall through to
+// the roster-order tie-break above.
+function compareHeadToHead<TeamId>(
+  teamA: TeamId,
+  teamB: TeamId,
+  results: readonly MatchResult<TeamId>[]
+): number {
+  let winsA = 0;
+  let winsB = 0;
+  let goalsA = 0;
+  let goalsB = 0;
+
+  for (const result of results) {
+    const isAHome = result.home === teamA && result.away === teamB;
+    const isBHome = result.home === teamB && result.away === teamA;
+    if (!isAHome && !isBHome) continue;
+
+    const [goalsForA, goalsForB] = isAHome
+      ? [result.homeGoals, result.awayGoals]
+      : [result.awayGoals, result.homeGoals];
+    goalsA += goalsForA;
+    goalsB += goalsForB;
+    if (goalsForA > goalsForB) winsA++;
+    else if (goalsForA < goalsForB) winsB++;
+  }
+
+  if (winsA !== winsB) return winsB - winsA;
+  return goalsB - goalsA;
 }

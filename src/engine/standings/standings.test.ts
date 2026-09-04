@@ -26,6 +26,12 @@ describe('calculateStandings', () => {
         points: 0,
       });
     }
+    // With nothing to separate any team, all four share position 1: a
+    // single tied block, ordered by roster, only the first team showing
+    // the number.
+    expect(table.map((r) => r.sortOrder)).toEqual([1, 2, 3, 4]);
+    expect(table.map((r) => r.position)).toEqual([1, 1, 1, 1]);
+    expect(table.map((r) => r.positionText)).toEqual(['1', '-', '-', '-']);
   });
 
   it('awards the default 3/1/0 points for a win, a draw, and a loss', () => {
@@ -69,6 +75,12 @@ describe('calculateStandings', () => {
     ];
     const table = calculateStandings(TEAMS, results);
     expect(table.map((r) => r.team)).toEqual(['Bravo', 'Alpha', 'Delta', 'Charlie']);
+    // Goals for tells Bravo and Alpha apart, so they are not a tied block:
+    // every team gets its own sortOrder, matching position, and a numeric
+    // positionText.
+    expect(table.map((r) => r.sortOrder)).toEqual([1, 2, 3, 4]);
+    expect(table.map((r) => r.position)).toEqual([1, 2, 3, 4]);
+    expect(table.map((r) => r.positionText)).toEqual(['1', '2', '3', '4']);
   });
 
   it('breaks a full points/GD/GF tie with a single head-to-head win', () => {
@@ -87,6 +99,12 @@ describe('calculateStandings', () => {
     expect(row('Alpha', table).goalDifference).toBe(row('Bravo', table).goalDifference);
     expect(row('Alpha', table).goalsFor).toBe(row('Bravo', table).goalsFor);
     expect(table.map((r) => r.team)).toEqual(['Alpha', 'Bravo', 'Delta', 'Charlie']);
+    // Head-to-head is itself a footballing criterion, so it genuinely
+    // separates Alpha and Bravo — they are not a tied block, and each
+    // gets its own position.
+    expect(row('Alpha', table).position).toBe(1);
+    expect(row('Bravo', table).position).toBe(2);
+    expect(row('Bravo', table).positionText).toBe('2');
   });
 
   it('breaks a full points/GD/GF tie with aggregate head-to-head goals, after a 1-1 split', () => {
@@ -115,9 +133,17 @@ describe('calculateStandings', () => {
     ];
     const table = calculateStandings(roster, results);
     // Both finish 3 points, GD 0, GF 3, a 1-1 split, and an equal 3-3
-    // aggregate. Nothing left to break the tie except roster order.
+    // aggregate. Nothing left to break the tie except roster order, so
+    // Bravo and Alpha are a genuine tied block: same position, and only
+    // Bravo (first in the block) gets a numeric positionText.
     expect(row('Alpha', table).points).toBe(row('Bravo', table).points);
     expect(table.map((r) => r.team).slice(0, 2)).toEqual(['Bravo', 'Alpha']);
+    expect(row('Bravo', table).sortOrder).toBe(1);
+    expect(row('Alpha', table).sortOrder).toBe(2);
+    expect(row('Bravo', table).position).toBe(1);
+    expect(row('Alpha', table).position).toBe(1);
+    expect(row('Bravo', table).positionText).toBe('1');
+    expect(row('Alpha', table).positionText).toBe('-');
   });
 
   it('falls through to roster order when the two teams have not played each other yet', () => {
@@ -129,6 +155,19 @@ describe('calculateStandings', () => {
     const table = calculateStandings(roster, results);
     expect(row('Alpha', table).points).toBe(row('Bravo', table).points);
     expect(table.map((r) => r.team).slice(0, 2)).toEqual(['Bravo', 'Alpha']);
+  });
+
+  it('groups three fully tied teams into one position, with only the first showing a number', () => {
+    const roster = ['Charlie', 'Bravo', 'Alpha', 'Delta', 'Echo'];
+    // Alpha, Bravo, and Charlie play no one, so all three stay level at
+    // 0 points, 0 goal difference, 0 goals for. Delta beats Echo, so
+    // Delta sits above the trio and Echo sits below it.
+    const results: MatchResult<string>[] = [{ home: 'Delta', away: 'Echo', homeGoals: 1, awayGoals: 0 }];
+    const table = calculateStandings(roster, results);
+    expect(table.map((r) => r.team)).toEqual(['Delta', 'Charlie', 'Bravo', 'Alpha', 'Echo']);
+    expect(table.map((r) => r.sortOrder)).toEqual([1, 2, 3, 4, 5]);
+    expect(table.map((r) => r.position)).toEqual([1, 2, 2, 2, 5]);
+    expect(table.map((r) => r.positionText)).toEqual(['1', '2', '-', '-', '5']);
   });
 
   it('reflects an updated result set on recalculation, as a re-scorinate would', () => {

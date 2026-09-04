@@ -31,6 +31,9 @@ export function calculateStandings<TeamId>(
       goalsAgainst: 0,
       goalDifference: 0,
       points: 0,
+      sortOrder: 0,
+      position: 0,
+      positionText: '',
     });
   }
 
@@ -38,7 +41,36 @@ export function calculateStandings<TeamId>(
     applyResult(rows, result, pointsConfig);
   }
 
-  return [...rows.values()].sort((a, b) => compareRows(a, b, teams, results));
+  const sorted = [...rows.values()].sort((a, b) => compareRows(a, b, teams, results));
+  assignPositions(sorted, results);
+  return sorted;
+}
+
+/**
+ * `sortOrder` is the row's place in the table, 1 upward, always unique —
+ * roster order is the tie-break of last resort, so no two rows ever share
+ * it. `position` is the standings rank a user would read off the table:
+ * teams level on every footballing criterion (points, goal difference,
+ * goals for, head-to-head) share one `position`, the way a real league
+ * table shows joint places. `positionText` is `position` as a string on
+ * the first row of a tied group, and `'-'` on the rest of that group, so
+ * a rendered table does not repeat the same number down a tied block.
+ */
+function assignPositions<TeamId>(
+  sorted: StandingsRow<TeamId>[],
+  results: readonly MatchResult<TeamId>[]
+): void {
+  let position = 1;
+  sorted.forEach((row, index) => {
+    const sortOrder = index + 1;
+    const previous = sorted[index - 1];
+    const tiedWithPrevious = index > 0 && compareByStanding(previous, row, results) === 0;
+    if (!tiedWithPrevious) position = sortOrder;
+
+    row.sortOrder = sortOrder;
+    row.position = position;
+    row.positionText = sortOrder === position ? String(position) : '-';
+  });
 }
 
 function applyResult<TeamId>(
@@ -84,21 +116,31 @@ function applyResult<TeamId>(
 
 // Points desc, then goal difference desc, then goals for desc, then head
 // to head, then the team's position in the input roster — deterministic,
-// no RNG involved.
+// no RNG involved. Roster order is a display tie-break, not a footballing
+// one, so it lives here and not in `compareByStanding` below.
 function compareRows<TeamId>(
   a: StandingsRow<TeamId>,
   b: StandingsRow<TeamId>,
   teams: readonly TeamId[],
   results: readonly MatchResult<TeamId>[]
 ): number {
+  const byStanding = compareByStanding(a, b, results);
+  if (byStanding !== 0) return byStanding;
+  return teams.indexOf(a.team) - teams.indexOf(b.team);
+}
+
+// The footballing criteria only: points, goal difference, goals for, head
+// to head. Two rows compare equal here exactly when they share one
+// `position` — this is what `assignPositions` above checks for.
+function compareByStanding<TeamId>(
+  a: StandingsRow<TeamId>,
+  b: StandingsRow<TeamId>,
+  results: readonly MatchResult<TeamId>[]
+): number {
   if (b.points !== a.points) return b.points - a.points;
   if (b.goalDifference !== a.goalDifference) return b.goalDifference - a.goalDifference;
   if (b.goalsFor !== a.goalsFor) return b.goalsFor - a.goalsFor;
-
-  const headToHead = compareHeadToHead(a.team, b.team, results);
-  if (headToHead !== 0) return headToHead;
-
-  return teams.indexOf(a.team) - teams.indexOf(b.team);
+  return compareHeadToHead(a.team, b.team, results);
 }
 
 // Direct confrontation: only reached once points, goal difference, and

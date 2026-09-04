@@ -12,6 +12,8 @@
 
 `calculateStandings` takes the full roster, so a team with zero played matches still gets a zeroed row, not a missing one. It takes the full result set too, not one result at a time. This is a pure recompute, not a running total. Call it again with the current results whenever a match gets scorinated or re-scorinated, and the table reflects that snapshot. The "live update" line in the spec, and the future re-scorinate step in Task 7 ("just overwrite and recalculate"), both come down to calling this function again at this layer.
 
+A group of rows tied on points, goal difference, and goals for is resolved by `computeMiniLeague`. This builds a fresh points/goal-difference/goals-for table, only from the matches among the members of that group, using the same `pointsConfig`. This is the method UEFA, La Liga, and Serie A use for a group stage or a league placing. It replaces an earlier, narrower two-team-only head-to-head check. See "Decisions made" below for why.
+
 ## Test approach
 
 Unit tests only, per the `engine/` row in the layer table of `tdd.md`. `standings.test.ts` covers:
@@ -20,32 +22,37 @@ Unit tests only, per the `engine/` row in the layer table of `tdd.md`. `standing
 2. The default 3/1/0 points apply for a win, a draw, and a loss.
 3. A custom `pointsConfig`, 2/1/0, overrides the default.
 4. Played count, goals for and against, and goal difference track correctly across two matches for one team.
-5. Sort order: points descending, then goal difference, then goals for, then head-to-head, then roster order. Worked out by hand, then checked against the table.
-6. A full points/GD/GF tie breaks on a single head-to-head win, even against roster order.
-7. A full points/GD/GF tie, with a 1-1 head-to-head split, breaks on aggregate head-to-head goals.
-8. A full points/GD/GF tie, with a 1-1 split and equal aggregate goals, falls through to roster order.
-9. A full points/GD/GF tie, with zero matches played between the two teams, falls through to roster order.
+5. Sort order: points descending, then goal difference, then goals for, then the mini-league of the tied group, then roster order. Worked out by hand, then checked against the table.
+6. A full points/GD/GF tie between two teams breaks on their mini-league, decided by their single played match, even against roster order.
+7. A full points/GD/GF tie between two teams, with their two matches split 1-1, breaks on the goal difference inside their mini-league.
+8. A full points/GD/GF tie between two teams, split 1-1 with an equal mini-league goal difference too, falls through to roster order.
+9. A full points/GD/GF tie between two teams, with zero matches played between them, falls through to roster order.
 10. With no results, all four teams share one `position`, in one `sortOrder`d block, and only the first gets a numeric `positionText`.
 11. Goals for alone tells two teams apart, so each gets its own `position`, and every `positionText` is numeric.
-12. Head-to-head, on wins or on aggregate goals, is itself a footballing criterion, so it splits two teams into separate positions, not a shared one.
-13. A genuine tie, unresolved even by head-to-head, gives two teams the same `position`, with `positionText` `'-'` on the second.
-14. Three fully tied teams share one `position` as a block, with a numeric `positionText` only on the first of the three.
-15. Recalculating with an updated result set changes the standings, the way a re-scorinate would.
-16. A result that names a team outside the given roster throws.
+12. A mini-league that resolves two teams, on points or on goal difference, is itself a footballing criterion, so it splits them into separate positions, not a shared one.
+13. A genuine tie, unresolved even by the two teams' own mini-league, gives them the same `position`, with `positionText` `'-'` on the second.
+14. Three fully tied teams, none of whom have played each other, share one `position` as a block, with a numeric `positionText` only on the first of the three.
+15. A genuine 3-way head-to-head cycle (A beats B, B beats C, C beats A, level margins) is resolved by the mini-league among just the three of them, not split arbitrarily. The mini-league reproduces the same cycle, so the three stay one tied block, and a fourth, unrelated team stays clearly separate above and a fifth clearly separate below.
+16. Recalculating with an updated result set changes the standings, the way a re-scorinate would.
+17. A result that names a team outside the given roster throws.
 
-16 new tests, and all pass, 123 total across the suite. `npm run type-check` and `npm run lint` are both clean.
+17 new tests, and all pass, 124 total across the suite. `npm run type-check` and `npm run lint` are both clean.
 
 ## Decisions made
 
 - **The tie-break sort order sits outside the spec.** This is an open item, flagged the same way as the range table in Task 2 and the N < 2 guard in Task 3. The spec only says points are configurable, and defaults to 3/1/0. It says nothing about how to break a tie.
 
-  This session first chose the standard football convention: points, then goal difference, then goals for, then roster order. The user then asked for a head-to-head step ahead of roster order: points, then goal difference, then goals for, then the result of the matches between the two tied teams (most wins; a 1-1 split or no matches falls to aggregate goals between them), then roster order as the final fallback. `compareRows` and `compareHeadToHead` in `standings.ts` are the two places to change this, and the sort-order tests would need matching updates. Roster order stays the last resort for now; the user flagged it for a closer look later.
+  This session first chose the standard football convention: points, then goal difference, then goals for, then roster order. The user then asked for a head-to-head step ahead of roster order, checked pairwise between exactly two teams: most wins in their own matches decides, a 1-1 split or no matches falls to their aggregate goals against each other, then roster order as the final fallback. Roster order stays the last resort for now. The user flagged it for a closer look later.
 
-- **`StandingsRow` now carries `sortOrder`, `position`, and `positionText`, per the user's request.** `sortOrder` is the row's place in the table, 1 upward, always unique, since roster order is the tie-break of last resort. `position` is the standings rank a user would read off the table: rows level on every footballing criterion (points, goal difference, goals for, head-to-head) share one `position`, the way a real league table shows joint places. `positionText` is `position` as a string on the first row of a tied block, and `'-'` on the rest, so a rendered table does not repeat the same number down that block. The user asked for a better name than "order" for the first field; this session proposed `sortOrder`, to read clearly against `position` (the tied, footballing rank) and `positionText` (the display string). Say the word if a different name reads better.
+- **`StandingsRow` now carries `sortOrder`, `position`, and `positionText`, at the request of the user.** `sortOrder` is the place of the row in the table, 1 upward, always unique, since roster order is the tie-break of last resort. `position` is the standings rank a user would read off the table. Rows level on every footballing criterion share one `position`, the way a real league table shows joint places. `positionText` is `position` as a string on the first row of a tied block, and `'-'` on the rest. A rendered table then does not repeat the same number down that block. The user asked for a better name than "order" for the first field. This session proposed `sortOrder`, to read clearly against `position` (the tied, footballing rank) and `positionText` (the display string). Say the word if a different name reads better.
 
-  A team split from another only by head-to-head, not by points, goal difference, or goals for, still gets its own distinct `position`, not a shared one. Head-to-head is itself a footballing criterion here, matching how a league that uses head-to-head as a tiebreaker does not print those two teams as "joint" in the table.
+- **Replaced the pairwise head-to-head check with a mini-league, to fix a real bug in the pairwise version.** The user asked how professional leagues resolve a head-to-head cycle among three or more tied teams, for example A beats B, B beats C, and C beats A in their own matches, with no consistent pairwise order. Two things followed from that conversation:
 
-  **Known limitation, not fixed here:** the position grouping assumes the tied set of teams stays consistent (transitive) under the football-criteria comparator. With three or more teams level on points, goal difference, and goals for, a head-to-head result cycle is possible in theory, for example Team A beats Team B, Team B beats Team C, and Team C beats Team A in their own head-to-head matches. In that rare case, the comparator is not a consistent ordering for that group, and the block detection in `assignPositions` may not group or split them the way a human would expect. A correct fix needs a proper mini-league resolution among the tied group, which this task does not build. Flagging it here rather than leaving it undocumented.
+  First, a real bug in the original design: `assignPositions` only checked each row against the one row before it in the sort, on the assumption that "tied" is transitive. A cycle breaks that assumption. `Array.sort` has no fixed rule for a comparator with no consistent order, so a cyclic group could give a different table order across two JS engines, or across two orderings of the same roster, for the exact same season data. That is a determinism bug, not only a display one.
+
+  Second, the standard fix real leagues use: UEFA, La Liga, and Serie A build a fresh mini-table from only the matches among the tied teams. It uses the same points-then-goal-difference-then-goals-for math, on that smaller set. This session built exactly that, in `computeMiniLeague`. It replaces `compareHeadToHead` outright, not only for the cyclic case. A mini-league's inputs are plain numbers, so comparing them is always transitive, and the old adjacent-row bug cannot recur. All 123 prior tests still passed unchanged after the rewrite, since a two-team mini-league reduces to the same ranking the old pairwise check gave for a genuine pair. One new test adds a genuine 3-way cycle, confirming the three land on one shared position instead of an arbitrary split.
+
+  **Simplification, flagged rather than hidden:** this runs one mini-league pass per tied group. A professional competition instead recurses. If a mini-league separates part of a group but not all of it, it rebuilds a smaller mini-league from only the remainder still tied. This matters because the numbers from the first pass still include matches against the now-separated team. This task does not build that recursion, nor the further tie-breaks (fair play points, a draw of lots) a real competition falls back to after its mini-league. A group still level after one mini-league pass here shares one `position`, and falls to roster order.
 
 - **A result for a team outside the given roster throws a `RangeError`.** The reasoning matches the N < 2 guard in Task 3: a silent skip could hide a real caller bug, such as a result that names a team removed from a league.
 

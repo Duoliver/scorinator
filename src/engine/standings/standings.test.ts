@@ -170,6 +170,32 @@ describe('calculateStandings', () => {
     expect(table.map((r) => r.positionText)).toEqual(['1', '2', '-', '-', '5']);
   });
 
+  it('resolves a genuine 3-way head-to-head cycle via the mini-league, not an arbitrary split', () => {
+    const roster = ['Charlie', 'Bravo', 'Alpha', 'Delta', 'Echo'];
+    const results: MatchResult<string>[] = [
+      // A beats B, B beats C, C beats A: a head-to-head cycle with no
+      // pairwise "most wins" order. Equal margins keep the three of them
+      // level on points, goal difference, and goals for, even overall,
+      // since none of them plays outside the trio.
+      { home: 'Alpha', away: 'Bravo', homeGoals: 1, awayGoals: 0 },
+      { home: 'Bravo', away: 'Charlie', homeGoals: 1, awayGoals: 0 },
+      { home: 'Charlie', away: 'Alpha', homeGoals: 1, awayGoals: 0 },
+      { home: 'Delta', away: 'Echo', homeGoals: 5, awayGoals: 0 }, // clear of the trio, above and below it
+    ];
+    const table = calculateStandings(roster, results);
+    expect(row('Alpha', table).points).toBe(row('Bravo', table).points);
+    expect(row('Bravo', table).points).toBe(row('Charlie', table).points);
+    expect(row('Alpha', table).goalDifference).toBe(row('Bravo', table).goalDifference);
+    expect(row('Bravo', table).goalDifference).toBe(row('Charlie', table).goalDifference);
+    // The mini-league among just Alpha, Bravo, and Charlie reproduces the
+    // same cycle, so it cannot separate them either — all three land on
+    // one shared position, ordered among themselves by roster order.
+    expect(table.map((r) => r.team)).toEqual(['Delta', 'Charlie', 'Bravo', 'Alpha', 'Echo']);
+    expect(table.map((r) => r.sortOrder)).toEqual([1, 2, 3, 4, 5]);
+    expect(table.map((r) => r.position)).toEqual([1, 2, 2, 2, 5]);
+    expect(table.map((r) => r.positionText)).toEqual(['1', '2', '-', '-', '5']);
+  });
+
   it('reflects an updated result set on recalculation, as a re-scorinate would', () => {
     const before: MatchResult<string>[] = [{ home: 'Alpha', away: 'Bravo', homeGoals: 1, awayGoals: 1 }];
     const after: MatchResult<string>[] = [{ home: 'Alpha', away: 'Bravo', homeGoals: 3, awayGoals: 0 }];

@@ -41,36 +41,7 @@ export function calculateStandings<TeamId>(
     applyResult(rows, result, pointsConfig);
   }
 
-  const sorted = [...rows.values()].sort((a, b) => compareRows(a, b, teams, results));
-  assignPositions(sorted, results);
-  return sorted;
-}
-
-/**
- * `sortOrder` is the row's place in the table, 1 upward, always unique —
- * roster order is the tie-break of last resort, so no two rows ever share
- * it. `position` is the standings rank a user would read off the table:
- * teams level on every footballing criterion (points, goal difference,
- * goals for, head-to-head) share one `position`, the way a real league
- * table shows joint places. `positionText` is `position` as a string on
- * the first row of a tied group, and `'-'` on the rest of that group, so
- * a rendered table does not repeat the same number down a tied block.
- */
-function assignPositions<TeamId>(
-  sorted: StandingsRow<TeamId>[],
-  results: readonly MatchResult<TeamId>[]
-): void {
-  let position = 1;
-  sorted.forEach((row, index) => {
-    const sortOrder = index + 1;
-    const previous = sorted[index - 1];
-    const tiedWithPrevious = index > 0 && compareByStanding(previous, row, results) === 0;
-    if (!tiedWithPrevious) position = sortOrder;
-
-    row.sortOrder = sortOrder;
-    row.position = position;
-    row.positionText = sortOrder === position ? String(position) : '-';
-  });
+  return orderAndPosition([...rows.values()], teams, results, pointsConfig);
 }
 
 function applyResult<TeamId>(
@@ -114,68 +85,149 @@ function applyResult<TeamId>(
   }
 }
 
-// Points desc, then goal difference desc, then goals for desc, then head
-// to head, then the team's position in the input roster — deterministic,
-// no RNG involved. Roster order is a display tie-break, not a footballing
-// one, so it lives here and not in `compareByStanding` below.
-function compareRows<TeamId>(
-  a: StandingsRow<TeamId>,
-  b: StandingsRow<TeamId>,
+/**
+ * Orders the table and fills in `sortOrder`, `position`, and
+ * `positionText`.
+ *
+ * A group of rows level on points, goal difference, and goals for is
+ * resolved by a mini-league: a fresh points/goal-difference/goals-for
+ * table, built only from the matches played among that group's own
+ * members, per `pointsConfig` — the same method UEFA, La Liga, and Serie A
+ * use for a group stage or a league placing. Comparing two teams at a time
+ * by raw head-to-head wins does not generalize past two teams: a 3-or-more
+ * way head-to-head cycle (A beats B, B beats C, C beats A) has no
+ * consistent pairwise order, so a pairwise comparator used inside a sort
+ * is not reliable there. The mini-league sidesteps this because its inputs
+ * — points, goal difference, goals for, all counted only within the group
+ * — are plain numbers, and comparing numbers is always transitive. A group
+ * still level after its own mini-league shares one `position`, ordered
+ * among themselves by roster order, the tie-break of last resort.
+ *
+ * This runs one mini-league pass per group, not the fully recursive
+ * version a professional competition uses when a mini-league partially
+ * — but not fully — separates a group (which then rebuilds a smaller
+ * mini-league from only the still-tied remainder). See the Task 4 decision
+ * log for what that would take and why this task does not build it.
+ */
+function orderAndPosition<TeamId>(
+  rows: StandingsRow<TeamId>[],
   teams: readonly TeamId[],
-  results: readonly MatchResult<TeamId>[]
-): number {
-  const byStanding = compareByStanding(a, b, results);
-  if (byStanding !== 0) return byStanding;
-  return teams.indexOf(a.team) - teams.indexOf(b.team);
-}
+  results: readonly MatchResult<TeamId>[],
+  pointsConfig: PointsConfig
+): StandingsRow<TeamId>[] {
+  const byRoster = (a: StandingsRow<TeamId>, b: StandingsRow<TeamId>): number =>
+    teams.indexOf(a.team) - teams.indexOf(b.team);
 
-// The footballing criteria only: points, goal difference, goals for, head
-// to head. Two rows compare equal here exactly when they share one
-// `position` — this is what `assignPositions` above checks for.
-function compareByStanding<TeamId>(
-  a: StandingsRow<TeamId>,
-  b: StandingsRow<TeamId>,
-  results: readonly MatchResult<TeamId>[]
-): number {
-  if (b.points !== a.points) return b.points - a.points;
-  if (b.goalDifference !== a.goalDifference) return b.goalDifference - a.goalDifference;
-  if (b.goalsFor !== a.goalsFor) return b.goalsFor - a.goalsFor;
-  return compareHeadToHead(a.team, b.team, results);
-}
+  const ordered: StandingsRow<TeamId>[] = [];
+  let sortOrder = 0;
 
-// Direct confrontation: only reached once points, goal difference, and
-// goals for are already tied. Looks at the matches played between exactly
-// these two teams (none, one, or two in an ongoing two-way round robin).
-// Whoever won more of those matches ranks first. A 0-0 or 1-1 split on
-// wins falls back to the aggregate goals each scored against the other,
-// the same number as their aggregate goal difference against each other
-// (their conceded goals are, by definition, the other's scored goals in
-// this closed two-team subset). Still tied after that: fall through to
-// the roster-order tie-break above.
-function compareHeadToHead<TeamId>(
-  teamA: TeamId,
-  teamB: TeamId,
-  results: readonly MatchResult<TeamId>[]
-): number {
-  let winsA = 0;
-  let winsB = 0;
-  let goalsA = 0;
-  let goalsB = 0;
+  for (const group of groupBy(rows, compareByMainCriteria, byRoster)) {
+    if (group.length === 1) {
+      const row = group[0];
+      sortOrder += 1;
+      row.sortOrder = sortOrder;
+      row.position = sortOrder;
+      row.positionText = String(sortOrder);
+      ordered.push(row);
+      continue;
+    }
 
-  for (const result of results) {
-    const isAHome = result.home === teamA && result.away === teamB;
-    const isBHome = result.home === teamB && result.away === teamA;
-    if (!isAHome && !isBHome) continue;
+    const miniLeague = computeMiniLeague(
+      group.map((row) => row.team),
+      results,
+      pointsConfig
+    );
+    const compareByMiniLeague = (a: StandingsRow<TeamId>, b: StandingsRow<TeamId>): number => {
+      const miniA = miniLeague.get(a.team);
+      const miniB = miniLeague.get(b.team);
+      if (!miniA || !miniB) throw new RangeError('mini-league is missing a group member.');
+      if (miniB.points !== miniA.points) return miniB.points - miniA.points;
+      if (miniB.goalDifference !== miniA.goalDifference) return miniB.goalDifference - miniA.goalDifference;
+      return miniB.goalsFor - miniA.goalsFor;
+    };
 
-    const [goalsForA, goalsForB] = isAHome
-      ? [result.homeGoals, result.awayGoals]
-      : [result.awayGoals, result.homeGoals];
-    goalsA += goalsForA;
-    goalsB += goalsForB;
-    if (goalsForA > goalsForB) winsA++;
-    else if (goalsForA < goalsForB) winsB++;
+    for (const subGroup of groupBy(group, compareByMiniLeague, byRoster)) {
+      const position = sortOrder + 1;
+      for (const row of subGroup) {
+        sortOrder += 1;
+        row.sortOrder = sortOrder;
+        row.position = position;
+        row.positionText = sortOrder === position ? String(position) : '-';
+        ordered.push(row);
+      }
+    }
   }
 
-  if (winsA !== winsB) return winsB - winsA;
-  return goalsB - goalsA;
+  return ordered;
+}
+
+// Points desc, then goal difference desc, then goals for desc.
+function compareByMainCriteria<TeamId>(a: StandingsRow<TeamId>, b: StandingsRow<TeamId>): number {
+  if (b.points !== a.points) return b.points - a.points;
+  if (b.goalDifference !== a.goalDifference) return b.goalDifference - a.goalDifference;
+  return b.goalsFor - a.goalsFor;
+}
+
+// Sorts by `compareCriteria`, breaking any remaining tie with `tieBreak`,
+// then partitions the result into contiguous runs that `compareCriteria`
+// treats as equal. Both comparators passed in here are plain numeric
+// comparisons, so they are always transitive, and an adjacent-pair check
+// is enough to find a run's true boundaries.
+function groupBy<T>(items: T[], compareCriteria: (a: T, b: T) => number, tieBreak: (a: T, b: T) => number): T[][] {
+  const sorted = [...items].sort((a, b) => compareCriteria(a, b) || tieBreak(a, b));
+  const groups: T[][] = [];
+  for (const item of sorted) {
+    const currentGroup = groups[groups.length - 1];
+    if (currentGroup && compareCriteria(currentGroup[0], item) === 0) {
+      currentGroup.push(item);
+    } else {
+      groups.push([item]);
+    }
+  }
+  return groups;
+}
+
+interface MiniLeagueStats {
+  points: number;
+  goalDifference: number;
+  goalsFor: number;
+}
+
+// A fresh points/goal-difference/goals-for table, counting only the
+// matches played among `groupTeams` themselves.
+function computeMiniLeague<TeamId>(
+  groupTeams: readonly TeamId[],
+  results: readonly MatchResult<TeamId>[],
+  pointsConfig: PointsConfig
+): Map<TeamId, MiniLeagueStats> {
+  const members = new Set(groupTeams);
+  const stats = new Map<TeamId, MiniLeagueStats>();
+  for (const team of groupTeams) {
+    stats.set(team, { points: 0, goalDifference: 0, goalsFor: 0 });
+  }
+
+  for (const result of results) {
+    if (!members.has(result.home) || !members.has(result.away)) continue;
+    const home = stats.get(result.home);
+    const away = stats.get(result.away);
+    if (!home || !away) continue;
+
+    home.goalsFor += result.homeGoals;
+    home.goalDifference += result.homeGoals - result.awayGoals;
+    away.goalsFor += result.awayGoals;
+    away.goalDifference += result.awayGoals - result.homeGoals;
+
+    if (result.homeGoals > result.awayGoals) {
+      home.points += pointsConfig.win;
+      away.points += pointsConfig.loss;
+    } else if (result.homeGoals < result.awayGoals) {
+      away.points += pointsConfig.win;
+      home.points += pointsConfig.loss;
+    } else {
+      home.points += pointsConfig.draw;
+      away.points += pointsConfig.draw;
+    }
+  }
+
+  return stats;
 }

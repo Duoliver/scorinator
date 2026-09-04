@@ -1,23 +1,23 @@
 # Scorinator — Progress Log
 
-Read this file first, every session, before touching code or specs. See `CLAUDE.md` for the rules this log is enforcing.
+Read this file first, every session. Read it before you touch code or specs. See `CLAUDE.md` for the rules this log enforces.
 
 ---
 
 ## Current approved scope
 
-**MVP1 and MVP2 only.** MVP3/MVP4 specs exist for context but are not approved for implementation. Do not build anything from them. This line is the single source of truth for scope — if it still says MVP1/2 only, that's current even if a task description elsewhere seems to imply more.
+**MVP1 and MVP2 only.** MVP3 and MVP4 specs exist for context. They are not approved for implementation. Do not build anything from them. This line is the single source of truth for scope. If it still says MVP1/2 only, treat that as current, even when a task description elsewhere seems to imply more.
 
 ---
 
 ## Status board
 
-One row per task. Keep this table current — it's the first thing a new session reads to know where things stand. `Report` links to a file in `/progress-reports/` for anything non-trivial (see §"Session reports" below); trivial tasks can just use the Notes column instead of a report file.
+One row for each task. Keep this table current. A new session reads this table first, to see where things stand. The Report column links to a file in `/progress-reports/` for any non-trivial task (see the Session reports section below). A trivial task can use the Notes column instead of a report file.
 
 | # | Task | Module | Status | Started | Completed | Report | Notes |
 |---|------|--------|--------|---------|-----------|--------|-------|
-| 0 | Extract design-system: tokens + primitives from design brief + Claude Design handoff bundle (see `docs/design-reference`) | `design-system/` | ✅ Done | 2026-09-02 | 2026-09-02 | [000](/progress-reports/000-design-system-extraction.md) | Included minimal vitest+jsdom scaffolding (subset of Task 1) since primitives need their own tests. |
-| 1 | Repo scaffold: module folders per `module-boundaries` doc, vitest config | `/` | ✅ Done | 2026-09-02 | 2026-09-04 | | Scoped to MVP1 folders only — see decision below. |
+| 0 | Extract design-system: tokens + primitives from design brief + Claude Design handoff bundle (see `docs/design-reference`) | `design-system/` | ✅ Done | 2026-09-02 | 2026-09-02 | [000](/progress-reports/000-design-system-extraction.md) | Added minimal vitest and jsdom scaffolding, a subset of Task 1, because the primitives need their own tests. |
+| 1 | Repo scaffold: module folders per `module-boundaries` doc, vitest config | `/` | ✅ Done | 2026-09-02 | 2026-09-04 | | Scoped to MVP1 folders only. See the decision below. |
 | 2 | Tier→OVR range mapping + roll logic | `engine/tier-ovr` | ⬜ Not started | | | | |
 | 3 | Two-way round-robin fixture generation (incl. odd-team bye) | `engine/fixtures` | ⬜ Not started | | | | |
 | 4 | Standings calc (configurable points, live update) | `engine/standings` | ⬜ Not started | | | | |
@@ -27,32 +27,32 @@ One row per task. Keep this table current — it's the first thing a new session
 | 8 | Team CSV import/export (MVP1 columns) | `adapters/csv` | ⬜ Not started | | | | |
 | 9 | Save/Load JSON (MVP1 flat format — predates wrapper split) | `adapters/json-io` | ⬜ Not started | | | | |
 | 10 | Results .txt export | `adapters/json-io` or new | ⬜ Not started | | | | |
-| 11+ | *(MVP2 tasks — add once MVP1 engine work is stable; don't pre-populate speculatively)* | | | | | | |
+| 11+ | *(MVP2 tasks. Add these once MVP1 engine work is stable. Do not pre-populate them ahead of time.)* | | | | | | |
 
-**Note on Task 0:** Task 0 (`design-system/` extraction) doesn't block Tasks 1–3 in principle — the engine layer has no dependency on it — but it does block any `features/` work, so it's numbered first as a reminder to do it before UI wiring starts, not necessarily before engine tasks. The Claude Design handoff bundle export for MVP1 is placed at `/docs/design-reference/MVP1`. See its own `README.md` for further instructions on its usage.
+**Note on Task 0:** Task 0 (`design-system/` extraction) does not block Tasks 1 through 3. The engine layer has no dependency on it. Task 0 does block any `features/` work. It is numbered first as a reminder to do it before UI wiring starts, not necessarily before engine tasks. The Claude Design handoff bundle export for MVP1 sits at `/docs/design-reference/MVP1`. See its own `README.md` for more on how to use it.
 
-**Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input — see Open Questions) · ✅ Done
+**Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input, see Open Questions) · ✅ Done
 
-Don't reorder or renumber completed rows. Add new tasks at the bottom of their MVP block as they're identified — the MVP1 task list linked below is a starting point, not exhaustive; sessions should add rows for anything they discover is needed (e.g. a primitive that turns out to be required earlier than planned).
+Do not reorder or renumber completed rows. Add a new task at the bottom of its MVP block as soon as you identify it. The MVP1 task list in the table above is a starting point, not a full list. A session should add a row for anything it finds it needs, for example a primitive that turns out to be required earlier than planned.
 
 ---
 
 ## Session reports
 
-For any task more involved than a one-line fix, write a short report to `/progress-reports/NNN-short-slug.md` (numbered to match the task # above) before ending the session, and link it in the Report column. Keep reports brief — a few sentences to a short paragraph each:
+For any task bigger than a one-line fix, write a short report. Save it to `/progress-reports/NNN-short-slug.md`. Number it to match the task number above. Link it in the Report column before you end the session. Keep each report brief, from a few sentences to a short paragraph:
 
-- **What was built** — one or two sentences.
-- **Test approach** — what's covered, what kind (unit/integration/statistical), anything intentionally left untested and why.
-- **Decisions made** — especially anything from a `CLAUDE.md` open item, or any other judgment call a future session should know about rather than rediscover.
-- **What's left / what's next** — even for a "done" task, note anything adjacent that was noticed but out of scope for this task.
+- **What was built:** one or two sentences.
+- **Test approach:** what the tests cover, what kind of tests (unit, integration, statistical), and anything left untested on purpose, with the reason.
+- **Decisions made:** any open item from `CLAUDE.md`, and any other judgment call a future session needs, so it does not redo the work.
+- **What is left, what is next:** for a done task too, note anything nearby that you saw but left out of scope.
 
-If a task was stopped without finishing, the report should say so plainly — what's done, what's broken or missing, and what decision or input is needed to continue. A blocked task's report is more important than a finished one's, since it's the thing preventing the next session from re-doing failed work blind.
+If a task stops before it finishes, say so plainly in the report. State what is done, what is broken or missing, and what decision or input the work needs to continue. The report of a blocked task matters more than the report of a finished task. It stops the next session from redoing failed work blind.
 
 ---
 
 ## Open questions
 
-Running list of anything flagged per `CLAUDE.md` open items section that needs a decision from the user before work can proceed on it. Newest at the top. Remove an item once it's resolved and note the resolution inline in the relevant task's report rather than deleting the history silently.
+A running list of items flagged under the `CLAUDE.md` open items section. Each item needs a decision from the user before work can proceed. List the newest item at the top. Once an item is resolved, remove it from this list. Note the resolution inline in the report of the relevant task. Do not delete the history silently.
 
 *(none yet)*
 
@@ -60,9 +60,9 @@ Running list of anything flagged per `CLAUDE.md` open items section that needs a
 
 ## Decisions log
 
-Short-form record of resolved judgment calls, so they don't get silently re-litigated by a later session. Newest at top.
+A short record of resolved judgment calls. This stops a later session from silently re-litigating them. List the newest entry at the top.
 
-**Procedure:** log a decision here inline, right when it's made, exactly like the entries below — that's still how a decision enters this file mid-session. Late in a session, once a task's entries have accumulated, condense that task's inline entries into a single dedicated file at `decisions-log/NNN-task-slug.md` (numbered to match the task # in the status board above, same convention as `progress-reports/`), then replace those inline entries here with one line: a link to that file plus a brief summary of what it covers. This keeps this section a scannable running index across every task, while the full reasoning for any one task lives in its own file.
+**Procedure:** log a decision here inline, right when you make it, in the same form as the entries below. This is still how a decision enters this file mid-session. Late in a session, once a task has several inline entries, condense them into one file at `decisions-log/NNN-task-slug.md`. Number the file to match the task number in the status board above, the same way as `progress-reports/`. Then replace the inline entries here with one line: a link to that file, plus a brief summary of what it covers. This keeps the section a scannable index across every task. The full reasoning for one task then lives in its own file.
 
-- **2026-09-03 (Task 0):** See [`decisions-log/000-design-system-extraction.md`](/decisions-log/000-design-system-extraction.md) — originally covered the `Tabs` self-contained active-tab-state design, the `--color-fg-muted` AAA contrast exception, excluding the 16-colour team palette (MVP3 scope), and styling with CSS Modules instead of Tailwind. Today's session found and closed several gaps against the Foundations reference's "Inputs" section: fixed a `Button` cascade bug and removed `!important` project-wide (now prohibited, documented in `coding-standards.md`); added numeric styling to `Input` and built new `Select`/`Checkbox`/`Switch` primitives; then migrated `Input`/`Select`/`Checkbox`/`Switch` from controlled `value`/`onChange` props to an uncontrolled, `ref`-exposed `FieldHandle<T>` (`getValue`/`setValue`/`subscribe`/`focus`) — internal per-field state instead of parent-owned form state, with `subscribe()` enabling cross-field conditional rendering without a form engine.
+- **2026-09-03 (Task 0):** See [`decisions-log/000-design-system-extraction.md`](/decisions-log/000-design-system-extraction.md). That file first covered the `Tabs` self-contained active-tab-state design, the `--color-fg-muted` AAA contrast exception, the exclusion of the 16-colour team palette (MVP3 scope), and the choice of CSS Modules over Tailwind. This session also found and closed several gaps against the "Inputs" section of the Foundations reference. It fixed a `Button` cascade bug. It removed `!important` project-wide. This is now prohibited, and `coding-standards.md` documents the rule. It added numeric styling to `Input`. It built new `Select`, `Checkbox`, and `Switch` primitives. It then migrated `Input`, `Select`, `Checkbox`, and `Switch` from controlled `value`/`onChange` props to an uncontrolled, `ref`-exposed `FieldHandle<T>` (`getValue`, `setValue`, `subscribe`, `focus`). This gives each field its own internal state, instead of parent-owned form state. The `subscribe()` method lets the render of one field depend on the value of another field, without a form engine.
 - **2026-09-04 (Task 1):** Created only the MVP1 folders from `module-boundaries.md`. These are `engine/tier-ovr`, `engine/fixtures`, `engine/scorination`, `engine/standings`, `adapters/tauri-fs`, `adapters/csv`, and `adapters/json-io`. Each folder has a `.gitkeep` file. Git does not track empty directories. Did not create `engine/bracket`, `engine/tiebreak`, or `engine/identity` (MVP2). Did not create `engine/locations` or `engine/story-mode` (MVP3/4, out of scope). Did not create `features/` or `app/` (no active work there yet). Reason: `module-boundaries.md` says do not scaffold a module that is not under active build. The status board also defers MVP2 task rows until MVP1 work is stable. Create each remaining folder when its first task starts.

@@ -12,7 +12,7 @@ Read this file first, every session. Read it before you touch code or specs. See
 
 ## Status board
 
-One row for each task. Keep this table current. A new session reads this table first, to see where things stand. The Report column links to a file in `/progress-reports/` for any non-trivial task (see the Session reports section below). A trivial task can use the Notes column instead of a report file.
+One row for each task. Keep this table current. A new session reads this table first, to see where things stand. The Report column links to a file in `/progress-reports/` for any non-trivial task (see the Session reports section below). A trivial task can use the Notes column instead of a report file. Do not mark as Done until user feedback and agreement over what was delivered. Adjustments may be requested. After the implementation, mark as "Review", then "Done" when its agreeded over, updating the Completed date.
 
 | # | Task | Module | Status | Started | Completed | Report | Notes |
 |---|------|--------|--------|---------|-----------|--------|-------|
@@ -37,10 +37,9 @@ One row for each task. Keep this table current. A new session reads this table f
 | 18 | Results export (.txt) UI | `features/persistence` | ⬜ Not started | | | | Needs Task 10. |
 | 19+ | *(MVP2 UI tasks. Add these once MVP1 UI work is stable.)* | | | | | | |
 
+**Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input, see Open Questions) · 🟩 Review · ✅ Done
 
 **Note on Task 0:** Task 0 (`design-system/` extraction) does not block Tasks 1 through 3. The engine layer has no dependency on it. Task 0 does block any `features/` work. It is numbered first as a reminder to do it before UI wiring starts, not necessarily before engine tasks. The Claude Design handoff bundle export for MVP1 sits at `/docs/design-reference/MVP1`. See its own `README.md` for more on how to use it.
-
-**Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input, see Open Questions) · ✅ Done
 
 Do not reorder or renumber completed rows. Add a new task at the bottom of its MVP block as soon as you identify it. The MVP1 task list in the table above is a starting point, not a full list. A session should add a row for anything it finds it needs, for example a primitive that turns out to be required earlier than planned.
 

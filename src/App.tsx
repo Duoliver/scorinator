@@ -13,6 +13,9 @@ import {
   type TableColumn,
 } from './design-system';
 import type { FieldHandle } from './design-system/field';
+import { createSeededRng } from './engine/rng';
+import { scorinateMatch } from './engine/scorination';
+import { TIER_ORDER, rollOVR, type Tier } from './engine/tier-ovr';
 
 interface StandingsRow {
   id: string;
@@ -92,6 +95,35 @@ function FormatPreview({
     <span style={{ fontSize: '0.875rem', color: 'var(--color-fg-muted)' }}>
       {isSingleDuels ? 'Single-duels mode: each pair meets once, not twice.' : ''}
     </span>
+  );
+}
+
+const TIER_OPTIONS = TIER_ORDER.map((tier) => ({ label: tier, value: tier }));
+
+function ScorinatorPlayground(): JSX.Element {
+  const homeTierRef = useRef<FieldHandle<string>>(null);
+  const awayTierRef = useRef<FieldHandle<string>>(null);
+  const [score, setScore] = useState<string | null>(null);
+
+  const handleScorinate = (): void => {
+    const homeTier = (homeTierRef.current?.getValue() ?? 'B') as Tier;
+    const awayTier = (awayTierRef.current?.getValue() ?? 'B') as Tier;
+    const rng = createSeededRng(Math.floor(Math.random() * 0xffffffff));
+    const homeOvr = rollOVR(homeTier, rng);
+    const awayOvr = rollOVR(awayTier, rng);
+    const { homeGoals, awayGoals } = scorinateMatch(homeOvr, awayOvr, rng);
+    setScore(`${homeGoals} - ${awayGoals}`);
+  };
+
+  return (
+    <Section title="Scorinator playground">
+      <Select label="Team 1 tier" defaultValue="B" options={TIER_OPTIONS} ref={homeTierRef} />
+      <Select label="Team 2 tier" defaultValue="B" options={TIER_OPTIONS} ref={awayTierRef} />
+      <Button onClick={handleScorinate}>Scorinate</Button>
+      <span style={{ fontSize: '1.5rem', fontFamily: 'var(--font-heading)', minWidth: '4rem' }}>
+        {score ?? ''}
+      </span>
+    </Section>
   );
 }
 
@@ -194,6 +226,8 @@ function App(): JSX.Element {
           </div>
         </Card>
       </Section>
+
+      <ScorinatorPlayground />
 
       <Section title="Tabs + Table">
         <div style={{ width: '100%' }}>

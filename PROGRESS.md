@@ -21,7 +21,7 @@ One row for each task. Keep this table current. A new session reads this table f
 | 2 | Tier→OVR range mapping + roll logic | `engine/tier-ovr` | ✅ Done | 2026-09-04 | 2026-09-04 | [002](/progress-reports/002-tier-ovr.md) | Added `engine/rng.ts` (shared seeded RNG) as a prerequisite. |
 | 3 | Two-way round-robin fixture generation (incl. odd-team bye) | `engine/fixtures` | ✅ Done | 2026-09-04 | 2026-09-04 | [003](/progress-reports/003-round-robin-fixtures.md) | Rejects N < 2 with a `RangeError` — flagged decision, see report. |
 | 4 | Standings calc (configurable points, live update) | `engine/standings` | ✅ Done | 2026-09-04 | 2026-09-04 | [004](/progress-reports/004-standings.md) | Tie-break: points, GD, GF, mini-league, roster order. Adds `sortOrder`/`position`/`positionText` — see report. |
-| 5 | Scorination: OVR diff + absolute OVR + elasticity → Poisson score | `engine/scorination` | ⬜ Not started | | | | |
+| 5 | Scorination: OVR diff + absolute OVR + elasticity → Poisson score | `engine/scorination` | ✅ Done | 2026-09-07 | 2026-09-07 | [005](/progress-reports/005-scorination.md) | Weighting ratio flagged and confirmed with the user, see Decisions log. |
 | 6 | Home advantage OVR boost | `engine/scorination` | ⬜ Not started | | | | |
 | 7 | Re-scorinate (MVP1: no cascade, just overwrite + recalc) | `engine/scorination` | ⬜ Not started | | | | |
 | 8 | Team CSV import/export (MVP1 columns) | `adapters/csv` | ⬜ Not started | | | | |
@@ -69,6 +69,8 @@ A running list of items flagged under the `CLAUDE.md` open items section. Each i
 ## Decisions log
 
 A short record of resolved judgment calls. This stops a later session from silently re-litigating them. List the newest entry at the top.
+
+- **2026-09-07 (Task 5):** See [`progress-reports/005-scorination.md`](/progress-reports/005-scorination.md) for the full report. CLAUDE.md's §6 names the OVR-difference vs. absolute-OVR weight as an item to stop and propose, not silently resolve. This session proposed a formula (`computeExpectedGoals`: a difference factor and an absolute factor, each clamped, multiplied into the spec's 1.3 goals/team baseline, then scaled by a shared per-match elasticity roll) and asked the user to pick the weight ratio between the two factors. The user confirmed the proposed 5:1 ratio (`DIFF_WEIGHT = 1.5`, `ABS_WEIGHT = 0.3`), difference dominant. `REFERENCE_OVR = 65` (the midpoint of the 30-99 Tier-OVR span) is the point absolute OVR measures against; this and the elasticity range (`0.4-1.6`, uniform, mean 1.0) are ordinary balancing details, not the flagged item itself, so this session picked and documented them the same way Task 2 picked the Tier-OVR bands.
 
 **Procedure:** log a decision here inline, right when you make it, in the same form as the entries below. This is still how a decision enters this file mid-session. Late in a session, once a task has several inline entries, condense them into one file at `decisions-log/NNN-task-slug.md`. Number the file to match the task number in the status board above, the same way as `progress-reports/`. Then replace the inline entries here with one line: a link to that file, plus a brief summary of what it covers. This keeps the section a scannable index across every task. The full reasoning for one task then lives in its own file.
 

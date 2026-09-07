@@ -1,58 +1,69 @@
 # Scorinator — Progress Log
 
-Read this file first, every session, before touching code or specs. See `CLAUDE.md` for the rules this log is enforcing.
+Read this file first, every session. Read it before you touch code or specs. See `CLAUDE.md` for the rules this log enforces.
 
 ---
 
 ## Current approved scope
 
-**MVP1 and MVP2 only.** MVP3/MVP4 specs exist for context but are not approved for implementation. Do not build anything from them. This line is the single source of truth for scope — if it still says MVP1/2 only, that's current even if a task description elsewhere seems to imply more.
+**MVP1 and MVP2 only.** MVP3 and MVP4 specs exist for context. They are not approved for implementation. Do not build anything from them. This line is the single source of truth for scope. If it still says MVP1/2 only, treat that as current, even when a task description elsewhere seems to imply more.
 
 ---
 
 ## Status board
 
-One row per task. Keep this table current — it's the first thing a new session reads to know where things stand. `Report` links to a file in `/progress-reports/` for anything non-trivial (see §"Session reports" below); trivial tasks can just use the Notes column instead of a report file.
+One row for each task. Keep this table current. A new session reads this table first, to see where things stand. The Report column links to a file in `/progress-reports/` for any non-trivial task (see the Session reports section below). A trivial task can use the Notes column instead of a report file.
+
+Do not mark as Done until user feedback and agreement over what was delivered. Adjustments may be requested. After the implementation, mark as "Review", then "Done" when its agreeded upon, updating the Completed date.
 
 | # | Task | Module | Status | Started | Completed | Report | Notes |
 |---|------|--------|--------|---------|-----------|--------|-------|
-| 0 | Extract design-system: tokens + primitives from design brief + Claude Design handoff bundle (see `docs/design-reference`) | `design-system/` | ✅ Done | 2026-09-02 | 2026-09-02 | [000](/progress-reports/000-design-system-extraction.md) | Included minimal vitest+jsdom scaffolding (subset of Task 1) since primitives need their own tests. |
-| 1 | Repo scaffold: module folders per `module-boundaries` doc, vitest config | `/` | ⬜ Not started | | | | |
-| 2 | Tier→OVR range mapping + roll logic | `engine/tier-ovr` | ⬜ Not started | | | | |
-| 3 | Two-way round-robin fixture generation (incl. odd-team bye) | `engine/fixtures` | ⬜ Not started | | | | |
-| 4 | Standings calc (configurable points, live update) | `engine/standings` | ⬜ Not started | | | | |
-| 5 | Scorination: OVR diff + absolute OVR + elasticity → Poisson score | `engine/scorination` | ⬜ Not started | | | | |
-| 6 | Home advantage OVR boost | `engine/scorination` | ⬜ Not started | | | | |
-| 7 | Re-scorinate (MVP1: no cascade, just overwrite + recalc) | `engine/scorination` | ⬜ Not started | | | | |
+| 0 | Extract design-system: tokens + primitives from design brief + Claude Design handoff bundle (see `docs/design-reference`) | `design-system/` | ✅ Done | 2026-09-02 | 2026-09-02 | [000](/progress-reports/000-design-system-extraction.md) | Added minimal vitest and jsdom scaffolding, a subset of Task 1, because the primitives need their own tests. |
+| 1 | Repo scaffold: module folders per `module-boundaries` doc, vitest config | `/` | ✅ Done | 2026-09-02 | 2026-09-04 | | Scoped to MVP1 folders only. See the decision below. |
+| 2 | Tier→OVR range mapping + roll logic | `engine/tier-ovr` | ✅ Done | 2026-09-04 | 2026-09-04 | [002](/progress-reports/002-tier-ovr.md) | Added `engine/rng.ts` (shared seeded RNG) as a prerequisite. |
+| 3 | Two-way round-robin fixture generation (incl. odd-team bye) | `engine/fixtures` | ✅ Done | 2026-09-04 | 2026-09-04 | [003](/progress-reports/003-round-robin-fixtures.md) | Rejects N < 2 with a `RangeError` — flagged decision, see report. |
+| 4 | Standings calc (configurable points, live update) | `engine/standings` | ✅ Done | 2026-09-04 | 2026-09-04 | [004](/progress-reports/004-standings.md) | Tie-break: points, GD, GF, mini-league, roster order. Adds `sortOrder`/`position`/`positionText` — see report. |
+| 5 | Scorination: OVR diff + absolute OVR + elasticity → Poisson score | `engine/scorination` | ✅ Done | 2026-09-07 | 2026-09-07 | [005](/progress-reports/005-scorination.md) | Weighting ratio flagged and confirmed with the user, see Decisions log. |
+| 6 | Home advantage OVR boost | `engine/scorination` | ✅ Done | 2026-09-07 | 2026-09-07 | [006](/progress-reports/006-home-advantage.md) | 5% boost, a balancing detail — see Decisions log. |
 | 8 | Team CSV import/export (MVP1 columns) | `adapters/csv` | ⬜ Not started | | | | |
 | 9 | Save/Load JSON (MVP1 flat format — predates wrapper split) | `adapters/json-io` | ⬜ Not started | | | | |
-| 10 | Results .txt export | `adapters/json-io` or new | ⬜ Not started | | | | |
-| 11+ | *(MVP2 tasks — add once MVP1 engine work is stable; don't pre-populate speculatively)* | | | | | | |
+| 11 | Team ID/slug generation — `slug()` only, no UUID or provenance yet | `engine/identity` | ⬜ Not started | | | | First slice of the MVP2 identity module. Build only the slug function now. |
+| 12 | Team Management screen: create/edit team form, CSV import, CSV export | `features/teams` | ⬜ Not started | | | | Needs Task 8 (CSV) and Task 11 (slug). |
+| 13 | League Setup screen: create league, home-advantage toggle, points config, add teams | `features/leagues` | ⬜ Not started | | | | No engine blocker. Full save needs Task 9. |
+| 14 | Fixtures view: generate and show matchdays | `features/fixtures` | ⬜ Not started | | | | Engine ready. Task 3 is done. |
+| 15 | Scorination UI: scorinate one match, scorinate a full matchday, re-scorinate | `features/scorination` | ⬜ Not started | | | | Needs Tasks 5 and 6. Task 7 used to be a dependency but turns out 7 depends on it. ~User, 2026-09-07 |
+| 16 | Standings table: live view | `features/standings` | ⬜ Not started | | | | Needs Task 4. |
+| 7 | Re-scorinate (MVP1: no cascade, just overwrite + recalc) | `engine/scorination` | ⬜ Not started | | | | Task moved further down by User - 2026-09-07 due to the lack of a match record to do so. |
+| 19 | Re-scorinate UI | `features/scorination` | ⬜ Not started | | | | Task created by User - 2026-09-07 |
+| 17 | Save/Load UI | `features/persistence` | ⬜ Not started | | | | Needs Task 9. |
+| 10 | Results .txt export | `adapters/json-io` or new | ⬜ Not started | | | | Task moved further down by User - 2026-09-07 |
+| 18 | Results export (.txt) UI | `features/persistence` | ⬜ Not started | | | | Needs Task 10. |
+| 20+ | *(MVP2 UI tasks. Add these once MVP1 UI work is stable.)* | | | | | | |
 
-**Note on Task 0:** Task 0 (`design-system/` extraction) doesn't block Tasks 1–3 in principle — the engine layer has no dependency on it — but it does block any `features/` work, so it's numbered first as a reminder to do it before UI wiring starts, not necessarily before engine tasks. The Claude Design handoff bundle export for MVP1 is placed at `/docs/design-reference/MVP1`. See its own `README.md` for further instructions on its usage.
+**Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input, see Open Questions) · 🟩 Review · ✅ Done
 
-**Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input — see Open Questions) · ✅ Done
+**Note on Task 0:** Task 0 (`design-system/` extraction) does not block Tasks 1 through 3. The engine layer has no dependency on it. Task 0 does block any `features/` work. It is numbered first as a reminder to do it before UI wiring starts, not necessarily before engine tasks. The Claude Design handoff bundle export for MVP1 sits at `/docs/design-reference/MVP1`. See its own `README.md` for more on how to use it.
 
-Don't reorder or renumber completed rows. Add new tasks at the bottom of their MVP block as they're identified — the MVP1 task list linked below is a starting point, not exhaustive; sessions should add rows for anything they discover is needed (e.g. a primitive that turns out to be required earlier than planned).
+Do not reorder or renumber completed rows. Add a new task at the bottom of its MVP block as soon as you identify it. The MVP1 task list in the table above is a starting point, not a full list. A session should add a row for anything it finds it needs, for example a primitive that turns out to be required earlier than planned.
 
 ---
 
 ## Session reports
 
-For any task more involved than a one-line fix, write a short report to `/progress-reports/NNN-short-slug.md` (numbered to match the task # above) before ending the session, and link it in the Report column. Keep reports brief — a few sentences to a short paragraph each:
+For any task bigger than a one-line fix, write a short report. Save it to `/progress-reports/NNN-short-slug.md`. Number it to match the task number above. Link it in the Report column before you end the session. Keep each report brief, from a few sentences to a short paragraph:
 
-- **What was built** — one or two sentences.
-- **Test approach** — what's covered, what kind (unit/integration/statistical), anything intentionally left untested and why.
-- **Decisions made** — especially anything from a `CLAUDE.md` open item, or any other judgment call a future session should know about rather than rediscover.
-- **What's left / what's next** — even for a "done" task, note anything adjacent that was noticed but out of scope for this task.
+- **What was built:** one or two sentences.
+- **Test approach:** what the tests cover, what kind of tests (unit, integration, statistical), and anything left untested on purpose, with the reason.
+- **Decisions made:** any open item from `CLAUDE.md`, and any other judgment call a future session needs, so it does not redo the work.
+- **What is left, what is next:** for a done task too, note anything nearby that you saw but left out of scope.
 
-If a task was stopped without finishing, the report should say so plainly — what's done, what's broken or missing, and what decision or input is needed to continue. A blocked task's report is more important than a finished one's, since it's the thing preventing the next session from re-doing failed work blind.
+If a task stops before it finishes, say so plainly in the report. State what is done, what is broken or missing, and what decision or input the work needs to continue. The report of a blocked task matters more than the report of a finished task. It stops the next session from redoing failed work blind.
 
 ---
 
 ## Open questions
 
-Running list of anything flagged per `CLAUDE.md` open items section that needs a decision from the user before work can proceed on it. Newest at the top. Remove an item once it's resolved and note the resolution inline in the relevant task's report rather than deleting the history silently.
+A running list of items flagged under the `CLAUDE.md` open items section. Each item needs a decision from the user before work can proceed. List the newest item at the top. Once an item is resolved, remove it from this list. Note the resolution inline in the report of the relevant task. Do not delete the history silently.
 
 *(none yet)*
 
@@ -60,8 +71,19 @@ Running list of anything flagged per `CLAUDE.md` open items section that needs a
 
 ## Decisions log
 
-Short-form record of resolved judgment calls, so they don't get silently re-litigated by a later session. Newest at top.
+A short record of resolved judgment calls. This stops a later session from silently re-litigating them. List the newest entry at the top.
 
-**Procedure:** log a decision here inline, right when it's made, exactly like the entries below — that's still how a decision enters this file mid-session. Late in a session, once a task's entries have accumulated, condense that task's inline entries into a single dedicated file at `decisions-log/NNN-task-slug.md` (numbered to match the task # in the status board above, same convention as `progress-reports/`), then replace those inline entries here with one line: a link to that file plus a brief summary of what it covers. This keeps this section a scannable running index across every task, while the full reasoning for any one task lives in its own file.
+- **2026-09-07 (Task 6):** See [`progress-reports/006-home-advantage.md`](/progress-reports/006-home-advantage.md) for the full report. The spec (§1) says home advantage gives the home team "a percentage boost to its OVR" for that match, but names no exact percentage. This is not on CLAUDE.md's named open-items list, so this session followed the ordinary balancing-detail pattern (propose, document, move on) rather than a blocking question: `applyHomeAdvantage(ovr)` in `engine/scorination` adds 5% and rounds to a whole number, exported as `HOME_ADVANTAGE_BOOST`. It is a plain function, not gated by a boolean flag — a league with home advantage off simply never calls it. Wired into the `App.tsx` scorinator playground (a Switch next to the two tier selects) so the effect is visible interactively, not only in tests.
+- **2026-09-07 (Task 5):** See [`progress-reports/005-scorination.md`](/progress-reports/005-scorination.md) for the full report. CLAUDE.md's §6 names the OVR-difference vs. absolute-OVR weight as an item to stop and propose, not silently resolve. This session proposed a formula (`computeExpectedGoals`: a difference factor and an absolute factor, each clamped, multiplied into the spec's 1.3 goals/team baseline, then scaled by a shared per-match elasticity roll) and asked the user to pick the weight ratio between the two factors. The user confirmed the proposed 5:1 ratio (`DIFF_WEIGHT = 1.5`, `ABS_WEIGHT = 0.3`), difference dominant. `REFERENCE_OVR = 65` (the midpoint of the 30-99 Tier-OVR span) is the point absolute OVR measures against; this and the elasticity range (`0.4-1.6`, uniform, mean 1.0) are ordinary balancing details, not the flagged item itself, so this session picked and documented them the same way Task 2 picked the Tier-OVR bands.
 
-- **2026-09-03 (Task 0):** See [`decisions-log/000-design-system-extraction.md`](/decisions-log/000-design-system-extraction.md) — originally covered the `Tabs` self-contained active-tab-state design, the `--color-fg-muted` AAA contrast exception, excluding the 16-colour team palette (MVP3 scope), and styling with CSS Modules instead of Tailwind. Today's session found and closed several gaps against the Foundations reference's "Inputs" section: fixed a `Button` cascade bug and removed `!important` project-wide (now prohibited, documented in `coding-standards.md`); added numeric styling to `Input` and built new `Select`/`Checkbox`/`Switch` primitives; then migrated `Input`/`Select`/`Checkbox`/`Switch` from controlled `value`/`onChange` props to an uncontrolled, `ref`-exposed `FieldHandle<T>` (`getValue`/`setValue`/`subscribe`/`focus`) — internal per-field state instead of parent-owned form state, with `subscribe()` enabling cross-field conditional rendering without a form engine.
+**Procedure:** log a decision here inline, right when you make it, in the same form as the entries below. This is still how a decision enters this file mid-session. Late in a session, once a task has several inline entries, condense them into one file at `decisions-log/NNN-task-slug.md`. Number the file to match the task number in the status board above, the same way as `progress-reports/`. Then replace the inline entries here with one line: a link to that file, plus a brief summary of what it covers. This keeps the section a scannable index across every task. The full reasoning for one task then lives in its own file.
+
+- **2026-09-03 (Task 0):** See [`decisions-log/000-design-system-extraction.md`](/decisions-log/000-design-system-extraction.md). That file first covered the `Tabs` self-contained active-tab-state design, the `--color-fg-muted` AAA contrast exception, the exclusion of the 16-colour team palette (MVP3 scope), and the choice of CSS Modules over Tailwind. This session also found and closed several gaps against the "Inputs" section of the Foundations reference. It fixed a `Button` cascade bug. It removed `!important` project-wide. This is now prohibited, and `coding-standards.md` documents the rule. It added numeric styling to `Input`. It built new `Select`, `Checkbox`, and `Switch` primitives. It then migrated `Input`, `Select`, `Checkbox`, and `Switch` from controlled `value`/`onChange` props to an uncontrolled, `ref`-exposed `FieldHandle<T>` (`getValue`, `setValue`, `subscribe`, `focus`). This gives each field its own internal state, instead of parent-owned form state. The `subscribe()` method lets the render of one field depend on the value of another field, without a form engine.
+- **2026-09-04 (Task 1):** Created only the MVP1 folders from `module-boundaries.md`. These are `engine/tier-ovr`, `engine/fixtures`, `engine/scorination`, `engine/standings`, `adapters/tauri-fs`, `adapters/csv`, and `adapters/json-io`. Each folder has a `.gitkeep` file. Git does not track empty directories. Did not create `engine/bracket`, `engine/tiebreak`, or `engine/identity` (MVP2). Did not create `engine/locations` or `engine/story-mode` (MVP3/4, out of scope). Did not create `features/` or `app/` (no active work there yet). Reason: `module-boundaries.md` says do not scaffold a module that is not under active build. The status board also defers MVP2 task rows until MVP1 work is stable. Create each remaining folder when its first task starts.
+- **2026-09-04 (Task 2):** See [`progress-reports/002-tier-ovr.md`](/progress-reports/002-tier-ovr.md) for the full report. The spec names only one Tier→OVR range anchor, S = 90-99, and calls the rest a default without a listed table. This session proposed seven even, non-overlapping 10-point bands (S 90-99 through F 30-39), flagged as a balancing detail rather than picked silently. Also added `engine/rng.ts`, a shared seeded RNG (`Rng` type plus `createSeededRng`), at the root of `engine/` rather than inside `tier-ovr/`, since ENGINE.md requires injected RNG in several future modules, not only this one.
+- **2026-09-04 (Task 3):** See [`progress-reports/003-round-robin-fixtures.md`](/progress-reports/003-round-robin-fixtures.md) for the full report. `generateRoundRobin(teams)` in `engine/fixtures` throws a `RangeError` for fewer than 2 teams, an open item the spec does not cover, flagged rather than picked silently — an empty schedule could hide a real caller bug, such as a league with no teams. The function needs no RNG, since fixture generation is not stochastic. It takes a generic `TeamId`, not a `Team` domain object, since no `Team` entity exists yet in `engine/` or `persistence/`.
+- **2026-09-04 (Task 11, pre-work decision):** `engine/identity` is the MVP2 folder for UUID and provenance logic, per `module-boundaries.md`. MVP1 needs a team ID/slug now. Decision: open `engine/identity` early. Build only a plain `slug()` function in it. Do not add UUID generation or import-conflict logic yet. MVP2 adds those to the same folder later. This keeps the module map as-is. It does not pull any MVP2 feature forward — only a small, non-stochastic helper function.
+- **2026-09-04 (Task 4):** See [`progress-reports/004-standings.md`](/progress-reports/004-standings.md) for the full report. The spec leaves standings tie-break order unstated. This session first picked the standard football convention: points, then goal difference, then goals for, then roster order, flagged as an open item rather than picked silently. `calculateStandings` throws a `RangeError` for a result naming a team outside the given roster, the same reasoning as Task 3's N < 2 guard. The function recomputes the full table from the full roster and result set on every call, with no running-total state inside the module, which is what makes "live update" and re-scorinate's recalculation work at this layer.
+- **2026-09-04 (Task 4, follow-up):** The user asked for a head-to-head tie-break step, ahead of roster order: points, goal difference, goals for, then the result of the matches between the two tied teams (most wins decides; a 1-1 split or zero matches falls to the aggregate goals scored between them), then roster order as the last resort. Implemented in `compareRows` and a new `compareHeadToHead` helper in `standings.ts`. This is not an open item — the user specified the exact rule — so it needed no separate flag. Roster order stays the final fallback for now, and the user asked to revisit it later.
+- **2026-09-04 (Task 4, second follow-up):** The user asked for tied league positions to display correctly. `StandingsRow` gained three fields: `sortOrder` (the row's place in the table, always unique), `position` (the standings rank, shared by rows level on every footballing criterion, including head-to-head), and `positionText` (`position` as a string on the first row of a tied block, `'-'` on the rest). Proposed `sortOrder` as a name for the first field, since the user asked for a better one than "order"; open to a different name.
+- **2026-09-04 (Task 4, third follow-up):** The user asked how professional leagues resolve a head-to-head cycle among three or more tied teams (A beats B, B beats C, C beats A, no consistent pairwise order), and whether a cyclic group could just be declared fully tied. This session replaced the pairwise head-to-head check with a mini-league: a fresh points/goal-difference/goals-for table, computed only from matches among a tied group's own members, the method UEFA, La Liga, and Serie A use. This fixes a real bug, not only a cosmetic one — `assignPositions` assumed "tied" was transitive, so a cycle could give a different, sort-order-dependent table on the same season data. All 123 prior tests passed unchanged, since a two-team mini-league reduces to the old pairwise result for a genuine pair. One new test adds a real 3-way cycle. Flagged: this runs one mini-league pass per group, not the fully recursive version a professional competition uses when a mini-league only partly separates a group. See `progress-reports/004-standings.md` for the full reasoning.

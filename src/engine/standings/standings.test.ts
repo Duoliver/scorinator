@@ -1,0 +1,276 @@
+import { describe, expect, it } from 'vitest';
+import { calculateStandings } from './index';
+import type { MatchResult, StandingsRow } from './types';
+
+const TEAMS = ['Alpha', 'Bravo', 'Charlie', 'Delta'];
+
+function row(teamId: string, table: readonly StandingsRow<string>[]): StandingsRow<string> {
+  const found = table.find((r) => r.team === teamId);
+  if (!found) throw new Error(`no row for ${teamId}`);
+  return found;
+}
+
+describe('calculateStandings', () => {
+  it('gives every team a zeroed row, in roster order, when no results exist', () => {
+    const table = calculateStandings(TEAMS, []);
+    expect(table.map((r) => r.team)).toEqual(TEAMS);
+    for (const r of table) {
+      expect(r).toMatchObject({
+        played: 0,
+        won: 0,
+        drawn: 0,
+        lost: 0,
+        goalsFor: 0,
+        goalsAgainst: 0,
+        goalDifference: 0,
+        points: 0,
+      });
+    }
+    // With nothing to separate any team, all four share position 1: a
+    // single tied block, ordered by roster, only the first team showing
+    // the number.
+    expect(table.map((r) => r.sortOrder)).toEqual([1, 2, 3, 4]);
+    expect(table.map((r) => r.position)).toEqual([1, 1, 1, 1]);
+    expect(table.map((r) => r.positionText)).toEqual(['1', '-', '-', '-']);
+  });
+
+  it('awards the default 3/1/0 points for a win, a draw, and a loss', () => {
+    const results: MatchResult<string>[] = [
+      { home: 'Alpha', away: 'Bravo', homeGoals: 2, awayGoals: 0 }, // Alpha win
+      { home: 'Charlie', away: 'Delta', homeGoals: 1, awayGoals: 1 }, // draw
+    ];
+    const table = calculateStandings(TEAMS, results);
+    expect(row('Alpha', table).points).toBe(3);
+    expect(row('Bravo', table).points).toBe(0);
+    expect(row('Charlie', table).points).toBe(1);
+    expect(row('Delta', table).points).toBe(1);
+  });
+
+  it('uses a configurable points system instead of the default', () => {
+    const results: MatchResult<string>[] = [{ home: 'Alpha', away: 'Bravo', homeGoals: 1, awayGoals: 0 }];
+    const table = calculateStandings(TEAMS, results, { win: 2, draw: 1, loss: 0 });
+    expect(row('Alpha', table).points).toBe(2);
+  });
+
+  it('tracks played, goals for/against, and goal difference across matches', () => {
+    const results: MatchResult<string>[] = [
+      { home: 'Alpha', away: 'Bravo', homeGoals: 3, awayGoals: 1 },
+      { home: 'Bravo', away: 'Alpha', homeGoals: 2, awayGoals: 2 },
+    ];
+    const table = calculateStandings(TEAMS, results);
+    const alpha = row('Alpha', table);
+    expect(alpha.played).toBe(2);
+    expect(alpha.won).toBe(1);
+    expect(alpha.drawn).toBe(1);
+    expect(alpha.goalsFor).toBe(5);
+    expect(alpha.goalsAgainst).toBe(3);
+    expect(alpha.goalDifference).toBe(2);
+  });
+
+  it('sorts by points, then goal difference, then goals for, then roster order', () => {
+    const results: MatchResult<string>[] = [
+      // Alpha and Bravo both finish on 3 points, same goal difference; Bravo scored more.
+      { home: 'Alpha', away: 'Charlie', homeGoals: 1, awayGoals: 0 },
+      { home: 'Bravo', away: 'Delta', homeGoals: 2, awayGoals: 1 },
+    ];
+    const table = calculateStandings(TEAMS, results);
+    expect(table.map((r) => r.team)).toEqual(['Bravo', 'Alpha', 'Delta', 'Charlie']);
+    // Goals for tells Bravo and Alpha apart, so they are not a tied block:
+    // every team gets its own sortOrder, matching position, and a numeric
+    // positionText.
+    expect(table.map((r) => r.sortOrder)).toEqual([1, 2, 3, 4]);
+    expect(table.map((r) => r.position)).toEqual([1, 2, 3, 4]);
+    expect(table.map((r) => r.positionText)).toEqual(['1', '2', '3', '4']);
+  });
+
+  it('breaks a full points/GD/GF tie with a single head-to-head win', () => {
+    const roster = ['Bravo', 'Alpha', 'Charlie', 'Delta'];
+    const results: MatchResult<string>[] = [
+      { home: 'Alpha', away: 'Bravo', homeGoals: 1, awayGoals: 0 }, // only leg played so far: Alpha win
+      { home: 'Alpha', away: 'Charlie', homeGoals: 1, awayGoals: 1 },
+      { home: 'Bravo', away: 'Charlie', homeGoals: 2, awayGoals: 0 },
+      { home: 'Bravo', away: 'Delta', homeGoals: 0, awayGoals: 0 },
+    ];
+    const table = calculateStandings(roster, results);
+    // Alpha and Bravo both finish on 4 points, GD 1, GF 2 — a full tie
+    // ahead of head-to-head. Alpha's sole head-to-head win puts it first,
+    // even though Bravo comes first in the roster.
+    expect(row('Alpha', table).points).toBe(row('Bravo', table).points);
+    expect(row('Alpha', table).goalDifference).toBe(row('Bravo', table).goalDifference);
+    expect(row('Alpha', table).goalsFor).toBe(row('Bravo', table).goalsFor);
+    expect(table.map((r) => r.team)).toEqual(['Alpha', 'Bravo', 'Delta', 'Charlie']);
+    // Head-to-head is itself a footballing criterion, so it genuinely
+    // separates Alpha and Bravo — they are not a tied block, and each
+    // gets its own position.
+    expect(row('Alpha', table).position).toBe(1);
+    expect(row('Bravo', table).position).toBe(2);
+    expect(row('Bravo', table).positionText).toBe('2');
+  });
+
+  it('breaks a full points/GD/GF tie with aggregate head-to-head goals, after a 1-1 split', () => {
+    const roster = ['Bravo', 'Alpha', 'Charlie', 'Delta'];
+    const results: MatchResult<string>[] = [
+      { home: 'Alpha', away: 'Bravo', homeGoals: 3, awayGoals: 1 }, // leg 1: Alpha win
+      { home: 'Bravo', away: 'Alpha', homeGoals: 2, awayGoals: 1 }, // leg 2: Bravo win
+      { home: 'Alpha', away: 'Charlie', homeGoals: 2, awayGoals: 1 },
+      { home: 'Bravo', away: 'Delta', homeGoals: 3, awayGoals: 0 },
+    ];
+    const table = calculateStandings(roster, results);
+    // Both finish on 6 points, GD 2, GF 6 — a full tie, and a 1-1
+    // head-to-head split. Alpha scored 4 against Bravo, Bravo scored 3
+    // against Alpha, so Alpha's higher aggregate puts it first.
+    expect(row('Alpha', table).points).toBe(row('Bravo', table).points);
+    expect(row('Alpha', table).goalDifference).toBe(row('Bravo', table).goalDifference);
+    expect(row('Alpha', table).goalsFor).toBe(row('Bravo', table).goalsFor);
+    expect(table.map((r) => r.team)).toEqual(['Alpha', 'Bravo', 'Charlie', 'Delta']);
+  });
+
+  it('falls through to roster order after a 1-1 split with equal aggregate goals', () => {
+    const roster = ['Bravo', 'Alpha', 'Charlie', 'Delta'];
+    const results: MatchResult<string>[] = [
+      { home: 'Alpha', away: 'Bravo', homeGoals: 2, awayGoals: 1 }, // leg 1: Alpha win
+      { home: 'Bravo', away: 'Alpha', homeGoals: 2, awayGoals: 1 }, // leg 2: Bravo win
+    ];
+    const table = calculateStandings(roster, results);
+    // Both finish 3 points, GD 0, GF 3, a 1-1 split, and an equal 3-3
+    // aggregate. Nothing left to break the tie except roster order, so
+    // Bravo and Alpha are a genuine tied block: same position, and only
+    // Bravo (first in the block) gets a numeric positionText.
+    expect(row('Alpha', table).points).toBe(row('Bravo', table).points);
+    expect(table.map((r) => r.team).slice(0, 2)).toEqual(['Bravo', 'Alpha']);
+    expect(row('Bravo', table).sortOrder).toBe(1);
+    expect(row('Alpha', table).sortOrder).toBe(2);
+    expect(row('Bravo', table).position).toBe(1);
+    expect(row('Alpha', table).position).toBe(1);
+    expect(row('Bravo', table).positionText).toBe('1');
+    expect(row('Alpha', table).positionText).toBe('-');
+  });
+
+  it('falls through to roster order when the two teams have not played each other yet', () => {
+    const roster = ['Bravo', 'Alpha', 'Charlie', 'Delta'];
+    const results: MatchResult<string>[] = [
+      { home: 'Alpha', away: 'Charlie', homeGoals: 2, awayGoals: 0 },
+      { home: 'Bravo', away: 'Delta', homeGoals: 2, awayGoals: 0 },
+    ];
+    const table = calculateStandings(roster, results);
+    expect(row('Alpha', table).points).toBe(row('Bravo', table).points);
+    expect(table.map((r) => r.team).slice(0, 2)).toEqual(['Bravo', 'Alpha']);
+  });
+
+  it('groups three fully tied teams into one position, with only the first showing a number', () => {
+    const roster = ['Charlie', 'Bravo', 'Alpha', 'Delta', 'Echo'];
+    // Alpha, Bravo, and Charlie play no one, so all three stay level at
+    // 0 points, 0 goal difference, 0 goals for. Delta beats Echo, so
+    // Delta sits above the trio and Echo sits below it.
+    const results: MatchResult<string>[] = [{ home: 'Delta', away: 'Echo', homeGoals: 1, awayGoals: 0 }];
+    const table = calculateStandings(roster, results);
+    expect(table.map((r) => r.team)).toEqual(['Delta', 'Charlie', 'Bravo', 'Alpha', 'Echo']);
+    expect(table.map((r) => r.sortOrder)).toEqual([1, 2, 3, 4, 5]);
+    expect(table.map((r) => r.position)).toEqual([1, 2, 2, 2, 5]);
+    expect(table.map((r) => r.positionText)).toEqual(['1', '2', '-', '-', '5']);
+  });
+
+  it('resolves a genuine 3-way head-to-head cycle via the mini-league, not an arbitrary split', () => {
+    const roster = ['Charlie', 'Bravo', 'Alpha', 'Delta', 'Echo'];
+    const results: MatchResult<string>[] = [
+      // A beats B, B beats C, C beats A: a head-to-head cycle with no
+      // pairwise "most wins" order. Equal margins keep the three of them
+      // level on points, goal difference, and goals for, even overall,
+      // since none of them plays outside the trio.
+      { home: 'Alpha', away: 'Bravo', homeGoals: 1, awayGoals: 0 },
+      { home: 'Bravo', away: 'Charlie', homeGoals: 1, awayGoals: 0 },
+      { home: 'Charlie', away: 'Alpha', homeGoals: 1, awayGoals: 0 },
+      { home: 'Delta', away: 'Echo', homeGoals: 5, awayGoals: 0 }, // clear of the trio, above and below it
+    ];
+    const table = calculateStandings(roster, results);
+    expect(row('Alpha', table).points).toBe(row('Bravo', table).points);
+    expect(row('Bravo', table).points).toBe(row('Charlie', table).points);
+    expect(row('Alpha', table).goalDifference).toBe(row('Bravo', table).goalDifference);
+    expect(row('Bravo', table).goalDifference).toBe(row('Charlie', table).goalDifference);
+    // The mini-league among just Alpha, Bravo, and Charlie reproduces the
+    // same cycle, so it cannot separate them either — all three land on
+    // one shared position, ordered among themselves by roster order.
+    expect(table.map((r) => r.team)).toEqual(['Delta', 'Charlie', 'Bravo', 'Alpha', 'Echo']);
+    expect(table.map((r) => r.sortOrder)).toEqual([1, 2, 3, 4, 5]);
+    expect(table.map((r) => r.position)).toEqual([1, 2, 2, 2, 5]);
+    expect(table.map((r) => r.positionText)).toEqual(['1', '2', '-', '-', '5']);
+  });
+
+  it('resolves a 2-team tied group via mini-league points across three head-to-head matches', () => {
+    const roster = ['Bravo', 'Alpha', 'Charlie', 'Delta'];
+    const results: MatchResult<string>[] = [
+      // Alpha wins two of three meetings, so the mini-league splits them
+      // on points alone: Alpha 6, Bravo 3.
+      { home: 'Alpha', away: 'Bravo', homeGoals: 2, awayGoals: 0 },
+      { home: 'Bravo', away: 'Alpha', homeGoals: 1, awayGoals: 0 },
+      { home: 'Alpha', away: 'Bravo', homeGoals: 1, awayGoals: 0 },
+      // Results against the other two teams even the overall table back
+      // out, so Alpha and Bravo both finish on 6 points, GD 0, GF 3.
+      { home: 'Delta', away: 'Alpha', homeGoals: 2, awayGoals: 0 },
+      { home: 'Bravo', away: 'Charlie', homeGoals: 2, awayGoals: 0 },
+    ];
+    const table = calculateStandings(roster, results);
+    expect(row('Alpha', table).points).toBe(row('Bravo', table).points);
+    expect(row('Alpha', table).goalDifference).toBe(row('Bravo', table).goalDifference);
+    expect(row('Alpha', table).goalsFor).toBe(row('Bravo', table).goalsFor);
+    // The mini-league built from just the three head-to-head matches gives
+    // Alpha 6 points to Bravo's 3, so it decides outright — not a tied block.
+    expect(table.map((r) => r.team)).toEqual(['Alpha', 'Bravo', 'Delta', 'Charlie']);
+    expect(table.map((r) => r.position)).toEqual([1, 2, 3, 4]);
+    expect(table.map((r) => r.positionText)).toEqual(['1', '2', '3', '4']);
+  });
+
+  it('resolves four fully tied teams via a genuine 4-way mini-league table', () => {
+    const roster = ['Delta', 'Charlie', 'Bravo', 'Alpha', 'Echo'];
+    const results: MatchResult<string>[] = [
+      // A clean 1-0 round robin among the four: Alpha beats everyone,
+      // Bravo beats Charlie and Delta, Charlie beats Delta.
+      { home: 'Alpha', away: 'Bravo', homeGoals: 1, awayGoals: 0 },
+      { home: 'Alpha', away: 'Charlie', homeGoals: 1, awayGoals: 0 },
+      { home: 'Alpha', away: 'Delta', homeGoals: 1, awayGoals: 0 },
+      { home: 'Bravo', away: 'Charlie', homeGoals: 1, awayGoals: 0 },
+      { home: 'Bravo', away: 'Delta', homeGoals: 1, awayGoals: 0 },
+      { home: 'Charlie', away: 'Delta', homeGoals: 1, awayGoals: 0 },
+      // Results against Echo cancel that internal spread back out, so all
+      // four finish level on 9 points, GD 0, GF 3 overall.
+      { home: 'Echo', away: 'Alpha', homeGoals: 3, awayGoals: 0 },
+      { home: 'Bravo', away: 'Echo', homeGoals: 1, awayGoals: 0 },
+      { home: 'Echo', away: 'Bravo', homeGoals: 2, awayGoals: 0 },
+      { home: 'Charlie', away: 'Echo', homeGoals: 1, awayGoals: 0 },
+      { home: 'Charlie', away: 'Echo', homeGoals: 1, awayGoals: 0 },
+      { home: 'Echo', away: 'Charlie', homeGoals: 1, awayGoals: 0 },
+      { home: 'Delta', away: 'Echo', homeGoals: 1, awayGoals: 0 },
+      { home: 'Delta', away: 'Echo', homeGoals: 1, awayGoals: 0 },
+      { home: 'Delta', away: 'Echo', homeGoals: 1, awayGoals: 0 },
+    ];
+    const table = calculateStandings(roster, results);
+    for (const team of ['Bravo', 'Charlie', 'Delta']) {
+      expect(row(team, table).points).toBe(row('Alpha', table).points);
+      expect(row(team, table).goalDifference).toBe(row('Alpha', table).goalDifference);
+      expect(row(team, table).goalsFor).toBe(row('Alpha', table).goalsFor);
+    }
+    // The mini-league built from just the six matches among the four fully
+    // separates them — 9, 6, 3, 0 points — reproducing the round robin's
+    // own order, with no tied block left over. Echo sits outside that
+    // group (its overall goals-for is 6, not the group's 3) and tops the
+    // table in its own right.
+    expect(table.map((r) => r.team)).toEqual(['Echo', 'Alpha', 'Bravo', 'Charlie', 'Delta']);
+    expect(table.map((r) => r.sortOrder)).toEqual([1, 2, 3, 4, 5]);
+    expect(table.map((r) => r.position)).toEqual([1, 2, 3, 4, 5]);
+    expect(table.map((r) => r.positionText)).toEqual(['1', '2', '3', '4', '5']);
+  });
+
+  it('reflects an updated result set on recalculation, as a re-scorinate would', () => {
+    const before: MatchResult<string>[] = [{ home: 'Alpha', away: 'Bravo', homeGoals: 1, awayGoals: 1 }];
+    const after: MatchResult<string>[] = [{ home: 'Alpha', away: 'Bravo', homeGoals: 3, awayGoals: 0 }];
+    const tableBefore = calculateStandings(TEAMS, before);
+    const tableAfter = calculateStandings(TEAMS, after);
+    expect(row('Alpha', tableBefore).points).toBe(1);
+    expect(row('Alpha', tableAfter).points).toBe(3);
+  });
+
+  it('rejects a result for a team outside the given roster', () => {
+    const results: MatchResult<string>[] = [{ home: 'Alpha', away: 'Zulu', homeGoals: 1, awayGoals: 0 }];
+    expect(() => calculateStandings(TEAMS, results)).toThrow(RangeError);
+  });
+});

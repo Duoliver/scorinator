@@ -196,6 +196,70 @@ describe('calculateStandings', () => {
     expect(table.map((r) => r.positionText)).toEqual(['1', '2', '-', '-', '5']);
   });
 
+  it('resolves a 2-team tied group via mini-league points across three head-to-head matches', () => {
+    const roster = ['Bravo', 'Alpha', 'Charlie', 'Delta'];
+    const results: MatchResult<string>[] = [
+      // Alpha wins two of three meetings, so the mini-league splits them
+      // on points alone: Alpha 6, Bravo 3.
+      { home: 'Alpha', away: 'Bravo', homeGoals: 2, awayGoals: 0 },
+      { home: 'Bravo', away: 'Alpha', homeGoals: 1, awayGoals: 0 },
+      { home: 'Alpha', away: 'Bravo', homeGoals: 1, awayGoals: 0 },
+      // Results against the other two teams even the overall table back
+      // out, so Alpha and Bravo both finish on 6 points, GD 0, GF 3.
+      { home: 'Delta', away: 'Alpha', homeGoals: 2, awayGoals: 0 },
+      { home: 'Bravo', away: 'Charlie', homeGoals: 2, awayGoals: 0 },
+    ];
+    const table = calculateStandings(roster, results);
+    expect(row('Alpha', table).points).toBe(row('Bravo', table).points);
+    expect(row('Alpha', table).goalDifference).toBe(row('Bravo', table).goalDifference);
+    expect(row('Alpha', table).goalsFor).toBe(row('Bravo', table).goalsFor);
+    // The mini-league built from just the three head-to-head matches gives
+    // Alpha 6 points to Bravo's 3, so it decides outright — not a tied block.
+    expect(table.map((r) => r.team)).toEqual(['Alpha', 'Bravo', 'Delta', 'Charlie']);
+    expect(table.map((r) => r.position)).toEqual([1, 2, 3, 4]);
+    expect(table.map((r) => r.positionText)).toEqual(['1', '2', '3', '4']);
+  });
+
+  it('resolves four fully tied teams via a genuine 4-way mini-league table', () => {
+    const roster = ['Delta', 'Charlie', 'Bravo', 'Alpha', 'Echo'];
+    const results: MatchResult<string>[] = [
+      // A clean 1-0 round robin among the four: Alpha beats everyone,
+      // Bravo beats Charlie and Delta, Charlie beats Delta.
+      { home: 'Alpha', away: 'Bravo', homeGoals: 1, awayGoals: 0 },
+      { home: 'Alpha', away: 'Charlie', homeGoals: 1, awayGoals: 0 },
+      { home: 'Alpha', away: 'Delta', homeGoals: 1, awayGoals: 0 },
+      { home: 'Bravo', away: 'Charlie', homeGoals: 1, awayGoals: 0 },
+      { home: 'Bravo', away: 'Delta', homeGoals: 1, awayGoals: 0 },
+      { home: 'Charlie', away: 'Delta', homeGoals: 1, awayGoals: 0 },
+      // Results against Echo cancel that internal spread back out, so all
+      // four finish level on 9 points, GD 0, GF 3 overall.
+      { home: 'Echo', away: 'Alpha', homeGoals: 3, awayGoals: 0 },
+      { home: 'Bravo', away: 'Echo', homeGoals: 1, awayGoals: 0 },
+      { home: 'Echo', away: 'Bravo', homeGoals: 2, awayGoals: 0 },
+      { home: 'Charlie', away: 'Echo', homeGoals: 1, awayGoals: 0 },
+      { home: 'Charlie', away: 'Echo', homeGoals: 1, awayGoals: 0 },
+      { home: 'Echo', away: 'Charlie', homeGoals: 1, awayGoals: 0 },
+      { home: 'Delta', away: 'Echo', homeGoals: 1, awayGoals: 0 },
+      { home: 'Delta', away: 'Echo', homeGoals: 1, awayGoals: 0 },
+      { home: 'Delta', away: 'Echo', homeGoals: 1, awayGoals: 0 },
+    ];
+    const table = calculateStandings(roster, results);
+    for (const team of ['Bravo', 'Charlie', 'Delta']) {
+      expect(row(team, table).points).toBe(row('Alpha', table).points);
+      expect(row(team, table).goalDifference).toBe(row('Alpha', table).goalDifference);
+      expect(row(team, table).goalsFor).toBe(row('Alpha', table).goalsFor);
+    }
+    // The mini-league built from just the six matches among the four fully
+    // separates them — 9, 6, 3, 0 points — reproducing the round robin's
+    // own order, with no tied block left over. Echo sits outside that
+    // group (its overall goals-for is 6, not the group's 3) and tops the
+    // table in its own right.
+    expect(table.map((r) => r.team)).toEqual(['Echo', 'Alpha', 'Bravo', 'Charlie', 'Delta']);
+    expect(table.map((r) => r.sortOrder)).toEqual([1, 2, 3, 4, 5]);
+    expect(table.map((r) => r.position)).toEqual([1, 2, 3, 4, 5]);
+    expect(table.map((r) => r.positionText)).toEqual(['1', '2', '3', '4', '5']);
+  });
+
   it('reflects an updated result set on recalculation, as a re-scorinate would', () => {
     const before: MatchResult<string>[] = [{ home: 'Alpha', away: 'Bravo', homeGoals: 1, awayGoals: 1 }];
     const after: MatchResult<string>[] = [{ home: 'Alpha', away: 'Bravo', homeGoals: 3, awayGoals: 0 }];

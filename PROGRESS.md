@@ -12,7 +12,9 @@ Read this file first, every session. Read it before you touch code or specs. See
 
 ## Status board
 
-One row for each task. Keep this table current. A new session reads this table first, to see where things stand. The Report column links to a file in `/progress-reports/` for any non-trivial task (see the Session reports section below). A trivial task can use the Notes column instead of a report file. Do not mark as Done until user feedback and agreement over what was delivered. Adjustments may be requested. After the implementation, mark as "Review", then "Done" when its agreeded over, updating the Completed date.
+One row for each task. Keep this table current. A new session reads this table first, to see where things stand. The Report column links to a file in `/progress-reports/` for any non-trivial task (see the Session reports section below). A trivial task can use the Notes column instead of a report file.
+
+Do not mark as Done until user feedback and agreement over what was delivered. Adjustments may be requested. After the implementation, mark as "Review", then "Done" when its agreeded upon, updating the Completed date.
 
 | # | Task | Module | Status | Started | Completed | Report | Notes |
 |---|------|--------|--------|---------|-----------|--------|-------|
@@ -23,19 +25,20 @@ One row for each task. Keep this table current. A new session reads this table f
 | 4 | Standings calc (configurable points, live update) | `engine/standings` | ✅ Done | 2026-09-04 | 2026-09-04 | [004](/progress-reports/004-standings.md) | Tie-break: points, GD, GF, mini-league, roster order. Adds `sortOrder`/`position`/`positionText` — see report. |
 | 5 | Scorination: OVR diff + absolute OVR + elasticity → Poisson score | `engine/scorination` | ✅ Done | 2026-09-07 | 2026-09-07 | [005](/progress-reports/005-scorination.md) | Weighting ratio flagged and confirmed with the user, see Decisions log. |
 | 6 | Home advantage OVR boost | `engine/scorination` | ✅ Done | 2026-09-07 | 2026-09-07 | [006](/progress-reports/006-home-advantage.md) | 5% boost, a balancing detail — see Decisions log. |
-| 7 | Re-scorinate (MVP1: no cascade, just overwrite + recalc) | `engine/scorination` | ⬜ Not started | | | | |
 | 8 | Team CSV import/export (MVP1 columns) | `adapters/csv` | ⬜ Not started | | | | |
 | 9 | Save/Load JSON (MVP1 flat format — predates wrapper split) | `adapters/json-io` | ⬜ Not started | | | | |
-| 10 | Results .txt export | `adapters/json-io` or new | ⬜ Not started | | | | |
 | 11 | Team ID/slug generation — `slug()` only, no UUID or provenance yet | `engine/identity` | ⬜ Not started | | | | First slice of the MVP2 identity module. Build only the slug function now. |
 | 12 | Team Management screen: create/edit team form, CSV import, CSV export | `features/teams` | ⬜ Not started | | | | Needs Task 8 (CSV) and Task 11 (slug). |
 | 13 | League Setup screen: create league, home-advantage toggle, points config, add teams | `features/leagues` | ⬜ Not started | | | | No engine blocker. Full save needs Task 9. |
 | 14 | Fixtures view: generate and show matchdays | `features/fixtures` | ⬜ Not started | | | | Engine ready. Task 3 is done. |
-| 15 | Scorination UI: scorinate one match, scorinate a full matchday, re-scorinate | `features/scorination` | ⬜ Not started | | | | Needs Tasks 5, 6, and 7. |
+| 15 | Scorination UI: scorinate one match, scorinate a full matchday, re-scorinate | `features/scorination` | ⬜ Not started | | | | Needs Tasks 5 and 6. Task 7 used to be a dependency but turns out 7 depends on it. ~User, 2026-09-07 |
 | 16 | Standings table: live view | `features/standings` | ⬜ Not started | | | | Needs Task 4. |
+| 7 | Re-scorinate (MVP1: no cascade, just overwrite + recalc) | `engine/scorination` | ⬜ Not started | | | | Task moved further down by User - 2026-09-07 due to the lack of a match record to do so. |
+| 19 | Re-scorinate UI | `features/scorination` | ⬜ Not started | | | | Task created by User - 2026-09-07 |
 | 17 | Save/Load UI | `features/persistence` | ⬜ Not started | | | | Needs Task 9. |
+| 10 | Results .txt export | `adapters/json-io` or new | ⬜ Not started | | | | Task moved further down by User - 2026-09-07 |
 | 18 | Results export (.txt) UI | `features/persistence` | ⬜ Not started | | | | Needs Task 10. |
-| 19+ | *(MVP2 UI tasks. Add these once MVP1 UI work is stable.)* | | | | | | |
+| 20+ | *(MVP2 UI tasks. Add these once MVP1 UI work is stable.)* | | | | | | |
 
 **Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input, see Open Questions) · 🟩 Review · ✅ Done
 

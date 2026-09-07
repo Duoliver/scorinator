@@ -7,7 +7,9 @@ import {
   DIFF_WEIGHT,
   ELASTICITY_MAX,
   ELASTICITY_MIN,
+  HOME_ADVANTAGE_BOOST,
   REFERENCE_OVR,
+  applyHomeAdvantage,
   computeExpectedGoals,
   rollElasticity,
   scorinateMatch,
@@ -144,6 +146,35 @@ describe('scorinateMatch', () => {
   });
 });
 
+describe('applyHomeAdvantage', () => {
+  it('boosts OVR by the configured percentage, rounded to a whole number', () => {
+    expect(applyHomeAdvantage(80)).toBe(Math.round(80 * (1 + HOME_ADVANTAGE_BOOST)));
+    expect(applyHomeAdvantage(80)).toBe(84);
+  });
+
+  it('never lowers an OVR value', () => {
+    for (const ovr of [0, 1, 30, 65, 99]) {
+      expect(applyHomeAdvantage(ovr)).toBeGreaterThanOrEqual(ovr);
+    }
+  });
+});
+
+describe('home advantage effect on scorinateMatch', () => {
+  it('raises the home team\'s win rate against an otherwise evenly matched away team', () => {
+    const homeWinRate = (homeOvr: number, awayOvr: number): number => {
+      let homeWins = 0;
+      for (let seed = 0; seed < TRIALS; seed++) {
+        const { homeGoals, awayGoals } = scorinateMatch(homeOvr, awayOvr, createSeededRng(seed));
+        if (homeGoals > awayGoals) homeWins++;
+      }
+      return homeWins / TRIALS;
+    };
+    const withoutBoost = homeWinRate(70, 70);
+    const withBoost = homeWinRate(applyHomeAdvantage(70), 70);
+    expect(withBoost).toBeGreaterThan(withoutBoost);
+  });
+});
+
 describe('module surface', () => {
   it('exports exactly the constants and functions this module intends to expose', () => {
     expect(Object.keys(scorinationModule).sort()).toEqual(
@@ -154,8 +185,10 @@ describe('module surface', () => {
         'ABS_WEIGHT',
         'ELASTICITY_MIN',
         'ELASTICITY_MAX',
+        'HOME_ADVANTAGE_BOOST',
         'rollElasticity',
         'computeExpectedGoals',
+        'applyHomeAdvantage',
         'scorinateMatch',
       ].sort()
     );

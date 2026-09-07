@@ -82,14 +82,36 @@ function samplePoisson(lambda: number, rng: Rng): number {
 }
 
 /**
+ * League-level home-advantage boost (spec §1): a league that enables it
+ * gives the home team a percentage OVR boost, for that match only — the
+ * team's stored OVR never changes. The spec names no exact percentage.
+ * This session proposes 5%, a modest boost in line with real-world home
+ * advantage effect sizes, and flags it as a balancing detail rather than
+ * picking it silently, per `tdd.md`. See the Task 6 decision log entry.
+ */
+export const HOME_ADVANTAGE_BOOST = 0.05;
+
+/**
+ * Applies the home-advantage boost to one OVR value, rounded back to a
+ * whole number (OVR is always an integer, see `engine/tier-ovr`). A
+ * league with home advantage enabled calls this on the home team's OVR
+ * before it reaches `scorinateMatch`; a league without it skips the call
+ * entirely — this function carries no on/off state of its own. MVP2's
+ * single-duels format uses the same boost rule (spec §2).
+ */
+export function applyHomeAdvantage(ovr: number): number {
+  return Math.round(ovr * (1 + HOME_ADVANTAGE_BOOST));
+}
+
+/**
  * Generates one match's final score. OVR difference primarily sets the
  * margin, absolute OVR gives a smaller secondary pull, and one shared
  * elasticity roll scales both teams' goal volume up or down without
  * touching the relative split OVR already set (spec §1). This feeds a
  * Poisson draw per team, so a stronger team is favored, not guaranteed.
  *
- * Home advantage (Task 6) is not applied here — pass an already-boosted
- * `homeOvr` for a league that has it enabled.
+ * Home advantage is not applied here — pass `homeOvr` through
+ * `applyHomeAdvantage` first for a league that has it enabled.
  */
 export function scorinateMatch(homeOvr: number, awayOvr: number, rng: Rng): MatchScore {
   const elasticity = rollElasticity(rng);

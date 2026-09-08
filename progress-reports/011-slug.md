@@ -1,0 +1,13 @@
+# Task 11 — Team ID/slug generation (`slug()` only)
+
+**What was built:** `engine/identity/slug.ts` exports one function, `slug(name: string): string`. It strips diacritics, through Unicode NFKD normalization plus a `\p{Diacritic}` regex. It lowercases the result. It collapses any run of non-alphanumeric characters into one hyphen. It trims leading and trailing hyphens. It throws a `RangeError` for a name with nothing to slug, such as a blank name or a symbols-only name. This task adds no UUID, no provenance, and no uniqueness check across a roster. Those stay for a later MVP2 slice, per the task's own scope note in `PROGRESS.md`.
+
+**Test approach:** plain unit tests, in `slug.test.ts`. No RNG and no filesystem are involved. The tests cover a plain name, an already-slugged name, and diacritic stripping. They also cover punctuation collapse, surrounding whitespace, repeated internal whitespace, and a leading digit. Two more tests cover the `RangeError` cases: a blank name, and a symbols-only name.
+
+**Decisions made:** no doc names a concrete slugification algorithm. `docs/scorinator-mvp1.md` and `docs/scorinator-mvp2.md` only say to auto-generate an ID or slug. This call is not on the named open-items list in CLAUDE.md. So this session picked a standard slugify shape, lowercase plus hyphenate plus diacritic-stripping, the ordinary way. The Tier-OVR bands in Task 2, and the CSV header choices in Task 8, used the same approach.
+
+Two calls stand out on their own.
+- A degenerate input, a blank or symbols-only name, throws. It does not fall back to a placeholder string. A shared placeholder across two such teams would collide silently. Every other engine module in this codebase, `engine/fixtures` and `engine/standings`, already throws a `RangeError` on a comparable degenerate input, instead of guessing.
+- `slug()` takes no roster, and runs no dedupe check. Two teams with the same name produce the same slug today. The research pass for this task found that the docs assign collision handling to the later identity and provenance system. That system covers `skip`/`fork` conflict resolution, in `docs/scorinator-mvp2.md`, under "Identity & Provenance System." Slug generation does not own that job. This is a deliberate scope boundary, not an oversight.
+
+**What is left, what is next:** this task does not wire `slug()` into a blank-slug row from `adapters/csv`, or into a team-creation flow. The Task 8 decision log already expected this: a blank `slug` column stays untouched by the CSV adapter, for a later task to fill in. That later task is Task 12, the Team Management screen. The status board already lists Task 12 as needing both Task 8 and Task 11. This session did not pull that wiring forward.

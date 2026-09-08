@@ -26,7 +26,7 @@ Do not mark as Done until user feedback and agreement over what was delivered. A
 | 5 | Scorination: OVR diff + absolute OVR + elasticity → Poisson score | `engine/scorination` | ✅ Done | 2026-09-07 | 2026-09-07 | [005](/progress-reports/005-scorination.md) | Weighting ratio flagged and confirmed with the user, see Decisions log. |
 | 6 | Home advantage OVR boost | `engine/scorination` | ✅ Done | 2026-09-07 | 2026-09-07 | [006](/progress-reports/006-home-advantage.md) | 5% boost, a balancing detail — see Decisions log. |
 | 8 | Team CSV import/export (MVP1 columns) | `adapters/csv` | 🟩 Review | 2026-09-07 | | [008](/progress-reports/008-team-csv.md) | |
-| 9 | Save/Load JSON (MVP1 flat format — predates wrapper split) | `adapters/json-io` | ⬜ Not started | | | | |
+| 9 | Save/Load JSON (MVP1 flat format — predates wrapper split) | `adapters/json-io` | 🟩 Review | 2026-09-08 | | [009](/progress-reports/009-json-save-load.md) | Serialization only, no disk I/O — see Task 21. |
 | 11 | Team ID/slug generation — `slug()` only, no UUID or provenance yet | `engine/identity` | ⬜ Not started | | | | First slice of the MVP2 identity module. Build only the slug function now. |
 | 12 | Team Management screen: create/edit team form, CSV import, CSV export | `features/teams` | ⬜ Not started | | | | Needs Task 8 (CSV) and Task 11 (slug). |
 | 13 | League Setup screen: create league, home-advantage toggle, points config, add teams | `features/leagues` | ⬜ Not started | | | | No engine blocker. Full save needs Task 9. |
@@ -35,9 +35,10 @@ Do not mark as Done until user feedback and agreement over what was delivered. A
 | 16 | Standings table: live view | `features/standings` | ⬜ Not started | | | | Needs Task 4. |
 | 7 | Re-scorinate (MVP1: no cascade, just overwrite + recalc) | `engine/scorination` | ⬜ Not started | | | | Task moved further down by User - 2026-09-07 due to the lack of a match record to do so. |
 | 19 | Re-scorinate UI | `features/scorination` | ⬜ Not started | | | | Task created by User - 2026-09-07 |
-| 17 | Save/Load UI | `features/persistence` | ⬜ Not started | | | | Needs Task 9. |
+| 17 | Save/Load UI | `features/persistence` | ⬜ Not started | | | | Needs Task 9 and Task 21. |
 | 10 | Results .txt export | `adapters/json-io` or new | ⬜ Not started | | | | Task moved further down by User - 2026-09-07 |
 | 18 | Results export (.txt) UI | `features/persistence` | ⬜ Not started | | | | Needs Task 10. |
+| 21 | Filesystem adapter: real save/open dialog, atomic write, load a save file from disk | `adapters/tauri-fs` | ⬜ Not started | | | | Task added 2026-09-08, found while scoping Task 9. Task 9 only converts an object to a JSON string. No task yet covers the actual disk read/write. Needed by Task 17. |
 | 20+ | *(MVP2 UI tasks. Add these once MVP1 UI work is stable.)* | | | | | | |
 
 **Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input, see Open Questions) · 🟩 Review · ✅ Done

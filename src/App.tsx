@@ -16,6 +16,12 @@ import type { FieldHandle } from './design-system/field';
 import { createSeededRng } from './engine/rng';
 import { applyHomeAdvantage, scorinateMatch } from './engine/scorination';
 import { TIER_ORDER, rollOVR, type Tier } from './engine/tier-ovr';
+import {
+  openTextFileWithDialog,
+  saveTextFileWithDialog,
+  tauriDialog,
+  tauriFileSystem,
+} from './adapters/tauri-fs';
 
 interface StandingsRow {
   id: string;
@@ -131,6 +137,60 @@ function ScorinatorPlayground(): JSX.Element {
   );
 }
 
+function PersistencePlayground(): JSX.Element {
+  const [status, setStatus] = useState<string | null>(null);
+
+  const handleSave = async (): Promise<void> => {
+    setStatus('Saving...');
+    try {
+      const contents = JSON.stringify(
+        { savedAt: new Date().toISOString(), note: 'Written by the tauri-fs playground.' },
+        null,
+        2
+      );
+      const path = await saveTextFileWithDialog(
+        tauriFileSystem,
+        tauriDialog,
+        contents,
+        'scorinator-test.json'
+      );
+      setStatus(path === null ? 'Save canceled.' : `Saved to ${path}`);
+    } catch (error) {
+      setStatus(`Save failed: ${(error as Error).message}`);
+    }
+  };
+
+  const handleOpen = async (): Promise<void> => {
+    setStatus('Opening...');
+    try {
+      const result = await openTextFileWithDialog(tauriFileSystem, tauriDialog);
+      setStatus(result === null ? 'Open canceled.' : `Opened ${result.path}:\n${result.contents}`);
+    } catch (error) {
+      setStatus(`Open failed: ${(error as Error).message}`);
+    }
+  };
+
+  return (
+    <Section title="Persistence playground (adapters/tauri-fs)">
+      <Button onClick={handleSave}>Save test file...</Button>
+      <Button variant="secondary" onClick={handleOpen}>
+        Open file...
+      </Button>
+      <pre
+        style={{
+          width: '100%',
+          margin: 0,
+          fontSize: '0.875rem',
+          color: 'var(--color-fg-muted)',
+          whiteSpace: 'pre-wrap',
+        }}
+      >
+        {status ?? 'Click a button to try the real save/open dialog (Tauri desktop only).'}
+      </pre>
+    </Section>
+  );
+}
+
 function App(): JSX.Element {
   const nameRef = useRef<FieldHandle<string>>(null);
   const pointsRef = useRef<FieldHandle<string>>(null);
@@ -232,6 +292,8 @@ function App(): JSX.Element {
       </Section>
 
       <ScorinatorPlayground />
+
+      <PersistencePlayground />
 
       <Section title="Tabs + Table">
         <div style={{ width: '100%' }}>

@@ -40,6 +40,12 @@ describe('importTeamsCsv', () => {
       { slug: 'fc-united', name: 'FC United', colour: '#E53935', tier: 'B' },
     ]);
   });
+
+  it('opens the dialog filtered to .csv, not .json', async () => {
+    const pickOpenPath = vi.fn().mockResolvedValue(null);
+    await importTeamsCsv(fakeFs(), fakeDialog({ pickOpenPath }));
+    expect(pickOpenPath).toHaveBeenCalledWith([{ name: 'Team CSV', extensions: ['csv'] }]);
+  });
 });
 
 describe('exportTeamsCsv', () => {
@@ -67,5 +73,13 @@ describe('exportTeamsCsv', () => {
     expect(writeTextFile).toHaveBeenCalled();
     const [, contents] = writeTextFile.mock.calls[0];
     expect(contents).toContain('FC United');
+  });
+
+  it('opens the save dialog filtered to .csv, not .json', async () => {
+    const pickSavePath = vi.fn().mockResolvedValue(null);
+    await exportTeamsCsv([], fakeFs(), fakeDialog({ pickSavePath }));
+    expect(pickSavePath).toHaveBeenCalledWith('teams.csv', [
+      { name: 'Team CSV', extensions: ['csv'] },
+    ]);
   });
 });

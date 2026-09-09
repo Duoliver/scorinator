@@ -3,6 +3,7 @@ import type { JSX } from 'preact';
 import { Badge, Button, Table, type TableColumn } from '../../design-system';
 import { TeamForm } from './TeamForm';
 import { exportTeamsCsv, importTeamsCsv } from './csvIO';
+import { importTeamsJson } from './jsonIO';
 import {
   csvRecordToTeamRecord,
   mergeImportedTeams,
@@ -34,9 +35,21 @@ export function TeamsScreen(): JSX.Element {
     setDrawer(null);
   };
 
-  const handleImport = async (): Promise<void> => {
+  const handleImportCsv = async (): Promise<void> => {
     try {
       const imported = await importTeamsCsv();
+      if (imported === null) return;
+      const records = imported.map(csvRecordToTeamRecord);
+      setTeams((current) => mergeImportedTeams(current, records));
+      setStatus(`Imported ${records.length} team${records.length === 1 ? '' : 's'}.`);
+    } catch (error) {
+      setStatus((error as Error).message);
+    }
+  };
+
+  const handleImportJson = async (): Promise<void> => {
+    try {
+      const imported = await importTeamsJson();
       if (imported === null) return;
       const records = imported.map(csvRecordToTeamRecord);
       setTeams((current) => mergeImportedTeams(current, records));
@@ -138,7 +151,10 @@ export function TeamsScreen(): JSX.Element {
           Teams
         </h1>
         <div style={{ display: 'flex', gap: '0.75rem' }}>
-          <Button variant="secondary" onClick={handleImport}>
+          <Button variant="secondary" onClick={handleImportJson}>
+            Import JSON...
+          </Button>
+          <Button variant="secondary" onClick={handleImportCsv}>
             Import CSV...
           </Button>
           <Button variant="secondary" onClick={handleExport}>

@@ -9,18 +9,25 @@ import {
   serializeTeamsCsv,
   type TeamCsvRecord,
 } from '../../adapters/csv';
-import type { FileSystem, SaveFileDialog } from '../../persistence/types';
+import type { FileFilter, FileSystem, SaveFileDialog } from '../../persistence/types';
 
 /** The thin `features/` → `adapters/` seam the module boundaries require:
  * `features/teams` never imports `adapters/csv` or `adapters/tauri-fs`
  * anywhere else. `fs`/`dialog` default to the real Tauri adapters and are
  * only overridden in tests. */
 
+/** Restricts the open/save dialog to `.csv` files. Without this, both calls
+ * fall back to `tauriDialog`'s own default filter (`.json`, built for the
+ * save/load feature), which lets a user pick a save file but not a team CSV
+ * — the button would claim to import/export CSV while the OS file picker
+ * only shows `.json` files. */
+const CSV_FILTERS: readonly FileFilter[] = [{ name: 'Team CSV', extensions: ['csv'] }];
+
 export async function importTeamsCsv(
   fs: FileSystem = tauriFileSystem,
   dialog: SaveFileDialog = tauriDialog
 ): Promise<TeamCsvRecord[] | null> {
-  const opened = await openTextFileWithDialog(fs, dialog);
+  const opened = await openTextFileWithDialog(fs, dialog, CSV_FILTERS);
   if (opened === null) return null;
   return parseTeamsCsv(opened.contents);
 }
@@ -31,5 +38,5 @@ export async function exportTeamsCsv(
   dialog: SaveFileDialog = tauriDialog
 ): Promise<string | null> {
   const contents = serializeTeamsCsv(records);
-  return saveTextFileWithDialog(fs, dialog, contents, 'teams.csv');
+  return saveTextFileWithDialog(fs, dialog, contents, 'teams.csv', CSV_FILTERS);
 }

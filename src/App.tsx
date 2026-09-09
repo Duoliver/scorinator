@@ -22,6 +22,7 @@ import {
   tauriDialog,
   tauriFileSystem,
 } from './adapters/tauri-fs';
+import { TeamsScreen } from './features/teams';
 
 interface StandingsRow {
   id: string;
@@ -92,7 +93,8 @@ function FormatPreview({
   useEffect(() => {
     const handle = formatRef.current;
     if (!handle) return;
-    const sync = (value: string): void => setIsSingleDuels(value === 'round-robin-single');
+    const sync = (value: string): void =>
+      setIsSingleDuels(value === 'round-robin-single');
     sync(handle.getValue());
     return handle.subscribe(sync);
   }, [formatRef]);
@@ -126,11 +128,27 @@ function ScorinatorPlayground(): JSX.Element {
 
   return (
     <Section title="Scorinator playground">
-      <Select label="Team 1 tier" defaultValue="B" options={TIER_OPTIONS} ref={homeTierRef} />
-      <Select label="Team 2 tier" defaultValue="B" options={TIER_OPTIONS} ref={awayTierRef} />
+      <Select
+        label="Team 1 tier"
+        defaultValue="B"
+        options={TIER_OPTIONS}
+        ref={homeTierRef}
+      />
+      <Select
+        label="Team 2 tier"
+        defaultValue="B"
+        options={TIER_OPTIONS}
+        ref={awayTierRef}
+      />
       <Switch label="Home advantage (Team 1)" ref={homeAdvantageRef} />
       <Button onClick={handleScorinate}>Scorinate</Button>
-      <span style={{ fontSize: '1.5rem', fontFamily: 'var(--font-heading)', minWidth: '4rem' }}>
+      <span
+        style={{
+          fontSize: '1.5rem',
+          fontFamily: 'var(--font-heading)',
+          minWidth: '4rem',
+        }}
+      >
         {score ?? ''}
       </span>
     </Section>
@@ -144,7 +162,10 @@ function PersistencePlayground(): JSX.Element {
     setStatus('Saving...');
     try {
       const contents = JSON.stringify(
-        { savedAt: new Date().toISOString(), note: 'Written by the tauri-fs playground.' },
+        {
+          savedAt: new Date().toISOString(),
+          note: 'Written by the tauri-fs playground.',
+        },
         null,
         2
       );
@@ -164,7 +185,11 @@ function PersistencePlayground(): JSX.Element {
     setStatus('Opening...');
     try {
       const result = await openTextFileWithDialog(tauriFileSystem, tauriDialog);
-      setStatus(result === null ? 'Open canceled.' : `Opened ${result.path}:\n${result.contents}`);
+      setStatus(
+        result === null
+          ? 'Open canceled.'
+          : `Opened ${result.path}:\n${result.contents}`
+      );
     } catch (error) {
       setStatus(`Open failed: ${(error as Error).message}`);
     }
@@ -185,13 +210,20 @@ function PersistencePlayground(): JSX.Element {
           whiteSpace: 'pre-wrap',
         }}
       >
-        {status ?? 'Click a button to try the real save/open dialog (Tauri desktop only).'}
+        {status ??
+          'Click a button to try the real save/open dialog (Tauri desktop only).'}
       </pre>
     </Section>
   );
 }
 
-function App(): JSX.Element {
+/** The design-system + engine playground built before any real screen
+ * existed. Kept, collapsed, behind TeamsScreen rather than deleted — it is
+ * still the only manual click-through path for the real save/open dialog
+ * (see Task 21's report, and PERSISTENCE.md), which no automated test in
+ * this sandbox can cover. Retire this once Task 17's real Save/Load UI
+ * gives that check a proper home. */
+function Playground(): JSX.Element {
   const nameRef = useRef<FieldHandle<string>>(null);
   const pointsRef = useRef<FieldHandle<string>>(null);
   const formatRef = useRef<FieldHandle<string>>(null);
@@ -200,126 +232,148 @@ function App(): JSX.Element {
   const [loggedValues, setLoggedValues] = useState<string | null>(null);
 
   return (
+    <details style={{ marginTop: '2rem' }}>
+      <summary
+        style={{
+          cursor: 'pointer',
+          fontFamily: 'var(--font-heading)',
+          fontWeight: 700,
+          padding: '0.5rem 0',
+        }}
+      >
+        Design system + engine playground (dev only)
+      </summary>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '2.5rem',
+          padding: '1.5rem 0',
+        }}
+      >
+        <Section title="Buttons">
+          <Button variant="primary">Primary</Button>
+          <Button variant="secondary">Secondary</Button>
+          <Button variant="destructive">Destructive</Button>
+          <Button variant="ghost">Ghost</Button>
+          <Button disabled>Disabled</Button>
+          <Button size="sm">Small</Button>
+          <Button size="lg">Large</Button>
+        </Section>
+
+        <Section title="Badges">
+          <Badge tone="dark">S</Badge>
+          <Badge tone="accent">Win</Badge>
+          <Badge tone="neutral">Draw</Badge>
+          <Badge tone="error">Loss</Badge>
+          <Badge tone="warning">Bye</Badge>
+        </Section>
+
+        <Section title="Input">
+          <Input label="Team name" placeholder="e.g. Salt Marsh United" ref={nameRef} />
+          <Input
+            label="Points (W)"
+            defaultValue="3"
+            type="number"
+            min={0}
+            max={10}
+            step={1}
+            ref={pointsRef}
+          />
+          <PointsPreview pointsRef={pointsRef} />
+          <Button
+            size="sm"
+            onClick={() =>
+              setLoggedValues(
+                `Team name: ${nameRef.current?.getValue() ?? ''} · Points (W): ${pointsRef.current?.getValue() ?? ''}`
+              )
+            }
+          >
+            Log values
+          </Button>
+          <span style={{ fontSize: '0.875rem', color: 'var(--color-fg-muted)' }}>
+            {loggedValues ?? ''}
+          </span>
+        </Section>
+
+        <Section title="Select">
+          <Select
+            label="Format"
+            defaultValue="round-robin-two-way"
+            options={[
+              { label: 'Round robin (two-way)', value: 'round-robin-two-way' },
+              { label: 'Round robin (single duels)', value: 'round-robin-single' },
+            ]}
+            ref={formatRef}
+          />
+          <FormatPreview formatRef={formatRef} />
+        </Section>
+
+        <Section title="Checkbox">
+          <Checkbox label="Include byes" defaultChecked ref={includeByesRef} />
+        </Section>
+
+        <Section title="Switch">
+          <Switch label="Home advantage" defaultChecked ref={homeAdvantageRef} />
+        </Section>
+
+        <Section title="Card">
+          <Card padding="md">
+            <strong>Coastal Premier</strong>
+            <div style={{ fontSize: '0.875rem', color: 'var(--color-fg-muted)' }}>
+              Round robin (two-way) · 8 teams
+            </div>
+          </Card>
+        </Section>
+
+        <ScorinatorPlayground />
+
+        <PersistencePlayground />
+
+        <Section title="Tabs + Table">
+          <div style={{ width: '100%' }}>
+            <Tabs
+              defaultTab="standings"
+              tabs={[
+                {
+                  id: 'standings',
+                  label: 'Standings',
+                  content: (
+                    <Table
+                      columns={standingsColumns}
+                      rows={standingsRows}
+                      rowKey={(r) => r.id}
+                    />
+                  ),
+                },
+                {
+                  id: 'fixtures',
+                  label: 'Fixtures',
+                  content: <p>Fixtures tab — no data wired up in this preview.</p>,
+                },
+              ]}
+            />
+          </div>
+        </Section>
+      </div>
+    </details>
+  );
+}
+
+function App(): JSX.Element {
+  return (
     <main
       style={{
         background: 'var(--color-bg)',
         color: 'var(--color-fg)',
         fontFamily: 'var(--font-body)',
         minHeight: '100vh',
-        padding: '3rem',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '2.5rem',
       }}
     >
-      <h1 style={{ margin: 0, fontFamily: 'var(--font-heading)' }}>
-        Design system preview
-      </h1>
-
-      <Section title="Buttons">
-        <Button variant="primary">Primary</Button>
-        <Button variant="secondary">Secondary</Button>
-        <Button variant="destructive">Destructive</Button>
-        <Button variant="ghost">Ghost</Button>
-        <Button disabled>Disabled</Button>
-        <Button size="sm">Small</Button>
-        <Button size="lg">Large</Button>
-      </Section>
-
-      <Section title="Badges">
-        <Badge tone="dark">S</Badge>
-        <Badge tone="accent">Win</Badge>
-        <Badge tone="neutral">Draw</Badge>
-        <Badge tone="error">Loss</Badge>
-        <Badge tone="warning">Bye</Badge>
-      </Section>
-
-      <Section title="Input">
-        <Input label="Team name" placeholder="e.g. Salt Marsh United" ref={nameRef} />
-        <Input
-          label="Points (W)"
-          defaultValue="3"
-          type="number"
-          min={0}
-          max={10}
-          step={1}
-          ref={pointsRef}
-        />
-        <PointsPreview pointsRef={pointsRef} />
-        <Button
-          size="sm"
-          onClick={() =>
-            setLoggedValues(
-              `Team name: ${nameRef.current?.getValue() ?? ''} · Points (W): ${pointsRef.current?.getValue() ?? ''}`,
-            )
-          }
-        >
-          Log values
-        </Button>
-        <span style={{ fontSize: '0.875rem', color: 'var(--color-fg-muted)' }}>
-          {loggedValues ?? ''}
-        </span>
-      </Section>
-
-      <Section title="Select">
-        <Select
-          label="Format"
-          defaultValue="round-robin-two-way"
-          options={[
-            { label: 'Round robin (two-way)', value: 'round-robin-two-way' },
-            { label: 'Round robin (single duels)', value: 'round-robin-single' },
-          ]}
-          ref={formatRef}
-        />
-        <FormatPreview formatRef={formatRef} />
-      </Section>
-
-      <Section title="Checkbox">
-        <Checkbox label="Include byes" defaultChecked ref={includeByesRef} />
-      </Section>
-
-      <Section title="Switch">
-        <Switch label="Home advantage" defaultChecked ref={homeAdvantageRef} />
-      </Section>
-
-      <Section title="Card">
-        <Card padding="md">
-          <strong>Coastal Premier</strong>
-          <div style={{ fontSize: '0.875rem', color: 'var(--color-fg-muted)' }}>
-            Round robin (two-way) · 8 teams
-          </div>
-        </Card>
-      </Section>
-
-      <ScorinatorPlayground />
-
-      <PersistencePlayground />
-
-      <Section title="Tabs + Table">
-        <div style={{ width: '100%' }}>
-          <Tabs
-            defaultTab="standings"
-            tabs={[
-              {
-                id: 'standings',
-                label: 'Standings',
-                content: (
-                  <Table
-                    columns={standingsColumns}
-                    rows={standingsRows}
-                    rowKey={(r) => r.id}
-                  />
-                ),
-              },
-              {
-                id: 'fixtures',
-                label: 'Fixtures',
-                content: <p>Fixtures tab — no data wired up in this preview.</p>,
-              },
-            ]}
-          />
-        </div>
-      </Section>
+      <TeamsScreen />
+      <div style={{ padding: '0 3rem 3rem' }}>
+        <Playground />
+      </div>
     </main>
   );
 }

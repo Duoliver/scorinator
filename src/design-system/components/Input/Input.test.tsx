@@ -94,4 +94,19 @@ describe('Input', () => {
     ref.current?.focus();
     expect(screen.getByLabelText('League name')).toHaveFocus();
   });
+
+  it('renders as read-only when readOnly is set, without blocking getValue()/setValue()', () => {
+    const ref = createRef();
+    render(<Input label="Slug" defaultValue="fc-united" readOnly ref={ref} />);
+    const input = screen.getByLabelText('Slug') as HTMLInputElement;
+    expect(input.readOnly).toBe(true);
+    ref.current?.setValue('salt-marsh-united');
+    expect(ref.current?.getValue()).toBe('salt-marsh-united');
+  });
+
+  it('does not accept direct typing when readOnly is set', async () => {
+    render(<Input label="Slug" defaultValue="fc-united" readOnly />);
+    await userEvent.type(screen.getByLabelText('Slug'), 'x');
+    expect(screen.getByLabelText('Slug')).toHaveValue('fc-united');
+  });
 });

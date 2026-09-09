@@ -28,6 +28,11 @@
   box-shadow: var(--shadow-accent-sm);
 }
 
+.input[readonly] {
+  background: var(--color-bg);
+  color: var(--color-fg-muted);
+}
+
 .input[type='number'] {
   font-family: var(--font-mono);
   text-align: center;

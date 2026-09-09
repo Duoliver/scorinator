@@ -1,5 +1,11 @@
 import { forwardRef } from 'preact/compat';
-import { useCallback, useId, useImperativeHandle, useRef, useState } from 'preact/hooks';
+import {
+  useCallback,
+  useId,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from 'preact/hooks';
 import type { TargetedEvent } from 'preact';
 import type InputProps from './types';
 import type { FieldHandle } from '../../field';
@@ -8,7 +14,21 @@ import styles from './Input.module.css';
 export type { InputProps };
 
 export const Input = forwardRef<FieldHandle<string>, InputProps>(
-  ({ label, defaultValue = '', onChange, placeholder, type = 'text', id, min, max, step }, ref) => {
+  (
+    {
+      label,
+      defaultValue = '',
+      onChange,
+      placeholder,
+      type = 'text',
+      id,
+      readOnly,
+      min,
+      max,
+      step,
+    },
+    ref
+  ) => {
     const generatedId = useId();
     const inputId = id ?? generatedId;
     const inputEl = useRef<HTMLInputElement>(null);
@@ -39,7 +59,7 @@ export const Input = forwardRef<FieldHandle<string>, InputProps>(
         },
         focus: (): void => inputEl.current?.focus(),
       }),
-      [commitValue],
+      [commitValue]
     );
 
     return (
@@ -56,6 +76,7 @@ export const Input = forwardRef<FieldHandle<string>, InputProps>(
           type={type}
           value={value}
           placeholder={placeholder}
+          readOnly={readOnly}
           min={min}
           max={max}
           step={step}
@@ -65,6 +86,6 @@ export const Input = forwardRef<FieldHandle<string>, InputProps>(
         />
       </div>
     );
-  },
+  }
 );
 Input.displayName = 'Input';

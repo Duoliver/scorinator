@@ -33,14 +33,18 @@ The module map below is a direct transcription of decisions already made in the 
   /features            screens, composed from /engine + /design-system.
                        Never imports /persistence or /adapters directly —
                        goes through a thin app-level data layer instead.
+                       Split internally into per-screen folders plus a
+                       /components folder for shared, business-logic-tied
+                       components — see /features/FEATURES.md for the
+                       required import direction between the two.
 
   /app                 Tauri bootstrap, routing, wiring of adapters to features
 ```
 
 **Crossing rules (enforced, not suggestions):**
-- `engine/` never imports from `features/`, `design-system/`, `adapters/`, or Preact/Tauri. If a task seems to require this, stop and flag it — it likely means domain logic leaked into the wrong layer.
-- `features/` never talks to `adapters/` directly. It calls `engine/` functions and a thin data-access layer that itself depends on `persistence/`'s interfaces.
-- `persistence/` defines contracts; `adapters/` implements them. Engine code never imports `adapters/`.
+- `engine/` never imports from `features/`, `design-system/`, `adapters/`, or Preact/Tauri. If a task seems to need this, stop and flag it. It likely means domain logic leaked into the wrong layer.
+- `features/` never talks to `adapters/` directly. It calls `engine/` functions and a thin data-access layer. That layer itself depends on the interfaces `persistence/` defines.
+- `persistence/` defines contracts. `adapters/` implements them. Engine code never imports `adapters/`.
 - `design-system/` is the only layer allowed to reference the design brief. `features/` consumes `design-system/`, never the brief itself. See §4.
 
-**What this map is not:** a license to pre-design the internals of each module (function signatures, class shapes, event schemas) before tests exist. Boundaries are fixed; internals are designed just-in-time per §2. Do not create empty scaffolding for modules you aren't actively building.
+**What this map is not:** a license to pre-design the internals of each module before tests exist. That means function signatures, class shapes, and event schemas. Boundaries are fixed. Internals get designed just-in-time, per §2. Do not create empty scaffolding for a module you are not actively building.

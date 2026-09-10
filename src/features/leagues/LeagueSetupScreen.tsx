@@ -1,20 +1,13 @@
-import { useState } from 'preact/hooks';
-import type { JSX } from 'preact';
-import { Button } from '../../design-system';
+import { useRef, useState } from 'preact/hooks';
+import type { JSX, RefObject } from 'preact';
+import { Tabs, type TabItem } from '../../design-system';
+import type { FieldHandle } from '../../design-system/field';
 import { DEFAULT_POINTS_CONFIG, type PointsConfig } from '../../engine/standings';
 import { useTeamsStore } from '../../app/state/teamsStore';
 import { useLeagueStore } from '../../app/state/leagueStore';
 import { DetailsStep } from './steps/DetailsStep';
 import { TeamsStep } from './steps/TeamsStep';
 import { ReviewStep } from './steps/ReviewStep';
-
-type Step = 'details' | 'teams' | 'review';
-
-const STEPS: { id: Step; label: string }[] = [
-  { id: 'details', label: '1 · Details' },
-  { id: 'teams', label: '2 · Teams' },
-  { id: 'review', label: '3 · Review' },
-];
 
 function emptyDetails(): { name: string; points: PointsConfig; homeAdvantage: boolean } {
   return { name: '', points: DEFAULT_POINTS_CONFIG, homeAdvantage: false };
@@ -24,7 +17,7 @@ export function LeagueSetupScreen(): JSX.Element {
   const teams = useTeamsStore((state) => state.teams);
   const addLeague = useLeagueStore((state) => state.addLeague);
 
-  const [step, setStep] = useState<Step>('details');
+  const stepsRef: RefObject<FieldHandle<string>> = useRef(null);
   const [details, setDetails] = useState(emptyDetails());
   const [selectedSlugs, setSelectedSlugs] = useState<string[]>([]);
   const [status, setStatus] = useState<string | null>(null);
@@ -49,10 +42,57 @@ export function LeagueSetupScreen(): JSX.Element {
       teams: selectedTeams,
     });
     setStatus(`League "${league.name}" created with ${league.teams.length} teams.`);
-    setStep('details');
+    stepsRef.current?.setValue('details');
     setDetails(emptyDetails());
     setSelectedSlugs([]);
   };
+
+  const tabs: TabItem[] = [
+    {
+      id: 'details',
+      label: '1 · Details',
+      content: (
+        <DetailsStep
+          name={details.name}
+          points={details.points}
+          homeAdvantage={details.homeAdvantage}
+          onNameChange={(name) => setDetails((current) => ({ ...current, name }))}
+          onPointsChange={(points) => setDetails((current) => ({ ...current, points }))}
+          onHomeAdvantageChange={(homeAdvantage) =>
+            setDetails((current) => ({ ...current, homeAdvantage }))
+          }
+          onNext={() => stepsRef.current?.setValue('teams')}
+        />
+      ),
+    },
+    {
+      id: 'teams',
+      label: '2 · Teams',
+      content: (
+        <TeamsStep
+          selectedSlugs={selectedSlugs}
+          onToggleTeam={toggleTeam}
+          onTeamCreated={selectTeam}
+          onBack={() => stepsRef.current?.setValue('details')}
+          onNext={() => stepsRef.current?.setValue('review')}
+        />
+      ),
+    },
+    {
+      id: 'review',
+      label: '3 · Review',
+      content: (
+        <ReviewStep
+          name={details.name}
+          homeAdvantage={details.homeAdvantage}
+          points={details.points}
+          selectedTeams={selectedTeams}
+          onBack={() => stepsRef.current?.setValue('teams')}
+          onCreate={handleCreate}
+        />
+      ),
+    },
+  ];
 
   return (
     <div
@@ -68,52 +108,7 @@ export function LeagueSetupScreen(): JSX.Element {
         League Setup
       </h1>
 
-      <div style={{ display: 'flex', gap: '0.5rem' }}>
-        {STEPS.map((s) => (
-          <Button
-            key={s.id}
-            variant={s.id === step ? 'primary' : 'secondary'}
-            onClick={() => setStep(s.id)}
-          >
-            {s.label}
-          </Button>
-        ))}
-      </div>
-
-      {step === 'details' && (
-        <DetailsStep
-          name={details.name}
-          points={details.points}
-          homeAdvantage={details.homeAdvantage}
-          onNameChange={(name) => setDetails((current) => ({ ...current, name }))}
-          onPointsChange={(points) => setDetails((current) => ({ ...current, points }))}
-          onHomeAdvantageChange={(homeAdvantage) =>
-            setDetails((current) => ({ ...current, homeAdvantage }))
-          }
-          onNext={() => setStep('teams')}
-        />
-      )}
-
-      {step === 'teams' && (
-        <TeamsStep
-          selectedSlugs={selectedSlugs}
-          onToggleTeam={toggleTeam}
-          onTeamCreated={selectTeam}
-          onBack={() => setStep('details')}
-          onNext={() => setStep('review')}
-        />
-      )}
-
-      {step === 'review' && (
-        <ReviewStep
-          name={details.name}
-          homeAdvantage={details.homeAdvantage}
-          points={details.points}
-          selectedTeams={selectedTeams}
-          onBack={() => setStep('teams')}
-          onCreate={handleCreate}
-        />
-      )}
+      <Tabs tabs={tabs} defaultTab="details" ref={stepsRef} />
 
       {status && (
         <span style={{ fontSize: '0.875rem', color: 'var(--color-fg-muted)' }}>

@@ -1,7 +1,10 @@
+import { createRef } from 'preact';
+import { act } from 'preact/test-utils';
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { Tabs } from './Tabs';
+import type { FieldHandle } from '../../field';
 
 const tabs = [
   { id: 'standings', label: 'Standings', content: <p>Standings content</p> },
@@ -54,5 +57,52 @@ describe('Tabs', () => {
     render(<Tabs tabs={tabs} defaultTab="standings" />);
     await userEvent.click(screen.getByRole('tab', { name: 'Fixtures' }));
     expect(screen.getByText('Fixtures content')).toBeInTheDocument();
+  });
+
+  it('exposes the active tab id through the ref, matching the clicked tab', async () => {
+    const ref = createRef<FieldHandle<string>>();
+    render(<Tabs tabs={tabs} defaultTab="standings" ref={ref} />);
+    expect(ref.current?.getValue()).toBe('standings');
+    await userEvent.click(screen.getByRole('tab', { name: 'Fixtures' }));
+    expect(ref.current?.getValue()).toBe('fixtures');
+  });
+
+  it('switches the active tab from outside via ref.setValue, with no onChange call', () => {
+    const onChange = vi.fn();
+    const ref = createRef<FieldHandle<string>>();
+    render(<Tabs tabs={tabs} defaultTab="standings" onChange={onChange} ref={ref} />);
+
+    act(() => ref.current?.setValue('fixtures'));
+
+    expect(screen.getByRole('tab', { name: 'Fixtures' })).toHaveAttribute(
+      'aria-selected',
+      'true'
+    );
+    expect(screen.getByText('Fixtures content')).toBeInTheDocument();
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('notifies a ref subscriber on every tab change, from a click or from setValue', async () => {
+    const ref = createRef<FieldHandle<string>>();
+    render(<Tabs tabs={tabs} defaultTab="standings" ref={ref} />);
+    const listener = vi.fn();
+    const unsubscribe = ref.current?.subscribe(listener);
+
+    await userEvent.click(screen.getByRole('tab', { name: 'Fixtures' }));
+    ref.current?.setValue('standings');
+
+    expect(listener).toHaveBeenNthCalledWith(1, 'fixtures');
+    expect(listener).toHaveBeenNthCalledWith(2, 'standings');
+
+    unsubscribe?.();
+    ref.current?.setValue('fixtures');
+    expect(listener).toHaveBeenCalledTimes(2);
+  });
+
+  it('moves focus to the active tab button on ref.focus()', () => {
+    const ref = createRef<FieldHandle<string>>();
+    render(<Tabs tabs={tabs} defaultTab="fixtures" ref={ref} />);
+    ref.current?.focus();
+    expect(screen.getByRole('tab', { name: 'Fixtures' })).toHaveFocus();
   });
 });

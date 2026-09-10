@@ -23,6 +23,7 @@ import {
   tauriFileSystem,
 } from './adapters/tauri-fs';
 import { TeamsScreen } from './features/teams';
+import { LeagueSetupScreen } from './features/leagues';
 
 interface StandingsRow {
   id: string;
@@ -371,6 +372,7 @@ function App(): JSX.Element {
       }}
     >
       <TeamsScreen />
+      <LeagueSetupScreen />
       <div style={{ padding: '0 3rem 3rem' }}>
         <Playground />
       </div>

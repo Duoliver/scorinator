@@ -1,9 +1,14 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { TeamsScreen } from './TeamsScreen';
+import { useTeamsStore } from '../../app/state/teamsStore';
 import * as csvIO from './csvIO';
 import * as jsonIO from './jsonIO';
+
+beforeEach(() => {
+  useTeamsStore.setState({ teams: [] });
+});
 
 describe('TeamsScreen', () => {
   it('renders an empty roster with a team count of 0', () => {

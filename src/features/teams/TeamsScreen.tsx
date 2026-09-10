@@ -1,7 +1,8 @@
 import { useState } from 'preact/hooks';
 import type { JSX } from 'preact';
 import { Badge, Button, Table, type TableColumn } from '../../design-system';
-import { TeamForm } from './TeamForm';
+import { TeamForm, type TeamRecord } from '../components';
+import { useTeamsStore } from '../../app/state/teamsStore';
 import { exportTeamsCsv, importTeamsCsv } from './csvIO';
 import { importTeamsJson } from './jsonIO';
 import {
@@ -9,7 +10,6 @@ import {
   mergeImportedTeams,
   teamRecordToCsvRecord,
 } from './importMerge';
-import type { TeamRecord } from './types';
 
 type Drawer = { mode: 'create' } | { mode: 'edit'; index: number } | null;
 
@@ -19,19 +19,19 @@ interface TeamRow extends TeamRecord {
 }
 
 export function TeamsScreen(): JSX.Element {
-  const [teams, setTeams] = useState<TeamRecord[]>([]);
+  const teams = useTeamsStore((state) => state.teams);
+  const addTeam = useTeamsStore((state) => state.addTeam);
+  const updateTeam = useTeamsStore((state) => state.updateTeam);
+  const setTeams = useTeamsStore((state) => state.setTeams);
   const [drawer, setDrawer] = useState<Drawer>(null);
   const [status, setStatus] = useState<string | null>(null);
 
   const handleSave = (record: TeamRecord): void => {
-    setTeams((current) => {
-      if (drawer?.mode === 'edit') {
-        const next = [...current];
-        next[drawer.index] = record;
-        return next;
-      }
-      return [...current, record];
-    });
+    if (drawer?.mode === 'edit') {
+      updateTeam(drawer.index, record);
+    } else {
+      addTeam(record);
+    }
     setDrawer(null);
   };
 
@@ -40,7 +40,7 @@ export function TeamsScreen(): JSX.Element {
       const imported = await importTeamsCsv();
       if (imported === null) return;
       const records = imported.map(csvRecordToTeamRecord);
-      setTeams((current) => mergeImportedTeams(current, records));
+      setTeams(mergeImportedTeams(teams, records));
       setStatus(`Imported ${records.length} team${records.length === 1 ? '' : 's'}.`);
     } catch (error) {
       setStatus((error as Error).message);
@@ -52,7 +52,7 @@ export function TeamsScreen(): JSX.Element {
       const imported = await importTeamsJson();
       if (imported === null) return;
       const records = imported.map(csvRecordToTeamRecord);
-      setTeams((current) => mergeImportedTeams(current, records));
+      setTeams(mergeImportedTeams(teams, records));
       setStatus(`Imported ${records.length} team${records.length === 1 ? '' : 's'}.`);
     } catch (error) {
       setStatus((error as Error).message);

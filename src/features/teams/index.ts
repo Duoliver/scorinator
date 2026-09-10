@@ -1,2 +1,2 @@
 export { TeamsScreen } from './TeamsScreen';
-export type { TeamRecord } from './types';
+export type { TeamRecord } from '../components';

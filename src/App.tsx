@@ -24,6 +24,7 @@ import {
 } from './adapters/tauri-fs';
 import { TeamsScreen } from './features/teams';
 import { LeagueSetupScreen } from './features/leagues';
+import appStyles from './App.module.css';
 
 interface StandingsRow {
   id: string;
@@ -363,17 +364,10 @@ function Playground(): JSX.Element {
 
 function App(): JSX.Element {
   return (
-    <main
-      style={{
-        background: 'var(--color-bg)',
-        color: 'var(--color-fg)',
-        fontFamily: 'var(--font-body)',
-        minHeight: '100vh',
-      }}
-    >
+    <main class={appStyles.app}>
       <TeamsScreen />
       <LeagueSetupScreen />
-      <div style={{ padding: '0 3rem 3rem' }}>
+      <div class={appStyles.playgroundWrapper}>
         <Playground />
       </div>
     </main>

@@ -1,6 +1,7 @@
 import type { JSX } from 'preact';
 import { Button, Input, Switch } from '../../../design-system';
 import type { PointsConfig } from '../../../engine/standings';
+import styles from './DetailsStep.module.css';
 
 interface DetailsStepProps {
   name: string;
@@ -27,7 +28,7 @@ export function DetailsStep({
   onNext,
 }: DetailsStepProps): JSX.Element {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.375rem' }}>
+    <div class={styles.step}>
       <Input
         label="League name"
         defaultValue={name}
@@ -35,7 +36,7 @@ export function DetailsStep({
         onChange={onNameChange}
       />
 
-      <div style={{ display: 'flex', gap: '0.75rem' }}>
+      <div class={styles.pointsRow}>
         <Input
           label="Points (win)"
           type="number"
@@ -71,7 +72,7 @@ export function DetailsStep({
         onChange={onHomeAdvantageChange}
       />
 
-      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+      <div class={styles.footer}>
         <Button onClick={onNext}>Next: Teams →</Button>
       </div>
     </div>

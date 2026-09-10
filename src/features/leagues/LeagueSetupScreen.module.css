@@ -1,0 +1,12 @@
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  padding: var(--space-10) var(--space-12);
+  max-width: 52rem;
+}
+
+.status {
+  font-size: var(--font-size-lg);
+  color: var(--color-fg-muted);
+}

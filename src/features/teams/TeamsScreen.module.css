@@ -1,0 +1,41 @@
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  padding: var(--space-10) var(--space-12);
+  max-width: 65rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: var(--space-4);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.swatch {
+  width: 1.125rem;
+  height: 1.125rem;
+  border: var(--border-width) solid var(--color-fg);
+}
+
+.slug {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-md);
+  color: var(--color-fg-muted);
+}
+
+.count {
+  font-size: var(--font-size-md);
+  color: var(--color-fg-muted);
+}
+
+.status {
+  font-size: var(--font-size-lg);
+  color: var(--color-fg-muted);
+}

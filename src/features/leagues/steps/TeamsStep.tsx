@@ -3,6 +3,7 @@ import type { JSX } from 'preact';
 import { Badge, Button, Checkbox, Input, Table, type TableColumn } from '../../../design-system';
 import { TeamForm, type TeamRecord } from '../../components';
 import { useTeamsStore } from '../../../app/state/teamsStore';
+import styles from './TeamsStep.module.css';
 
 interface TeamsStepProps {
   selectedSlugs: readonly string[];
@@ -39,20 +40,13 @@ export function TeamsStep({
       key: 'team',
       header: 'Team',
       render: (team) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <div class={styles.teamCell}>
           <Checkbox
             label={team.name}
             defaultChecked={selectedSlugs.includes(team.slug)}
             onChange={() => onToggleTeam(team.slug)}
           />
-          <div
-            style={{
-              width: '1rem',
-              height: '1rem',
-              border: '2px solid var(--color-fg)',
-              background: team.colour || 'transparent',
-            }}
-          />
+          <div class={styles.swatch} style={{ background: team.colour || 'transparent' }} />
         </div>
       ),
     },
@@ -66,8 +60,8 @@ export function TeamsStep({
   ];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.375rem' }}>
-      <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-end' }}>
+    <div class={styles.step}>
+      <div class={styles.toolbar}>
         <Input
           label="Search teams"
           placeholder="Search teams…"
@@ -80,9 +74,7 @@ export function TeamsStep({
 
       <Table columns={columns} rows={filteredTeams} rowKey={(team) => team.slug} />
 
-      <span style={{ fontSize: '0.8125rem', color: 'var(--color-fg-muted)' }}>
-        {selectedSlugs.length} teams selected
-      </span>
+      <span class={styles.count}>{selectedSlugs.length} teams selected</span>
 
       {showCreateTeam && (
         <TeamForm
@@ -93,7 +85,7 @@ export function TeamsStep({
         />
       )}
 
-      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+      <div class={styles.footer}>
         <Button variant="secondary" onClick={onBack}>
           Back
         </Button>

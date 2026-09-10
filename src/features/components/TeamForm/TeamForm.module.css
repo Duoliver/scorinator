@@ -1,0 +1,15 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.375rem;
+}
+
+.error {
+  color: var(--color-error);
+  font-size: var(--font-size-lg);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-3);
+}

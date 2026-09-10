@@ -1,0 +1,15 @@
+.step {
+  display: flex;
+  flex-direction: column;
+  gap: 1.375rem;
+}
+
+.pointsRow {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+}

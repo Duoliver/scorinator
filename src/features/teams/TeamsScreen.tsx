@@ -10,6 +10,7 @@ import {
   mergeImportedTeams,
   teamRecordToCsvRecord,
 } from './importMerge';
+import styles from './TeamsScreen.module.css';
 
 type Drawer = { mode: 'create' } | { mode: 'edit'; index: number } | null;
 
@@ -80,14 +81,7 @@ export function TeamsScreen(): JSX.Element {
       header: '',
       width: '2rem',
       render: (row) => (
-        <div
-          style={{
-            width: '1.125rem',
-            height: '1.125rem',
-            border: '2px solid var(--color-fg)',
-            background: row.colour || 'transparent',
-          }}
-        />
+        <div class={styles.swatch} style={{ background: row.colour || 'transparent' }} />
       ),
     },
     { key: 'name', header: 'Name' },
@@ -100,17 +94,7 @@ export function TeamsScreen(): JSX.Element {
     {
       key: 'slug',
       header: 'Slug',
-      render: (row) => (
-        <span
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: '0.8125rem',
-            color: 'var(--color-fg-muted)',
-          }}
-        >
-          {row.slug}
-        </span>
-      ),
+      render: (row) => <span class={styles.slug}>{row.slug}</span>,
     },
     {
       key: 'actions',
@@ -130,25 +114,10 @@ export function TeamsScreen(): JSX.Element {
   ];
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '1.75rem',
-        padding: '2.5rem 3rem',
-        maxWidth: '65rem',
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-end',
-          gap: '1rem',
-        }}
-      >
+    <div class={styles.screen}>
+      <div class={styles.header}>
         <h1>Teams</h1>
-        <div style={{ display: 'flex', gap: '0.75rem' }}>
+        <div class={styles.actions}>
           <Button variant="secondary" onClick={handleImportJson}>
             Import JSON...
           </Button>
@@ -164,15 +133,9 @@ export function TeamsScreen(): JSX.Element {
 
       <Table columns={columns} rows={rows} rowKey={(row) => row.rowKey} />
 
-      <span style={{ fontSize: '0.8125rem', color: 'var(--color-fg-muted)' }}>
-        {teams.length} teams
-      </span>
+      <span class={styles.count}>{teams.length} teams</span>
 
-      {status && (
-        <span style={{ fontSize: '0.875rem', color: 'var(--color-fg-muted)' }}>
-          {status}
-        </span>
-      )}
+      {status && <span class={styles.status}>{status}</span>}
 
       {drawer && (
         <TeamForm

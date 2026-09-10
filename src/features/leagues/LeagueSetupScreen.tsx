@@ -8,6 +8,7 @@ import { useLeagueStore } from '../../app/state/leagueStore';
 import { DetailsStep } from './steps/DetailsStep';
 import { TeamsStep } from './steps/TeamsStep';
 import { ReviewStep } from './steps/ReviewStep';
+import styles from './LeagueSetupScreen.module.css';
 
 function emptyDetails(): { name: string; points: PointsConfig; homeAdvantage: boolean } {
   return { name: '', points: DEFAULT_POINTS_CONFIG, homeAdvantage: false };
@@ -95,24 +96,12 @@ export function LeagueSetupScreen(): JSX.Element {
   ];
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '1.75rem',
-        padding: '2.5rem 3rem',
-        maxWidth: '52rem',
-      }}
-    >
+    <div class={styles.screen}>
       <h1>League Setup</h1>
 
       <Tabs tabs={tabs} defaultTab="details" ref={stepsRef} />
 
-      {status && (
-        <span style={{ fontSize: '0.875rem', color: 'var(--color-fg-muted)' }}>
-          {status}
-        </span>
-      )}
+      {status && <span class={styles.status}>{status}</span>}
     </div>
   );
 }

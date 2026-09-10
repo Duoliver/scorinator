@@ -5,6 +5,7 @@ import type { FieldHandle } from '../../../design-system/field';
 import { slug } from '../../../engine/identity';
 import { TIER_ORDER, type Tier } from '../../../engine/tier-ovr';
 import type TeamFormProps from './types';
+import styles from './TeamForm.module.css';
 
 const TIER_OPTIONS = TIER_ORDER.map((tier) => ({ label: tier, value: tier }));
 
@@ -48,7 +49,7 @@ export function TeamForm({
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.375rem' }}>
+    <div class={styles.form}>
       <h2>{title}</h2>
 
       <Input
@@ -59,10 +60,7 @@ export function TeamForm({
         ref={nameRef}
       />
       {error && (
-        <span
-          role="alert"
-          style={{ color: 'var(--color-error)', fontSize: '0.875rem' }}
-        >
+        <span role="alert" class={styles.error}>
           {error}
         </span>
       )}
@@ -88,7 +86,7 @@ export function TeamForm({
         ref={tierRef}
       />
 
-      <div style={{ display: 'flex', gap: '0.75rem' }}>
+      <div class={styles.actions}>
         <Button variant="secondary" onClick={onCancel}>
           Cancel
         </Button>

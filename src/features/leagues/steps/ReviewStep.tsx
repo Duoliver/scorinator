@@ -2,6 +2,7 @@ import type { JSX } from 'preact';
 import { Badge, Button } from '../../../design-system';
 import type { PointsConfig } from '../../../engine/standings';
 import type { TeamRecord } from '../../components';
+import styles from './ReviewStep.module.css';
 
 interface ReviewStepProps {
   name: string;
@@ -21,10 +22,10 @@ export function ReviewStep({
   onCreate,
 }: ReviewStepProps): JSX.Element {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.375rem' }}>
+    <div class={styles.step}>
       <h2>{name || 'Untitled league'}</h2>
 
-      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+      <div class={styles.badges}>
         <Badge tone="neutral">Round robin (two-way)</Badge>
         <Badge tone={homeAdvantage ? 'accent' : 'neutral'}>
           Home adv. {homeAdvantage ? 'on' : 'off'}
@@ -35,27 +36,17 @@ export function ReviewStep({
         <Badge tone="neutral">{selectedTeams.length} teams</Badge>
       </div>
 
-      <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', margin: 0, padding: 0, listStyle: 'none' }}>
+      <ul class={styles.teamList}>
         {selectedTeams.map((team) => (
-          <li
-            key={team.slug}
-            style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}
-          >
-            <div
-              style={{
-                width: '1rem',
-                height: '1rem',
-                border: '2px solid var(--color-fg)',
-                background: team.colour || 'transparent',
-              }}
-            />
+          <li key={team.slug} class={styles.teamRow}>
+            <div class={styles.swatch} style={{ background: team.colour || 'transparent' }} />
             <span>{team.name}</span>
             <Badge tone="dark">{team.tier}</Badge>
           </li>
         ))}
       </ul>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+      <div class={styles.footer}>
         <Button variant="secondary" onClick={onBack}>
           Back
         </Button>

@@ -1,10 +1,10 @@
 # Coding standards
 
-General implementation rules that apply across the codebase, not scoped to one module. Module-specific rules live with the module instead (see `CLAUDE.md`'s Documentation section) — put a rule here only once it applies beyond a single module.
+This file holds general implementation rules. These rules apply across the codebase, not to one module. Module-specific rules live with the module instead. See the Documentation section in `CLAUDE.md`. Add a rule here only when it applies to more than one module.
 
 ## Preact: import types from the top-level `preact` namespace, not `JSX.*`
 
-Preact's `JSX` namespace (`import type { JSX } from 'preact'`) still exists, but most of its members — `JSX.TargetedEvent`, `JSX.TargetedMouseEvent`, `JSX.CSSProperties`, and the rest of the `Targeted*Event`/`*EventHandler` family — are individually marked `@deprecated` in Preact's own type definitions, in favor of importing the same type directly from `preact`:
+Preact's `JSX` namespace (`import type { JSX } from 'preact'`) still exists. But most of its members are deprecated: `JSX.TargetedEvent`, `JSX.TargetedMouseEvent`, `JSX.CSSProperties`, and the rest of the `Targeted*Event`/`*EventHandler` family. Preact's own type definitions mark each one `@deprecated`. Import the same type directly from `preact` instead:
 
 ```ts
 // Don't
@@ -16,11 +16,11 @@ import type { TargetedMouseEvent } from 'preact';
 onClick?: (event: TargetedMouseEvent<HTMLButtonElement>) => void;
 ```
 
-If a type isn't available as a top-level export from `preact` (check `node_modules/preact/src/index.d.ts` / `dom.d.ts`), only then fall back to the `JSX` namespace — and check whether that specific member is flagged `@deprecated` before relying on it.
+If a type is not available as a top-level export from `preact`, check `node_modules/preact/src/index.d.ts` and `dom.d.ts`. Only then, fall back to the `JSX` namespace. Check whether that specific member carries the `@deprecated` flag before you use it.
 
 ## A component's types live in a sibling `types.ts`, Props as its default export
 
-Applies to any parametrized, reusable Preact component — `design-system/` primitives today, but the same shape will apply to `features/` screen sections and any other complex component once those exist. The component file (`{ComponentName}.tsx`) holds only the component function; every type/interface it needs — variant/size/tone-style unions and its props interface — is declared in a sibling `{ComponentName}/types.ts`, with the props interface as that file's **default export**:
+This rule applies to any parametrized, reusable Preact component. Today that means `design-system/` primitives. The same shape will apply later to `features/` screen sections and other complex components. The component file (`{ComponentName}.tsx`) holds only the component function. Every type or interface it needs goes in a sibling file, `{ComponentName}/types.ts`. This includes variant, size, and tone-style unions, and the props interface. The props interface is that file's **default export**:
 
 ```ts
 // components/Badge/types.ts
@@ -34,7 +34,7 @@ export default interface BadgeProps {
 }
 ```
 
-The component file imports the default export (plus any named types it uses) from `./types`, and re-exports the same names — so the public API (what a barrel `index.ts` or any other consumer imports) doesn't change:
+The component file imports the default export from `./types`, plus any named types it uses. It re-exports the same names. This keeps the public API unchanged — the API is what a barrel `index.ts` or any other consumer imports:
 
 ```ts
 // components/Badge/Badge.tsx
@@ -49,15 +49,41 @@ export function Badge({ children, tone = 'neutral' }: BadgeProps) {
 }
 ```
 
-A generic component's props interface is still a plain `export default interface Props<Row> { ... }` in `types.ts` — TypeScript allows a generic default export the same way (see `design-system/components/Table/types.ts` for a real example: `TableProps<Row>` as the default export, `TableColumn<Row>` as a named one it depends on). Types used only internally by `types.ts` itself are named exports there, re-exported from the component file the same way only if a consumer actually needs them.
+A generic component's props interface follows the same pattern: a plain `export default interface Props<Row> { ... }` in `types.ts`. TypeScript allows a generic default export the same way. See `design-system/components/Table/types.ts` for a real example: `TableProps<Row>` is the default export, and `TableColumn<Row>` is a named export it depends on. Types used only inside `types.ts` stay as named exports there. Re-export a type from the component file only when a consumer needs it.
 
 ## No `!important` in CSS
 
-`!important` is prohibited in this codebase's stylesheets. It's a specificity escape hatch that hides the real conflict instead of resolving it, and it silently outranks any rule a later change adds — including a future `!important` someone reaches for to fight the first one.
+This codebase's stylesheets must not use `!important`. It is a specificity escape hatch. It hides the real conflict instead of resolving it. It also silently outranks any rule a later change adds. This includes a future `!important` someone adds to fight the first one.
 
-When two rules of equal specificity need to apply in a particular state (e.g. a pseudo-class combo like `:hover:active`, or a variant class meant to override a size class), resolve it structurally instead:
+Two rules of equal specificity sometimes both need to apply in one state. An example is a pseudo-class combo like `:hover:active`. Another is a variant class that must override a size class. Resolve this structurally instead:
 
-- Match the specificity of the rule you need to beat, and rely on source order (later wins on a tie) — place your rule after it.
-- Or raise specificity deliberately (e.g. an extra class or attribute selector) rather than forcing it with `!important`.
+- Match the specificity of the rule you need to beat. Rely on source order: on a tie, the later rule wins. Place your rule after it.
+- Or raise specificity on purpose, for example with an extra class or attribute selector. Do not force it with `!important`.
 
-See `design-system/components/Button/Button.module.css` for a worked example: `.ghost`'s box-shadow suppression is restated in `.ghost:hover` and `.ghost:active` (matching the specificity of the size-class hover/active rules it must override) and placed after them in the file, instead of using `!important`.
+See `design-system/components/Button/Button.module.css` for a worked example. The `.ghost` class suppresses a box shadow. That rule is restated in `.ghost:hover` and `.ghost:active`. Each restatement matches the specificity of the size-class hover and active rules it must override. The file places these rules after the size-class rules, instead of using `!important`.
+
+## No inline styling
+
+Do not use the `style` prop (`style={{ ... }}` or a `style="..."` string) on a component or element. Put the rule in a CSS module instead, and reference design tokens from `tokens.css`.
+
+Inline styles skip the cascade. They cannot use `:hover`, `:active`, or media queries without extra JS. They also duplicate values that `tokens.css` already defines, such as `--color-*`, `--font-*`, and spacing tokens. A CSS module keeps every rule in one place per component. It also lets the "No `!important`" rule above still apply.
+
+```tsx
+// Don't
+<div style={{ display: 'flex', gap: '1rem', color: 'var(--color-fg-muted)' }} />
+
+// Do
+import styles from './TeamsScreen.module.css';
+<div className={styles.toolbar} />
+```
+
+```css
+/* TeamsScreen.module.css */
+.toolbar {
+  display: flex;
+  gap: 1rem;
+  color: var(--color-fg-muted);
+}
+```
+
+A `style` prop is acceptable only for a value your code computes at runtime from data. One example is a team's user-chosen hex colour swatch. Never use it for a static layout or token value.

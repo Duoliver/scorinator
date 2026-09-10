@@ -178,6 +178,7 @@ export function TeamsScreen(): JSX.Element {
 
       {drawer && (
         <TeamForm
+          key={drawer.mode === 'edit' ? `edit-${drawer.index}` : 'create'}
           title={drawer.mode === 'create' ? 'New team' : 'Edit team'}
           saveLabel={drawer.mode === 'create' ? 'Create team' : 'Save changes'}
           initial={drawer.mode === 'edit' ? teams[drawer.index] : undefined}

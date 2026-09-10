@@ -147,9 +147,7 @@ export function TeamsScreen(): JSX.Element {
           gap: '1rem',
         }}
       >
-        <h1 style={{ margin: 0, fontFamily: 'var(--font-heading)', fontSize: '2rem' }}>
-          Teams
-        </h1>
+        <h1>Teams</h1>
         <div style={{ display: 'flex', gap: '0.75rem' }}>
           <Button variant="secondary" onClick={handleImportJson}>
             Import JSON...

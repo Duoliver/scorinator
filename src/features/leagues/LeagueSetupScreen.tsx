@@ -104,9 +104,7 @@ export function LeagueSetupScreen(): JSX.Element {
         maxWidth: '52rem',
       }}
     >
-      <h1 style={{ margin: 0, fontFamily: 'var(--font-heading)', fontSize: '2rem' }}>
-        League Setup
-      </h1>
+      <h1>League Setup</h1>
 
       <Tabs tabs={tabs} defaultTab="details" ref={stepsRef} />
 

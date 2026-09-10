@@ -1,0 +1,19 @@
+/*
+ * Base typography for raw HTML elements, tied to design tokens instead of
+ * repeated per component. Only h1/h2 get a rule here — every current use
+ * of each is a plain page or section title with no per-instance styling.
+ * A heading that genuinely needs to look different should override with
+ * its own class rather than growing this file into per-case exceptions.
+ * See DESIGN_SYSTEM.md.
+ */
+h1 {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--font-size-4xl);
+}
+
+h2 {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--font-size-3xl);
+}

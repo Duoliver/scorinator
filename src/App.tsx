@@ -53,7 +53,7 @@ function Section({
 }): JSX.Element {
   return (
     <section style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-      <h2 style={{ margin: 0, fontFamily: 'var(--font-heading)' }}>{title}</h2>
+      <h2>{title}</h2>
       <div
         style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}
       >

@@ -22,9 +22,7 @@ export function ReviewStep({
 }: ReviewStepProps): JSX.Element {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.375rem' }}>
-      <h2 style={{ margin: 0, fontFamily: 'var(--font-heading)', fontSize: '1.5rem' }}>
-        {name || 'Untitled league'}
-      </h2>
+      <h2>{name || 'Untitled league'}</h2>
 
       <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
         <Badge tone="neutral">Round robin (two-way)</Badge>

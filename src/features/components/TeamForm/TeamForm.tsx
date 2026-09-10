@@ -49,9 +49,7 @@ export function TeamForm({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.375rem' }}>
-      <h2 style={{ margin: 0, fontFamily: 'var(--font-heading)', fontSize: '1.5rem' }}>
-        {title}
-      </h2>
+      <h2>{title}</h2>
 
       <Input
         label="Team name"

@@ -3,8 +3,8 @@ import { render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { TeamsScreen } from './TeamsScreen';
 import { useTeamsStore } from '../../app/state/teamsStore';
-import * as csvIO from './csvIO';
-import * as jsonIO from './jsonIO';
+import * as csvIO from '../../app/data/teamsCsv';
+import * as jsonIO from '../../app/data/teamsJson';
 
 beforeEach(() => {
   useTeamsStore.setState({ teams: [] });

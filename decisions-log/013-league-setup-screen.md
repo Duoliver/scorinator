@@ -1,6 +1,6 @@
 # Task 13 — decisions log: League Setup screen
 
-Judgment calls made while building the League Setup screen, plus its direct follow-ups (the `Tabs` ref API, Select all, a layout-fidelity pass against the prototype), that a later session should not re-litigate. Condensed here from the running Decisions log in `PROGRESS.md` — see that section for the procedure this follows, and `progress-reports/013-league-setup-screen.md` for the overall report on this task and its addenda.
+Judgment calls made while building the League Setup screen, plus its direct follow-ups (the `Tabs` ref API, Select all, a layout-fidelity pass against the prototype, and the `app/data` retrofit), that a later session should not re-litigate. Condensed here from the running Decisions log in `PROGRESS.md` — see that section for the procedure this follows, and `progress-reports/013-league-setup-screen.md` for the overall report on this task and its addenda.
 
 - **2026-09-10 (screen build):** Six calls, confirmed with the user before and during the build:
   1. **Team picker:** built to the flat MVP1 `TeamRecord` model (inline checklist), not the MVP2 Blueprint/Instance dialog picker. No Blueprint/Instance split exists anywhere yet — `SavedTeam` (Task 9) and `TeamRecord` (Task 12) are both flat, and that split would be a multi-task rework, not a Task-13-sized change.
@@ -39,3 +39,11 @@ Judgment calls made while building the League Setup screen, plus its direct foll
   - **The outer gap in `LeagueSetupScreen` was 28px.** The prototype shows 32px. This was not a rounding call — the prototype source confirms 32px exactly. Changed to `var(--space-8)`.
 
   The team-row tier `Badge` in `TeamsStep` was checked against the same prototype. It stayed as-is. That list genuinely shows a filled dark tag there, unlike the Review step. Two new tests cover the `fullWidth` prop on `Tabs`. Every other change is covered by the existing tests — none of them assert on styling.
+
+- **2026-09-10 (`app/data` retrofit — closes the direct-adapter-import deviation):** The user asked to bring `features/teams` back into line with `module-boundaries.md`. That doc has always said `features/` must not import `adapters/` directly. It must go through a thin `app/`-level data layer instead. `features/teams` broke this rule since Task 12. `csvIO.ts` and `jsonIO.ts` called `adapters/tauri-fs`, `adapters/csv`, and `adapters/json-io` directly. Both the Task 12 report and the Task 13 decisions log named this, and both left it unfixed on purpose, out of scope at the time.
+
+  `csvIO.ts` and `jsonIO.ts` moved to `src/app/data/teamsCsv.ts` and `src/app/data/teamsJson.ts`, unchanged apart from their doc comments. No other line of logic changed. `TeamsScreen.tsx` now imports `importTeamsCsv`, `exportTeamsCsv`, and `importTeamsJson` from `app/data/`, instead of from its own folder. `TeamsScreen.test.tsx` now spies on the moved module paths. `module-boundaries.md`'s `/app` entry gained two lines, naming `state/` (the Zustand stores already there) and `data/` (this new seam) as the two subfolders under `/app`.
+
+  One import stayed as it was, on purpose: `importMerge.ts` still imports `TeamCsvRecord` from `adapters/csv`, but only as a type, for its own CSV-record-to-domain mapping functions. This is not a call into the adapter at runtime, so it does not breach the rule the same way a function call would. Moving that type out of `adapters/csv` was not asked for, and would be a separate, larger change to the shape of that adapter's own exports.
+
+  No behavior changed. 263 tests still pass. `type-check`, `lint`, and `build` stay clean.

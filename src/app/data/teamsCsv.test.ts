@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { importTeamsCsv, exportTeamsCsv } from './csvIO';
+import { importTeamsCsv, exportTeamsCsv } from './teamsCsv';
 import type { FileSystem, SaveFileDialog } from '../../persistence/types';
 import type { TeamCsvRecord } from '../../adapters/csv';
 

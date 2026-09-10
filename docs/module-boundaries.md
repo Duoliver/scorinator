@@ -38,7 +38,10 @@ The module map below is a direct transcription of decisions already made in the 
                        components — see /features/FEATURES.md for the
                        required import direction between the two.
 
-  /app                 Tauri bootstrap, routing, wiring of adapters to features
+  /app                 Tauri bootstrap, routing, wiring of adapters to features.
+                       /state holds shared in-memory stores (Zustand).
+                       /data holds the thin adapter-calling functions this
+                       page's crossing rule requires — see the entry below.
 ```
 
 **Crossing rules (enforced, not suggestions):**

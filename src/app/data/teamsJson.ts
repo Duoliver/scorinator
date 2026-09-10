@@ -7,8 +7,8 @@ import { parseTeamsJson } from '../../adapters/json-io';
 import type { TeamCsvRecord } from '../../adapters/csv';
 import type { FileFilter, FileSystem, SaveFileDialog } from '../../persistence/types';
 
-/** The JSON-format sibling of `csvIO.ts`'s CSV import — same thin
- * `features/` → `adapters/` seam, same `fs`/`dialog` override-in-tests
+/** The JSON-format sibling of `teamsCsv.ts`'s CSV import — same thin
+ * `app/` → `adapters/` data layer, same `fs`/`dialog` override-in-tests
  * pattern. Imports a plain team-list JSON file, not a full league save
  * (`adapters/json-io`'s `parseLeague`/`SavedLeague`) — that is Task 17's
  * Save/Load feature, out of scope here. */

@@ -3,8 +3,8 @@ import type { JSX } from 'preact';
 import { Badge, Button, Table, type TableColumn } from '../../design-system';
 import { TeamForm, type TeamRecord } from '../components';
 import { useTeamsStore } from '../../app/state/teamsStore';
-import { exportTeamsCsv, importTeamsCsv } from './csvIO';
-import { importTeamsJson } from './jsonIO';
+import { exportTeamsCsv, importTeamsCsv } from '../../app/data/teamsCsv';
+import { importTeamsJson } from '../../app/data/teamsJson';
 import {
   csvRecordToTeamRecord,
   mergeImportedTeams,

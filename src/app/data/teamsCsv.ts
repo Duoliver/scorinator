@@ -11,10 +11,10 @@ import {
 } from '../../adapters/csv';
 import type { FileFilter, FileSystem, SaveFileDialog } from '../../persistence/types';
 
-/** The thin `features/` → `adapters/` seam the module boundaries require:
- * `features/teams` never imports `adapters/csv` or `adapters/tauri-fs`
- * anywhere else. `fs`/`dialog` default to the real Tauri adapters and are
- * only overridden in tests. */
+/** The thin `app/` → `adapters/` data layer `module-boundaries.md`
+ * requires. `features/teams` calls these functions instead of importing
+ * `adapters/csv` or `adapters/tauri-fs` directly. `fs`/`dialog` default to
+ * the real Tauri adapters and are only overridden in tests. */
 
 /** Restricts the open/save dialog to `.csv` files. Without this, both calls
  * fall back to `tauriDialog`'s own default filter (`.json`, built for the

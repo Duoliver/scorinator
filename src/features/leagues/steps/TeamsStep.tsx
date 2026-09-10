@@ -1,6 +1,7 @@
-import { useState } from 'preact/hooks';
+import { useRef, useState } from 'preact/hooks';
 import type { JSX } from 'preact';
 import { Badge, Button, Checkbox, Input, Table, type TableColumn } from '../../../design-system';
+import type { FieldHandle } from '../../../design-system/field';
 import { TeamForm, type TeamRecord } from '../../components';
 import { useTeamsStore } from '../../../app/state/teamsStore';
 import styles from './TeamsStep.module.css';
@@ -8,6 +9,8 @@ import styles from './TeamsStep.module.css';
 interface TeamsStepProps {
   selectedSlugs: readonly string[];
   onToggleTeam: (slug: string) => void;
+  onSelectAll: (slugs: string[]) => void;
+  onClearSelection: (slugs: string[]) => void;
   onTeamCreated: (slug: string) => void;
   onBack: () => void;
   onNext: () => void;
@@ -16,6 +19,8 @@ interface TeamsStepProps {
 export function TeamsStep({
   selectedSlugs,
   onToggleTeam,
+  onSelectAll,
+  onClearSelection,
   onTeamCreated,
   onBack,
   onNext,
@@ -24,10 +29,24 @@ export function TeamsStep({
   const addTeam = useTeamsStore((state) => state.addTeam);
   const [query, setQuery] = useState('');
   const [showCreateTeam, setShowCreateTeam] = useState(false);
+  const checkboxHandles = useRef(new Map<string, FieldHandle<boolean>>());
 
   const filteredTeams = teams.filter((team) =>
     team.name.toLowerCase().includes(query.toLowerCase())
   );
+  const filteredSlugs = filteredTeams.map((team) => team.slug);
+  const allFilteredSelected =
+    filteredSlugs.length > 0 && filteredSlugs.every((slug) => selectedSlugs.includes(slug));
+
+  const handleSelectAll = (): void => {
+    onSelectAll(filteredSlugs);
+    filteredSlugs.forEach((slug) => checkboxHandles.current.get(slug)?.setValue(true));
+  };
+
+  const handleClearSelection = (): void => {
+    onClearSelection(filteredSlugs);
+    filteredSlugs.forEach((slug) => checkboxHandles.current.get(slug)?.setValue(false));
+  };
 
   const handleTeamCreated = (record: TeamRecord): void => {
     addTeam(record);
@@ -45,6 +64,10 @@ export function TeamsStep({
             label={team.name}
             defaultChecked={selectedSlugs.includes(team.slug)}
             onChange={() => onToggleTeam(team.slug)}
+            ref={(handle: FieldHandle<boolean> | null) => {
+              if (handle) checkboxHandles.current.set(team.slug, handle);
+              else checkboxHandles.current.delete(team.slug);
+            }}
           />
           <div class={styles.swatch} style={{ background: team.colour || 'transparent' }} />
         </div>
@@ -74,7 +97,17 @@ export function TeamsStep({
 
       <Table columns={columns} rows={filteredTeams} rowKey={(team) => team.slug} />
 
-      <span class={styles.count}>{selectedSlugs.length} teams selected</span>
+      <div class={styles.selectionRow}>
+        <span class={styles.count}>{selectedSlugs.length} teams selected</span>
+        <Button
+          size="sm"
+          variant="secondary"
+          onClick={allFilteredSelected ? handleClearSelection : handleSelectAll}
+          disabled={filteredSlugs.length === 0}
+        >
+          {allFilteredSelected ? 'Clear selection' : 'Select all'}
+        </Button>
+      </div>
 
       {showCreateTeam && (
         <TeamForm

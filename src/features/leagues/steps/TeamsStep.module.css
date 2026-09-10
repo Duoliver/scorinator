@@ -22,6 +22,12 @@
   border: var(--border-width) solid var(--color-fg);
 }
 
+.selectionRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .count {
   font-size: var(--font-size-md);
   color: var(--color-fg-muted);

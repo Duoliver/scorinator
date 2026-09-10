@@ -35,6 +35,14 @@ export function LeagueSetupScreen(): JSX.Element {
     setSelectedSlugs((current) => (current.includes(slug) ? current : [...current, slug]));
   };
 
+  const selectAllTeams = (slugs: string[]): void => {
+    setSelectedSlugs((current) => Array.from(new Set([...current, ...slugs])));
+  };
+
+  const clearSelection = (slugs: string[]): void => {
+    setSelectedSlugs((current) => current.filter((slug) => !slugs.includes(slug)));
+  };
+
   const handleCreate = (): void => {
     const league = addLeague({
       name: details.name.trim(),
@@ -73,6 +81,8 @@ export function LeagueSetupScreen(): JSX.Element {
         <TeamsStep
           selectedSlugs={selectedSlugs}
           onToggleTeam={toggleTeam}
+          onSelectAll={selectAllTeams}
+          onClearSelection={clearSelection}
           onTeamCreated={selectTeam}
           onBack={() => stepsRef.current?.setValue('details')}
           onNext={() => stepsRef.current?.setValue('review')}

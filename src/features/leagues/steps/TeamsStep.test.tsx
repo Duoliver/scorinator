@@ -7,6 +7,8 @@ import { useTeamsStore } from '../../../app/state/teamsStore';
 const baseProps = {
   selectedSlugs: [] as string[],
   onToggleTeam: vi.fn(),
+  onSelectAll: vi.fn(),
+  onClearSelection: vi.fn(),
   onTeamCreated: vi.fn(),
   onBack: vi.fn(),
   onNext: vi.fn(),
@@ -70,5 +72,51 @@ describe('TeamsStep', () => {
   it('disables Next until at least one team is selected', () => {
     render(<TeamsStep {...baseProps} selectedSlugs={[]} />);
     expect(screen.getByText('Next: Review →')).toBeDisabled();
+  });
+
+  it('calls onSelectAll with every visible slug when Select all is clicked', async () => {
+    const onSelectAll = vi.fn();
+    render(<TeamsStep {...baseProps} onSelectAll={onSelectAll} />);
+    await userEvent.click(screen.getByText('Select all'));
+    expect(onSelectAll).toHaveBeenCalledWith(['fc-united', 'harborview-sc']);
+  });
+
+  it('checks every visible row when Select all is clicked', async () => {
+    render(<TeamsStep {...baseProps} />);
+    await userEvent.click(screen.getByText('Select all'));
+    expect(screen.getByLabelText('FC United')).toBeChecked();
+    expect(screen.getByLabelText('Harborview SC')).toBeChecked();
+  });
+
+  it('only selects the filtered slugs when a search is active', async () => {
+    const onSelectAll = vi.fn();
+    render(<TeamsStep {...baseProps} onSelectAll={onSelectAll} />);
+    await userEvent.type(screen.getByLabelText('Search teams'), 'Harbor');
+    await userEvent.click(screen.getByText('Select all'));
+    expect(onSelectAll).toHaveBeenCalledWith(['harborview-sc']);
+  });
+
+  it('shows Clear selection once every visible team is selected, and clears them on click', async () => {
+    const onClearSelection = vi.fn();
+    render(
+      <TeamsStep
+        {...baseProps}
+        selectedSlugs={['fc-united', 'harborview-sc']}
+        onClearSelection={onClearSelection}
+      />
+    );
+    expect(screen.getByText('Clear selection')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByText('Clear selection'));
+
+    expect(onClearSelection).toHaveBeenCalledWith(['fc-united', 'harborview-sc']);
+    expect(screen.getByLabelText('FC United')).not.toBeChecked();
+    expect(screen.getByLabelText('Harborview SC')).not.toBeChecked();
+  });
+
+  it('disables Select all when the search matches no team', async () => {
+    render(<TeamsStep {...baseProps} />);
+    await userEvent.type(screen.getByLabelText('Search teams'), 'nonexistent');
+    expect(screen.getByText('Select all')).toBeDisabled();
   });
 });

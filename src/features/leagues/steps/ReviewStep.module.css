@@ -4,18 +4,26 @@
   gap: 1.375rem;
 }
 
-.badges {
+.chips {
   display: flex;
   gap: var(--space-2);
   flex-wrap: wrap;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+}
+
+.chip {
+  border: var(--border-width) solid var(--color-fg);
+  padding: var(--space-1) var(--space-2);
 }
 
 .teamList {
+  border-top: var(--border-width) solid var(--color-fg);
+  padding: var(--space-4) 0 0 0;
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
   margin: 0;
-  padding: 0;
   list-style: none;
 }
 
@@ -23,12 +31,23 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
+  font-size: var(--font-size-lg);
+}
+
+.teamName {
+  flex: 1;
 }
 
 .swatch {
   width: 1rem;
   height: 1rem;
   border: var(--border-width) solid var(--color-fg);
+}
+
+.tier {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  color: var(--color-fg-muted);
 }
 
 .footer {

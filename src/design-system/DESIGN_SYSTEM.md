@@ -27,9 +27,9 @@ Every size in `design-system/` is expressed in `rem`, not `px`. This includes fo
 
 ## Base HTML element typography lives in `tokens/elements.css`, not inline
 
-`h1` and `h2` carry their type style (`font-family`, `font-size`, `margin: 0`) from a global rule in `tokens/elements.css`, imported once in `main.tsx` alongside `tokens.css`/`fonts.css`. A screen or component using a plain `<h1>`/`<h2>` for a page or section title needs no `style` prop at all.
+`h1`, `h2`, and `h3` carry their type style (`font-family`, `font-size`, `margin: 0`) from a global rule in `tokens/elements.css`, imported once in `main.tsx` alongside `tokens.css`/`fonts.css`. A screen or component using a plain heading element for a page, section, or sub-section title needs no `style` prop at all.
 
-This rule exists because every current use of `<h1>`/`<h2>` in the app is the same plain title, styled the same way, previously repeated inline in five different places. It is also the first concrete step on `coding-standards.md`'s "No inline styling" rule.
+This rule exists because every current use of a heading element in the app is a plain title, styled the same way at its level, previously repeated inline. It is also the first concrete step on `coding-standards.md`'s "No inline styling" rule.
 
 **Only element selectors with zero per-instance variation belong here.** Heading level follows document structure, not desired style — pick `h1`/`h2`/`h3` by outline position, never by which one happens to look right. A heading that needs a different look overrides with its own class, rather than growing `elements.css` into a pile of per-case exceptions. Do not add a new element selector here for a one-off case — that belongs in the component's own `.module.css` instead.
 

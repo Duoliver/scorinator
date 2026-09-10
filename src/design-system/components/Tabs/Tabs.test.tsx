@@ -105,4 +105,14 @@ describe('Tabs', () => {
     ref.current?.focus();
     expect(screen.getByRole('tab', { name: 'Fixtures' })).toHaveFocus();
   });
+
+  it('stretches the tablist to fill its container when fullWidth is set', () => {
+    render(<Tabs tabs={tabs} defaultTab="standings" fullWidth />);
+    expect(screen.getByRole('tablist').className).toMatch(/tabsFullWidth/);
+  });
+
+  it('does not stretch the tablist by default', () => {
+    render(<Tabs tabs={tabs} defaultTab="standings" />);
+    expect(screen.getByRole('tablist').className).not.toMatch(/tabsFullWidth/);
+  });
 });

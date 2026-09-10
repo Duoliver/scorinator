@@ -1,6 +1,6 @@
 import { useRef, useState } from 'preact/hooks';
 import type { JSX } from 'preact';
-import { Badge, Button, Checkbox, Input, Table, type TableColumn } from '../../../design-system';
+import { Badge, Button, Card, Checkbox, Input, Table, type TableColumn } from '../../../design-system';
 import type { FieldHandle } from '../../../design-system/field';
 import { TeamForm, type TeamRecord } from '../../components';
 import { useTeamsStore } from '../../../app/state/teamsStore';
@@ -83,50 +83,52 @@ export function TeamsStep({
   ];
 
   return (
-    <div class={styles.step}>
-      <div class={styles.toolbar}>
-        <Input
-          label="Search teams"
-          placeholder="Search teams…"
-          onChange={setQuery}
-        />
-        <Button variant="secondary" onClick={() => setShowCreateTeam(true)}>
-          + Create new team
-        </Button>
+    <Card padding="lg">
+      <div class={styles.step}>
+        <div class={styles.toolbar}>
+          <Input
+            label="Search teams"
+            placeholder="Search teams…"
+            onChange={setQuery}
+          />
+          <Button variant="secondary" onClick={() => setShowCreateTeam(true)}>
+            + Create new team
+          </Button>
+        </div>
+
+        <Table columns={columns} rows={filteredTeams} rowKey={(team) => team.slug} />
+
+        <div class={styles.selectionRow}>
+          <span class={styles.count}>{selectedSlugs.length} teams selected</span>
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={allFilteredSelected ? handleClearSelection : handleSelectAll}
+            disabled={filteredSlugs.length === 0}
+          >
+            {allFilteredSelected ? 'Clear selection' : 'Select all'}
+          </Button>
+        </div>
+
+        {showCreateTeam && (
+          <TeamForm
+            title="New team"
+            saveLabel="Create team"
+            onCancel={() => setShowCreateTeam(false)}
+            onSave={handleTeamCreated}
+          />
+        )}
+
+        <div class={styles.footer}>
+          <Button variant="secondary" onClick={onBack}>
+            Back
+          </Button>
+          <Button onClick={onNext} disabled={selectedSlugs.length === 0}>
+            Next: Review →
+          </Button>
+        </div>
       </div>
-
-      <Table columns={columns} rows={filteredTeams} rowKey={(team) => team.slug} />
-
-      <div class={styles.selectionRow}>
-        <span class={styles.count}>{selectedSlugs.length} teams selected</span>
-        <Button
-          size="sm"
-          variant="secondary"
-          onClick={allFilteredSelected ? handleClearSelection : handleSelectAll}
-          disabled={filteredSlugs.length === 0}
-        >
-          {allFilteredSelected ? 'Clear selection' : 'Select all'}
-        </Button>
-      </div>
-
-      {showCreateTeam && (
-        <TeamForm
-          title="New team"
-          saveLabel="Create team"
-          onCancel={() => setShowCreateTeam(false)}
-          onSave={handleTeamCreated}
-        />
-      )}
-
-      <div class={styles.footer}>
-        <Button variant="secondary" onClick={onBack}>
-          Back
-        </Button>
-        <Button onClick={onNext} disabled={selectedSlugs.length === 0}>
-          Next: Review →
-        </Button>
-      </div>
-    </div>
+    </Card>
   );
 }
 TeamsStep.displayName = 'TeamsStep';

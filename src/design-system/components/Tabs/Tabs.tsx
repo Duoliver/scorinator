@@ -12,7 +12,7 @@ export type { TabsProps, TabItem };
  * what lets a caller outside `Tabs` switch tabs (`tabsRef.current?.setValue(id)`)
  * without lifting the active-tab state up into its own parent. */
 export const Tabs = forwardRef<FieldHandle<string>, TabsProps>(
-  ({ tabs, defaultTab, onChange }, ref) => {
+  ({ tabs, defaultTab, onChange, fullWidth }, ref) => {
     const [activeId, setActiveId] = useState(defaultTab);
     const activeIdRef = useRef(activeId);
     const listenersRef = useRef(new Set<(value: string) => void>());
@@ -45,7 +45,7 @@ export const Tabs = forwardRef<FieldHandle<string>, TabsProps>(
 
     return (
       <div class={styles.wrapper}>
-        <div class={styles.tabs} role="tablist">
+        <div class={`${styles.tabs} ${fullWidth ? styles.tabsFullWidth : ''}`} role="tablist">
           {tabs.map((tab) => {
             const active = tab.id === activeId;
             return (

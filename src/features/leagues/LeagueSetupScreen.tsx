@@ -109,7 +109,7 @@ export function LeagueSetupScreen(): JSX.Element {
     <div class={styles.screen}>
       <h1>League Setup</h1>
 
-      <Tabs tabs={tabs} defaultTab="details" ref={stepsRef} />
+      <Tabs tabs={tabs} defaultTab="details" ref={stepsRef} fullWidth />
 
       {status && <span class={styles.status}>{status}</span>}
     </div>

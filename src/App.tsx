@@ -22,8 +22,7 @@ import {
   tauriDialog,
   tauriFileSystem,
 } from './adapters/tauri-fs';
-import { TeamsScreen } from './features/teams';
-import { LeagueSetupScreen } from './features/leagues';
+import { AppShell } from './app/AppShell';
 import appStyles from './App.module.css';
 
 interface StandingsRow {
@@ -365,8 +364,7 @@ function Playground(): JSX.Element {
 function App(): JSX.Element {
   return (
     <main class={appStyles.app}>
-      <TeamsScreen />
-      <LeagueSetupScreen />
+      <AppShell />
       <div class={appStyles.playgroundWrapper}>
         <Playground />
       </div>

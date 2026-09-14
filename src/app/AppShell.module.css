@@ -1,0 +1,43 @@
+.shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.nav {
+  width: 220px;
+  flex: none;
+  background: var(--color-surface);
+  border-right: var(--border-width) solid var(--color-fg);
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-6) 0;
+}
+
+.brand {
+  font-family: var(--font-condensed);
+  font-weight: 700;
+  font-size: 1.25rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0 var(--space-5) 1.75rem;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  padding: var(--space-3) var(--space-5);
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: var(--font-size-xl);
+  text-decoration: none;
+  color: var(--color-fg);
+}
+
+.navItem[aria-current='page'] {
+  background: var(--color-fg);
+  color: var(--color-surface);
+}
+
+.content {
+  flex: 1;
+}

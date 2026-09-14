@@ -51,6 +51,31 @@ export function Badge({ children, tone = 'neutral' }: BadgeProps) {
 
 A generic component's props interface follows the same pattern: a plain `export default interface Props<Row> { ... }` in `types.ts`. TypeScript allows a generic default export the same way. See `design-system/components/Table/types.ts` for a real example: `TableProps<Row>` is the default export, and `TableColumn<Row>` is a named export it depends on. Types used only inside `types.ts` stay as named exports there. Re-export a type from the component file only when a consumer needs it.
 
+## A screen that must survive a nav switch keeps its draft in a cold-cache store
+
+`preact-router` fully unmounts a screen on nav-away, and fully remounts it on nav-back. Any plain `useState` inside that screen resets on remount. A wizard, a multi-field form, or any screen holding real in-progress work needs a place to keep its draft between those two events. Without one, the user loses it.
+
+Reach for a small Zustand slice under `app/state/`, next to `teamsStore.ts` and `leagueStore.ts` — see `leagueDraftStore.ts` for a worked example. Keep that store to exactly this shape:
+
+```ts
+export interface XDraftState extends XDraft {
+  setDraft: (draft: XDraft) => void;
+  reset: () => void;
+}
+```
+
+No per-field action (`setName`, `toggleTeam`, and so on) on the store itself. Those stay local to the screen, exactly as they would with no store at all. The store holds one snapshot, plus two ways to change it. It is not a live API surface that grows with every field the screen ever gains.
+
+Read and write that store at exactly three points, never per keystroke or per click:
+
+1. **On mount**, once, through `useLeagueDraftStore.getState()` — not a subscribed selector — to seed local `useState`.
+2. **On a step or tab change**, in a wizard. Read a value before its field unmounts.
+3. **On unmount**, through a `useEffect` cleanup with an empty dependency array, so the draft survives the actual nav-away.
+
+For a text or number field edited at typing speed, do not wire its `onChange` to the store. Do not even wire it to the screen's own local reactive state. Make the field fully uncontrolled instead. Hold a `FieldHandle` ref to it — `Input`, `Select`, `Switch`, and `Checkbox` all already expose one. Read `.getValue()` only at one of the three points above. If the field lives inside a child component, wrap that child in a small `forwardRef` plus `useImperativeHandle` — see `DetailsStep`'s `getValues()` handle for a worked example. `TeamsStep`'s own `checkboxHandles` map already does the same thing, for a set of checkboxes. This is not a new pattern for this codebase, only a new place to use it.
+
+The point of the three-point rule: a screen with `N` fields and `M` keystrokes should cost the store one read and a handful of writes, never `M` writes. The same rule, and the same uncontrolled-field technique, apply to any future screen with this draft-loss problem. The League Setup wizard is the first case here, not the only one.
+
 ## Use absolute imports, not relative
 
 Import across directories with the `@/` alias, not `../`. The alias maps to `src/`, configured in `tsconfig.json` (`paths`), `vite.config.ts` and `vitest.config.ts` (`resolve.alias`), and `eslint.config.mjs` (`import/resolver`).

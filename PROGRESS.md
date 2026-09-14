@@ -79,6 +79,17 @@ A short record of resolved judgment calls. This stops a later session from silen
 
 **START BELOW, LAST ON TOP:**
 
+- **2026-09-14 (Task 23, follow-up — draft-store rework, plus the pattern for reuse):** The user flagged two real problems with the draft-store version above, right after it landed. First: 12 separate `useLeagueDraftStore` selector and action calls in one screen do not scale as more screens adopt this. Second: binding `Input`'s `onChange` straight to a store action means every keystroke calls `set()` — today that only re-renders `LeagueSetupScreen`, but the cost grows with every future reader of that slice.
+
+  Reworked to the compromise the user proposed: read values from refs, commit to the store only on a screen-switch event, not on every keystroke.
+
+  - `leagueDraftStore.ts` shrank from eight per-field actions down to two: `setDraft(draft)` and `reset()`. It is a cold cache now, not a live state manager.
+  - `DetailsStep` became a `forwardRef` component. Its `Input`/`Switch` fields are fully uncontrolled again — no `onChange` wired anywhere above them. A new `getValues()` handle, exposed through `useImperativeHandle`, is the only way to read their current values. This mirrors `TeamsStep`'s own `checkboxHandles` ref map, an existing pattern in this codebase, not a new one.
+  - `LeagueSetupScreen` reads the store exactly once, on mount, through `getState()` — not a subscribed selector — to seed local `useState` for `details`, `selectedSlugs`, and `step`. It writes to the store at exactly two points: a step change (through a new `goToStep()` helper, which also pulls `DetailsStep`'s current ref values before that step can unmount) and true unmount (a `useEffect` cleanup with an empty dependency array, reading a `latestRef` kept in sync on every render to avoid a stale closure).
+  - One real bug found along the way, not caused by the rework: `parsePoints('')` returned `0` instead of falling back to the last valid value, since `Number('')` is `0` in JavaScript, not `NaN`. Fixed with an explicit blank-string check. Caught by a new test for the ref-based fallback path.
+
+  267 tests, `type-check`, `lint`, and `build` all stay clean. Since the rework held up, the user asked for the pattern to get written up for reuse. New section in `docs/coding-standards.md`: "A screen that must survive a nav switch keeps its draft in a cold-cache store" — the three-point read/write rule (mount, step change, unmount), and the uncontrolled-ref technique for a high-frequency field. Written for the Task 24, Task 25, and `TeamsScreen` fast-follows named below, so none of them re-derive this from scratch.
+
 - **2026-09-14 (Task 23, follow-up — League Setup draft survives a nav switch):** The user noticed a real bug. `AppShell`'s nav reads like tabs, but `preact-router` fully unmounts the screen you leave and fully remounts the one you return to. Every local `useState` resets on remount. An in-progress League Setup wizard (name, points, home advantage, selected teams, active step) was silently destroyed by a Teams-then-back click.
 
   The user and the assistant compared two options and weighed their trade-offs together:

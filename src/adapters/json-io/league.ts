@@ -1,6 +1,6 @@
-import { TIER_ORDER } from '../../engine/tier-ovr';
-import type { Tier } from '../../engine/tier-ovr/types';
-import type { Fixture, Bye } from '../../engine/fixtures/types';
+import { TIER_ORDER } from '@/engine/tier-ovr';
+import type { Tier } from '@/engine/tier-ovr/types';
+import type { Fixture, Bye } from '@/engine/fixtures/types';
 import {
   SAVE_FORMAT_VERSION,
   type SavedLeague,
@@ -48,13 +48,17 @@ function fail(message: string): never {
 function parseLeagueConfig(value: unknown): SavedLeagueConfig {
   if (!isRecord(value)) fail('the "league" section is missing or not an object.');
   if (!isNonBlankString(value.name)) fail('the league is missing a name.');
-  if (!isBoolean(value.homeAdvantage)) fail('the league\'s "homeAdvantage" flag is missing.');
+  if (!isBoolean(value.homeAdvantage))
+    fail('the league\'s "homeAdvantage" flag is missing.');
 
   const points = value.points;
   if (!isRecord(points)) fail('the league is missing a "points" section.');
-  if (!isFiniteNumber(points.win)) fail('the league\'s points config is missing "win".');
-  if (!isFiniteNumber(points.draw)) fail('the league\'s points config is missing "draw".');
-  if (!isFiniteNumber(points.loss)) fail('the league\'s points config is missing "loss".');
+  if (!isFiniteNumber(points.win))
+    fail('the league\'s points config is missing "win".');
+  if (!isFiniteNumber(points.draw))
+    fail('the league\'s points config is missing "draw".');
+  if (!isFiniteNumber(points.loss))
+    fail('the league\'s points config is missing "loss".');
 
   return {
     name: value.name,
@@ -82,16 +86,20 @@ function parseTeam(value: unknown, index: number): SavedTeam {
 
 function parseFixture(value: unknown, index: number): Fixture<string> {
   if (!isRecord(value)) fail(`fixture ${index + 1} is not an object.`);
-  if (!isPositiveInteger(value.matchday)) fail(`fixture ${index + 1} has an invalid matchday.`);
-  if (!isNonBlankString(value.home)) fail(`fixture ${index + 1} is missing a home team.`);
-  if (!isNonBlankString(value.away)) fail(`fixture ${index + 1} is missing an away team.`);
+  if (!isPositiveInteger(value.matchday))
+    fail(`fixture ${index + 1} has an invalid matchday.`);
+  if (!isNonBlankString(value.home))
+    fail(`fixture ${index + 1} is missing a home team.`);
+  if (!isNonBlankString(value.away))
+    fail(`fixture ${index + 1} is missing an away team.`);
 
   return { matchday: value.matchday, home: value.home, away: value.away };
 }
 
 function parseBye(value: unknown, index: number): Bye<string> {
   if (!isRecord(value)) fail(`bye ${index + 1} is not an object.`);
-  if (!isPositiveInteger(value.matchday)) fail(`bye ${index + 1} has an invalid matchday.`);
+  if (!isPositiveInteger(value.matchday))
+    fail(`bye ${index + 1} has an invalid matchday.`);
   if (!isNonBlankString(value.team)) fail(`bye ${index + 1} is missing a team.`);
 
   return { matchday: value.matchday, team: value.team };
@@ -99,9 +107,12 @@ function parseBye(value: unknown, index: number): Bye<string> {
 
 function parseResult(value: unknown, index: number): SavedResult {
   if (!isRecord(value)) fail(`result ${index + 1} is not an object.`);
-  if (!isPositiveInteger(value.matchday)) fail(`result ${index + 1} has an invalid matchday.`);
-  if (!isNonBlankString(value.home)) fail(`result ${index + 1} is missing a home team.`);
-  if (!isNonBlankString(value.away)) fail(`result ${index + 1} is missing an away team.`);
+  if (!isPositiveInteger(value.matchday))
+    fail(`result ${index + 1} has an invalid matchday.`);
+  if (!isNonBlankString(value.home))
+    fail(`result ${index + 1} is missing a home team.`);
+  if (!isNonBlankString(value.away))
+    fail(`result ${index + 1} is missing an away team.`);
   if (!isNonNegativeInteger(value.homeGoals))
     fail(`result ${index + 1} has an invalid home score.`);
   if (!isNonNegativeInteger(value.awayGoals))

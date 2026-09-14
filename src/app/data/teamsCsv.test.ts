@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { importTeamsCsv, exportTeamsCsv } from './teamsCsv';
-import type { FileSystem, SaveFileDialog } from '../../persistence/types';
-import type { TeamCsvRecord } from '../../adapters/csv';
+import type { FileSystem, SaveFileDialog } from '@/persistence/types';
+import type { TeamCsvRecord } from '@/adapters/csv';
 
 function fakeFs(overrides: Partial<FileSystem> = {}): FileSystem {
   return {
@@ -44,7 +44,9 @@ describe('importTeamsCsv', () => {
   it('opens the dialog filtered to .csv, not .json', async () => {
     const pickOpenPath = vi.fn().mockResolvedValue(null);
     await importTeamsCsv(fakeFs(), fakeDialog({ pickOpenPath }));
-    expect(pickOpenPath).toHaveBeenCalledWith([{ name: 'Team CSV', extensions: ['csv'] }]);
+    expect(pickOpenPath).toHaveBeenCalledWith([
+      { name: 'Team CSV', extensions: ['csv'] },
+    ]);
   });
 });
 

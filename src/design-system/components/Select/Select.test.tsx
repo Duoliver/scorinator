@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { Select } from './Select';
-import type { FieldHandle } from '../../field';
+import type { FieldHandle } from '@/design-system/field';
 
 const FORMATS = [
   { label: 'Round robin (two-way)', value: 'round-robin-two-way' },
@@ -32,7 +32,14 @@ describe('Select', () => {
 
   it('getValue() returns defaultValue initially, and "" when omitted', () => {
     const ref = createRef();
-    render(<Select label="Format" defaultValue="round-robin-single" options={FORMATS} ref={ref} />);
+    render(
+      <Select
+        label="Format"
+        defaultValue="round-robin-single"
+        options={FORMATS}
+        ref={ref}
+      />
+    );
     expect(ref.current?.getValue()).toBe('round-robin-single');
 
     const emptyRef = createRef();
@@ -43,9 +50,17 @@ describe('Select', () => {
   it('getValue() reflects the option the user picked', async () => {
     const ref = createRef();
     render(
-      <Select label="Format" defaultValue="round-robin-two-way" options={FORMATS} ref={ref} />,
+      <Select
+        label="Format"
+        defaultValue="round-robin-two-way"
+        options={FORMATS}
+        ref={ref}
+      />
     );
-    await userEvent.selectOptions(screen.getByLabelText('Format'), 'round-robin-single');
+    await userEvent.selectOptions(
+      screen.getByLabelText('Format'),
+      'round-robin-single'
+    );
     expect(ref.current?.getValue()).toBe('round-robin-single');
   });
 
@@ -57,9 +72,12 @@ describe('Select', () => {
         defaultValue="round-robin-two-way"
         options={FORMATS}
         onChange={onChange}
-      />,
+      />
     );
-    await userEvent.selectOptions(screen.getByLabelText('Format'), 'round-robin-single');
+    await userEvent.selectOptions(
+      screen.getByLabelText('Format'),
+      'round-robin-single'
+    );
     expect(onChange).toHaveBeenCalledWith('round-robin-single');
   });
 
@@ -83,10 +101,18 @@ describe('Select', () => {
     const listener = vi.fn();
     const ref = createRef();
     render(
-      <Select label="Format" defaultValue="round-robin-two-way" options={FORMATS} ref={ref} />,
+      <Select
+        label="Format"
+        defaultValue="round-robin-two-way"
+        options={FORMATS}
+        ref={ref}
+      />
     );
     ref.current?.subscribe(listener);
-    await userEvent.selectOptions(screen.getByLabelText('Format'), 'round-robin-single');
+    await userEvent.selectOptions(
+      screen.getByLabelText('Format'),
+      'round-robin-single'
+    );
     expect(listener).toHaveBeenCalledWith('round-robin-single');
   });
 

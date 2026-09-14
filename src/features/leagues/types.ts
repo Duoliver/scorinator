@@ -1,5 +1,5 @@
-import type { PointsConfig } from '../../engine/standings';
-import type { TeamRecord } from '../components';
+import type { PointsConfig } from '@/engine/standings';
+import type { TeamRecord } from '@/features/components';
 
 /** One team as League Setup rolled it into a league: a reference back to
  * the shared team roster (`slug`) plus the OVR rolled for it at league

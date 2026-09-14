@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { TeamForm } from './TeamForm';
-import type { TeamRecord } from '../types';
+import type { TeamRecord } from '@/features/components/types';
 
 describe('TeamForm', () => {
   it('renders the given title and save label', () => {

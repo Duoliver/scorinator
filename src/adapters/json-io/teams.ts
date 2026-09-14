@@ -1,6 +1,6 @@
-import { TIER_ORDER } from '../../engine/tier-ovr';
-import type { Tier } from '../../engine/tier-ovr/types';
-import type { TeamCsvRecord } from '../csv/types';
+import { TIER_ORDER } from '@/engine/tier-ovr';
+import type { Tier } from '@/engine/tier-ovr/types';
+import type { TeamCsvRecord } from '@/adapters/csv/types';
 
 function isTier(value: unknown): value is Tier {
   return typeof value === 'string' && (TIER_ORDER as readonly string[]).includes(value);

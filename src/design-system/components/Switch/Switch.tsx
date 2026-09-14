@@ -1,8 +1,14 @@
 import { forwardRef } from 'preact/compat';
-import { useCallback, useId, useImperativeHandle, useRef, useState } from 'preact/hooks';
+import {
+  useCallback,
+  useId,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from 'preact/hooks';
 import type { TargetedEvent } from 'preact';
 import type SwitchProps from './types';
-import type { FieldHandle } from '../../field';
+import type { FieldHandle } from '@/design-system/field';
 import styles from './Switch.module.css';
 
 export type { SwitchProps };
@@ -37,7 +43,7 @@ export const Switch = forwardRef<FieldHandle<boolean>, SwitchProps>(
         },
         focus: (): void => inputEl.current?.focus(),
       }),
-      [commitValue],
+      [commitValue]
     );
 
     return (
@@ -59,6 +65,6 @@ export const Switch = forwardRef<FieldHandle<boolean>, SwitchProps>(
         <span class={styles.label}>{label}</span>
       </label>
     );
-  },
+  }
 );
 Switch.displayName = 'Switch';

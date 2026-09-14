@@ -1,4 +1,4 @@
-import type { FileFilter, FileSystem, SaveFileDialog } from '../../persistence/types';
+import type { FileFilter, FileSystem, SaveFileDialog } from '@/persistence/types';
 import { writeTextFileAtomic } from './atomicWrite';
 
 /**

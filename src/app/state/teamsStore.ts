@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { TeamRecord } from '../../features/components';
+import type { TeamRecord } from '@/features/components';
 
 /** The one shared, in-memory team roster for the whole app session. Both
  * Team Management and League Setup read and write through this store, so

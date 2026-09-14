@@ -1,4 +1,4 @@
-import type { FileSystem } from '../../persistence/types';
+import type { FileSystem } from '@/persistence/types';
 
 /**
  * Writes `contents` to `path` without ever leaving a half-written file in

@@ -41,6 +41,7 @@
     "eslint": "~9.39.5",
     "eslint-config-preact": "~2.0.0",
     "eslint-config-prettier": "~10.1.8",
+    "eslint-import-resolver-typescript": "^4.4.5",
     "eslint-plugin-import": "~2.32.0",
     "globals": "^17.12.0",
     "jsdom": "^26.1.0",

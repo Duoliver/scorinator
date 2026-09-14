@@ -1,4 +1,4 @@
-import type { Tier } from '../../engine/tier-ovr';
+import type { Tier } from '@/engine/tier-ovr';
 
 /** A team as the shared in-memory team roster holds it (see
  * `app/state/teamsStore`), used by both the Team Management and League

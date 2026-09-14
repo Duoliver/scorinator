@@ -2,9 +2,9 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { LeagueSetupScreen } from './LeagueSetupScreen';
-import { useTeamsStore } from '../../app/state/teamsStore';
-import { useLeagueStore } from '../../app/state/leagueStore';
-import { TIER_OVR_RANGES } from '../../engine/tier-ovr';
+import { useTeamsStore } from '@/app/state/teamsStore';
+import { useLeagueStore } from '@/app/state/leagueStore';
+import { TIER_OVR_RANGES } from '@/engine/tier-ovr';
 
 beforeEach(() => {
   useTeamsStore.setState({

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { importTeamsJson } from './teamsJson';
-import type { FileSystem, SaveFileDialog } from '../../persistence/types';
+import type { FileSystem, SaveFileDialog } from '@/persistence/types';
 
 function fakeFs(overrides: Partial<FileSystem> = {}): FileSystem {
   return {

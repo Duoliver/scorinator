@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { TeamsStep } from './TeamsStep';
-import { useTeamsStore } from '../../../app/state/teamsStore';
+import { useTeamsStore } from '@/app/state/teamsStore';
 
 const baseProps = {
   selectedSlugs: [] as string[],

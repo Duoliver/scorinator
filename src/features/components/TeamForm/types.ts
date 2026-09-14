@@ -1,4 +1,4 @@
-import type { TeamRecord } from '../types';
+import type { TeamRecord } from '@/features/components/types';
 
 export default interface TeamFormProps {
   title: string;

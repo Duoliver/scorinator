@@ -1,9 +1,15 @@
 import { forwardRef } from 'preact/compat';
-import { useCallback, useId, useImperativeHandle, useRef, useState } from 'preact/hooks';
+import {
+  useCallback,
+  useId,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from 'preact/hooks';
 import type { TargetedEvent } from 'preact';
 import type SelectProps from './types';
 import type { SelectOption } from './types';
-import type { FieldHandle } from '../../field';
+import type { FieldHandle } from '@/design-system/field';
 import styles from './Select.module.css';
 
 export type { SelectProps, SelectOption };
@@ -38,7 +44,7 @@ export const Select = forwardRef<FieldHandle<string>, SelectProps>(
         },
         focus: (): void => selectEl.current?.focus(),
       }),
-      [commitValue],
+      [commitValue]
     );
 
     return (
@@ -75,6 +81,6 @@ export const Select = forwardRef<FieldHandle<string>, SelectProps>(
         </div>
       </div>
     );
-  },
+  }
 );
 Select.displayName = 'Select';

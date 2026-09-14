@@ -2,9 +2,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { TeamsScreen } from './TeamsScreen';
-import { useTeamsStore } from '../../app/state/teamsStore';
-import * as csvIO from '../../app/data/teamsCsv';
-import * as jsonIO from '../../app/data/teamsJson';
+import { useTeamsStore } from '@/app/state/teamsStore';
+import * as csvIO from '@/app/data/teamsCsv';
+import * as jsonIO from '@/app/data/teamsJson';
 
 beforeEach(() => {
   useTeamsStore.setState({ teams: [] });

@@ -1,9 +1,17 @@
 import { useRef, useState } from 'preact/hooks';
 import type { JSX } from 'preact';
-import { Badge, Button, Card, Checkbox, Input, Table, type TableColumn } from '../../../design-system';
-import type { FieldHandle } from '../../../design-system/field';
-import { TeamForm, type TeamRecord } from '../../components';
-import { useTeamsStore } from '../../../app/state/teamsStore';
+import {
+  Badge,
+  Button,
+  Card,
+  Checkbox,
+  Input,
+  Table,
+  type TableColumn,
+} from '@/design-system';
+import type { FieldHandle } from '@/design-system/field';
+import { TeamForm, type TeamRecord } from '@/features/components';
+import { useTeamsStore } from '@/app/state/teamsStore';
 import styles from './TeamsStep.module.css';
 
 interface TeamsStepProps {
@@ -36,7 +44,8 @@ export function TeamsStep({
   );
   const filteredSlugs = filteredTeams.map((team) => team.slug);
   const allFilteredSelected =
-    filteredSlugs.length > 0 && filteredSlugs.every((slug) => selectedSlugs.includes(slug));
+    filteredSlugs.length > 0 &&
+    filteredSlugs.every((slug) => selectedSlugs.includes(slug));
 
   const handleSelectAll = (): void => {
     onSelectAll(filteredSlugs);
@@ -69,7 +78,10 @@ export function TeamsStep({
               else checkboxHandles.current.delete(team.slug);
             }}
           />
-          <div class={styles.swatch} style={{ background: team.colour || 'transparent' }} />
+          <div
+            class={styles.swatch}
+            style={{ background: team.colour || 'transparent' }}
+          />
         </div>
       ),
     },
@@ -86,11 +98,7 @@ export function TeamsStep({
     <Card padding="lg">
       <div class={styles.step}>
         <div class={styles.toolbar}>
-          <Input
-            label="Search teams"
-            placeholder="Search teams…"
-            onChange={setQuery}
-          />
+          <Input label="Search teams" placeholder="Search teams…" onChange={setQuery} />
           <Button variant="secondary" onClick={() => setShowCreateTeam(true)}>
             + Create new team
           </Button>

@@ -1,10 +1,10 @@
 import { useState } from 'preact/hooks';
 import type { JSX } from 'preact';
-import { Badge, Button, Table, type TableColumn } from '../../design-system';
-import { TeamForm, type TeamRecord } from '../components';
-import { useTeamsStore } from '../../app/state/teamsStore';
-import { exportTeamsCsv, importTeamsCsv } from '../../app/data/teamsCsv';
-import { importTeamsJson } from '../../app/data/teamsJson';
+import { Badge, Button, Table, type TableColumn } from '@/design-system';
+import { TeamForm, type TeamRecord } from '@/features/components';
+import { useTeamsStore } from '@/app/state/teamsStore';
+import { exportTeamsCsv, importTeamsCsv } from '@/app/data/teamsCsv';
+import { importTeamsJson } from '@/app/data/teamsJson';
 import {
   csvRecordToTeamRecord,
   mergeImportedTeams,
@@ -81,7 +81,10 @@ export function TeamsScreen(): JSX.Element {
       header: '',
       width: '2rem',
       render: (row) => (
-        <div class={styles.swatch} style={{ background: row.colour || 'transparent' }} />
+        <div
+          class={styles.swatch}
+          style={{ background: row.colour || 'transparent' }}
+        />
       ),
     },
     { key: 'name', header: 'Name' },

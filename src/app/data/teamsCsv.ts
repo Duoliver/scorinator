@@ -3,13 +3,9 @@ import {
   saveTextFileWithDialog,
   tauriDialog,
   tauriFileSystem,
-} from '../../adapters/tauri-fs';
-import {
-  parseTeamsCsv,
-  serializeTeamsCsv,
-  type TeamCsvRecord,
-} from '../../adapters/csv';
-import type { FileFilter, FileSystem, SaveFileDialog } from '../../persistence/types';
+} from '@/adapters/tauri-fs';
+import { parseTeamsCsv, serializeTeamsCsv, type TeamCsvRecord } from '@/adapters/csv';
+import type { FileFilter, FileSystem, SaveFileDialog } from '@/persistence/types';
 
 /** The thin `app/` → `adapters/` data layer `module-boundaries.md`
  * requires. `features/teams` calls these functions instead of importing

@@ -51,6 +51,20 @@ export function Badge({ children, tone = 'neutral' }: BadgeProps) {
 
 A generic component's props interface follows the same pattern: a plain `export default interface Props<Row> { ... }` in `types.ts`. TypeScript allows a generic default export the same way. See `design-system/components/Table/types.ts` for a real example: `TableProps<Row>` is the default export, and `TableColumn<Row>` is a named export it depends on. Types used only inside `types.ts` stay as named exports there. Re-export a type from the component file only when a consumer needs it.
 
+## Use absolute imports, not relative
+
+Import across directories with the `@/` alias, not `../`. The alias maps to `src/`, configured in `tsconfig.json` (`paths`), `vite.config.ts` and `vitest.config.ts` (`resolve.alias`), and `eslint.config.mjs` (`import/resolver`).
+
+```ts
+// Don't
+import { TIER_ORDER } from '../../engine/tier-ovr';
+
+// Do
+import { TIER_ORDER } from '@/engine/tier-ovr';
+```
+
+A relative import (`./types`, `./Badge.module.css`) is still correct for a file importing a sibling in the same directory, such as a component and its `types.ts`. Never write a relative import with `../` — use `@/...` instead.
+
 ## No `!important` in CSS
 
 This codebase's stylesheets must not use `!important`. It is a specificity escape hatch. It hides the real conflict instead of resolving it. It also silently outranks any rule a later change adds. This includes a future `!important` someone adds to fight the first one.

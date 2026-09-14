@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { useLeagueStore } from './leagueStore';
-import { TIER_OVR_RANGES } from '../../engine/tier-ovr';
-import type { TeamRecord } from '../../features/components';
+import { TIER_OVR_RANGES } from '@/engine/tier-ovr';
+import type { TeamRecord } from '@/features/components';
 
 const team = (overrides: Partial<TeamRecord> = {}): TeamRecord => ({
   slug: 'fc-united',

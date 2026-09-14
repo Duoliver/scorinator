@@ -4,8 +4,8 @@ import {
   mergeImportedTeams,
   teamRecordToCsvRecord,
 } from './importMerge';
-import type { TeamRecord } from '../components';
-import type { TeamCsvRecord } from '../../adapters/csv';
+import type { TeamRecord } from '@/features/components';
+import type { TeamCsvRecord } from '@/adapters/csv';
 
 describe('csvRecordToTeamRecord', () => {
   it('keeps a non-blank slug from the CSV row as-is', () => {

@@ -1,15 +1,16 @@
 import { create } from 'zustand';
-import { createSeededRng } from '../../engine/rng';
-import { rollOVR } from '../../engine/tier-ovr';
-import type {
-  CreateLeagueInput,
-  LeagueRecord,
-} from '../../features/leagues/types';
+import { createSeededRng } from '@/engine/rng';
+import { rollOVR } from '@/engine/tier-ovr';
+import type { CreateLeagueInput, LeagueRecord } from '@/features/leagues/types';
 
 /** Imports the leaf `types` module directly, not the `features/leagues`
  * barrel — the barrel re-exports `LeagueSetupScreen`, which itself imports
  * this store, so importing the barrel here would create a cycle. */
-export type { LeagueRecord, LeagueTeam, CreateLeagueInput } from '../../features/leagues/types';
+export type {
+  LeagueRecord,
+  LeagueTeam,
+  CreateLeagueInput,
+} from '@/features/leagues/types';
 
 export interface LeagueState {
   leagues: LeagueRecord[];

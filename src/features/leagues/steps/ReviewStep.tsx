@@ -1,7 +1,7 @@
 import type { JSX } from 'preact';
-import { Button, Card } from '../../../design-system';
-import type { PointsConfig } from '../../../engine/standings';
-import type { TeamRecord } from '../../components';
+import { Button, Card } from '@/design-system';
+import type { PointsConfig } from '@/engine/standings';
+import type { TeamRecord } from '@/features/components';
 import styles from './ReviewStep.module.css';
 
 interface ReviewStepProps {
@@ -38,7 +38,10 @@ export function ReviewStep({
         <ul class={styles.teamList}>
           {selectedTeams.map((team) => (
             <li key={team.slug} class={styles.teamRow}>
-              <div class={styles.swatch} style={{ background: team.colour || 'transparent' }} />
+              <div
+                class={styles.swatch}
+                style={{ background: team.colour || 'transparent' }}
+              />
               <span class={styles.teamName}>{team.name}</span>
               <span class={styles.tier}>{team.tier}</span>
             </li>
@@ -49,7 +52,10 @@ export function ReviewStep({
           <Button variant="secondary" onClick={onBack}>
             Back
           </Button>
-          <Button onClick={onCreate} disabled={!name.trim() || selectedTeams.length === 0}>
+          <Button
+            onClick={onCreate}
+            disabled={!name.trim() || selectedTeams.length === 0}
+          >
             Create league
           </Button>
         </div>

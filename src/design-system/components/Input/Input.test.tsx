@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { Input } from './Input';
-import type { FieldHandle } from '../../field';
+import type { FieldHandle } from '@/design-system/field';
 
 function createRef(): { current: FieldHandle<string> | null } {
   return { current: null };

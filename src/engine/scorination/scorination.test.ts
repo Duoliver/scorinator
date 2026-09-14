@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createSeededRng } from '../rng';
+import { createSeededRng } from '@/engine/rng';
 import * as scorinationModule from './index';
 import {
   ABS_WEIGHT,
@@ -23,12 +23,18 @@ function average(values: number[]): number {
 
 describe('computeExpectedGoals', () => {
   it('returns the league baseline for an even matchup at the reference OVR, elasticity 1', () => {
-    expect(computeExpectedGoals(REFERENCE_OVR, REFERENCE_OVR, 1)).toBeCloseTo(BASE_GOALS_PER_TEAM, 10);
+    expect(computeExpectedGoals(REFERENCE_OVR, REFERENCE_OVR, 1)).toBeCloseTo(
+      BASE_GOALS_PER_TEAM,
+      10
+    );
   });
 
   it('scales linearly with elasticity, holding OVR fixed', () => {
     const base = computeExpectedGoals(REFERENCE_OVR, REFERENCE_OVR, 1);
-    expect(computeExpectedGoals(REFERENCE_OVR, REFERENCE_OVR, 2)).toBeCloseTo(base * 2, 10);
+    expect(computeExpectedGoals(REFERENCE_OVR, REFERENCE_OVR, 2)).toBeCloseTo(
+      base * 2,
+      10
+    );
   });
 
   it('rewards a higher OVR than the opponent, and punishes a lower one', () => {
@@ -74,7 +80,9 @@ describe('rollElasticity', () => {
   });
 
   it('is deterministic: the same seed gives the same roll', () => {
-    expect(rollElasticity(createSeededRng(11))).toBe(rollElasticity(createSeededRng(11)));
+    expect(rollElasticity(createSeededRng(11))).toBe(
+      rollElasticity(createSeededRng(11))
+    );
   });
 });
 
@@ -107,10 +115,14 @@ describe('scorinateMatch', () => {
     expect(awayWins).toBeGreaterThan(0);
   });
 
-  it('keeps the average close to the spec\'s ~1.3 goals/team baseline, for an even mid-tier matchup', () => {
+  it("keeps the average close to the spec's ~1.3 goals/team baseline, for an even mid-tier matchup", () => {
     const goals: number[] = [];
     for (let seed = 0; seed < TRIALS; seed++) {
-      const { homeGoals, awayGoals } = scorinateMatch(REFERENCE_OVR, REFERENCE_OVR, createSeededRng(seed));
+      const { homeGoals, awayGoals } = scorinateMatch(
+        REFERENCE_OVR,
+        REFERENCE_OVR,
+        createSeededRng(seed)
+      );
       goals.push(homeGoals, awayGoals);
     }
     expect(average(goals)).toBeGreaterThan(1.0);
@@ -121,7 +133,11 @@ describe('scorinateMatch', () => {
     const averageCombinedGoals = (ovr: number): number => {
       let total = 0;
       for (let seed = 0; seed < TRIALS; seed++) {
-        const { homeGoals, awayGoals } = scorinateMatch(ovr, ovr, createSeededRng(seed));
+        const { homeGoals, awayGoals } = scorinateMatch(
+          ovr,
+          ovr,
+          createSeededRng(seed)
+        );
         total += homeGoals + awayGoals;
       }
       return total / TRIALS;
@@ -160,11 +176,15 @@ describe('applyHomeAdvantage', () => {
 });
 
 describe('home advantage effect on scorinateMatch', () => {
-  it('raises the home team\'s win rate against an otherwise evenly matched away team', () => {
+  it("raises the home team's win rate against an otherwise evenly matched away team", () => {
     const homeWinRate = (homeOvr: number, awayOvr: number): number => {
       let homeWins = 0;
       for (let seed = 0; seed < TRIALS; seed++) {
-        const { homeGoals, awayGoals } = scorinateMatch(homeOvr, awayOvr, createSeededRng(seed));
+        const { homeGoals, awayGoals } = scorinateMatch(
+          homeOvr,
+          awayOvr,
+          createSeededRng(seed)
+        );
         if (homeGoals > awayGoals) homeWins++;
       }
       return homeWins / TRIALS;

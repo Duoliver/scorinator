@@ -15,6 +15,12 @@
     "jsx": "react-jsx",
     "jsxImportSource": "preact",
 
+    /* Absolute imports */
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
+
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,

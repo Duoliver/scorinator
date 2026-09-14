@@ -8,7 +8,7 @@ import {
 } from 'preact/hooks';
 import type { TargetedEvent } from 'preact';
 import type InputProps from './types';
-import type { FieldHandle } from '../../field';
+import type { FieldHandle } from '@/design-system/field';
 import styles from './Input.module.css';
 
 export type { InputProps };

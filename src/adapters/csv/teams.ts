@@ -1,5 +1,5 @@
-import { TIER_ORDER } from '../../engine/tier-ovr';
-import type { Tier } from '../../engine/tier-ovr/types';
+import { TIER_ORDER } from '@/engine/tier-ovr';
+import type { Tier } from '@/engine/tier-ovr/types';
 import { parseCsv, stringifyCsv } from './csv';
 import type { TeamCsvRecord } from './types';
 

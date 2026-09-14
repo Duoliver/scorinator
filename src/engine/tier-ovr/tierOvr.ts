@@ -1,4 +1,4 @@
-import type { Rng } from '../rng';
+import type { Rng } from '@/engine/rng';
 import type { Tier, TierOvrRange } from './types';
 
 export const TIER_ORDER: readonly Tier[] = ['S', 'A', 'B', 'C', 'D', 'E', 'F'];

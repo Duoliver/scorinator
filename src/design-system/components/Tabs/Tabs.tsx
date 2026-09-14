@@ -2,7 +2,7 @@ import { forwardRef } from 'preact/compat';
 import { useCallback, useImperativeHandle, useRef, useState } from 'preact/hooks';
 import type TabsProps from './types';
 import type { TabItem } from './types';
-import type { FieldHandle } from '../../field';
+import type { FieldHandle } from '@/design-system/field';
 import styles from './Tabs.module.css';
 
 export type { TabsProps, TabItem };
@@ -45,7 +45,10 @@ export const Tabs = forwardRef<FieldHandle<string>, TabsProps>(
 
     return (
       <div class={styles.wrapper}>
-        <div class={`${styles.tabs} ${fullWidth ? styles.tabsFullWidth : ''}`} role="tablist">
+        <div
+          class={`${styles.tabs} ${fullWidth ? styles.tabsFullWidth : ''}`}
+          role="tablist"
+        >
           {tabs.map((tab) => {
             const active = tab.id === activeId;
             return (

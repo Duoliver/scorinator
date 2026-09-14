@@ -1,16 +1,20 @@
 import { useRef, useState } from 'preact/hooks';
 import type { JSX, RefObject } from 'preact';
-import { Tabs, type TabItem } from '../../design-system';
-import type { FieldHandle } from '../../design-system/field';
-import { DEFAULT_POINTS_CONFIG, type PointsConfig } from '../../engine/standings';
-import { useTeamsStore } from '../../app/state/teamsStore';
-import { useLeagueStore } from '../../app/state/leagueStore';
+import { Tabs, type TabItem } from '@/design-system';
+import type { FieldHandle } from '@/design-system/field';
+import { DEFAULT_POINTS_CONFIG, type PointsConfig } from '@/engine/standings';
+import { useTeamsStore } from '@/app/state/teamsStore';
+import { useLeagueStore } from '@/app/state/leagueStore';
 import { DetailsStep } from './steps/DetailsStep';
 import { TeamsStep } from './steps/TeamsStep';
 import { ReviewStep } from './steps/ReviewStep';
 import styles from './LeagueSetupScreen.module.css';
 
-function emptyDetails(): { name: string; points: PointsConfig; homeAdvantage: boolean } {
+function emptyDetails(): {
+  name: string;
+  points: PointsConfig;
+  homeAdvantage: boolean;
+} {
   return { name: '', points: DEFAULT_POINTS_CONFIG, homeAdvantage: false };
 }
 
@@ -32,7 +36,9 @@ export function LeagueSetupScreen(): JSX.Element {
   };
 
   const selectTeam = (slug: string): void => {
-    setSelectedSlugs((current) => (current.includes(slug) ? current : [...current, slug]));
+    setSelectedSlugs((current) =>
+      current.includes(slug) ? current : [...current, slug]
+    );
   };
 
   const selectAllTeams = (slugs: string[]): void => {

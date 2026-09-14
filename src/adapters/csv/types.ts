@@ -1,4 +1,4 @@
-import type { Tier } from '../../engine/tier-ovr/types';
+import type { Tier } from '@/engine/tier-ovr/types';
 
 export interface TeamCsvRecord {
   slug: string;

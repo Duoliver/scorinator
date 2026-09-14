@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createSeededRng } from '../rng';
+import { createSeededRng } from '@/engine/rng';
 import * as tierOvrModule from './index';
 import { TIER_ORDER, TIER_OVR_RANGES, rollOVR } from './index';
 

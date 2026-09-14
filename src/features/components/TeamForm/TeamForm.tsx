@@ -1,9 +1,9 @@
 import { useRef, useState } from 'preact/hooks';
 import type { JSX } from 'preact';
-import { Button, Input, Select } from '../../../design-system';
-import type { FieldHandle } from '../../../design-system/field';
-import { slug } from '../../../engine/identity';
-import { TIER_ORDER, type Tier } from '../../../engine/tier-ovr';
+import { Button, Input, Select } from '@/design-system';
+import type { FieldHandle } from '@/design-system/field';
+import { slug } from '@/engine/identity';
+import { TIER_ORDER, type Tier } from '@/engine/tier-ovr';
 import type TeamFormProps from './types';
 import styles from './TeamForm.module.css';
 

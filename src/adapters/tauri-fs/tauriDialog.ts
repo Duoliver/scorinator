@@ -1,5 +1,5 @@
 import { open, save } from '@tauri-apps/plugin-dialog';
-import type { FileFilter, SaveFileDialog } from '../../persistence/types';
+import type { FileFilter, SaveFileDialog } from '@/persistence/types';
 
 const JSON_FILTERS: readonly FileFilter[] = [
   { name: 'Scorinator save', extensions: ['json'] },

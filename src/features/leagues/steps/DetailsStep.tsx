@@ -1,6 +1,6 @@
 import type { JSX } from 'preact';
-import { Button, Card, Input, Switch } from '../../../design-system';
-import type { PointsConfig } from '../../../engine/standings';
+import { Button, Card, Input, Switch } from '@/design-system';
+import type { PointsConfig } from '@/engine/standings';
 import styles from './DetailsStep.module.css';
 
 interface DetailsStepProps {

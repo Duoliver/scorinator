@@ -8,14 +8,15 @@ import {
 } from 'preact-router';
 import { TeamsScreen } from '@/features/teams';
 import { LeagueSetupScreen } from '@/features/leagues';
+import { ROUTES, type RoutePath } from './routes';
 import styles from './AppShell.module.css';
 
 const NAV_ITEMS = [
-  { label: 'Leagues', path: '/leagues/new' },
-  { label: 'Teams', path: '/teams' },
+  { label: 'Leagues', path: ROUTES.leaguesNew },
+  { label: 'Teams', path: ROUTES.teams },
 ] as const;
 
-const DEFAULT_PATH = '/teams';
+const DEFAULT_PATH = ROUTES.teams;
 
 /** `TeamsScreen`/`LeagueSetupScreen` take no props and stay routing-agnostic,
  * per `module-boundaries.md` — `features/` never needs to know it is routed.
@@ -29,17 +30,18 @@ function LeagueSetupRoute(_props: RoutableProps): JSX.Element {
 }
 
 export function AppShell(): JSX.Element {
-  const [activePath, setActivePath] = useState(DEFAULT_PATH);
+  const [activePath, setActivePath] = useState<string>(DEFAULT_PATH);
 
   const handleChange = (args: RouterOnChangeArgs): void => {
     // `default` on `TeamsRoute` renders it for any unmatched path, including
-    // "/", but `onChange` still reports the literal browser url — normalize
-    // "/" to the path it actually rendered, so the nav highlight matches.
-    setActivePath(args.url === '/' ? DEFAULT_PATH : args.url);
+    // ROUTES.root, but `onChange` still reports the literal browser url —
+    // normalize it to the path it actually rendered, so the nav highlight
+    // matches.
+    setActivePath(args.url === ROUTES.root ? DEFAULT_PATH : args.url);
   };
 
   const handleNavClick =
-    (path: string) =>
+    (path: RoutePath) =>
     (event: TargetedMouseEvent<HTMLAnchorElement>): void => {
       event.preventDefault();
       route(path);
@@ -63,8 +65,8 @@ export function AppShell(): JSX.Element {
       </nav>
       <div class={styles.content}>
         <Router onChange={handleChange}>
-          <TeamsRoute path="/teams" default />
-          <LeagueSetupRoute path="/leagues/new" />
+          <TeamsRoute path={ROUTES.teams} default />
+          <LeagueSetupRoute path={ROUTES.leaguesNew} />
         </Router>
       </div>
     </div>

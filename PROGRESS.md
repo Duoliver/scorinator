@@ -79,6 +79,12 @@ A short record of resolved judgment calls. This stops a later session from silen
 
 **START BELOW, LAST ON TOP:**
 
+- **2026-09-14 (Task 23, follow-up — route constants):** The user asked for route paths as constants instead of string literals. This gives reuse, intellisense, and a single edit point for a path change.
+
+  New `src/app/routes.ts` exports `ROUTES` (a `const` object: `root`, `teams`, `leaguesNew`) and `RoutePath`, the union type of its values. `AppShell.tsx` now reads every path from `ROUTES` — the nav item list, the `default` path passed to `useState`, the root-path check in the `onChange` handler, and both `<Router>` children. `handleNavClick` now takes a `RoutePath` instead of a bare `string`.
+
+  Kept `activePath` state typed as plain `string`, not `RoutePath`. `preact-router`'s `onChange` reports the literal browser url, which is not provably one of the app's known routes at the type level. 265 tests, `type-check`, `lint`, and `build` all stay clean.
+
 - **2026-09-14 (Task 23 — nav shell + `preact-router`):** New `src/app/AppShell.tsx` renders the 220px sidebar from the design reference. It wraps `<Router>`. It routes `TeamsScreen` at `/teams`, also as the `default` fallback, so `/` lands on Teams. It routes `LeagueSetupScreen` at `/leagues/new`. `App.tsx` now renders `<AppShell />` in place of the two bare-mounted screens. `Playground` stays exactly where it was. Retiring it is still a job for Task 22.
 
   Three calls, confirmed with the user before the build:

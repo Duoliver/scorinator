@@ -2,51 +2,42 @@ import { useRef, useState } from 'preact/hooks';
 import type { JSX, RefObject } from 'preact';
 import { Tabs, type TabItem } from '@/design-system';
 import type { FieldHandle } from '@/design-system/field';
-import { DEFAULT_POINTS_CONFIG, type PointsConfig } from '@/engine/standings';
 import { useTeamsStore } from '@/app/state/teamsStore';
 import { useLeagueStore } from '@/app/state/leagueStore';
+import {
+  useLeagueDraftStore,
+  type LeagueSetupStep,
+} from '@/app/state/leagueDraftStore';
 import { DetailsStep } from './steps/DetailsStep';
 import { TeamsStep } from './steps/TeamsStep';
 import { ReviewStep } from './steps/ReviewStep';
 import styles from './LeagueSetupScreen.module.css';
 
-function emptyDetails(): {
-  name: string;
-  points: PointsConfig;
-  homeAdvantage: boolean;
-} {
-  return { name: '', points: DEFAULT_POINTS_CONFIG, homeAdvantage: false };
-}
-
 export function LeagueSetupScreen(): JSX.Element {
   const teams = useTeamsStore((state) => state.teams);
   const addLeague = useLeagueStore((state) => state.addLeague);
 
+  const details = useLeagueDraftStore((state) => state.details);
+  const selectedSlugs = useLeagueDraftStore((state) => state.selectedSlugs);
+  const step = useLeagueDraftStore((state) => state.step);
+  const setName = useLeagueDraftStore((state) => state.setName);
+  const setPoints = useLeagueDraftStore((state) => state.setPoints);
+  const setHomeAdvantage = useLeagueDraftStore((state) => state.setHomeAdvantage);
+  const toggleTeam = useLeagueDraftStore((state) => state.toggleTeam);
+  const selectTeam = useLeagueDraftStore((state) => state.selectTeam);
+  const selectAllTeams = useLeagueDraftStore((state) => state.selectAllTeams);
+  const clearSelection = useLeagueDraftStore((state) => state.clearSelection);
+  const setStep = useLeagueDraftStore((state) => state.setStep);
+  const resetDraft = useLeagueDraftStore((state) => state.reset);
+
   const stepsRef: RefObject<FieldHandle<string>> = useRef(null);
-  const [details, setDetails] = useState(emptyDetails());
-  const [selectedSlugs, setSelectedSlugs] = useState<string[]>([]);
   const [status, setStatus] = useState<string | null>(null);
 
   const selectedTeams = teams.filter((team) => selectedSlugs.includes(team.slug));
 
-  const toggleTeam = (slug: string): void => {
-    setSelectedSlugs((current) =>
-      current.includes(slug) ? current.filter((s) => s !== slug) : [...current, slug]
-    );
-  };
-
-  const selectTeam = (slug: string): void => {
-    setSelectedSlugs((current) =>
-      current.includes(slug) ? current : [...current, slug]
-    );
-  };
-
-  const selectAllTeams = (slugs: string[]): void => {
-    setSelectedSlugs((current) => Array.from(new Set([...current, ...slugs])));
-  };
-
-  const clearSelection = (slugs: string[]): void => {
-    setSelectedSlugs((current) => current.filter((slug) => !slugs.includes(slug)));
+  const goToStep = (next: LeagueSetupStep): void => {
+    stepsRef.current?.setValue(next);
+    setStep(next);
   };
 
   const handleCreate = (): void => {
@@ -57,9 +48,8 @@ export function LeagueSetupScreen(): JSX.Element {
       teams: selectedTeams,
     });
     setStatus(`League "${league.name}" created with ${league.teams.length} teams.`);
+    resetDraft();
     stepsRef.current?.setValue('details');
-    setDetails(emptyDetails());
-    setSelectedSlugs([]);
   };
 
   const tabs: TabItem[] = [
@@ -71,12 +61,10 @@ export function LeagueSetupScreen(): JSX.Element {
           name={details.name}
           points={details.points}
           homeAdvantage={details.homeAdvantage}
-          onNameChange={(name) => setDetails((current) => ({ ...current, name }))}
-          onPointsChange={(points) => setDetails((current) => ({ ...current, points }))}
-          onHomeAdvantageChange={(homeAdvantage) =>
-            setDetails((current) => ({ ...current, homeAdvantage }))
-          }
-          onNext={() => stepsRef.current?.setValue('teams')}
+          onNameChange={setName}
+          onPointsChange={setPoints}
+          onHomeAdvantageChange={setHomeAdvantage}
+          onNext={() => goToStep('teams')}
         />
       ),
     },
@@ -90,8 +78,8 @@ export function LeagueSetupScreen(): JSX.Element {
           onSelectAll={selectAllTeams}
           onClearSelection={clearSelection}
           onTeamCreated={selectTeam}
-          onBack={() => stepsRef.current?.setValue('details')}
-          onNext={() => stepsRef.current?.setValue('review')}
+          onBack={() => goToStep('details')}
+          onNext={() => goToStep('review')}
         />
       ),
     },
@@ -104,7 +92,7 @@ export function LeagueSetupScreen(): JSX.Element {
           homeAdvantage={details.homeAdvantage}
           points={details.points}
           selectedTeams={selectedTeams}
-          onBack={() => stepsRef.current?.setValue('teams')}
+          onBack={() => goToStep('teams')}
           onCreate={handleCreate}
         />
       ),
@@ -115,7 +103,13 @@ export function LeagueSetupScreen(): JSX.Element {
     <div class={styles.screen}>
       <h1>League Setup</h1>
 
-      <Tabs tabs={tabs} defaultTab="details" ref={stepsRef} fullWidth />
+      <Tabs
+        tabs={tabs}
+        defaultTab={step}
+        onChange={(id) => setStep(id as LeagueSetupStep)}
+        ref={stepsRef}
+        fullWidth
+      />
 
       {status && <span class={styles.status}>{status}</span>}
     </div>

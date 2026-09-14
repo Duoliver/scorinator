@@ -4,7 +4,9 @@ import userEvent from '@testing-library/user-event';
 import { LeagueSetupScreen } from './LeagueSetupScreen';
 import { useTeamsStore } from '@/app/state/teamsStore';
 import { useLeagueStore } from '@/app/state/leagueStore';
+import { useLeagueDraftStore } from '@/app/state/leagueDraftStore';
 import { TIER_OVR_RANGES } from '@/engine/tier-ovr';
+import { DEFAULT_POINTS_CONFIG } from '@/engine/standings';
 
 beforeEach(() => {
   useTeamsStore.setState({
@@ -14,6 +16,11 @@ beforeEach(() => {
     ],
   });
   useLeagueStore.setState({ leagues: [] });
+  useLeagueDraftStore.setState({
+    details: { name: '', points: DEFAULT_POINTS_CONFIG, homeAdvantage: false },
+    selectedSlugs: [],
+    step: 'details',
+  });
 });
 
 describe('LeagueSetupScreen', () => {

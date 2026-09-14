@@ -4,10 +4,17 @@ import userEvent from '@testing-library/user-event';
 import { AppShell } from './AppShell';
 import { useTeamsStore } from '@/app/state/teamsStore';
 import { useLeagueStore } from '@/app/state/leagueStore';
+import { useLeagueDraftStore } from '@/app/state/leagueDraftStore';
+import { DEFAULT_POINTS_CONFIG } from '@/engine/standings';
 
 beforeEach(() => {
   useTeamsStore.setState({ teams: [] });
   useLeagueStore.setState({ leagues: [] });
+  useLeagueDraftStore.setState({
+    details: { name: '', points: DEFAULT_POINTS_CONFIG, homeAdvantage: false },
+    selectedSlugs: [],
+    step: 'details',
+  });
 });
 
 describe('AppShell', () => {
@@ -42,5 +49,17 @@ describe('AppShell', () => {
       'aria-current',
       'page'
     );
+  });
+
+  it('keeps an in-progress League Setup draft when the user switches away and back', async () => {
+    render(<AppShell />);
+
+    await userEvent.click(screen.getByRole('link', { name: 'Leagues' }));
+    await userEvent.type(screen.getByLabelText('League name'), 'Coastal Premier');
+
+    await userEvent.click(screen.getByRole('link', { name: 'Teams' }));
+    await userEvent.click(screen.getByRole('link', { name: 'Leagues' }));
+
+    expect(screen.getByLabelText('League name')).toHaveValue('Coastal Premier');
   });
 });

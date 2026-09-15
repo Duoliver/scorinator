@@ -1,7 +1,7 @@
 import { useState } from 'preact/hooks';
 import type { JSX } from 'preact';
-import { Badge, Button, Drawer, Table, type TableColumn } from '@/design-system';
-import { TeamForm, type TeamRecord } from '@/features/components';
+import { Badge, Button, Table, type TableColumn } from '@/design-system';
+import { TeamFormDrawer, type TeamRecord } from '@/features/components';
 import { useTeamsStore } from '@/app/state/teamsStore';
 import { exportTeamsCsv, importTeamsCsv } from '@/app/data/teamsCsv';
 import { importTeamsJson } from '@/app/data/teamsJson';
@@ -141,18 +141,12 @@ export function TeamsScreen(): JSX.Element {
       {status && <span class={styles.status}>{status}</span>}
 
       {drawer && (
-        <Drawer
-          title={drawer.mode === 'create' ? 'New team' : 'Edit team'}
-          onClose={() => setDrawer(null)}
-        >
-          <TeamForm
-            key={drawer.mode === 'edit' ? `edit-${drawer.index}` : 'create'}
-            saveLabel={drawer.mode === 'create' ? 'Create team' : 'Save changes'}
-            initial={drawer.mode === 'edit' ? teams[drawer.index] : undefined}
-            onCancel={() => setDrawer(null)}
-            onSave={handleSave}
-          />
-        </Drawer>
+        <TeamFormDrawer
+          isEdit={drawer.mode === 'edit'}
+          initial={drawer.mode === 'edit' ? teams[drawer.index] : undefined}
+          onCancel={() => setDrawer(null)}
+          onSave={handleSave}
+        />
       )}
     </div>
   );

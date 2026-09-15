@@ -5,13 +5,12 @@ import {
   Button,
   Card,
   Checkbox,
-  Drawer,
   Input,
   Table,
   type TableColumn,
 } from '@/design-system';
 import type { FieldHandle } from '@/design-system/field';
-import { TeamForm, type TeamRecord } from '@/features/components';
+import { TeamFormDrawer, type TeamRecord } from '@/features/components';
 import { useTeamsStore } from '@/app/state/teamsStore';
 import styles from './TeamsStep.module.css';
 
@@ -120,13 +119,10 @@ export function TeamsStep({
         </div>
 
         {showCreateTeam && (
-          <Drawer title="New team" onClose={() => setShowCreateTeam(false)}>
-            <TeamForm
-              saveLabel="Create team"
-              onCancel={() => setShowCreateTeam(false)}
-              onSave={handleTeamCreated}
-            />
-          </Drawer>
+          <TeamFormDrawer
+            onCancel={() => setShowCreateTeam(false)}
+            onSave={handleTeamCreated}
+          />
         )}
 
         <div class={styles.footer}>

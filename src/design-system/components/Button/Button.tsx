@@ -11,15 +11,21 @@ export function Button({
   size = 'md',
   disabled = false,
   type = 'button',
+  href,
   onClick,
 }: ButtonProps): JSX.Element {
+  const className = `${styles.button} ${styles[variant]} ${styles[size]}`;
+
+  if (href) {
+    return (
+      <a href={href} class={className} onClick={onClick}>
+        {children}
+      </a>
+    );
+  }
+
   return (
-    <button
-      type={type}
-      disabled={disabled}
-      onClick={onClick}
-      class={`${styles.button} ${styles[variant]} ${styles[size]}`}
-    >
+    <button type={type} disabled={disabled} onClick={onClick} class={className}>
       {children}
     </button>
   );

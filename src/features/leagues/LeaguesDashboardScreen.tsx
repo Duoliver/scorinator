@@ -1,5 +1,5 @@
 import type { JSX } from 'preact';
-import { Card } from '@/design-system';
+import { Button, Card } from '@/design-system';
 import { useLeagueStore } from '@/app/state/leagueStore';
 import { ROUTES, leagueDetailPath } from '@/app/routes';
 import { describeLeague } from './leagueSummary';
@@ -25,9 +25,9 @@ export function LeaguesDashboardScreen(): JSX.Element {
             {leagues.length} league{leagues.length === 1 ? '' : 's'} running
           </p>
         </div>
-        <a href={ROUTES.leaguesNew} class={styles.newLeagueLink}>
+        <Button href={ROUTES.leaguesNew} variant="primary" size="md">
           + New League
-        </a>
+        </Button>
       </div>
 
       {leagues.length === 0 ? (
@@ -42,9 +42,9 @@ export function LeaguesDashboardScreen(): JSX.Element {
                 <span class={styles.pointsPill}>
                   {league.points.win}/{league.points.draw}/{league.points.loss} pts
                 </span>
-                <a href={leagueDetailPath(league.slug)} class={styles.openLink}>
+                <Button href={leagueDetailPath(league.slug)} variant="outline" size="sm">
                   Open standings
-                </a>
+                </Button>
               </div>
             </Card>
           ))}

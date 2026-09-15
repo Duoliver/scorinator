@@ -79,6 +79,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 
 **START BELOW, LAST ON TOP:**
 
+- **2026-09-15 (Task 24, fix — underlined Button links):** The user reported a real bug, right after the `Button` link-mode extraction above: `Button`'s `<a>` branch inherited the browser default underline, since `.button` (`Button.module.css`) never set `text-decoration`. Fixed with one line, `text-decoration: none;`, on the shared base `.button` rule — a no-op for the `<button>` branch, which never shows an underline anyway. Verified with computed styles the same Playwright-against-`vite preview` way as the rest of this task: `text-decoration-line: none` on both `+ New League` and `Open standings` now. 298 tests, `type-check`, and `lint` all stay clean.
+
 - **2026-09-15 (Task 24, follow-up — extract Button styling for link-shaped actions):** The user pointed out the previous fix duplicated CSS by hand instead of reusing it: `.newLeagueLink` copied `Button`'s `primary`/`md` look, `.openLink` copied a bordered, invert-on-hover look `Drawer`'s `.close` button already had too. Asked to extract it, for reuse across both buttons and links.
 
   `Button` (`design-system/components/Button`) now takes an optional `href`. When set, it renders an `<a href>` instead of a `<button>`, through the exact same `class={...}` string, so it shares its CSS module with zero rewriting. `type`/`disabled` stay `<button>`-only — an `<a>` has no native disabled state, and no current `href` caller needs one; left unsupported on purpose rather than building `aria-disabled` handling nobody asked for.

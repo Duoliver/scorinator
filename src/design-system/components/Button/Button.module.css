@@ -3,6 +3,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.03em;
+  text-decoration: none;
   border: var(--border-width) solid var(--color-border);
   border-radius: var(--radius);
   cursor: pointer;

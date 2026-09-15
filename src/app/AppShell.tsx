@@ -7,7 +7,7 @@ import {
   type RoutableProps,
 } from 'preact-router';
 import { TeamsScreen } from '@/features/teams';
-import { LeagueSetupScreen } from '@/features/leagues';
+import { LeagueSetupScreen, LeagueDetailScreen } from '@/features/leagues';
 import { ROUTES, type RoutePath } from './routes';
 import styles from './AppShell.module.css';
 
@@ -29,6 +29,14 @@ function LeagueSetupRoute(_props: RoutableProps): JSX.Element {
   return <LeagueSetupScreen />;
 }
 
+/** Unlike the two adapters above, this one does carry a real prop across:
+ * `slug`, the one param `preact-router` injects for `ROUTES.leagueDetail`
+ * (`/leagues/:slug`) and the one piece of routing information
+ * `LeagueDetailScreen` actually needs. */
+function LeagueDetailRoute(props: RoutableProps & { slug?: string }): JSX.Element {
+  return <LeagueDetailScreen slug={props.slug ?? ''} />;
+}
+
 export function AppShell(): JSX.Element {
   const [activePath, setActivePath] = useState<string>(DEFAULT_PATH);
 
@@ -47,6 +55,15 @@ export function AppShell(): JSX.Element {
       route(path);
     };
 
+  // A League Detail URL (`/leagues/<slug>`) never exact-matches
+  // `ROUTES.leaguesNew`, so the `Leagues` nav item needs a prefix check
+  // instead — otherwise it would go dark while the user is still, in
+  // every real sense, inside the Leagues section.
+  const isNavItemActive = (item: (typeof NAV_ITEMS)[number]): boolean =>
+    item.path === ROUTES.leaguesNew
+      ? activePath.startsWith('/leagues/')
+      : activePath === item.path;
+
   return (
     <div class={styles.shell}>
       <nav class={styles.nav}>
@@ -56,7 +73,7 @@ export function AppShell(): JSX.Element {
             key={item.path}
             href={item.path}
             class={styles.navItem}
-            aria-current={activePath === item.path ? 'page' : undefined}
+            aria-current={isNavItemActive(item) ? 'page' : undefined}
             onClick={handleNavClick(item.path)}
           >
             {item.label}
@@ -67,6 +84,7 @@ export function AppShell(): JSX.Element {
         <Router onChange={handleChange}>
           <TeamsRoute path={ROUTES.teams} default />
           <LeagueSetupRoute path={ROUTES.leaguesNew} />
+          <LeagueDetailRoute path={ROUTES.leagueDetail} />
         </Router>
       </div>
     </div>

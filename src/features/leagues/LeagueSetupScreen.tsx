@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import type { JSX, RefObject } from 'preact';
+import { route } from 'preact-router';
 import { Tabs, type TabItem } from '@/design-system';
 import type { FieldHandle } from '@/design-system/field';
 import { useTeamsStore } from '@/app/state/teamsStore';
-import { useLeagueStore } from '@/app/state/leagueStore';
+import { useLeagueStore, type LeagueRecord } from '@/app/state/leagueStore';
+import { leagueDetailPath } from '@/app/routes';
 import {
   useLeagueDraftStore,
   type LeagueDraftDetails,
@@ -97,18 +99,36 @@ export function LeagueSetupScreen(): JSX.Element {
   const handleCreate = (): void => {
     // `DetailsStep` is unmounted by the time Review is reachable — `details`
     // already holds its final values, synced by `goToStep` on the way out.
-    const league = addLeague({
-      name: details.name.trim(),
-      homeAdvantage: details.homeAdvantage,
-      points: details.points,
-      teams: selectedTeams,
-    });
-    setStatus(`League "${league.name}" created with ${league.teams.length} teams.`);
+    let league: LeagueRecord;
+    try {
+      league = addLeague({
+        name: details.name.trim(),
+        homeAdvantage: details.homeAdvantage,
+        points: details.points,
+        teams: selectedTeams,
+      });
+    } catch {
+      // `addLeague` rolls a slug from the trimmed name — the Review step's
+      // disable check only catches a blank name, not a symbols-only one
+      // like "!!!", which `slug()` also rejects. `TeamForm.handleSave`
+      // guards the same gap the same way for a team name, with its own
+      // fixed copy rather than the thrown message — `slug()`'s own message
+      // literally says "team name", which would be wrong here.
+      setStatus('Enter a league name with at least one letter or number.');
+      return;
+    }
+
+    // Reset the store first, then mirror its now-blank `details` into local
+    // state, before navigating — the unmount effect above reads local state
+    // through `latestRef`/`detailsStepRef` and writes it back into
+    // `leagueDraftStore` on the real unmount `route()` triggers below.
+    // Stale local state at that point would silently undo this `reset()`.
     useLeagueDraftStore.getState().reset();
     setDetails(useLeagueDraftStore.getState().details);
     setSelectedSlugs([]);
     setStep('details');
     stepsRef.current?.setValue('details');
+    route(leagueDetailPath(league.slug));
   };
 
   const tabs: TabItem[] = [

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { createSeededRng } from '@/engine/rng';
 import { rollOVR } from '@/engine/tier-ovr';
+import { slug } from '@/engine/identity';
 import type { CreateLeagueInput, LeagueRecord } from '@/features/leagues/types';
 
 /** Imports the leaf `types` module directly, not the `features/leagues`
@@ -29,12 +30,19 @@ function freshSeed(): number {
  * season" OVR-rolling moment the spec describes — `addLeague` rolls each
  * selected team's OVR once, from its Tier, when the league is created.
  * Fixture generation (Task 14) and full-file save (Task 17) read from this
- * store later; neither happens here. */
+ * store later; neither happens here.
+ *
+ * `addLeague` also rolls the league's `slug`, from its name, the same
+ * `engine/identity` `slug()` call `TeamForm` already makes. `slug()`
+ * throws a `RangeError` for a degenerate name (blank, or symbols-only) —
+ * the caller guards this, the same way `TeamForm.handleSave` does for a
+ * team name. See `LeagueSetupScreen.handleCreate`. */
 export const useLeagueStore = create<LeagueState>()((set) => ({
   leagues: [],
   addLeague: (input): LeagueRecord => {
     const rng = createSeededRng(freshSeed());
     const league: LeagueRecord = {
+      slug: slug(input.name),
       name: input.name,
       homeAdvantage: input.homeAdvantage,
       points: input.points,

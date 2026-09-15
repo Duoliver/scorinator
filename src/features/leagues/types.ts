@@ -11,8 +11,12 @@ export interface LeagueTeam {
 
 /** A league as League Setup creates it. No fixtures, no results, no file
  * path — those belong to Task 14 (fixture generation) and Task 17
- * (Save/Load UI), both out of scope here. */
+ * (Save/Load UI), both out of scope here. `slug` is rolled once at
+ * creation, from the league name, the same way `engine/identity`'s
+ * `slug()` already identifies a team — see `app/state/leagueStore`'s
+ * `addLeague`. It is what League Detail (Task 25) routes by. */
 export interface LeagueRecord {
+  slug: string;
   name: string;
   homeAdvantage: boolean;
   points: PointsConfig;

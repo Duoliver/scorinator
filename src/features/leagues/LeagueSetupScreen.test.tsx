@@ -1,6 +1,7 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
+import { route } from 'preact-router';
 import { LeagueSetupScreen } from './LeagueSetupScreen';
 import { useTeamsStore } from '@/app/state/teamsStore';
 import { useLeagueStore } from '@/app/state/leagueStore';
@@ -8,7 +9,10 @@ import { useLeagueDraftStore } from '@/app/state/leagueDraftStore';
 import { TIER_OVR_RANGES } from '@/engine/tier-ovr';
 import { DEFAULT_POINTS_CONFIG } from '@/engine/standings';
 
+vi.mock('preact-router', () => ({ route: vi.fn() }));
+
 beforeEach(() => {
+  vi.mocked(route).mockClear();
   useTeamsStore.setState({
     teams: [
       { slug: 'fc-united', name: 'FC United', colour: '#E53935', tier: 'B' },
@@ -46,8 +50,22 @@ describe('LeagueSetupScreen', () => {
     expect(league.teams).toEqual([{ slug: 'fc-united', ovr: expect.any(Number) }]);
     expect(league.teams[0].ovr).toBeGreaterThanOrEqual(TIER_OVR_RANGES.B.min);
     expect(league.teams[0].ovr).toBeLessThanOrEqual(TIER_OVR_RANGES.B.max);
+    expect(route).toHaveBeenCalledWith(`/leagues/${league.slug}`);
+  });
+
+  it('does not create a league or navigate when the name is symbols-only', async () => {
+    render(<LeagueSetupScreen />);
+
+    await userEvent.type(screen.getByLabelText('League name'), '!!!');
+    await userEvent.click(screen.getByText('Next: Teams →'));
+    await userEvent.click(screen.getByLabelText('FC United'));
+    await userEvent.click(screen.getByText('Next: Review →'));
+    await userEvent.click(screen.getByText('Create league'));
+
+    expect(route).not.toHaveBeenCalled();
+    expect(useLeagueStore.getState().leagues).toEqual([]);
     expect(
-      screen.getByText('League "Coastal Premier" created with 1 teams.')
+      screen.getByText('Enter a league name with at least one letter or number.')
     ).toBeInTheDocument();
   });
 

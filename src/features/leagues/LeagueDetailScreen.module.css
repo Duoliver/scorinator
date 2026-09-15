@@ -1,0 +1,26 @@
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  padding: var(--space-10) var(--space-12);
+  max-width: 65rem;
+}
+
+.backLink {
+  font-size: var(--font-size-md);
+  text-decoration: none;
+}
+
+.title {
+  margin: var(--space-2) 0 var(--space-1);
+}
+
+.meta {
+  font-size: var(--font-size-md);
+  color: var(--color-fg-muted);
+}
+
+.placeholder {
+  margin: 0;
+  color: var(--color-fg-muted);
+}

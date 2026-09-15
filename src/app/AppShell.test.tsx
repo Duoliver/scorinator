@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
+import { route } from 'preact-router';
 import { AppShell } from './AppShell';
 import { useTeamsStore } from '@/app/state/teamsStore';
 import { useLeagueStore } from '@/app/state/leagueStore';
@@ -61,5 +62,30 @@ describe('AppShell', () => {
     await userEvent.click(screen.getByRole('link', { name: 'Leagues' }));
 
     expect(screen.getByLabelText('League name')).toHaveValue('Coastal Premier');
+  });
+
+  it('routes to League Detail for a league slug, with Leagues marked active', async () => {
+    useLeagueStore.setState({
+      leagues: [
+        {
+          slug: 'coastal-premier',
+          name: 'Coastal Premier',
+          homeAdvantage: true,
+          points: DEFAULT_POINTS_CONFIG,
+          teams: [],
+        },
+      ],
+    });
+    render(<AppShell />);
+
+    route('/leagues/coastal-premier');
+
+    expect(
+      await screen.findByRole('heading', { name: 'Coastal Premier' })
+    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Leagues' })).toHaveAttribute(
+      'aria-current',
+      'page'
+    );
   });
 });

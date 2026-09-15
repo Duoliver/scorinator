@@ -5,28 +5,17 @@ import { TeamForm } from './TeamForm';
 import type { TeamRecord } from '@/features/components/types';
 
 describe('TeamForm', () => {
-  it('renders the given title and save label', () => {
-    render(
-      <TeamForm
-        title="New team"
-        saveLabel="Create team"
-        onCancel={vi.fn()}
-        onSave={vi.fn()}
-      />
-    );
-    expect(screen.getByText('New team')).toBeInTheDocument();
+  it('renders the given save label and every field', () => {
+    render(<TeamForm saveLabel="Create team" onCancel={vi.fn()} onSave={vi.fn()} />);
     expect(screen.getByText('Create team')).toBeInTheDocument();
+    expect(screen.getByLabelText('Team name')).toBeInTheDocument();
+    expect(screen.getByLabelText('Slug (auto-generated)')).toBeInTheDocument();
+    expect(screen.getByLabelText('Colour')).toBeInTheDocument();
+    expect(screen.getByLabelText('Tier')).toBeInTheDocument();
   });
 
   it('auto-fills the slug as the user types a name', async () => {
-    render(
-      <TeamForm
-        title="New team"
-        saveLabel="Create team"
-        onCancel={vi.fn()}
-        onSave={vi.fn()}
-      />
-    );
+    render(<TeamForm saveLabel="Create team" onCancel={vi.fn()} onSave={vi.fn()} />);
     await userEvent.type(screen.getByLabelText('Team name'), 'Salt Marsh United');
     expect(screen.getByLabelText('Slug (auto-generated)')).toHaveValue(
       'salt-marsh-united'
@@ -42,7 +31,6 @@ describe('TeamForm', () => {
     };
     render(
       <TeamForm
-        title="Edit team"
         saveLabel="Save changes"
         initial={initial}
         onCancel={vi.fn()}
@@ -57,14 +45,7 @@ describe('TeamForm', () => {
 
   it('calls onSave with the assembled record on Save', async () => {
     const onSave = vi.fn();
-    render(
-      <TeamForm
-        title="New team"
-        saveLabel="Create team"
-        onCancel={vi.fn()}
-        onSave={onSave}
-      />
-    );
+    render(<TeamForm saveLabel="Create team" onCancel={vi.fn()} onSave={onSave} />);
     await userEvent.type(screen.getByLabelText('Team name'), 'Harborview SC');
     await userEvent.type(screen.getByLabelText('Colour'), '#F9A825');
     await userEvent.selectOptions(screen.getByLabelText('Tier'), 'A');
@@ -79,28 +60,14 @@ describe('TeamForm', () => {
 
   it('calls onCancel when Cancel is clicked', async () => {
     const onCancel = vi.fn();
-    render(
-      <TeamForm
-        title="New team"
-        saveLabel="Create team"
-        onCancel={onCancel}
-        onSave={vi.fn()}
-      />
-    );
+    render(<TeamForm saveLabel="Create team" onCancel={onCancel} onSave={vi.fn()} />);
     await userEvent.click(screen.getByText('Cancel'));
     expect(onCancel).toHaveBeenCalled();
   });
 
   it('shows a validation error and does not save when the name is blank', async () => {
     const onSave = vi.fn();
-    render(
-      <TeamForm
-        title="New team"
-        saveLabel="Create team"
-        onCancel={vi.fn()}
-        onSave={onSave}
-      />
-    );
+    render(<TeamForm saveLabel="Create team" onCancel={vi.fn()} onSave={onSave} />);
     await userEvent.click(screen.getByText('Create team'));
     expect(onSave).not.toHaveBeenCalled();
     expect(screen.getByText(/enter a team name/i)).toBeInTheDocument();

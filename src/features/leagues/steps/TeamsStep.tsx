@@ -5,6 +5,7 @@ import {
   Button,
   Card,
   Checkbox,
+  Drawer,
   Input,
   Table,
   type TableColumn,
@@ -119,12 +120,13 @@ export function TeamsStep({
         </div>
 
         {showCreateTeam && (
-          <TeamForm
-            title="New team"
-            saveLabel="Create team"
-            onCancel={() => setShowCreateTeam(false)}
-            onSave={handleTeamCreated}
-          />
+          <Drawer title="New team" onClose={() => setShowCreateTeam(false)}>
+            <TeamForm
+              saveLabel="Create team"
+              onCancel={() => setShowCreateTeam(false)}
+              onSave={handleTeamCreated}
+            />
+          </Drawer>
         )}
 
         <div class={styles.footer}>

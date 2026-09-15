@@ -1,6 +1,6 @@
 import { useState } from 'preact/hooks';
 import type { JSX } from 'preact';
-import { Badge, Button, Table, type TableColumn } from '@/design-system';
+import { Badge, Button, Drawer, Table, type TableColumn } from '@/design-system';
 import { TeamForm, type TeamRecord } from '@/features/components';
 import { useTeamsStore } from '@/app/state/teamsStore';
 import { exportTeamsCsv, importTeamsCsv } from '@/app/data/teamsCsv';
@@ -12,7 +12,7 @@ import {
 } from './importMerge';
 import styles from './TeamsScreen.module.css';
 
-type Drawer = { mode: 'create' } | { mode: 'edit'; index: number } | null;
+type TeamDrawerState = { mode: 'create' } | { mode: 'edit'; index: number } | null;
 
 interface TeamRow extends TeamRecord {
   rowKey: string;
@@ -24,7 +24,7 @@ export function TeamsScreen(): JSX.Element {
   const addTeam = useTeamsStore((state) => state.addTeam);
   const updateTeam = useTeamsStore((state) => state.updateTeam);
   const setTeams = useTeamsStore((state) => state.setTeams);
-  const [drawer, setDrawer] = useState<Drawer>(null);
+  const [drawer, setDrawer] = useState<TeamDrawerState>(null);
   const [status, setStatus] = useState<string | null>(null);
 
   const handleSave = (record: TeamRecord): void => {
@@ -141,14 +141,18 @@ export function TeamsScreen(): JSX.Element {
       {status && <span class={styles.status}>{status}</span>}
 
       {drawer && (
-        <TeamForm
-          key={drawer.mode === 'edit' ? `edit-${drawer.index}` : 'create'}
+        <Drawer
           title={drawer.mode === 'create' ? 'New team' : 'Edit team'}
-          saveLabel={drawer.mode === 'create' ? 'Create team' : 'Save changes'}
-          initial={drawer.mode === 'edit' ? teams[drawer.index] : undefined}
-          onCancel={() => setDrawer(null)}
-          onSave={handleSave}
-        />
+          onClose={() => setDrawer(null)}
+        >
+          <TeamForm
+            key={drawer.mode === 'edit' ? `edit-${drawer.index}` : 'create'}
+            saveLabel={drawer.mode === 'create' ? 'Create team' : 'Save changes'}
+            initial={drawer.mode === 'edit' ? teams[drawer.index] : undefined}
+            onCancel={() => setDrawer(null)}
+            onSave={handleSave}
+          />
+        </Drawer>
       )}
     </div>
   );

@@ -10,7 +10,6 @@ import styles from './TeamForm.module.css';
 const TIER_OPTIONS = TIER_ORDER.map((tier) => ({ label: tier, value: tier }));
 
 export function TeamForm({
-  title,
   saveLabel,
   initial,
   onCancel,
@@ -50,8 +49,6 @@ export function TeamForm({
 
   return (
     <div class={styles.form}>
-      <h2>{title}</h2>
-
       <Input
         label="Team name"
         defaultValue={initial?.name}

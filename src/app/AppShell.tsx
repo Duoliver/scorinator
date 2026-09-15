@@ -7,12 +7,16 @@ import {
   type RoutableProps,
 } from 'preact-router';
 import { TeamsScreen } from '@/features/teams';
-import { LeagueSetupScreen, LeagueDetailScreen } from '@/features/leagues';
+import {
+  LeagueSetupScreen,
+  LeagueDetailScreen,
+  LeaguesDashboardScreen,
+} from '@/features/leagues';
 import { ROUTES, type RoutePath } from './routes';
 import styles from './AppShell.module.css';
 
 const NAV_ITEMS = [
-  { label: 'Leagues', path: ROUTES.leaguesNew },
+  { label: 'Leagues', path: ROUTES.leaguesDashboard },
   { label: 'Teams', path: ROUTES.teams },
 ] as const;
 
@@ -27,6 +31,10 @@ function TeamsRoute(_props: RoutableProps): JSX.Element {
 
 function LeagueSetupRoute(_props: RoutableProps): JSX.Element {
   return <LeagueSetupScreen />;
+}
+
+function LeaguesDashboardRoute(_props: RoutableProps): JSX.Element {
+  return <LeaguesDashboardScreen />;
 }
 
 /** Unlike the two adapters above, this one does carry a real prop across:
@@ -60,8 +68,8 @@ export function AppShell(): JSX.Element {
   // instead — otherwise it would go dark while the user is still, in
   // every real sense, inside the Leagues section.
   const isNavItemActive = (item: (typeof NAV_ITEMS)[number]): boolean =>
-    item.path === ROUTES.leaguesNew
-      ? activePath.startsWith('/leagues/')
+    item.path === ROUTES.leaguesDashboard
+      ? activePath === ROUTES.leaguesDashboard || activePath.startsWith('/leagues/')
       : activePath === item.path;
 
   return (
@@ -84,6 +92,7 @@ export function AppShell(): JSX.Element {
         <Router onChange={handleChange}>
           <TeamsRoute path={ROUTES.teams} default />
           <LeagueSetupRoute path={ROUTES.leaguesNew} />
+          <LeaguesDashboardRoute path={ROUTES.leaguesDashboard} />
           <LeagueDetailRoute path={ROUTES.leagueDetail} />
         </Router>
       </div>

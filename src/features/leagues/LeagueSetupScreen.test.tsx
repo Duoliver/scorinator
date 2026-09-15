@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/preact';
+import { cleanup, render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { route } from 'preact-router';
 import { LeagueSetupScreen } from './LeagueSetupScreen';
@@ -69,7 +69,10 @@ describe('LeagueSetupScreen', () => {
     ).toBeInTheDocument();
   });
 
-  it('resets to the Details step after creating a league', async () => {
+  it('resets the persisted draft store after creating a league', async () => {
+    // The screen itself navigates away on a real create — this store reset
+    // is what a later, fresh "New League" visit actually reads from,
+    // regardless of whether this component instance stays mounted or not.
     render(<LeagueSetupScreen />);
 
     await userEvent.type(screen.getByLabelText('League name'), 'Coastal Premier');
@@ -78,7 +81,31 @@ describe('LeagueSetupScreen', () => {
     await userEvent.click(screen.getByText('Next: Review →'));
     await userEvent.click(screen.getByText('Create league'));
 
-    expect(screen.getByLabelText('League name')).toHaveValue('');
+    expect(useLeagueDraftStore.getState().details.name).toBe('');
+    expect(useLeagueDraftStore.getState().selectedSlugs).toEqual([]);
+  });
+
+  it('does not resurrect stale draft fields if the screen never actually unmounts after create', async () => {
+    // A regression test for a real bug: `route()` is mocked here, so this
+    // component stays mounted after a create, the same as it would for one
+    // render tick in the real app before the router's own pending update
+    // and this screen's unmount land in the same batch. The screen must
+    // not let its now-stale `latestRef`/`detailsStepRef` write the old
+    // field values back over the `reset()` call `handleCreate` already
+    // made — an unmount later in the same test would otherwise do exactly
+    // that.
+    render(<LeagueSetupScreen />);
+
+    await userEvent.type(screen.getByLabelText('League name'), 'Coastal Premier');
+    await userEvent.click(screen.getByText('Next: Teams →'));
+    await userEvent.click(screen.getByLabelText('FC United'));
+    await userEvent.click(screen.getByText('Next: Review →'));
+    await userEvent.click(screen.getByText('Create league'));
+
+    cleanup();
+
+    expect(useLeagueDraftStore.getState().details.name).toBe('');
+    expect(useLeagueDraftStore.getState().selectedSlugs).toEqual([]);
   });
 
   it('jumps directly to a step when its stepper button is clicked', async () => {

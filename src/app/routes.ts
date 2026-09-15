@@ -6,6 +6,7 @@ export const ROUTES = {
   teams: '/teams',
   leaguesNew: '/leagues/new',
   leagueDetail: '/leagues/:slug',
+  leaguesDashboard: '/leagues',
 } as const;
 
 export type RoutePath = (typeof ROUTES)[keyof typeof ROUTES];

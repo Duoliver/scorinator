@@ -32,12 +32,12 @@ describe('AppShell', () => {
     );
   });
 
-  it('routes to League Setup when Leagues is clicked, and back to Teams', async () => {
+  it('routes to the Leagues Dashboard when Leagues is clicked, and back to Teams', async () => {
     render(<AppShell />);
 
     await userEvent.click(screen.getByRole('link', { name: 'Leagues' }));
 
-    expect(screen.getByRole('heading', { name: 'League Setup' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Leagues' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Leagues' })).toHaveAttribute(
       'aria-current',
       'page'
@@ -52,14 +52,53 @@ describe('AppShell', () => {
     );
   });
 
+  it('reaches League Setup through + New League on the Dashboard, with Leagues still marked active', async () => {
+    render(<AppShell />);
+
+    await userEvent.click(screen.getByRole('link', { name: 'Leagues' }));
+    await userEvent.click(screen.getByRole('link', { name: '+ New League' }));
+
+    expect(screen.getByRole('heading', { name: 'League Setup' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Leagues' })).toHaveAttribute(
+      'aria-current',
+      'page'
+    );
+  });
+
+  it("reaches League Detail through a card's Open standings link", async () => {
+    useLeagueStore.setState({
+      leagues: [
+        {
+          slug: 'coastal-premier',
+          name: 'Coastal Premier',
+          homeAdvantage: true,
+          points: DEFAULT_POINTS_CONFIG,
+          teams: [],
+        },
+      ],
+    });
+    render(<AppShell />);
+
+    await userEvent.click(screen.getByRole('link', { name: 'Leagues' }));
+    await userEvent.click(screen.getByRole('link', { name: 'Open standings' }));
+
+    expect(screen.getByRole('heading', { name: 'Coastal Premier' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Leagues' })).toHaveAttribute(
+      'aria-current',
+      'page'
+    );
+  });
+
   it('keeps an in-progress League Setup draft when the user switches away and back', async () => {
     render(<AppShell />);
 
     await userEvent.click(screen.getByRole('link', { name: 'Leagues' }));
+    await userEvent.click(screen.getByRole('link', { name: '+ New League' }));
     await userEvent.type(screen.getByLabelText('League name'), 'Coastal Premier');
 
     await userEvent.click(screen.getByRole('link', { name: 'Teams' }));
     await userEvent.click(screen.getByRole('link', { name: 'Leagues' }));
+    await userEvent.click(screen.getByRole('link', { name: '+ New League' }));
 
     expect(screen.getByLabelText('League name')).toHaveValue('Coastal Premier');
   });

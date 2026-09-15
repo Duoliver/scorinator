@@ -2,16 +2,12 @@ import type { JSX } from 'preact';
 import { Card, Tabs, type TabItem } from '@/design-system';
 import { useLeagueStore } from '@/app/state/leagueStore';
 import { ROUTES } from '@/app/routes';
+import { describeLeague } from './leagueSummary';
 import styles from './LeagueDetailScreen.module.css';
 
 interface LeagueDetailScreenProps {
   slug: string;
 }
-
-/** Round-robin (two-way) is hardcoded, not read off `LeagueRecord` — it is
- * the only fixture format `engine/fixtures` generates today (Task 3), and
- * no field stores a format name to read instead. */
-const FIXTURE_FORMAT = 'Round robin (two-way)';
 
 /** Standings and Fixtures only, matching the design reference exactly —
  * scorination is a button inside Fixtures there, not its own tab. Both
@@ -25,7 +21,7 @@ export function LeagueDetailScreen({ slug }: LeagueDetailScreenProps): JSX.Eleme
   if (!league) {
     return (
       <div class={styles.screen}>
-        <a href={ROUTES.leaguesNew} class={styles.backLink}>
+        <a href={ROUTES.leaguesDashboard} class={styles.backLink}>
           ← Leagues
         </a>
         <p>League not found.</p>
@@ -34,11 +30,7 @@ export function LeagueDetailScreen({ slug }: LeagueDetailScreenProps): JSX.Eleme
   }
 
   const pointsSummary = `${league.points.win}/${league.points.draw}/${league.points.loss} pts`;
-  const homeAdvantageSummary = league.homeAdvantage ? 'Home adv. on' : 'Home adv. off';
-  const teamsSummary = `${league.teams.length} team${league.teams.length === 1 ? '' : 's'}`;
-  const meta = [FIXTURE_FORMAT, teamsSummary, homeAdvantageSummary, pointsSummary].join(
-    ' · '
-  );
+  const meta = `${describeLeague(league)} · ${pointsSummary}`;
 
   const tabs: TabItem[] = [
     {
@@ -68,7 +60,7 @@ export function LeagueDetailScreen({ slug }: LeagueDetailScreenProps): JSX.Eleme
   return (
     <div class={styles.screen}>
       <div>
-        <a href={ROUTES.leaguesNew} class={styles.backLink}>
+        <a href={ROUTES.leaguesDashboard} class={styles.backLink}>
           ← Leagues
         </a>
         <h1 class={styles.title}>{league.name}</h1>

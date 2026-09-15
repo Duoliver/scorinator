@@ -43,11 +43,24 @@ export function LeagueSetupScreen(): JSX.Element {
   const latestRef = useRef({ details, selectedSlugs, step });
   latestRef.current = { details, selectedSlugs, step };
 
+  // `handleCreate` sets this synchronously, before `route(...)` triggers
+  // the unmount below. Preact batches that navigation together with
+  // `handleCreate`'s own `setState` calls, so this component can unmount
+  // without ever re-rendering with their new values first — the render
+  // body above, which is what actually refreshes `latestRef.current`,
+  // then never runs again. Left unguarded, the cleanup below would read
+  // stale pre-create field values through `latestRef` and write them back
+  // into `leagueDraftStore`, silently undoing `handleCreate`'s own
+  // `reset()` call. This flag lets that cleanup skip its write instead,
+  // since a successful create already reset the store directly.
+  const suppressDraftSyncRef = useRef(false);
+
   useEffect(() => {
     // `detailsStepRef`/`latestRef` are read for their value at the moment
     // this cleanup actually runs (true unmount), not at the moment this
     // effect was registered — an empty dependency array is correct.
     return (): void => {
+      if (suppressDraftSyncRef.current) return;
       // eslint-disable-next-line react-hooks/exhaustive-deps -- see above
       const fromRef = detailsStepRef.current?.getValues();
       const currentDetails = fromRef ?? latestRef.current.details;
@@ -118,16 +131,13 @@ export function LeagueSetupScreen(): JSX.Element {
       return;
     }
 
-    // Reset the store first, then mirror its now-blank `details` into local
-    // state, before navigating — the unmount effect above reads local state
-    // through `latestRef`/`detailsStepRef` and writes it back into
-    // `leagueDraftStore` on the real unmount `route()` triggers below.
-    // Stale local state at that point would silently undo this `reset()`.
+    // Suppress the unmount effect's draft-sync before resetting the store
+    // directly — see that ref's own comment for why the effect cannot be
+    // trusted to see fresh local state by the time `route(...)` unmounts
+    // this component. Local state itself needs no reset: this instance is
+    // about to unmount and never render again.
+    suppressDraftSyncRef.current = true;
     useLeagueDraftStore.getState().reset();
-    setDetails(useLeagueDraftStore.getState().details);
-    setSelectedSlugs([]);
-    setStep('details');
-    stepsRef.current?.setValue('details');
     route(leagueDetailPath(league.slug));
   };
 

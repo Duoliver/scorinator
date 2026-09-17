@@ -103,6 +103,20 @@ describe('AppShell', () => {
     expect(screen.getByLabelText('League name')).toHaveValue('Coastal Premier');
   });
 
+  it('routes to the Playground when Playground is clicked (dev-only nav item)', async () => {
+    render(<AppShell />);
+
+    await userEvent.click(screen.getByRole('link', { name: 'Playground' }));
+
+    expect(
+      screen.getByRole('heading', { name: 'Design system + engine playground' })
+    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Playground' })).toHaveAttribute(
+      'aria-current',
+      'page'
+    );
+  });
+
   it('routes to League Detail for a league slug, with Leagues marked active', async () => {
     useLeagueStore.setState({
       leagues: [

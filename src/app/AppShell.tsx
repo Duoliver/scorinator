@@ -12,13 +12,22 @@ import {
   LeagueDetailScreen,
   LeaguesDashboardScreen,
 } from '@/features/leagues';
+import { PlaygroundScreen } from '@/features/playground';
 import { ROUTES, type RoutePath } from './routes';
 import styles from './AppShell.module.css';
 
-const NAV_ITEMS = [
+interface NavItem {
+  label: string;
+  path: RoutePath;
+}
+
+/** Playground is a dev-only diagnostic screen (PROGRESS.md Task 22) — its
+ * nav item and route only exist in a dev build, never in a shipped one. */
+const NAV_ITEMS: NavItem[] = [
   { label: 'Leagues', path: ROUTES.leaguesDashboard },
   { label: 'Teams', path: ROUTES.teams },
-] as const;
+  ...(import.meta.env.DEV ? [{ label: 'Playground', path: ROUTES.playground }] : []),
+];
 
 const DEFAULT_PATH = ROUTES.teams;
 
@@ -35,6 +44,10 @@ function LeagueSetupRoute(_props: RoutableProps): JSX.Element {
 
 function LeaguesDashboardRoute(_props: RoutableProps): JSX.Element {
   return <LeaguesDashboardScreen />;
+}
+
+function PlaygroundRoute(_props: RoutableProps): JSX.Element {
+  return <PlaygroundScreen />;
 }
 
 /** Unlike the two adapters above, this one does carry a real prop across:
@@ -94,6 +107,7 @@ export function AppShell(): JSX.Element {
           <LeagueSetupRoute path={ROUTES.leaguesNew} />
           <LeaguesDashboardRoute path={ROUTES.leaguesDashboard} />
           <LeagueDetailRoute path={ROUTES.leagueDetail} />
+          {import.meta.env.DEV && <PlaygroundRoute path={ROUTES.playground} />}
         </Router>
       </div>
     </div>

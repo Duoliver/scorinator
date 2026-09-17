@@ -4,7 +4,3 @@
   font-family: var(--font-body);
   min-height: 100vh;
 }
-
-.playgroundWrapper {
-  padding: 0 var(--space-12) var(--space-12);
-}

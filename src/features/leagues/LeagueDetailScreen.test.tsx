@@ -3,7 +3,10 @@ import { render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { LeagueDetailScreen } from './LeagueDetailScreen';
 import { useLeagueStore } from '@/app/state/leagueStore';
+import { generateRoundRobin } from '@/engine/fixtures';
 import type { LeagueRecord } from '@/features/leagues/types';
+
+const { fixtures, byes } = generateRoundRobin(['fc-united', 'fc-rivals']);
 
 const league = (overrides: Partial<LeagueRecord> = {}): LeagueRecord => ({
   slug: 'coastal-premier',
@@ -14,6 +17,8 @@ const league = (overrides: Partial<LeagueRecord> = {}): LeagueRecord => ({
     { slug: 'fc-united', ovr: 70 },
     { slug: 'fc-rivals', ovr: 65 },
   ],
+  fixtures,
+  byes,
   ...overrides,
 });
 
@@ -43,11 +48,9 @@ describe('LeagueDetailScreen', () => {
     ).toBeInTheDocument();
   });
 
-  it('switches to the Fixtures tab on click', async () => {
+  it('switches to the Fixtures tab on click, showing the generated schedule', async () => {
     render(<LeagueDetailScreen slug="coastal-premier" />);
     await userEvent.click(screen.getByRole('tab', { name: 'Fixtures' }));
-    expect(
-      screen.getByText(/Fixtures for this league will show here/)
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Matchday 1 \/ 2/)).toBeInTheDocument();
   });
 });

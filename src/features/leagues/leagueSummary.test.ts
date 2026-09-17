@@ -8,6 +8,8 @@ const league = (overrides: Partial<LeagueRecord> = {}): LeagueRecord => ({
   homeAdvantage: true,
   points: { win: 3, draw: 1, loss: 0 },
   teams: [{ slug: 'fc-united', ovr: 70 }],
+  fixtures: [],
+  byes: [],
   ...overrides,
 });
 

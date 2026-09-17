@@ -2,6 +2,7 @@ import type { JSX } from 'preact';
 import { Card, Tabs, type TabItem } from '@/design-system';
 import { useLeagueStore } from '@/app/state/leagueStore';
 import { ROUTES } from '@/app/routes';
+import { FixturesView } from '@/features/fixtures';
 import { describeLeague } from './leagueSummary';
 import styles from './LeagueDetailScreen.module.css';
 
@@ -10,10 +11,10 @@ interface LeagueDetailScreenProps {
 }
 
 /** Standings and Fixtures only, matching the design reference exactly —
- * scorination is a button inside Fixtures there, not its own tab. Both
- * tabs render a placeholder here: real rendering is Task 14 (fixtures)
- * and Task 16 (standings); wiring the scorinate buttons is Task 15. None
- * of that is built yet, so this screen is a routed shell only. */
+ * scorination is a button inside Fixtures there, not its own tab. Fixtures
+ * renders the real, read-only matchday browser as of Task 14; Standings
+ * still renders a placeholder until Task 16. Wiring the scorinate buttons
+ * into Fixtures is Task 15. */
 export function LeagueDetailScreen({ slug }: LeagueDetailScreenProps): JSX.Element {
   const leagues = useLeagueStore((state) => state.leagues);
   const league = leagues.find((candidate) => candidate.slug === slug);
@@ -47,13 +48,7 @@ export function LeagueDetailScreen({ slug }: LeagueDetailScreenProps): JSX.Eleme
     {
       id: 'fixtures',
       label: 'Fixtures',
-      content: (
-        <Card padding="lg">
-          <p class={styles.placeholder}>
-            Fixtures for this league will show here once Task 14 is built.
-          </p>
-        </Card>
-      ),
+      content: <FixturesView league={league} />,
     },
   ];
 

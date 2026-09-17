@@ -74,6 +74,8 @@ describe('AppShell', () => {
           homeAdvantage: true,
           points: DEFAULT_POINTS_CONFIG,
           teams: [],
+          fixtures: [],
+          byes: [],
         },
       ],
     });
@@ -126,6 +128,8 @@ describe('AppShell', () => {
           homeAdvantage: true,
           points: DEFAULT_POINTS_CONFIG,
           teams: [],
+          fixtures: [],
+          byes: [],
         },
       ],
     });

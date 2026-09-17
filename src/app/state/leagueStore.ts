@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { createSeededRng } from '@/engine/rng';
 import { rollOVR } from '@/engine/tier-ovr';
 import { slug } from '@/engine/identity';
+import { generateRoundRobin } from '@/engine/fixtures';
 import type { CreateLeagueInput, LeagueRecord } from '@/features/leagues/types';
 
 /** Imports the leaf `types` module directly, not the `features/leagues`
@@ -36,20 +37,34 @@ function freshSeed(): number {
  * `engine/identity` `slug()` call `TeamForm` already makes. `slug()`
  * throws a `RangeError` for a degenerate name (blank, or symbols-only) —
  * the caller guards this, the same way `TeamForm.handleSave` does for a
- * team name. See `LeagueSetupScreen.handleCreate`. */
+ * team name. See `LeagueSetupScreen.handleCreate`.
+ *
+ * `addLeague` also generates the league's two-way round-robin schedule
+ * (Task 14), from the just-rolled teams' slugs. `generateRoundRobin`
+ * throws for fewer than 2 teams (a deliberate Task 3 choice), but nothing
+ * stops a user from creating a league with 0 or 1 team today, so this
+ * guards the call instead of letting league creation crash — a league
+ * with too few teams simply gets an empty schedule. See the Task 14
+ * decisions log entry. */
 export const useLeagueStore = create<LeagueState>()((set) => ({
   leagues: [],
   addLeague: (input): LeagueRecord => {
     const rng = createSeededRng(freshSeed());
+    const teams = input.teams.map((team) => ({
+      slug: team.slug,
+      ovr: rollOVR(team.tier, rng),
+    }));
+    const slugs = teams.map((team) => team.slug);
+    const { fixtures, byes } =
+      slugs.length >= 2 ? generateRoundRobin(slugs) : { fixtures: [], byes: [] };
     const league: LeagueRecord = {
       slug: slug(input.name),
       name: input.name,
       homeAdvantage: input.homeAdvantage,
       points: input.points,
-      teams: input.teams.map((team) => ({
-        slug: team.slug,
-        ovr: rollOVR(team.tier, rng),
-      })),
+      teams,
+      fixtures,
+      byes,
     };
     set((state) => ({ leagues: [...state.leagues, league] }));
     return league;

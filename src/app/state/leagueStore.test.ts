@@ -77,4 +77,39 @@ describe('useLeagueStore', () => {
     expect(rolledF.ovr).toBeGreaterThanOrEqual(TIER_OVR_RANGES.F.min);
     expect(rolledF.ovr).toBeLessThanOrEqual(TIER_OVR_RANGES.F.max);
   });
+
+  it('generates a two-way round-robin schedule from the selected teams, for 2 or more teams', () => {
+    const league = useLeagueStore.getState().addLeague({
+      name: 'Coastal Premier',
+      homeAdvantage: false,
+      points: { win: 3, draw: 1, loss: 0 },
+      teams: [team({ slug: 'fc-united' }), team({ slug: 'fc-rivals' })],
+    });
+
+    expect(league.byes).toEqual([]);
+    expect(league.fixtures).toEqual([
+      { matchday: 1, home: 'fc-united', away: 'fc-rivals' },
+      { matchday: 2, home: 'fc-rivals', away: 'fc-united' },
+    ]);
+  });
+
+  it('stores an empty schedule for fewer than 2 teams, rather than throwing', () => {
+    const oneTeam = useLeagueStore.getState().addLeague({
+      name: 'Solo League',
+      homeAdvantage: false,
+      points: { win: 3, draw: 1, loss: 0 },
+      teams: [team({ slug: 'fc-united' })],
+    });
+    const noTeams = useLeagueStore.getState().addLeague({
+      name: 'Empty League',
+      homeAdvantage: false,
+      points: { win: 3, draw: 1, loss: 0 },
+      teams: [],
+    });
+
+    expect(oneTeam.fixtures).toEqual([]);
+    expect(oneTeam.byes).toEqual([]);
+    expect(noTeams.fixtures).toEqual([]);
+    expect(noTeams.byes).toEqual([]);
+  });
 });

@@ -1,16 +1,19 @@
 .shell {
-  display: flex;
   min-height: 100vh;
 }
 
 .nav {
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 220px;
-  flex: none;
+  height: 100vh;
   background: var(--color-surface);
   border-right: var(--border-width) solid var(--color-fg);
   display: flex;
   flex-direction: column;
   padding: var(--space-6) 0;
+  overflow-y: auto;
 }
 
 .brand {
@@ -39,5 +42,5 @@
 }
 
 .content {
-  flex: 1;
+  margin-left: 220px;
 }

@@ -19,8 +19,3 @@
   font-size: var(--font-size-md);
   color: var(--color-fg-muted);
 }
-
-.placeholder {
-  margin: 0;
-  color: var(--color-fg-muted);
-}

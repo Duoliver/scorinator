@@ -1,8 +1,9 @@
 import type { JSX } from 'preact';
-import { Card, Tabs, type TabItem } from '@/design-system';
+import { Tabs, type TabItem } from '@/design-system';
 import { useLeagueStore } from '@/app/state/leagueStore';
 import { ROUTES } from '@/app/routes';
 import { FixturesView } from '@/features/fixtures';
+import { StandingsView } from '@/features/standings';
 import { describeLeague } from './leagueSummary';
 import styles from './LeagueDetailScreen.module.css';
 
@@ -13,8 +14,9 @@ interface LeagueDetailScreenProps {
 /** Standings and Fixtures only, matching the design reference exactly —
  * scorination is a button inside Fixtures there, not its own tab. Fixtures
  * (Task 14) renders the matchday browser, and its Scorinate buttons
- * (Task 15) now play a match or a whole matchday. Standings still renders
- * a placeholder until Task 16. */
+ * (Task 15) play a match or a whole matchday. Standings (Task 16) renders
+ * the live league table from the same `league` record, so a scorinate in
+ * Fixtures shows up there on the next tab switch. */
 export function LeagueDetailScreen({ slug }: LeagueDetailScreenProps): JSX.Element {
   const leagues = useLeagueStore((state) => state.leagues);
   const league = leagues.find((candidate) => candidate.slug === slug);
@@ -37,13 +39,7 @@ export function LeagueDetailScreen({ slug }: LeagueDetailScreenProps): JSX.Eleme
     {
       id: 'standings',
       label: 'Standings',
-      content: (
-        <Card padding="lg">
-          <p class={styles.placeholder}>
-            Standings for this league will show here once Task 16 is built.
-          </p>
-        </Card>
-      ),
+      content: <StandingsView league={league} />,
     },
     {
       id: 'fixtures',

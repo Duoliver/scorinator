@@ -1,0 +1,43 @@
+.view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.scroller {
+  overflow-x: auto;
+}
+
+/* 760px in the design reference: below this width the table scrolls
+ * sideways inside `.scroller` instead of squeezing the Team column. */
+.sheet {
+  min-width: 47.5rem;
+}
+
+.team {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-weight: 600;
+}
+
+.swatch {
+  width: 0.875rem;
+  height: 0.875rem;
+  border: var(--border-width) solid var(--color-fg);
+  flex: none;
+}
+
+.mono {
+  font-family: var(--font-mono);
+}
+
+.monoBold {
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+
+.note {
+  margin: 0;
+  color: var(--color-fg-muted);
+}

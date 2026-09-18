@@ -42,11 +42,25 @@ describe('LeagueDetailScreen', () => {
     expect(screen.queryByRole('heading')).not.toBeInTheDocument();
   });
 
-  it('shows the Standings tab by default', () => {
+  it('shows the Standings tab by default, with one row per team', () => {
     render(<LeagueDetailScreen slug="coastal-premier" />);
-    expect(
-      screen.getByText(/Standings for this league will show here/)
-    ).toBeInTheDocument();
+    expect(screen.getByText('Pts')).toBeInTheDocument();
+    expect(screen.getAllByRole('row')).toHaveLength(3);
+    expect(screen.getByText('No matches played yet.')).toBeInTheDocument();
+  });
+
+  it('shows a scorinated match in Standings after switching back from Fixtures', async () => {
+    render(<LeagueDetailScreen slug="coastal-premier" />);
+    await userEvent.click(screen.getByRole('tab', { name: 'Fixtures' }));
+    await userEvent.click(screen.getAllByRole('button', { name: 'Scorinate' })[0]!);
+    await userEvent.click(screen.getByRole('tab', { name: 'Standings' }));
+
+    const played = screen
+      .getAllByRole('row')
+      .slice(1)
+      .map((row) => row.children[2]?.textContent);
+    expect(played).toEqual(['1', '1']);
+    expect(screen.queryByText('No matches played yet.')).not.toBeInTheDocument();
   });
 
   it('switches to the Fixtures tab on click, showing the generated schedule', async () => {

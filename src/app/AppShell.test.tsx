@@ -76,6 +76,7 @@ describe('AppShell', () => {
           teams: [],
           fixtures: [],
           byes: [],
+          results: [],
         },
       ],
     });
@@ -130,6 +131,7 @@ describe('AppShell', () => {
           teams: [],
           fixtures: [],
           byes: [],
+          results: [],
         },
       ],
     });

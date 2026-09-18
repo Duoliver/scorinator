@@ -13,6 +13,7 @@ const league = (overrides: Partial<LeagueRecord> = {}): LeagueRecord => ({
   teams: [{ slug: 'fc-united', ovr: 70 }],
   fixtures: [],
   byes: [],
+  results: [],
   ...overrides,
 });
 

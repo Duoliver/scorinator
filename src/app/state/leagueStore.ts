@@ -2,7 +2,8 @@ import { create } from 'zustand';
 import { createSeededRng } from '@/engine/rng';
 import { rollOVR } from '@/engine/tier-ovr';
 import { slug } from '@/engine/identity';
-import { generateRoundRobin } from '@/engine/fixtures';
+import { generateRoundRobin, type Fixture } from '@/engine/fixtures';
+import { applyHomeAdvantage, scorinateMatch } from '@/engine/scorination';
 import type { CreateLeagueInput, LeagueRecord } from '@/features/leagues/types';
 
 /** Imports the leaf `types` module directly, not the `features/leagues`
@@ -11,12 +12,15 @@ import type { CreateLeagueInput, LeagueRecord } from '@/features/leagues/types';
 export type {
   LeagueRecord,
   LeagueTeam,
+  LeagueResult,
   CreateLeagueInput,
 } from '@/features/leagues/types';
 
 export interface LeagueState {
   leagues: LeagueRecord[];
   addLeague: (input: CreateLeagueInput) => LeagueRecord;
+  scorinateFixture: (leagueSlug: string, fixture: Fixture<string>) => void;
+  scorinateMatchday: (leagueSlug: string, matchday: number) => void;
 }
 
 /** Matches the seeding already used at `App.tsx`'s scorinator playground:
@@ -45,8 +49,14 @@ function freshSeed(): number {
  * stops a user from creating a league with 0 or 1 team today, so this
  * guards the call instead of letting league creation crash — a league
  * with too few teams simply gets an empty schedule. See the Task 14
+ * decisions log entry.
+ *
+ * `scorinateFixture` and `scorinateMatchday` (Task 15) play one match, or
+ * every unplayed match of one matchday. Both skip a fixture that already
+ * has a result, rather than overwrite it — re-scorinate is Task 7 (engine)
+ * plus Task 19 (UI), confirmed out of scope here, see the Task 15
  * decisions log entry. */
-export const useLeagueStore = create<LeagueState>()((set) => ({
+export const useLeagueStore = create<LeagueState>()((set, get) => ({
   leagues: [],
   addLeague: (input): LeagueRecord => {
     const rng = createSeededRng(freshSeed());
@@ -65,8 +75,55 @@ export const useLeagueStore = create<LeagueState>()((set) => ({
       teams,
       fixtures,
       byes,
+      results: [],
     };
     set((state) => ({ leagues: [...state.leagues, league] }));
     return league;
+  },
+  scorinateFixture: (leagueSlug, fixture): void => {
+    set((state) => ({
+      leagues: state.leagues.map((league) => {
+        if (league.slug !== leagueSlug) return league;
+        const alreadyPlayed = league.results.some(
+          (result) =>
+            result.matchday === fixture.matchday &&
+            result.home === fixture.home &&
+            result.away === fixture.away
+        );
+        const homeTeam = league.teams.find((team) => team.slug === fixture.home);
+        const awayTeam = league.teams.find((team) => team.slug === fixture.away);
+        if (alreadyPlayed || !homeTeam || !awayTeam) return league;
+
+        const rng = createSeededRng(freshSeed());
+        const homeOvr = league.homeAdvantage
+          ? applyHomeAdvantage(homeTeam.ovr)
+          : homeTeam.ovr;
+        const { homeGoals, awayGoals } = scorinateMatch(homeOvr, awayTeam.ovr, rng);
+        return {
+          ...league,
+          results: [
+            ...league.results,
+            { matchday: fixture.matchday, home: fixture.home, away: fixture.away, homeGoals, awayGoals },
+          ],
+        };
+      }),
+    }));
+  },
+  scorinateMatchday: (leagueSlug, matchday): void => {
+    const league = get().leagues.find((candidate) => candidate.slug === leagueSlug);
+    if (!league) return;
+    const unplayed = league.fixtures.filter(
+      (fixture) =>
+        fixture.matchday === matchday &&
+        !league.results.some(
+          (result) =>
+            result.matchday === fixture.matchday &&
+            result.home === fixture.home &&
+            result.away === fixture.away
+        )
+    );
+    for (const fixture of unplayed) {
+      get().scorinateFixture(leagueSlug, fixture);
+    }
   },
 }));

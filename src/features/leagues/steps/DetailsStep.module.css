@@ -9,6 +9,11 @@
   gap: var(--space-3);
 }
 
+.pointsRow > * {
+  flex: 1;
+  min-width: 0;
+}
+
 .footer {
   display: flex;
   justify-content: flex-end;

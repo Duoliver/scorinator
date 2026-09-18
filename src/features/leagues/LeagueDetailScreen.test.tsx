@@ -19,6 +19,7 @@ const league = (overrides: Partial<LeagueRecord> = {}): LeagueRecord => ({
   ],
   fixtures,
   byes,
+  results: [],
   ...overrides,
 });
 

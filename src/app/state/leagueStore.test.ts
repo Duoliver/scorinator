@@ -112,4 +112,88 @@ describe('useLeagueStore', () => {
     expect(noTeams.fixtures).toEqual([]);
     expect(noTeams.byes).toEqual([]);
   });
+
+  describe('scorinateFixture', () => {
+    it('appends a result for the given fixture, with plausible goal counts', () => {
+      const league = useLeagueStore.getState().addLeague({
+        name: 'Coastal Premier',
+        homeAdvantage: false,
+        points: { win: 3, draw: 1, loss: 0 },
+        teams: [team({ slug: 'fc-united' }), team({ slug: 'fc-rivals' })],
+      });
+
+      useLeagueStore.getState().scorinateFixture(league.slug, league.fixtures[0]);
+
+      const [updated] = useLeagueStore.getState().leagues;
+      expect(updated.results).toEqual([
+        {
+          matchday: 1,
+          home: 'fc-united',
+          away: 'fc-rivals',
+          homeGoals: expect.any(Number),
+          awayGoals: expect.any(Number),
+        },
+      ]);
+      expect(updated.results[0].homeGoals).toBeGreaterThanOrEqual(0);
+      expect(updated.results[0].awayGoals).toBeGreaterThanOrEqual(0);
+    });
+
+    it('does nothing for a fixture that already has a result', () => {
+      const league = useLeagueStore.getState().addLeague({
+        name: 'Coastal Premier',
+        homeAdvantage: false,
+        points: { win: 3, draw: 1, loss: 0 },
+        teams: [team({ slug: 'fc-united' }), team({ slug: 'fc-rivals' })],
+      });
+      const fixture = league.fixtures[0];
+
+      useLeagueStore.getState().scorinateFixture(league.slug, fixture);
+      const firstResult = useLeagueStore.getState().leagues[0].results[0];
+      useLeagueStore.getState().scorinateFixture(league.slug, fixture);
+
+      const { results } = useLeagueStore.getState().leagues[0];
+      expect(results).toHaveLength(1);
+      expect(results[0]).toEqual(firstResult);
+    });
+  });
+
+  describe('scorinateMatchday', () => {
+    it('scorinates every unplayed fixture on the given matchday, and none from another matchday', () => {
+      const league = useLeagueStore.getState().addLeague({
+        name: 'Coastal Premier',
+        homeAdvantage: false,
+        points: { win: 3, draw: 1, loss: 0 },
+        teams: [
+          team({ slug: 'fc-united' }),
+          team({ slug: 'fc-rivals' }),
+          team({ slug: 'fc-town' }),
+          team({ slug: 'fc-rangers' }),
+        ],
+      });
+
+      useLeagueStore.getState().scorinateMatchday(league.slug, 1);
+
+      const { results, fixtures } = useLeagueStore.getState().leagues[0];
+      const matchdayOne = fixtures.filter((fixture) => fixture.matchday === 1);
+      expect(results).toHaveLength(matchdayOne.length);
+      expect(results.every((result) => result.matchday === 1)).toBe(true);
+    });
+
+    it('skips a fixture that already has a result', () => {
+      const league = useLeagueStore.getState().addLeague({
+        name: 'Coastal Premier',
+        homeAdvantage: false,
+        points: { win: 3, draw: 1, loss: 0 },
+        teams: [team({ slug: 'fc-united' }), team({ slug: 'fc-rivals' })],
+      });
+      useLeagueStore.getState().scorinateFixture(league.slug, league.fixtures[0]);
+      const firstResult = useLeagueStore.getState().leagues[0].results[0];
+
+      useLeagueStore.getState().scorinateMatchday(league.slug, 1);
+
+      const { results } = useLeagueStore.getState().leagues[0];
+      expect(results).toHaveLength(1);
+      expect(results[0]).toEqual(firstResult);
+    });
+  });
 });

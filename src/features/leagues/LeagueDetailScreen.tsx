@@ -12,9 +12,9 @@ interface LeagueDetailScreenProps {
 
 /** Standings and Fixtures only, matching the design reference exactly —
  * scorination is a button inside Fixtures there, not its own tab. Fixtures
- * renders the real, read-only matchday browser as of Task 14; Standings
- * still renders a placeholder until Task 16. Wiring the scorinate buttons
- * into Fixtures is Task 15. */
+ * (Task 14) renders the matchday browser, and its Scorinate buttons
+ * (Task 15) now play a match or a whole matchday. Standings still renders
+ * a placeholder until Task 16. */
 export function LeagueDetailScreen({ slug }: LeagueDetailScreenProps): JSX.Element {
   const leagues = useLeagueStore((state) => state.leagues);
   const league = leagues.find((candidate) => candidate.slug === slug);

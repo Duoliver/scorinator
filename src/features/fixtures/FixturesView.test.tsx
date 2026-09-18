@@ -1,8 +1,10 @@
+import type { JSX } from 'preact';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { generateRoundRobin } from '@/engine/fixtures';
 import { useTeamsStore } from '@/app/state/teamsStore';
+import { useLeagueStore } from '@/app/state/leagueStore';
 import type { TeamRecord } from '@/features/components';
 import type { LeagueRecord } from '@/features/leagues/types';
 import { FixturesView } from './FixturesView';
@@ -23,10 +25,23 @@ const league = (overrides: Partial<LeagueRecord> = {}): LeagueRecord => ({
   teams: [],
   fixtures: [],
   byes: [],
+  results: [],
   ...overrides,
 });
 
+/** `FixturesView` reads `league` as a plain prop, the same way
+ * `LeagueDetailScreen` passes it down in the real app — it holds no store
+ * subscription of its own. A Scorinate click only becomes visible if
+ * whatever renders `FixturesView` re-renders with the store's fresh
+ * league object, so the two Scorinate tests below render through this
+ * small harness instead, mirroring `LeagueDetailScreen`'s own lookup. */
+function FixturesViewFromStore({ slug }: { slug: string }): JSX.Element | null {
+  const found = useLeagueStore((state) => state.leagues.find((l) => l.slug === slug));
+  return found ? <FixturesView league={found} /> : null;
+}
+
 beforeEach(() => {
+  useLeagueStore.setState({ leagues: [] });
   useTeamsStore.setState({
     teams: [
       team({ slug: 'fc-united', name: 'FC United' }),
@@ -108,5 +123,63 @@ describe('FixturesView', () => {
     render(<FixturesView league={league({ fixtures, byes })} />);
 
     expect(screen.getByText('ghost-fc')).toBeInTheDocument();
+  });
+
+  it('turns a match’s "vs" into a real score on Scorinate, and removes its button', async () => {
+    const { fixtures, byes } = generateRoundRobin(['fc-united', 'fc-rivals']);
+    useLeagueStore.setState({
+      leagues: [
+        league({
+          teams: [
+            { slug: 'fc-united', ovr: 70 },
+            { slug: 'fc-rivals', ovr: 65 },
+          ],
+          fixtures,
+          byes,
+        }),
+      ],
+    });
+    render(<FixturesViewFromStore slug="coastal-premier" />);
+
+    expect(screen.getByRole('button', { name: 'Scorinate' })).toBeInTheDocument();
+    expect(screen.getByText('vs')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Scorinate' }));
+
+    expect(screen.queryByRole('button', { name: 'Scorinate' })).not.toBeInTheDocument();
+    expect(screen.queryByText('vs')).not.toBeInTheDocument();
+    expect(screen.getByText(/^\d+ - \d+$/)).toBeInTheDocument();
+  });
+
+  it('scorinates every remaining match on Scorinate matchday, then disables that button', async () => {
+    const { fixtures, byes } = generateRoundRobin([
+      'fc-united',
+      'fc-rivals',
+      'fc-town',
+      'fc-rangers',
+    ]);
+    useLeagueStore.setState({
+      leagues: [
+        league({
+          teams: [
+            { slug: 'fc-united', ovr: 70 },
+            { slug: 'fc-rivals', ovr: 65 },
+            { slug: 'fc-town', ovr: 60 },
+            { slug: 'fc-rangers', ovr: 55 },
+          ],
+          fixtures,
+          byes,
+        }),
+      ],
+    });
+    render(<FixturesViewFromStore slug="coastal-premier" />);
+
+    expect(screen.getByRole('button', { name: 'Scorinate matchday' })).not.toBeDisabled();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Scorinate matchday' }));
+
+    expect(screen.queryByRole('button', { name: 'Scorinate' })).not.toBeInTheDocument();
+    expect(screen.queryByText('vs')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Scorinate matchday' })).toBeDisabled();
   });
 });

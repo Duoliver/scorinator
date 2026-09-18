@@ -1,1 +1,1 @@
-export { findResult, isMatchdayFullyPlayed } from './resultLookup';
+export { findCurrentMatchday, findResult, isMatchdayFullyPlayed } from './resultLookup';

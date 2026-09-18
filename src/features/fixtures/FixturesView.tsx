@@ -3,7 +3,7 @@ import { useState } from 'preact/hooks';
 import { Badge, Button } from '@/design-system';
 import { useTeamsStore } from '@/app/state/teamsStore';
 import { useLeagueStore } from '@/app/state/leagueStore';
-import { findResult, isMatchdayFullyPlayed } from '@/features/scorination';
+import { findCurrentMatchday, findResult, isMatchdayFullyPlayed } from '@/features/scorination';
 import type { LeagueRecord } from '@/features/leagues/types';
 import styles from './FixturesView.module.css';
 
@@ -61,11 +61,24 @@ export function FixturesView({
     (fixture) => fixture.matchday === matchday
   );
   const byeThisMatchday = league.byes.find((bye) => bye.matchday === matchday);
+  // `undefined` means every match has a result: the league is completed.
+  const currentMatchday = findCurrentMatchday(league);
 
   return (
     <div class={styles.view}>
       <div class={styles.nav}>
         <div class={styles.matchdayNav}>
+          <Button
+            variant="secondary"
+            size="sm"
+            aria-label="First matchday"
+            disabled={matchday <= 1}
+            onClick={() => goToMatchday(1)}
+          >
+            <span class={styles.jumpIcon} aria-hidden="true">
+              «
+            </span>
+          </Button>
           <Button
             variant="secondary"
             size="sm"
@@ -85,15 +98,40 @@ export function FixturesView({
           >
             Next matchday →
           </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            aria-label="Last matchday"
+            disabled={matchday >= totalMatchdays}
+            onClick={() => goToMatchday(totalMatchdays)}
+          >
+            <span class={styles.jumpIcon} aria-hidden="true">
+              »
+            </span>
+          </Button>
         </div>
-        <Button
-          variant="primary"
-          size="sm"
-          disabled={isMatchdayFullyPlayed(league, matchday)}
-          onClick={() => scorinateMatchday(league.slug, matchday)}
-        >
-          Scorinate matchday
-        </Button>
+        <div class={styles.actions}>
+          {currentMatchday === undefined ? (
+            <Badge tone="accent">League completed</Badge>
+          ) : (
+            <Button
+              variant="secondary"
+              size="sm"
+              disabled={matchday === currentMatchday}
+              onClick={() => goToMatchday(currentMatchday)}
+            >
+              Current matchday
+            </Button>
+          )}
+          <Button
+            variant="primary"
+            size="sm"
+            disabled={isMatchdayFullyPlayed(league, matchday)}
+            onClick={() => scorinateMatchday(league.slug, matchday)}
+          >
+            Scorinate matchday
+          </Button>
+        </div>
       </div>
 
       <div class={styles.list}>

@@ -26,3 +26,15 @@ export function isMatchdayFullyPlayed(league: LeagueRecord, matchday: number): b
     .filter((fixture) => fixture.matchday === matchday)
     .every((fixture) => findResult(league, fixture) !== undefined);
 }
+
+/** The first matchday with a fixture that has no result yet — the next
+ * one to play. `undefined` once every fixture has a result, which is how
+ * a caller tells a completed league apart, and also for a league with no
+ * fixtures at all. Matchdays are checked in order, not by play order, so
+ * a matchday skipped earlier is still the current one. */
+export function findCurrentMatchday(league: LeagueRecord): number | undefined {
+  const unplayed = league.fixtures
+    .filter((fixture) => findResult(league, fixture) === undefined)
+    .map((fixture) => fixture.matchday);
+  return unplayed.length === 0 ? undefined : Math.min(...unplayed);
+}

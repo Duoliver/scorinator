@@ -6,6 +6,7 @@
 
 .nav {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
@@ -15,6 +16,21 @@
   display: flex;
   align-items: center;
   gap: var(--space-4);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+/* The `sm` Button font size (12px) makes « and » hard to read. A bigger
+ * glyph would also grow the button, so the negative margin gives back the
+ * extra line height and keeps it level with its neighbours. */
+.jumpIcon {
+  font-size: var(--font-size-3xl);
+  line-height: 1;
+  margin-block: calc(-1 * var(--space-1));
 }
 
 .matchday {

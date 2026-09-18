@@ -27,6 +27,20 @@ describe('Button', () => {
     expect(onClick).not.toHaveBeenCalled();
   });
 
+  it("uses aria-label as the accessible name instead of the visible text", () => {
+    render(<Button aria-label="First matchday">«</Button>);
+    expect(screen.getByRole('button', { name: 'First matchday' })).toBeTruthy();
+  });
+
+  it('passes aria-label through in link mode too', () => {
+    render(
+      <Button href="/somewhere" aria-label="Go somewhere">
+        »
+      </Button>
+    );
+    expect(screen.getByRole('link', { name: 'Go somewhere' })).toBeTruthy();
+  });
+
   it('applies the disabled attribute', () => {
     render(<Button disabled>Disabled</Button>);
     expect(screen.getByRole('button')).toBeDisabled();

@@ -1,6 +1,6 @@
 import type { JSX } from 'preact';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { render, screen } from '@testing-library/preact';
+import { act, render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { generateRoundRobin } from '@/engine/fixtures';
 import { useTeamsStore } from '@/app/state/teamsStore';
@@ -201,5 +201,75 @@ describe('FixturesView', () => {
     expect(screen.queryByRole('button', { name: 'Scorinate' })).not.toBeInTheDocument();
     expect(screen.queryByText('vs')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Scorinate matchday' })).toBeDisabled();
+  });
+
+  describe('matchday jump buttons', () => {
+    const slugs = ['fc-united', 'fc-rivals', 'fc-town', 'fc-rangers'];
+    // Four teams play six matchdays.
+    const { fixtures, byes } = generateRoundRobin(slugs);
+    const lastMatchday = Math.max(...fixtures.map((f) => f.matchday));
+
+    beforeEach(() => {
+      useLeagueStore.setState({
+        leagues: [
+          league({
+            teams: slugs.map((slug) => ({ slug, ovr: 60 })),
+            fixtures,
+            byes,
+          }),
+        ],
+      });
+    });
+
+    it('goes to the last and back to the first matchday, and reports both changes', async () => {
+      const changes: number[] = [];
+      const found = useLeagueStore.getState().leagues[0]!;
+      render(<FixturesView league={found} onMatchdayChange={(next) => changes.push(next)} />);
+
+      expect(screen.getByRole('button', { name: 'First matchday' })).toBeDisabled();
+      expect(screen.getByRole('button', { name: 'Last matchday' })).not.toBeDisabled();
+
+      await userEvent.click(screen.getByRole('button', { name: 'Last matchday' }));
+      expect(screen.getByText(`Matchday ${lastMatchday} / ${lastMatchday}`)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Last matchday' })).toBeDisabled();
+
+      await userEvent.click(screen.getByRole('button', { name: 'First matchday' }));
+      expect(screen.getByText(`Matchday 1 / ${lastMatchday}`)).toBeInTheDocument();
+      expect(changes).toEqual([lastMatchday, 1]);
+    });
+
+    it('jumps back to the first unplayed matchday on Current matchday', async () => {
+      render(<FixturesViewFromStore slug="coastal-premier" />);
+
+      // Nothing played yet: matchday 1 is current, so the button has nothing to do.
+      expect(screen.getByRole('button', { name: 'Current matchday' })).toBeDisabled();
+
+      await userEvent.click(screen.getByRole('button', { name: 'Scorinate matchday' }));
+      await userEvent.click(screen.getByRole('button', { name: 'Last matchday' }));
+      expect(screen.getByRole('button', { name: 'Current matchday' })).not.toBeDisabled();
+
+      await userEvent.click(screen.getByRole('button', { name: 'Current matchday' }));
+      expect(screen.getByText(`Matchday 2 / ${lastMatchday}`)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Current matchday' })).toBeDisabled();
+    });
+
+    it('shows no League completed badge while matches remain', () => {
+      render(<FixturesViewFromStore slug="coastal-premier" />);
+      expect(screen.queryByText('League completed')).not.toBeInTheDocument();
+    });
+
+    it('swaps Current matchday for a League completed badge once every match is played', () => {
+      render(<FixturesViewFromStore slug="coastal-premier" />);
+      act(() => {
+        for (let matchday = 1; matchday <= lastMatchday; matchday += 1) {
+          useLeagueStore.getState().scorinateMatchday('coastal-premier', matchday);
+        }
+      });
+
+      expect(screen.queryByRole('button', { name: 'Current matchday' })).not.toBeInTheDocument();
+      expect(screen.getByText('League completed')).toBeInTheDocument();
+      // The first and last buttons stay available on a completed league.
+      expect(screen.getByRole('button', { name: 'Last matchday' })).not.toBeDisabled();
+    });
   });
 });

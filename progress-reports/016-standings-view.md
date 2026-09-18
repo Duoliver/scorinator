@@ -68,3 +68,23 @@ The user did not ask for that, so it stays out of scope.
 
 Tests: one `LeagueDetailScreen` test for the exact reported path, and one `FixturesView` test for the two new props.
 The suite now has 330 tests. `lint` and `type-check` are clean.
+
+## Addendum 2026-09-18 — matchday jump buttons
+
+The user asked, during review, for faster matchday navigation in the Fixtures tab.
+
+What was built:
+- A "Current matchday" button. It jumps to the first matchday with an unplayed match. It is disabled while the view already shows that matchday.
+- Once every match has a result, the button is hidden and a "League completed" badge replaces it.
+- Two small buttons, `«` and `»`, always shown. They go to the first and the last matchday, and carry an `aria-label`. They use the `secondary` variant, the same as Previous and Next. The `ghost` variant left a gap in the row, so the user asked to change it. Their glyphs are 24px, because the 12px `sm` font size made them too small.
+
+How:
+- New pure helper `findCurrentMatchday` in `features/scorination/resultLookup.ts`. It returns `undefined` for a completed league.
+- `Button` gained an optional `aria-label` prop, in both `<button>` and link mode. It is a one-attribute change to an existing primitive, logged in the Decisions log.
+- All jumps go through `goToMatchday`, so `onMatchdayChange` and the tab-switch memory keep working.
+
+Tests: 6 for the helper, 2 for `Button`, 4 for the header. The suite has 342 tests.
+`lint` and `type-check` are clean.
+Not verified: a manual click-through. The sandbox has no display.
+
+Left out: the Fixtures tab still opens on Matchday 1 and not on the current matchday. That is a separate choice for the user.

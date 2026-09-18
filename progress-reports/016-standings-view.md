@@ -51,3 +51,20 @@ Not verified: a manual click-through in a running app. The sandbox has no displa
 - `teamDisplay` (slug to name and colour) is now copied in `FixturesView` and `StandingsView`. A shared helper in `features/components/` is a possible follow-up. Left out to keep this task small.
 - `calculateStandings` throws a `RangeError` for a result that names a team outside the roster. The store cannot produce that today. A future Load (Task 17) could, if a save file is inconsistent. Task 17 should validate before it sets the store.
 - Task 19 (re-scorinate UI) needs no change here. Standings recomputes from `results`, so an overwrite shows up at once.
+
+## Addendum 2026-09-18 — matchday reset on tab switch
+
+The user found a bug.
+Fixtures, then Standings, then Fixtures again returned to Matchday 1.
+Root cause: `Tabs` renders only the active tab.
+`FixturesView` unmounted on each switch, so its `useState(1)` reset.
+The bug is older than Task 16. The Standings tab made it visible, because there was now a second tab to switch to.
+
+Fix: `FixturesView` gained two optional props, `initialMatchday` and `onMatchdayChange`.
+This is the same uncontrolled convention as `Tabs`' `defaultTab` and `onChange`.
+`LeagueDetailScreen` now holds the matchday in `useState` and feeds it back in.
+The matchday does not survive a nav-away from the league.
+The user did not ask for that, so it stays out of scope.
+
+Tests: one `LeagueDetailScreen` test for the exact reported path, and one `FixturesView` test for the two new props.
+The suite now has 330 tests. `lint` and `type-check` are clean.

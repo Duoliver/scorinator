@@ -1,4 +1,5 @@
 import type { JSX } from 'preact';
+import { useState } from 'preact/hooks';
 import { Tabs, type TabItem } from '@/design-system';
 import { useLeagueStore } from '@/app/state/leagueStore';
 import { ROUTES } from '@/app/routes';
@@ -19,6 +20,9 @@ interface LeagueDetailScreenProps {
  * Fixtures shows up there on the next tab switch. */
 export function LeagueDetailScreen({ slug }: LeagueDetailScreenProps): JSX.Element {
   const leagues = useLeagueStore((state) => state.leagues);
+  // `Tabs` unmounts the inactive tab, so `FixturesView`'s own matchday state
+  // would reset on every switch. Kept here instead, and fed back in below.
+  const [fixturesMatchday, setFixturesMatchday] = useState(1);
   const league = leagues.find((candidate) => candidate.slug === slug);
 
   if (!league) {
@@ -44,7 +48,13 @@ export function LeagueDetailScreen({ slug }: LeagueDetailScreenProps): JSX.Eleme
     {
       id: 'fixtures',
       label: 'Fixtures',
-      content: <FixturesView league={league} />,
+      content: (
+        <FixturesView
+          league={league}
+          initialMatchday={fixturesMatchday}
+          onMatchdayChange={setFixturesMatchday}
+        />
+      ),
     },
   ];
 

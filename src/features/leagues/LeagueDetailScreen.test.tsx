@@ -49,6 +49,18 @@ describe('LeagueDetailScreen', () => {
     expect(screen.getByText('No matches played yet.')).toBeInTheDocument();
   });
 
+  it('keeps the visible matchday when switching to Standings and back to Fixtures', async () => {
+    render(<LeagueDetailScreen slug="coastal-premier" />);
+    await userEvent.click(screen.getByRole('tab', { name: 'Fixtures' }));
+    await userEvent.click(screen.getByRole('button', { name: /Next matchday/ }));
+    expect(screen.getByText(/Matchday 2 \/ 2/)).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('tab', { name: 'Standings' }));
+    await userEvent.click(screen.getByRole('tab', { name: 'Fixtures' }));
+
+    expect(screen.getByText(/Matchday 2 \/ 2/)).toBeInTheDocument();
+  });
+
   it('shows a scorinated match in Standings after switching back from Fixtures', async () => {
     render(<LeagueDetailScreen slug="coastal-premier" />);
     await userEvent.click(screen.getByRole('tab', { name: 'Fixtures' }));

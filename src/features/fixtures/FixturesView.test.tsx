@@ -89,6 +89,26 @@ describe('FixturesView', () => {
     expect(screen.getByRole('button', { name: /Previous matchday/ })).not.toBeDisabled();
   });
 
+  it('opens on initialMatchday, and reports each matchday change through onMatchdayChange', async () => {
+    const slugs = ['fc-united', 'fc-rivals', 'fc-town', 'fc-rangers'];
+    const { fixtures, byes } = generateRoundRobin(slugs);
+    const changes: number[] = [];
+    render(
+      <FixturesView
+        league={league({ fixtures, byes })}
+        initialMatchday={2}
+        onMatchdayChange={(next) => changes.push(next)}
+      />
+    );
+
+    const totalMatchdays = Math.max(...fixtures.map((f) => f.matchday));
+    expect(screen.getByText(`Matchday 2 / ${totalMatchdays}`)).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /Next matchday/ }));
+    await userEvent.click(screen.getByRole('button', { name: /Previous matchday/ }));
+    expect(changes).toEqual([3, 2]);
+  });
+
   it('disables Next on the last matchday', async () => {
     const slugs = ['fc-united', 'fc-rivals', 'fc-town', 'fc-rangers'];
     const { fixtures, byes } = generateRoundRobin(slugs);

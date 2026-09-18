@@ -9,6 +9,13 @@ import styles from './FixturesView.module.css';
 
 interface FixturesViewProps {
   league: LeagueRecord;
+  /** Which matchday is visible on mount. Uncontrolled after that, the same
+   * convention as `Tabs`' `defaultTab`. */
+  initialMatchday?: number;
+  /** Notified whenever the visible matchday changes. `Tabs` unmounts an
+   * inactive tab, so a parent that must keep the matchday across a tab
+   * switch stores it here and passes it back as `initialMatchday`. */
+  onMatchdayChange?: (matchday: number) => void;
 }
 
 interface TeamDisplay {
@@ -21,11 +28,20 @@ interface TeamDisplay {
  * A played match shows its real score, with no button — re-scorinate is
  * Task 7 (engine) plus Task 19 (UI), confirmed out of scope here, see the
  * Task 15 decisions log entry. */
-export function FixturesView({ league }: FixturesViewProps): JSX.Element {
+export function FixturesView({
+  league,
+  initialMatchday = 1,
+  onMatchdayChange,
+}: FixturesViewProps): JSX.Element {
   const teams = useTeamsStore((state) => state.teams);
   const scorinateFixture = useLeagueStore((state) => state.scorinateFixture);
   const scorinateMatchday = useLeagueStore((state) => state.scorinateMatchday);
-  const [matchday, setMatchday] = useState(1);
+  const [matchday, setMatchday] = useState(initialMatchday);
+
+  const goToMatchday = (next: number): void => {
+    setMatchday(next);
+    onMatchdayChange?.(next);
+  };
 
   if (league.fixtures.length === 0) {
     return <p class={styles.empty}>Not enough teams to generate fixtures yet.</p>;
@@ -54,7 +70,7 @@ export function FixturesView({ league }: FixturesViewProps): JSX.Element {
             variant="secondary"
             size="sm"
             disabled={matchday <= 1}
-            onClick={() => setMatchday((current) => current - 1)}
+            onClick={() => goToMatchday(matchday - 1)}
           >
             ← Previous matchday
           </Button>
@@ -65,7 +81,7 @@ export function FixturesView({ league }: FixturesViewProps): JSX.Element {
             variant="secondary"
             size="sm"
             disabled={matchday >= totalMatchdays}
-            onClick={() => setMatchday((current) => current + 1)}
+            onClick={() => goToMatchday(matchday + 1)}
           >
             Next matchday →
           </Button>

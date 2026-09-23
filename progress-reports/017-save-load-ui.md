@@ -75,3 +75,7 @@ See the 2026-09-18 Task 17 entry in the Decisions log. In short:
 - 2026-09-23: On a narrow card, the controls go under the title and description. A container query on `FileCard` does this below a card width of 40rem. It replaces the flex wrap, at the request of the user. The controls now fill that line and sit at the end. On Save league, the selector then spans the full width, with the buttons at the end. The change is in `FileCard`, so all File cards act the same way.
 - 2026-09-23: The Save league selector was narrow on a wide card. `FileCard` has a new `input` prop for a card that needs a value from the user before its controls act. The input and the controls share a row under the text, and the input takes the free width. Below 40rem, the input and the controls stack, as on the other cards. Save league uses this prop, so the `saveControls` styles in `FileScreen.module.css` are gone.
 - 2026-09-23: The Save and Save as buttons now use `size="md"`, the Button size that matches the selector height. The Load button also uses `size="md"`.
+
+## Fixes after review
+
+- 2026-09-23: The user found the sidebar status line cut in half. Cause: `.nav` in `AppShell.module.css` has `height: 100vh` plus vertical padding, and the project has no global `box-sizing: border-box`. The nav was 3rem taller than the window, so the bottom of the status line was off screen. Fix: `box-sizing: border-box` on `.nav`.

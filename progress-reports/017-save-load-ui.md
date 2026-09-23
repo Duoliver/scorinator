@@ -78,4 +78,4 @@ See the 2026-09-18 Task 17 entry in the Decisions log. In short:
 
 ## Fixes after review
 
-- 2026-09-23: The user found the sidebar status line cut in half. Cause: `.nav` in `AppShell.module.css` has `height: 100vh` plus vertical padding, and the project has no global `box-sizing: border-box`. The nav was 3rem taller than the window, so the bottom of the status line was off screen. Fix: `box-sizing: border-box` on `.nav`.
+- 2026-09-23: The user found the sidebar status line cut in half. Cause: `.nav` in `AppShell.module.css` has `height: 100vh` plus vertical padding, and the project has no global `box-sizing: border-box`. The nav was 3rem taller than the window, so the bottom of the status line was off screen. Fix: a global `box-sizing: border-box` rule in `design-system/tokens/elements.css`, as the user asked. See the Decisions log entry for the same date.

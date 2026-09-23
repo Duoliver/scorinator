@@ -8,9 +8,6 @@
   left: 0;
   width: 220px;
   height: 100vh;
-  /* Keeps the padding inside the 100vh. Without it, the nav is 3rem taller
-   * than the window, and the status line at its bottom is cut off. */
-  box-sizing: border-box;
   background: var(--color-surface);
   border-right: var(--border-width) solid var(--color-fg);
   display: flex;

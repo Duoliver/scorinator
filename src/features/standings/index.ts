@@ -1,0 +1,1 @@
+export { StandingsView } from './StandingsView';

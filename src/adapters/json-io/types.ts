@@ -1,6 +1,6 @@
-import type { Tier } from '../../engine/tier-ovr/types';
-import type { PointsConfig, MatchResult } from '../../engine/standings/types';
-import type { Fixture, Bye } from '../../engine/fixtures/types';
+import type { Tier } from '@/engine/tier-ovr/types';
+import type { PointsConfig, MatchResult } from '@/engine/standings/types';
+import type { Fixture, Bye } from '@/engine/fixtures/types';
 
 /** Bumped whenever the save-file shape changes. `parseLeague` rejects any
  * other value, rather than guessing at a migration. */

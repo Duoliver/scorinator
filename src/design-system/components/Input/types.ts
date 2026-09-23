@@ -5,6 +5,7 @@ export default interface InputProps {
   placeholder?: string;
   type?: 'text' | 'number' | 'email';
   id?: string;
+  readOnly?: boolean;
   min?: number;
   max?: number;
   step?: number;

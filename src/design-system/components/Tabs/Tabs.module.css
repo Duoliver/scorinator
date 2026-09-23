@@ -11,6 +11,13 @@
   width: fit-content;
 }
 
+.tabsFullWidth {
+  width: 100%;
+}
+.tabsFullWidth .tab {
+  flex: 1;
+}
+
 .tab {
   padding: var(--space-3) var(--space-6);
   font-family: var(--font-condensed);

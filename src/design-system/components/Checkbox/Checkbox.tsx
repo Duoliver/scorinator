@@ -1,8 +1,14 @@
 import { forwardRef } from 'preact/compat';
-import { useCallback, useId, useImperativeHandle, useRef, useState } from 'preact/hooks';
+import {
+  useCallback,
+  useId,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from 'preact/hooks';
 import type { TargetedEvent } from 'preact';
 import type CheckboxProps from './types';
-import type { FieldHandle } from '../../field';
+import type { FieldHandle } from '@/design-system/field';
 import styles from './Checkbox.module.css';
 
 export type { CheckboxProps };
@@ -37,7 +43,7 @@ export const Checkbox = forwardRef<FieldHandle<boolean>, CheckboxProps>(
         },
         focus: (): void => inputEl.current?.focus(),
       }),
-      [commitValue],
+      [commitValue]
     );
 
     return (
@@ -56,6 +62,6 @@ export const Checkbox = forwardRef<FieldHandle<boolean>, CheckboxProps>(
         <span class={styles.label}>{label}</span>
       </label>
     );
-  },
+  }
 );
 Checkbox.displayName = 'Checkbox';

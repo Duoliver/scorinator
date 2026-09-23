@@ -5,7 +5,7 @@ import {
   rename,
   writeTextFile,
 } from '@tauri-apps/plugin-fs';
-import type { FileSystem } from '../../persistence/types';
+import type { FileSystem } from '@/persistence/types';
 
 /** `FileSystem` backed by the real Tauri `fs` plugin. */
 export const tauriFileSystem: FileSystem = {

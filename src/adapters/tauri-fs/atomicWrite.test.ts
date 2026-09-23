@@ -11,7 +11,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { writeTextFileAtomic } from './atomicWrite';
-import type { FileSystem } from '../../persistence/types';
+import type { FileSystem } from '@/persistence/types';
 
 /** A `FileSystem` backed by real Node `fs` calls against a real temp
  * directory, so `writeTextFileAtomic`'s crash-safety claims get checked

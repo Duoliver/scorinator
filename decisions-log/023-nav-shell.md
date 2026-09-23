@@ -1,0 +1,49 @@
+# Task 23 — decisions log: nav shell + preact-router
+
+Judgment calls made while building the nav shell and wiring `preact-router`, plus its direct follow-ups (route constants, the League Setup draft surviving a nav switch, and the draft-store rework that followed). Condensed here from the running Decisions log in `PROGRESS.md` — see that section for the procedure this follows.
+
+- **2026-09-14 (nav shell + `preact-router`):** New `src/app/AppShell.tsx` renders the 220px sidebar from the design reference. It wraps `<Router>`. It routes `TeamsScreen` at `/teams`, also as the `default` fallback, so `/` lands on Teams. It routes `LeagueSetupScreen` at `/leagues/new`. `App.tsx` now renders `<AppShell />` in place of the two bare-mounted screens. `Playground` stays exactly where it was. Retiring it is still a job for Task 22.
+
+  Three calls, confirmed with the user before the build:
+  1. **Nav scope:** shows Teams and Leagues only, not the third link from the prototype, File. Task 17 (Save/Load UI) has not built a screen for File yet. A dead link was worse than a shorter nav for now.
+  2. **Leagues target:** the Leagues nav link goes straight to the League Setup wizard. No Leagues Dashboard screen exists to list leagues yet.
+  3. **Default route:** `/` lands on Teams. Building a roster comes before creating a league.
+
+  One typing gotcha: `preact-router` ships `declare module 'preact' { interface Attributes extends RoutableProps {} }`. That augmentation does not reach `JSX.IntrinsicAttributes` under this project setup (`jsxImportSource: 'preact'`). Passing `path`/`default` straight onto `TeamsScreen`/`LeagueSetupScreen` failed to type-check as a result. Fixed with two small route-adapter components local to `AppShell.tsx`: `TeamsRoute` and `LeagueSetupRoute`. Each declares `RoutableProps` and forwards with no props. This keeps `features/` screens routing-agnostic too, and fits `module-boundaries.md` better than typing the screens themselves for a routing concern.
+
+  A real scope gap surfaced while confirming the nav-scope call. The board had no task for a Leagues Dashboard: a list, plus a "+ New League" entry point. It had no task for a League Detail shell either: per-league Standings, Fixtures, and Scorination tabs. Both exist as prototypes (`Footballer - Leagues Dashboard.dc.html`, `Footballer - League Detail.dc.html`). The `leagueStore` already models `leagues` as an array. Tasks 14, 15, and 16 have no screen to route into without League Detail. The user confirmed: keep Task 23 scoped as written. Add two new board rows instead: Task 24 (Leagues Dashboard) and Task 25 (League Detail). Task 25's module home stays open — pick one when that task starts.
+
+  New `AppShell.test.tsx` covers the default-route landing and both nav clicks. It asserts on `aria-current="page"` rather than CSS classes. `docs/tdd.md` guides toward this: skip low-value assertions on internal styling. 265 tests, `type-check`, `lint`, and `build` all stay clean.
+
+- **2026-09-14 (route constants):** The user asked for route paths as constants instead of string literals. This gives reuse, intellisense, and a single edit point for a path change.
+
+  New `src/app/routes.ts` exports `ROUTES` (a `const` object: `root`, `teams`, `leaguesNew`) and `RoutePath`, the union type of its values. `AppShell.tsx` now reads every path from `ROUTES` — the nav item list, the `default` path passed to `useState`, the root-path check in the `onChange` handler, and both `<Router>` children. `handleNavClick` now takes a `RoutePath` instead of a bare `string`.
+
+  Kept `activePath` state typed as plain `string`, not `RoutePath`. `preact-router`'s `onChange` reports the literal browser url, which is not provably one of the app's known routes at the type level. 265 tests, `type-check`, and `build` all stay clean.
+
+- **2026-09-14 (League Setup draft survives a nav switch):** The user noticed a real bug. `AppShell`'s nav reads like tabs, but `preact-router` fully unmounts the screen you leave and fully remounts the one you return to. Every local `useState` resets on remount. An in-progress League Setup wizard (name, points, home advantage, selected teams, active step) was silently destroyed by a Teams-then-back click.
+
+  The user and the assistant compared two options and weighed their trade-offs together:
+  1. **Persist the draft values in a store slice, keep the router as-is (chosen).** The screen still fully unmounts and remounts on every nav switch, exactly as today. Only the values survive. The component instance does not.
+  2. **Keep every screen mounted, hide the inactive one with CSS, like a real tab widget.** Rejected. It needs `inert` or an equivalent on the hidden screen. Without it, a keyboard user can `Tab` into invisible controls. It needs explicit focus-restoration logic on switching back — plain unmount/remount gives that for free today. It also clashes with a fact already true here: these are real routes, with their own `<a href>` links and URLs. A screen reader reads that as "a different page." Silently keeping the old page alive underneath breaks that contract. A true tab widget (ARIA `tablist`, `tab`, `tabpanel`, no separate route) would be the honest choice for that pattern — a bigger, separate decision.
+
+  Read `Input.tsx` before building: `details` already re-renders `LeagueSetupScreen` once per keystroke today, through `onChange` → `setDetails`. Moving it into a scoped Zustand selector costs the same, not more.
+
+  New `src/app/state/leagueDraftStore.ts` holds `details`, `selectedSlugs`, and the active wizard `step`. It also holds the exact mutation actions `LeagueSetupScreen` used to keep locally (`toggleTeam`, `selectTeam`, `selectAllTeams`, `clearSelection`), moved over close to verbatim. This matches how `teamsStore` and `leagueStore` already expose named actions, not a raw setter. `LeagueSetupScreen` now reads this store and calls its actions directly. No local `useState` remains except one: the one-shot `status` message. That one stays local on purpose — a past-tense toast, not draft data worth a nav switch surviving. `reset()` runs after a successful create, matching the screen's prior post-create behavior.
+
+  One wiring detail: `Tabs`' `onChange` fires only on a user click. It does not fire on the wizard's own `stepsRef.current?.setValue()` calls — `Tabs` follows the same rule `Input` and `Switch` already follow: a programmatic `setValue` skips `onChange`. A new `goToStep()` helper calls both functions together, so the store's `step` field stays correct no matter which way the user moves between steps.
+
+  `LeagueSetupScreen.test.tsx` and the new `AppShell.test.tsx` case both reset `useLeagueDraftStore` in `beforeEach`, the same way the other two stores already do. New `AppShell.test.tsx` case: fill the League name, switch to Teams, switch back, assert the value is still there. 266 tests, `type-check`, `lint`, and `build` all stay clean.
+
+  The identical bug exists in `TeamsScreen` too. Open the "New team" drawer, switch tabs, and the drawer and its draft both vanish. Flagged as a near-identical fast-follow, not built now. `TeamForm` is shared by two screens (`FEATURES.md`), so its own draft-persistence design needs a separate, focused pass of its own, not folded into this one. This was picked up right after, see the Drawer entry in `decisions-log/teamform-drawer.md`.
+
+- **2026-09-14 (draft-store rework, plus the pattern for reuse):** The user flagged two real problems with the draft-store version above, right after it landed. First: 12 separate `useLeagueDraftStore` selector and action calls in one screen do not scale as more screens adopt this. Second: binding `Input`'s `onChange` straight to a store action means every keystroke calls `set()` — today that only re-renders `LeagueSetupScreen`, but the cost grows with every future reader of that slice.
+
+  Reworked to the compromise the user proposed: read values from refs, commit to the store only on a screen-switch event, not on every keystroke.
+
+  - `leagueDraftStore.ts` shrank from eight per-field actions down to two: `setDraft(draft)` and `reset()`. It is a cold cache now, not a live state manager.
+  - `DetailsStep` became a `forwardRef` component. Its `Input`/`Switch` fields are fully uncontrolled again — no `onChange` wired anywhere above them. A new `getValues()` handle, exposed through `useImperativeHandle`, is the only way to read their current values. This mirrors `TeamsStep`'s own `checkboxHandles` ref map, an existing pattern in this codebase, not a new one.
+  - `LeagueSetupScreen` reads the store exactly once, on mount, through `getState()` — not a subscribed selector — to seed local `useState` for `details`, `selectedSlugs`, and `step`. It writes to the store at exactly two points: a step change (through a new `goToStep()` helper, which also pulls `DetailsStep`'s current ref values before that step can unmount) and true unmount (a `useEffect` cleanup with an empty dependency array, reading a `latestRef` kept in sync on every render to avoid a stale closure).
+  - One real bug found along the way, not caused by the rework: `parsePoints('')` returned `0` instead of falling back to the last valid value, since `Number('')` is `0` in JavaScript, not `NaN`. Fixed with an explicit blank-string check. Caught by a new test for the ref-based fallback path.
+
+  267 tests, `type-check`, `lint`, and `build` all stay clean. Since the rework held up, the user asked for the pattern to get written up for reuse. New section in `docs/coding-standards.md`: "A screen that must survive a nav switch keeps its draft in a cold-cache store" — the three-point read/write rule (mount, step change, unmount), and the uncontrolled-ref technique for a high-frequency field. Written for the Task 24, Task 25, and `TeamsScreen` fast-follows named below, so none of them re-derive this from scratch.

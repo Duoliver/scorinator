@@ -1,4 +1,4 @@
-import type { Rng } from '../rng';
+import type { Rng } from '@/engine/rng';
 import type { MatchScore } from './types';
 
 /**
@@ -62,10 +62,25 @@ export function rollElasticity(rng: Rng): number {
  * around this function, not inside it, so the blend itself stays a plain
  * unit-testable calculation.
  */
-export function computeExpectedGoals(ownOvr: number, opponentOvr: number, elasticity: number): number {
-  const diffFactor = clamp(1 + (DIFF_WEIGHT * (ownOvr - opponentOvr)) / 100, DIFF_FACTOR_MIN, DIFF_FACTOR_MAX);
-  const absFactor = clamp(1 + (ABS_WEIGHT * (ownOvr - REFERENCE_OVR)) / 100, ABS_FACTOR_MIN, ABS_FACTOR_MAX);
-  return Math.max(MIN_EXPECTED_GOALS, BASE_GOALS_PER_TEAM * diffFactor * absFactor * elasticity);
+export function computeExpectedGoals(
+  ownOvr: number,
+  opponentOvr: number,
+  elasticity: number
+): number {
+  const diffFactor = clamp(
+    1 + (DIFF_WEIGHT * (ownOvr - opponentOvr)) / 100,
+    DIFF_FACTOR_MIN,
+    DIFF_FACTOR_MAX
+  );
+  const absFactor = clamp(
+    1 + (ABS_WEIGHT * (ownOvr - REFERENCE_OVR)) / 100,
+    ABS_FACTOR_MIN,
+    ABS_FACTOR_MAX
+  );
+  return Math.max(
+    MIN_EXPECTED_GOALS,
+    BASE_GOALS_PER_TEAM * diffFactor * absFactor * elasticity
+  );
 }
 
 // Knuth's algorithm: multiply uniform draws until the running product drops
@@ -115,7 +130,13 @@ export function applyHomeAdvantage(ovr: number): number {
  */
 export function scorinateMatch(homeOvr: number, awayOvr: number, rng: Rng): MatchScore {
   const elasticity = rollElasticity(rng);
-  const homeGoals = samplePoisson(computeExpectedGoals(homeOvr, awayOvr, elasticity), rng);
-  const awayGoals = samplePoisson(computeExpectedGoals(awayOvr, homeOvr, elasticity), rng);
+  const homeGoals = samplePoisson(
+    computeExpectedGoals(homeOvr, awayOvr, elasticity),
+    rng
+  );
+  const awayGoals = samplePoisson(
+    computeExpectedGoals(awayOvr, homeOvr, elasticity),
+    rng
+  );
   return { homeGoals, awayGoals };
 }

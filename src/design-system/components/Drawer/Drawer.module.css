@@ -1,0 +1,84 @@
+/* The UA stylesheet gives every <dialog> an explicit `width: fit-content;
+   height: fit-content` — not `auto` — so it never enters the ordinary
+   inset-resolution that `inset: 0` alone would otherwise trigger; without
+   an explicit override here it stays sized to its content and pinned to
+   the top-left corner, not stretched to the viewport. Overriding both
+   back to `auto` restores that resolution. The UA stylesheet also caps
+   every dialog at `max-width`/`max-height: calc(100% - <a few px>)`, which
+   still clips `auto` short of the full viewport unless cleared too.
+   `.host` sizes as an ordinary full-viewport flex container this way —
+   trivial, unambiguous sizing — and docks `.panel`, a plain child div, to
+   its end edge with ordinary flexbox instead of fighting the dialog's own
+   box for it. */
+.host {
+  position: fixed;
+  inset: 0;
+  margin: 0;
+  width: auto;
+  height: auto;
+  max-width: none;
+  max-height: none;
+  border: none;
+  padding: 0;
+  overflow: visible;
+  background: transparent;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.host::backdrop {
+  /* --color-fg (#1a1a1a = rgb(26, 26, 26)) at 35% opacity — no alpha token
+     exists yet for this, so the value stays literal. */
+  background: rgba(26, 26, 26, 0.35);
+}
+
+.panel {
+  box-sizing: border-box;
+  width: 420px;
+  max-width: 100%;
+  height: 100%;
+  background: var(--color-surface);
+  border-left: var(--border-width-heavy) solid var(--color-fg);
+  box-shadow: -0.375rem 0 0 rgba(26, 26, 26, 0.08);
+  padding: var(--space-8);
+  display: flex;
+  flex-direction: column;
+  gap: 1.375rem;
+  overflow-y: auto;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: var(--font-size-3xl);
+}
+
+.close {
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  font-size: 1rem;
+  border: var(--border-width) solid var(--color-fg);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-fg);
+  cursor: pointer;
+}
+
+.close:hover {
+  background: var(--color-fg);
+  color: var(--color-surface);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+}

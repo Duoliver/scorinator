@@ -3,6 +3,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.03em;
+  text-decoration: none;
   border: var(--border-width) solid var(--color-border);
   border-radius: var(--radius);
   cursor: pointer;
@@ -82,6 +83,25 @@
   box-shadow: none;
 }
 .ghost:active:not(:disabled) {
+  transform: none;
+  box-shadow: none;
+}
+
+/* Bordered, no shadow, inverts on hover — the same look `Drawer`'s `.close`
+   button uses, kept separate there since it is a small fixed-size icon
+   button, a different shape than this size scale models. */
+.outline {
+  background: var(--color-surface);
+  color: var(--color-fg);
+  box-shadow: none;
+}
+.outline:hover:not(:disabled) {
+  background: var(--color-fg);
+  color: var(--color-surface);
+  transform: none;
+  box-shadow: none;
+}
+.outline:active:not(:disabled) {
   transform: none;
   box-shadow: none;
 }

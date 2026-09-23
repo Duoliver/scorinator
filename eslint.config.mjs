@@ -43,6 +43,12 @@ export default defineConfig([
       import: flatConfigs.recommended.plugins.import,
     },
 
+    settings: {
+      'import/resolver': {
+        typescript: true,
+      },
+    },
+
     rules: {
       '@typescript-eslint/explicit-function-return-type': 'warn',
 

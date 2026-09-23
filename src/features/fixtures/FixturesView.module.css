@@ -1,0 +1,114 @@
+.view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.matchdayNav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+/* The `sm` Button font size (12px) makes « and » hard to read. A bigger
+ * glyph would also grow the button, so the negative margin gives back the
+ * extra line height and keeps it level with its neighbours. */
+.jumpIcon {
+  font-size: var(--font-size-3xl);
+  line-height: 1;
+  margin-block: calc(-1 * var(--space-1));
+}
+
+.matchday {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: var(--font-size-xl);
+  min-width: 10rem;
+  text-align: center;
+}
+
+.list {
+  border: var(--border-width) solid var(--color-fg);
+  background: var(--color-surface);
+  display: flex;
+  flex-direction: column;
+}
+
+.match {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr 8rem;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border-bottom: var(--border-width) solid var(--color-fg);
+}
+
+.match:last-child {
+  border-bottom: none;
+}
+
+.home {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  justify-content: flex-end;
+  font-weight: 600;
+  text-align: right;
+}
+
+.away {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-weight: 600;
+}
+
+.score {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: var(--font-size-lg);
+  min-width: 4rem;
+  text-align: center;
+  color: var(--color-fg-muted);
+}
+
+.action {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.swatch {
+  width: 0.875rem;
+  height: 0.875rem;
+  border: var(--border-width) solid var(--color-fg);
+  flex: none;
+}
+
+.bye {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  font-size: var(--font-size-md);
+  color: var(--color-fg-muted);
+}
+
+.empty {
+  margin: 0;
+  color: var(--color-fg-muted);
+}

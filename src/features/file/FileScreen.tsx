@@ -6,15 +6,17 @@ import { useFileStore } from '@/app/state/fileStore';
 import { useLeagueStore } from '@/app/state/leagueStore';
 import { useTeamsStore } from '@/app/state/teamsStore';
 import { saveLeagueBySlug } from '@/app/saveActions';
-import { loadLeagueFile, type LoadedLeagueFile } from '@/app/data/leagueFile';
+import type { LoadedLeagueFile } from '@/app/data/leagueFile';
 import { exportTeamsCsv, importTeamsCsv } from '@/app/data/teamsCsv';
 import { importTeamsJson } from '@/app/data/teamsJson';
-import { FileCard } from './FileCard';
+import { teamRecordToCsvRecord } from '@/app/data/importMerge';
 import {
-  csvRecordToTeamRecord,
-  mergeImportedTeams,
-  teamRecordToCsvRecord,
-} from './importMerge';
+  applyLoadedLeague,
+  importTeams,
+  isLeagueOpen,
+  openLeagueFile,
+} from '@/app/fileActions';
+import { FileCard } from './FileCard';
 import styles from './FileScreen.module.css';
 
 /** The File screen (Task 17): save and load a league, import and export
@@ -25,11 +27,9 @@ import styles from './FileScreen.module.css';
  * same one Ctrl+S uses. Export results is a placeholder until Task 18. */
 export function FileScreen(): JSX.Element {
   const leagues = useLeagueStore((state) => state.leagues);
-  const loadLeague = useLeagueStore((state) => state.loadLeague);
-  const setTeams = useTeamsStore((state) => state.setTeams);
   const currentLeagueSlug = useFileStore((state) => state.currentLeagueSlug);
   const status = useFileStore((state) => state.status);
-  const { setPath, setCurrent, setStatus } = useFileStore.getState();
+  const { setStatus } = useFileStore.getState();
 
   const leagueSelect = useRef<FieldHandle<string>>(null);
   const [pendingLoad, setPendingLoad] = useState<LoadedLeagueFile | null>(null);
@@ -47,65 +47,24 @@ export function FileScreen(): JSX.Element {
     void (saveAs ? saveLeagueBySlug(slug, { saveAs: true }) : saveLeagueBySlug(slug));
   };
 
-  const applyLoaded = (loaded: LoadedLeagueFile): void => {
-    loadLeague(loaded.league);
-    setTeams(mergeImportedTeams(useTeamsStore.getState().teams, loaded.teams));
-    setPath(loaded.league.slug, loaded.path);
-    setCurrent(loaded.league.slug);
-    setStatus({
-      tone: 'info',
-      message: `Loaded ${loaded.league.name} from ${loaded.path}`,
-    });
-  };
-
   const handleLoad = async (): Promise<void> => {
-    try {
-      const loaded = await loadLeagueFile();
-      if (loaded === null) return;
-      const clash = useLeagueStore
-        .getState()
-        .leagues.some((league) => league.slug === loaded.league.slug);
-      if (clash) {
-        setPendingLoad(loaded);
-        return;
-      }
-      applyLoaded(loaded);
-    } catch (error) {
-      setStatus({ tone: 'error', message: (error as Error).message });
+    const loaded = await openLeagueFile();
+    if (loaded === null) return;
+    if (isLeagueOpen(loaded.league.slug)) {
+      setPendingLoad(loaded);
+      return;
     }
+    applyLoadedLeague(loaded);
   };
 
   const confirmReplace = (): void => {
-    if (pendingLoad) applyLoaded(pendingLoad);
+    if (pendingLoad) applyLoadedLeague(pendingLoad);
     setPendingLoad(null);
   };
 
-  const importedMessage = (count: number): string =>
-    `Imported ${count} team${count === 1 ? '' : 's'}.`;
+  const handleImportCsv = (): Promise<void> => importTeams(() => importTeamsCsv());
 
-  const handleImportCsv = async (): Promise<void> => {
-    try {
-      const imported = await importTeamsCsv();
-      if (imported === null) return;
-      const records = imported.map(csvRecordToTeamRecord);
-      setTeams(mergeImportedTeams(useTeamsStore.getState().teams, records));
-      setStatus({ tone: 'info', message: importedMessage(records.length) });
-    } catch (error) {
-      setStatus({ tone: 'error', message: (error as Error).message });
-    }
-  };
-
-  const handleImportJson = async (): Promise<void> => {
-    try {
-      const imported = await importTeamsJson();
-      if (imported === null) return;
-      const records = imported.map(csvRecordToTeamRecord);
-      setTeams(mergeImportedTeams(useTeamsStore.getState().teams, records));
-      setStatus({ tone: 'info', message: importedMessage(records.length) });
-    } catch (error) {
-      setStatus({ tone: 'error', message: (error as Error).message });
-    }
-  };
+  const handleImportJson = (): Promise<void> => importTeams(() => importTeamsJson());
 
   const handleExportCsv = async (): Promise<void> => {
     try {

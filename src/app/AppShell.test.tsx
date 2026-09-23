@@ -24,29 +24,21 @@ beforeEach(() => {
 });
 
 describe('AppShell', () => {
-  it('lands on Teams by default, with Teams marked as the active nav item', () => {
+  it('lands on Leagues by default, with Leagues marked as the active nav item', () => {
     render(<AppShell />);
-
-    expect(screen.getByRole('heading', { name: 'Teams' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Teams' })).toHaveAttribute(
-      'aria-current',
-      'page'
-    );
-    expect(screen.getByRole('link', { name: 'Leagues' })).not.toHaveAttribute(
-      'aria-current'
-    );
-  });
-
-  it('routes to the Leagues Dashboard when Leagues is clicked, and back to Teams', async () => {
-    render(<AppShell />);
-
-    await userEvent.click(screen.getByRole('link', { name: 'Leagues' }));
 
     expect(screen.getByRole('heading', { name: 'Leagues' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Leagues' })).toHaveAttribute(
       'aria-current',
       'page'
     );
+    expect(screen.getByRole('link', { name: 'Teams' })).not.toHaveAttribute(
+      'aria-current'
+    );
+  });
+
+  it('routes to Teams when Teams is clicked, and back to the Leagues Dashboard', async () => {
+    render(<AppShell />);
 
     await userEvent.click(screen.getByRole('link', { name: 'Teams' }));
 
@@ -55,13 +47,21 @@ describe('AppShell', () => {
       'aria-current',
       'page'
     );
+
+    await userEvent.click(screen.getByRole('link', { name: 'Leagues' }));
+
+    expect(screen.getByRole('heading', { name: 'Leagues' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Leagues' })).toHaveAttribute(
+      'aria-current',
+      'page'
+    );
   });
 
-  it('reaches League Setup through + New League on the Dashboard, with Leagues still marked active', async () => {
+  it('reaches League Setup through Create league on the empty Dashboard, with Leagues still marked active', async () => {
     render(<AppShell />);
 
     await userEvent.click(screen.getByRole('link', { name: 'Leagues' }));
-    await userEvent.click(screen.getByRole('link', { name: '+ New League' }));
+    await userEvent.click(screen.getByRole('link', { name: 'Create league' }));
 
     expect(screen.getByRole('heading', { name: 'League Setup' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Leagues' })).toHaveAttribute(
@@ -90,7 +90,9 @@ describe('AppShell', () => {
     await userEvent.click(screen.getByRole('link', { name: 'Leagues' }));
     await userEvent.click(screen.getByRole('link', { name: 'Open standings' }));
 
-    expect(screen.getByRole('heading', { name: 'Coastal Premier' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Coastal Premier' })
+    ).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Leagues' })).toHaveAttribute(
       'aria-current',
       'page'
@@ -101,12 +103,12 @@ describe('AppShell', () => {
     render(<AppShell />);
 
     await userEvent.click(screen.getByRole('link', { name: 'Leagues' }));
-    await userEvent.click(screen.getByRole('link', { name: '+ New League' }));
+    await userEvent.click(screen.getByRole('link', { name: 'Create league' }));
     await userEvent.type(screen.getByLabelText('League name'), 'Coastal Premier');
 
     await userEvent.click(screen.getByRole('link', { name: 'Teams' }));
     await userEvent.click(screen.getByRole('link', { name: 'Leagues' }));
-    await userEvent.click(screen.getByRole('link', { name: '+ New League' }));
+    await userEvent.click(screen.getByRole('link', { name: 'Create league' }));
 
     expect(screen.getByLabelText('League name')).toHaveValue('Coastal Premier');
   });
@@ -159,7 +161,10 @@ describe('AppShell', () => {
     await userEvent.click(screen.getByRole('link', { name: 'File' }));
 
     expect(screen.getByRole('heading', { name: 'File' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'File' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('link', { name: 'File' })).toHaveAttribute(
+      'aria-current',
+      'page'
+    );
   });
 
   describe('Ctrl+S', () => {
@@ -262,7 +267,9 @@ describe('AppShell', () => {
     it('shows the latest save or load result in the sidebar', () => {
       render(<AppShell />);
 
-      act(() => useFileStore.getState().setStatus({ tone: 'info', message: 'Saved it.' }));
+      act(() =>
+        useFileStore.getState().setStatus({ tone: 'info', message: 'Saved it.' })
+      );
 
       expect(screen.getByRole('status')).toHaveTextContent('Saved it.');
     });
@@ -271,7 +278,9 @@ describe('AppShell', () => {
       vi.useFakeTimers();
       render(<AppShell />);
 
-      act(() => useFileStore.getState().setStatus({ tone: 'info', message: 'Saved it.' }));
+      act(() =>
+        useFileStore.getState().setStatus({ tone: 'info', message: 'Saved it.' })
+      );
       expect(screen.getByRole('status')).toBeInTheDocument();
 
       act(() => {
@@ -286,7 +295,9 @@ describe('AppShell', () => {
       render(<AppShell />);
       await userEvent.click(screen.getByRole('link', { name: 'File' }));
 
-      act(() => useFileStore.getState().setStatus({ tone: 'info', message: 'Saved it.' }));
+      act(() =>
+        useFileStore.getState().setStatus({ tone: 'info', message: 'Saved it.' })
+      );
 
       expect(screen.getAllByRole('status')).toHaveLength(1);
     });

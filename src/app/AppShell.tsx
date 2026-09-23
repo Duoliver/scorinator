@@ -33,7 +33,8 @@ const NAV_ITEMS: NavItem[] = [
   ...(import.meta.env.DEV ? [{ label: 'Playground', path: ROUTES.playground }] : []),
 ];
 
-const DEFAULT_PATH = ROUTES.teams;
+/** The start screen (Task 29). It also renders for any unmatched path. */
+const DEFAULT_PATH = ROUTES.leaguesDashboard;
 
 /** How long a save/load result stays in the status line. */
 const STATUS_VISIBLE_MS = 4000;
@@ -94,15 +95,18 @@ export function AppShell(): JSX.Element {
   // The status line clears itself. A new status restarts the timer.
   useEffect(() => {
     if (!status) return;
-    const timer = setTimeout(() => useFileStore.getState().clearStatus(), STATUS_VISIBLE_MS);
+    const timer = setTimeout(
+      () => useFileStore.getState().clearStatus(),
+      STATUS_VISIBLE_MS
+    );
     return (): void => clearTimeout(timer);
   }, [status]);
 
   const handleChange = (args: RouterOnChangeArgs): void => {
-    // `default` on `TeamsRoute` renders it for any unmatched path, including
-    // ROUTES.root, but `onChange` still reports the literal browser url —
-    // normalize it to the path it actually rendered, so the nav highlight
-    // matches.
+    // `default` on `LeaguesDashboardRoute` renders it for any unmatched
+    // path, including ROUTES.root, but `onChange` still reports the literal
+    // browser url — normalize it to the path it actually rendered, so the
+    // nav highlight matches.
     setActivePath(args.url === ROUTES.root ? DEFAULT_PATH : args.url);
   };
 
@@ -148,10 +152,10 @@ export function AppShell(): JSX.Element {
       </nav>
       <div class={styles.content}>
         <Router onChange={handleChange}>
-          <TeamsRoute path={ROUTES.teams} default />
+          <TeamsRoute path={ROUTES.teams} />
           <FileRoute path={ROUTES.file} />
           <LeagueSetupRoute path={ROUTES.leaguesNew} />
-          <LeaguesDashboardRoute path={ROUTES.leaguesDashboard} />
+          <LeaguesDashboardRoute path={ROUTES.leaguesDashboard} default />
           <LeagueDetailRoute path={ROUTES.leagueDetail} />
           {import.meta.env.DEV && <PlaygroundRoute path={ROUTES.playground} />}
         </Router>

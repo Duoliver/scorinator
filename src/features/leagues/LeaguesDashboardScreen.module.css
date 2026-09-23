@@ -24,7 +24,45 @@
 }
 
 .empty {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.emptyTitle {
+  margin: 0 0 var(--space-1);
+}
+
+.emptyText {
+  margin: 0;
+  font-size: var(--font-size-lg);
   color: var(--color-fg-muted);
+}
+
+/* The Teams group and the League group sit side by side, and stack when
+ * the card is too narrow for both. */
+.emptyGroups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+}
+
+.emptyGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.emptyGroupTitle {
+  margin: 0;
+  font-weight: 700;
+}
+
+.emptyActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  white-space: nowrap;
 }
 
 .grid {

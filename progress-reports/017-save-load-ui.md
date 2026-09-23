@@ -68,3 +68,10 @@ See the 2026-09-18 Task 17 entry in the Decisions log. In short:
 - The status line is easy to miss if the user looks away within 4 seconds. A persistent last-saved indicator could come with Task 26.
 - After a load, the app stays on the File screen. Opening the loaded league in League Detail could be a follow-up.
 - Import teams still merges by slug and overwrites a same-slug team. That was already so for CSV. A loaded league's teams follow the same rule, so a load can change a roster team's name or colour.
+
+## Review tweaks
+
+- 2026-09-23: The user found the league selector on Save league too narrow. The selector now sits above the Save and Save as buttons, at the same width as the button row. The buttons keep their own widths, and their labels do not wrap. Before this, the card squeezed the row and broke "Save as..." onto two lines. A long league name does not widen the stack. The empty state uses the same stack, with the hint in place of the selector.
+- 2026-09-23: On a narrow card, the controls go under the title and description. A container query on `FileCard` does this below a card width of 40rem. It replaces the flex wrap, at the request of the user. The controls now fill that line and sit at the end. On Save league, the selector then spans the full width, with the buttons at the end. The change is in `FileCard`, so all File cards act the same way.
+- 2026-09-23: The Save league selector was narrow on a wide card. `FileCard` has a new `input` prop for a card that needs a value from the user before its controls act. The input and the controls share a row under the text, and the input takes the free width. Below 40rem, the input and the controls stack, as on the other cards. Save league uses this prop, so the `saveControls` styles in `FileScreen.module.css` are gone.
+- 2026-09-23: The Save and Save as buttons now use `size="md"`, the Button size that matches the selector height. The Load button also uses `size="md"`.

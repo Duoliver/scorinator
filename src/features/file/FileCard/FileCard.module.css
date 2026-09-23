@@ -1,4 +1,8 @@
+/* A narrow card stacks the text above the controls. The query at the end
+ * reads the card width, not the window width, so the card acts the same
+ * wherever it sits. */
 .card {
+  container: file-card / inline-size;
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
@@ -8,8 +12,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;
   gap: var(--space-5);
+}
+
+.text {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .title {
@@ -24,8 +32,33 @@
 }
 
 .controls {
+  flex: none;
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   flex-wrap: wrap;
   gap: var(--space-3);
+}
+
+/* The row for a card with an input: the input takes the free width, and
+ * the controls line up with its bottom edge, under the input label. */
+.inputRow {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-5);
+}
+
+.input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Below this width, the controls take their own full-width line, with
+ * their content at the end. */
+@container file-card (max-width: 40rem) {
+  .top,
+  .inputRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }

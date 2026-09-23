@@ -39,7 +39,8 @@ export function FileScreen(): JSX.Element {
     ? (currentLeagueSlug as string)
     : (leagues[0]?.slug ?? '');
 
-  const selectedSlug = (): string => leagueSelect.current?.getValue() || defaultLeagueSlug;
+  const selectedSlug = (): string =>
+    leagueSelect.current?.getValue() || defaultLeagueSlug;
 
   const handleSave = (saveAs: boolean): void => {
     const slug = selectedSlug();
@@ -123,8 +124,8 @@ export function FileScreen(): JSX.Element {
   const confirmFooter = pendingLoad ? (
     <div class={styles.confirm}>
       <p class={styles.confirmText}>
-        Replace "{pendingLoad.league.name}"? A league with this name is already open. Unsaved
-        changes to it are lost.
+        Replace "{pendingLoad.league.name}"? A league with this name is already open.
+        Unsaved changes to it are lost.
       </p>
       <Button variant="primary" size="sm" onClick={confirmReplace}>
         Replace
@@ -157,33 +158,37 @@ export function FileScreen(): JSX.Element {
         <FileCard
           title="Save league"
           description="Writes teams, fixtures, results and config to a re-importable JSON file."
-        >
-          {leagues.length === 0 ? (
-            <>
+          input={
+            leagues.length === 0 ? (
               <span class={styles.hint}>No leagues to save yet.</span>
-              <Button size="sm" disabled>
-                Save
-              </Button>
-              <Button variant="secondary" size="sm" disabled>
-                Save as...
-              </Button>
-            </>
-          ) : (
-            <>
+            ) : (
               <Select
                 ref={leagueSelect}
                 label="League"
                 defaultValue={defaultLeagueSlug}
-                options={leagues.map((league) => ({ label: league.name, value: league.slug }))}
+                options={leagues.map((league) => ({
+                  label: league.name,
+                  value: league.slug,
+                }))}
               />
-              <Button size="sm" onClick={() => handleSave(false)}>
-                Save
-              </Button>
-              <Button variant="secondary" size="sm" onClick={() => handleSave(true)}>
-                Save as...
-              </Button>
-            </>
-          )}
+            )
+          }
+        >
+          <Button
+            size="md"
+            disabled={leagues.length === 0}
+            onClick={() => handleSave(false)}
+          >
+            Save
+          </Button>
+          <Button
+            variant="secondary"
+            size="md"
+            disabled={leagues.length === 0}
+            onClick={() => handleSave(true)}
+          >
+            Save as...
+          </Button>
         </FileCard>
 
         <FileCard
@@ -191,14 +196,17 @@ export function FileScreen(): JSX.Element {
           description="Resume exactly where you left off from a previously saved JSON file."
           footer={confirmFooter}
         >
-          <Button variant="secondary" size="sm" onClick={handleLoad}>
+          <Button variant="secondary" size="md" onClick={handleLoad}>
             Load...
           </Button>
         </FileCard>
 
         <div class={styles.divider} />
 
-        <FileCard title="Import teams" description="CSV columns: Slug, Name, Colour, Tier.">
+        <FileCard
+          title="Import teams"
+          description="CSV columns: Slug, Name, Colour, Tier."
+        >
           <Button variant="secondary" size="sm" onClick={handleImportJson}>
             Import JSON...
           </Button>

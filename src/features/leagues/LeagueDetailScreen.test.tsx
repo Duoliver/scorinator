@@ -32,7 +32,9 @@ beforeEach(() => {
 describe('LeagueDetailScreen', () => {
   it('renders the league name and a meta summary line for a matching slug', () => {
     render(<LeagueDetailScreen slug="coastal-premier" />);
-    expect(screen.getByRole('heading', { name: 'Coastal Premier' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Coastal Premier' })
+    ).toBeInTheDocument();
     expect(screen.getByText(/2 teams/)).toBeInTheDocument();
     expect(screen.getByText(/Home adv\. on/)).toBeInTheDocument();
     expect(screen.getByText(/3\/1\/0 pts/)).toBeInTheDocument();

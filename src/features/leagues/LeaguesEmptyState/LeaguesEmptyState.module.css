@@ -1,0 +1,41 @@
+.empty {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.title {
+  margin: 0 0 var(--space-1);
+}
+
+.text {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  color: var(--color-fg-muted);
+}
+
+/* The Teams group and the League group sit side by side, and stack when
+ * the card is too narrow for both. */
+.groups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.groupTitle {
+  margin: 0;
+  font-weight: 700;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  white-space: nowrap;
+}

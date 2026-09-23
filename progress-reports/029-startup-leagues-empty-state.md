@@ -27,3 +27,4 @@
 
 **Not verified:** a real click-through of the dialogs. The sandbox has no display. To check it, run `npm run tauri:dev`, then use each of the four buttons on a fresh start.
 - The "+ New League" button hides while the empty state shows, because the empty state has its own Create league button. The user asked for this. `AppShell.test.tsx` now reaches League Setup through Create league.
+- For readability, the empty state and the league grid moved out of `LeaguesDashboardScreen` into their own components, `LeaguesEmptyState/` and `LeagueList/`. Each has its own stylesheet, in the `FileCard` folder layout. The user asked for this. The screen tests cover both components, so they have no separate test files.

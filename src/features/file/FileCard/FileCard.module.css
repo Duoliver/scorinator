@@ -1,0 +1,31 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-5);
+}
+
+.title {
+  margin-bottom: var(--space-1);
+  font-weight: 700;
+}
+
+.description {
+  margin: 0;
+  font-size: var(--font-size-md);
+  color: var(--color-fg-muted);
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}

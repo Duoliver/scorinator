@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { LeagueDetailScreen } from './LeagueDetailScreen';
 import { useLeagueStore } from '@/app/state/leagueStore';
+import { useFileStore } from '@/app/state/fileStore';
 import { generateRoundRobin } from '@/engine/fixtures';
 import type { LeagueRecord } from '@/features/leagues/types';
 
@@ -24,6 +25,7 @@ const league = (overrides: Partial<LeagueRecord> = {}): LeagueRecord => ({
 });
 
 beforeEach(() => {
+  useFileStore.setState({ currentLeagueSlug: null, paths: {}, status: null });
   useLeagueStore.setState({ leagues: [league()] });
 });
 
@@ -34,6 +36,16 @@ describe('LeagueDetailScreen', () => {
     expect(screen.getByText(/2 teams/)).toBeInTheDocument();
     expect(screen.getByText(/Home adv\. on/)).toBeInTheDocument();
     expect(screen.getByText(/3\/1\/0 pts/)).toBeInTheDocument();
+  });
+
+  it('makes the league on screen the current one for Ctrl+S', () => {
+    render(<LeagueDetailScreen slug="coastal-premier" />);
+    expect(useFileStore.getState().currentLeagueSlug).toBe('coastal-premier');
+  });
+
+  it('leaves the current league alone for an unknown slug', () => {
+    render(<LeagueDetailScreen slug="no-such-league" />);
+    expect(useFileStore.getState().currentLeagueSlug).toBeNull();
   });
 
   it('shows a not-found message for an unknown slug', () => {

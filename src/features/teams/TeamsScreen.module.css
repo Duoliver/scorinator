@@ -13,11 +13,6 @@
   gap: var(--space-4);
 }
 
-.actions {
-  display: flex;
-  gap: var(--space-3);
-}
-
 .swatch {
   width: 1.125rem;
   height: 1.125rem;
@@ -32,10 +27,5 @@
 
 .count {
   font-size: var(--font-size-md);
-  color: var(--color-fg-muted);
-}
-
-.status {
-  font-size: var(--font-size-lg);
   color: var(--color-fg-muted);
 }

@@ -1,7 +1,8 @@
 import type { JSX } from 'preact';
-import { useState } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
 import { Tabs, type TabItem } from '@/design-system';
 import { useLeagueStore } from '@/app/state/leagueStore';
+import { useFileStore } from '@/app/state/fileStore';
 import { ROUTES } from '@/app/routes';
 import { FixturesView } from '@/features/fixtures';
 import { StandingsView } from '@/features/standings';
@@ -24,6 +25,12 @@ export function LeagueDetailScreen({ slug }: LeagueDetailScreenProps): JSX.Eleme
   // would reset on every switch. Kept here instead, and fed back in below.
   const [fixturesMatchday, setFixturesMatchday] = useState(1);
   const league = leagues.find((candidate) => candidate.slug === slug);
+  const found = league !== undefined;
+
+  // The league on screen is the one Ctrl+S saves (Task 17).
+  useEffect(() => {
+    if (found) useFileStore.getState().setCurrent(slug);
+  }, [slug, found]);
 
   if (!league) {
     return (

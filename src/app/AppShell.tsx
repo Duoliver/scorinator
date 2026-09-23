@@ -1,4 +1,4 @@
-import { useState } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
 import type { JSX, TargetedMouseEvent } from 'preact';
 import {
   Router,
@@ -12,7 +12,10 @@ import {
   LeagueDetailScreen,
   LeaguesDashboardScreen,
 } from '@/features/leagues';
+import { FileScreen } from '@/features/file';
 import { PlaygroundScreen } from '@/features/playground';
+import { useFileStore } from '@/app/state/fileStore';
+import { saveCurrentLeague } from '@/app/saveActions';
 import { ROUTES, type RoutePath } from './routes';
 import styles from './AppShell.module.css';
 
@@ -26,10 +29,14 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { label: 'Leagues', path: ROUTES.leaguesDashboard },
   { label: 'Teams', path: ROUTES.teams },
+  { label: 'File', path: ROUTES.file },
   ...(import.meta.env.DEV ? [{ label: 'Playground', path: ROUTES.playground }] : []),
 ];
 
 const DEFAULT_PATH = ROUTES.teams;
+
+/** How long a save/load result stays in the status line. */
+const STATUS_VISIBLE_MS = 4000;
 
 /** `TeamsScreen`/`LeagueSetupScreen` take no props and stay routing-agnostic,
  * per `module-boundaries.md` — `features/` never needs to know it is routed.
@@ -46,6 +53,10 @@ function LeaguesDashboardRoute(_props: RoutableProps): JSX.Element {
   return <LeaguesDashboardScreen />;
 }
 
+function FileRoute(_props: RoutableProps): JSX.Element {
+  return <FileScreen />;
+}
+
 function PlaygroundRoute(_props: RoutableProps): JSX.Element {
   return <PlaygroundScreen />;
 }
@@ -60,6 +71,32 @@ function LeagueDetailRoute(props: RoutableProps & { slug?: string }): JSX.Elemen
 
 export function AppShell(): JSX.Element {
   const [activePath, setActivePath] = useState<string>(DEFAULT_PATH);
+  const status = useFileStore((state) => state.status);
+
+  // Ctrl+S (Cmd+S on macOS) saves the current league, from any screen. A
+  // held key still gets its browser default blocked, but saves only once.
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent): void => {
+      const isSave =
+        (event.ctrlKey || event.metaKey) &&
+        !event.shiftKey &&
+        !event.altKey &&
+        event.key.toLowerCase() === 's';
+      if (!isSave) return;
+      event.preventDefault();
+      if (event.repeat) return;
+      void saveCurrentLeague();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return (): void => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // The status line clears itself. A new status restarts the timer.
+  useEffect(() => {
+    if (!status) return;
+    const timer = setTimeout(() => useFileStore.getState().clearStatus(), STATUS_VISIBLE_MS);
+    return (): void => clearTimeout(timer);
+  }, [status]);
 
   const handleChange = (args: RouterOnChangeArgs): void => {
     // `default` on `TeamsRoute` renders it for any unmatched path, including
@@ -100,10 +137,19 @@ export function AppShell(): JSX.Element {
             {item.label}
           </a>
         ))}
+        {status && activePath !== ROUTES.file && (
+          <p
+            role="status"
+            class={`${styles.status} ${status.tone === 'error' ? styles.statusError : ''}`}
+          >
+            {status.message}
+          </p>
+        )}
       </nav>
       <div class={styles.content}>
         <Router onChange={handleChange}>
           <TeamsRoute path={ROUTES.teams} default />
+          <FileRoute path={ROUTES.file} />
           <LeagueSetupRoute path={ROUTES.leaguesNew} />
           <LeaguesDashboardRoute path={ROUTES.leaguesDashboard} />
           <LeagueDetailRoute path={ROUTES.leagueDetail} />

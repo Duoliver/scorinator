@@ -5,6 +5,7 @@ import { slug } from '@/engine/identity';
 import { generateRoundRobin, type Fixture } from '@/engine/fixtures';
 import { applyHomeAdvantage, scorinateMatch } from '@/engine/scorination';
 import type { CreateLeagueInput, LeagueRecord } from '@/features/leagues/types';
+import { useFileStore } from './fileStore';
 
 /** Imports the leaf `types` module directly, not the `features/leagues`
  * barrel — the barrel re-exports `LeagueSetupScreen`, which itself imports
@@ -19,6 +20,7 @@ export type {
 export interface LeagueState {
   leagues: LeagueRecord[];
   addLeague: (input: CreateLeagueInput) => LeagueRecord;
+  loadLeague: (league: LeagueRecord) => void;
   scorinateFixture: (leagueSlug: string, fixture: Fixture<string>) => void;
   scorinateMatchday: (leagueSlug: string, matchday: number) => void;
 }
@@ -51,6 +53,12 @@ function freshSeed(): number {
  * with too few teams simply gets an empty schedule. See the Task 14
  * decisions log entry.
  *
+ * `addLeague` also makes the new league the one Ctrl+S saves (Task 17,
+ * `fileStore`). `loadLeague` (Task 17) puts a league read from a save file
+ * into the list: it replaces the league with the same slug in place, so
+ * the list order does not jump, or appends a new one. Whether to ask
+ * before replacing is the caller's call — see `features/file`.
+ *
  * `scorinateFixture` and `scorinateMatchday` (Task 15) play one match, or
  * every unplayed match of one matchday. Both skip a fixture that already
  * has a result, rather than overwrite it — re-scorinate is Task 7 (engine)
@@ -78,7 +86,15 @@ export const useLeagueStore = create<LeagueState>()((set, get) => ({
       results: [],
     };
     set((state) => ({ leagues: [...state.leagues, league] }));
+    useFileStore.getState().setCurrent(league.slug);
     return league;
+  },
+  loadLeague: (league): void => {
+    set((state) => ({
+      leagues: state.leagues.some((candidate) => candidate.slug === league.slug)
+        ? state.leagues.map((candidate) => (candidate.slug === league.slug ? league : candidate))
+        : [...state.leagues, league],
+    }));
   },
   scorinateFixture: (leagueSlug, fixture): void => {
     set((state) => ({

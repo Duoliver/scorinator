@@ -1,10 +1,8 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { TeamsScreen } from './TeamsScreen';
 import { useTeamsStore } from '@/app/state/teamsStore';
-import * as csvIO from '@/app/data/teamsCsv';
-import * as jsonIO from '@/app/data/teamsJson';
 
 beforeEach(() => {
   useTeamsStore.setState({ teams: [] });
@@ -54,65 +52,13 @@ describe('TeamsScreen', () => {
     expect(screen.queryByText('Northgate FC')).not.toBeInTheDocument();
   });
 
-  it('imports teams from CSV and merges them into the roster', async () => {
-    vi.spyOn(csvIO, 'importTeamsCsv').mockResolvedValue([
-      { slug: '', name: 'FC United', colour: '#E53935', tier: 'B' },
-    ]);
+  it('has no import or export buttons — those live on the File screen', () => {
     render(<TeamsScreen />);
-    await userEvent.click(screen.getByText('Import CSV...'));
 
-    expect(await screen.findByText('FC United')).toBeInTheDocument();
-    expect(screen.getByText('fc-united')).toBeInTheDocument();
-    expect(screen.getByText('Imported 1 team.')).toBeInTheDocument();
-  });
-
-  it('shows an error and does not change the roster when the CSV import fails', async () => {
-    vi.spyOn(csvIO, 'importTeamsCsv').mockRejectedValue(
-      new Error('Team CSV is missing required column "Tier".')
-    );
-    render(<TeamsScreen />);
-    await userEvent.click(screen.getByText('Import CSV...'));
-
-    expect(await screen.findByText(/missing required column/)).toBeInTheDocument();
-    expect(screen.getByText('0 teams')).toBeInTheDocument();
-  });
-
-  it('imports teams from JSON and merges them into the roster', async () => {
-    vi.spyOn(jsonIO, 'importTeamsJson').mockResolvedValue([
-      { slug: '', name: 'FC United', colour: '#E53935', tier: 'B' },
-    ]);
-    render(<TeamsScreen />);
-    await userEvent.click(screen.getByText('Import JSON...'));
-
-    expect(await screen.findByText('FC United')).toBeInTheDocument();
-    expect(screen.getByText('fc-united')).toBeInTheDocument();
-    expect(screen.getByText('Imported 1 team.')).toBeInTheDocument();
-  });
-
-  it('shows an error and does not change the roster when the JSON import fails', async () => {
-    vi.spyOn(jsonIO, 'importTeamsJson').mockRejectedValue(
-      new Error('Team JSON entry 1 has an invalid tier.')
-    );
-    render(<TeamsScreen />);
-    await userEvent.click(screen.getByText('Import JSON...'));
-
-    expect(await screen.findByText(/invalid tier/)).toBeInTheDocument();
-    expect(screen.getByText('0 teams')).toBeInTheDocument();
-  });
-
-  it('exports the current roster to CSV', async () => {
-    const exportSpy = vi.spyOn(csvIO, 'exportTeamsCsv').mockResolvedValue('/teams.csv');
-    render(<TeamsScreen />);
-    await userEvent.click(screen.getByText('+ New team'));
-    await userEvent.type(screen.getByLabelText('Team name'), 'Ashfield Town');
-    await userEvent.click(screen.getByText('Create team'));
-
-    await userEvent.click(screen.getByText('Export CSV...'));
-
-    expect(exportSpy).toHaveBeenCalledWith([
-      { slug: 'ashfield-town', name: 'Ashfield Town', colour: '', tier: 'C' },
-    ]);
-    expect(await screen.findByText('Saved to /teams.csv')).toBeInTheDocument();
+    expect(screen.queryByText('Import CSV...')).not.toBeInTheDocument();
+    expect(screen.queryByText('Import JSON...')).not.toBeInTheDocument();
+    expect(screen.queryByText('Export CSV...')).not.toBeInTheDocument();
+    expect(screen.getByText('+ New team')).toBeInTheDocument();
   });
 
   it('opens the right team when a row other than the first is edited', async () => {

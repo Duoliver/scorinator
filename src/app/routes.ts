@@ -4,6 +4,7 @@
 export const ROUTES = {
   root: '/',
   teams: '/teams',
+  file: '/file',
   leaguesNew: '/leagues/new',
   leagueDetail: '/leagues/:slug',
   leaguesDashboard: '/leagues',

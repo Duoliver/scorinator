@@ -33,7 +33,6 @@
 }
 
 .panel {
-  box-sizing: border-box;
   width: 420px;
   max-width: 100%;
   height: 100%;

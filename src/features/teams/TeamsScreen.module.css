@@ -3,7 +3,7 @@
   flex-direction: column;
   gap: 1.75rem;
   padding: var(--space-10) var(--space-12);
-  max-width: 65rem;
+  max-width: 71rem;
 }
 
 .header {
@@ -13,14 +13,9 @@
   gap: var(--space-4);
 }
 
-.actions {
-  display: flex;
-  gap: var(--space-3);
-}
-
 .swatch {
-  width: 1.125rem;
-  height: 1.125rem;
+  width: 1.375rem;
+  height: 1.375rem;
   border: var(--border-width) solid var(--color-fg);
 }
 
@@ -32,10 +27,5 @@
 
 .count {
   font-size: var(--font-size-md);
-  color: var(--color-fg-muted);
-}
-
-.status {
-  font-size: var(--font-size-lg);
   color: var(--color-fg-muted);
 }

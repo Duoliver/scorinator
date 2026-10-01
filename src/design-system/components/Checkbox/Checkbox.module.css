@@ -15,8 +15,8 @@
 }
 
 .box {
-  width: 1.375rem;
-  height: 1.375rem;
+  width: 1.625rem;
+  height: 1.625rem;
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;

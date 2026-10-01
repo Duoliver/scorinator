@@ -41,6 +41,19 @@
   color: var(--color-surface);
 }
 
+.status {
+  margin: auto 0 0;
+  padding: var(--space-4) var(--space-5) 0;
+  border-top: var(--border-width) solid var(--color-fg);
+  font-size: var(--font-size-md);
+  color: var(--color-fg-muted);
+  overflow-wrap: anywhere;
+}
+
+.statusError {
+  color: var(--color-error);
+}
+
 .content {
   margin-left: 220px;
 }

@@ -1,12 +1,21 @@
 /*
- * Base typography for raw HTML elements, tied to design tokens instead of
- * repeated per component. Only h1/h2/h3 get a rule here — every current use
+ * Base rules for raw HTML elements, tied to design tokens instead of
+ * repeated per component. Every element uses border-box sizing, and only
+ * h1/h2/h3 get a typography rule here — every current use
  * of each is a plain page, section, or sub-section title with no
  * per-instance styling.
  * A heading that genuinely needs to look different should override with
  * its own class rather than growing this file into per-case exceptions.
  * See DESIGN_SYSTEM.md.
  */
+
+/* A set width or height includes the padding and the border. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 h1 {
   margin: 0;
   font-family: var(--font-heading);

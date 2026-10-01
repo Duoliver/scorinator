@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { useLeagueStore } from './leagueStore';
+import { useFileStore } from './fileStore';
+import type { LeagueRecord } from '@/features/leagues/types';
 import { TIER_OVR_RANGES } from '@/engine/tier-ovr';
 import type { TeamRecord } from '@/features/components';
 
@@ -11,8 +13,21 @@ const team = (overrides: Partial<TeamRecord> = {}): TeamRecord => ({
   ...overrides,
 });
 
+const record = (overrides: Partial<LeagueRecord> = {}): LeagueRecord => ({
+  slug: 'coastal-premier',
+  name: 'Coastal Premier',
+  homeAdvantage: false,
+  points: { win: 3, draw: 1, loss: 0 },
+  teams: [],
+  fixtures: [],
+  byes: [],
+  results: [],
+  ...overrides,
+});
+
 beforeEach(() => {
   useLeagueStore.setState({ leagues: [] });
+  useFileStore.setState({ currentLeagueSlug: null, paths: {}, status: null });
 });
 
 describe('useLeagueStore', () => {
@@ -111,6 +126,41 @@ describe('useLeagueStore', () => {
     expect(oneTeam.byes).toEqual([]);
     expect(noTeams.fixtures).toEqual([]);
     expect(noTeams.byes).toEqual([]);
+  });
+
+  it('addLeague makes the new league the current one for saving', () => {
+    useLeagueStore.getState().addLeague({
+      name: 'Coastal Premier',
+      homeAdvantage: true,
+      points: { win: 3, draw: 1, loss: 0 },
+      teams: [],
+    });
+
+    expect(useFileStore.getState().currentLeagueSlug).toBe('coastal-premier');
+  });
+
+  describe('loadLeague', () => {
+    it('appends a league with a new slug', () => {
+      const existing = record({ slug: 'inland-cup', name: 'Inland Cup' });
+      useLeagueStore.setState({ leagues: [existing] });
+
+      const loaded = record();
+      useLeagueStore.getState().loadLeague(loaded);
+
+      expect(useLeagueStore.getState().leagues).toEqual([existing, loaded]);
+    });
+
+    it('replaces the league with the same slug in place, keeping the list order', () => {
+      const first = record({ slug: 'inland-cup', name: 'Inland Cup' });
+      const old = record();
+      const last = record({ slug: 'north-shield', name: 'North Shield' });
+      useLeagueStore.setState({ leagues: [first, old, last] });
+
+      const loaded = record({ homeAdvantage: true });
+      useLeagueStore.getState().loadLeague(loaded);
+
+      expect(useLeagueStore.getState().leagues).toEqual([first, loaded, last]);
+    });
   });
 
   describe('scorinateFixture', () => {

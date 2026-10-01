@@ -19,8 +19,9 @@ export interface LeagueResult extends MatchResult<string> {
   matchday: number;
 }
 
-/** A league as League Setup creates it. No file path — that belongs to
- * Task 17 (Save/Load UI), out of scope here. `slug` is rolled once at
+/** A league as League Setup creates it. No file path — where it was last
+ * saved lives in `app/state/fileStore` (Task 17), since a path is session
+ * state, not part of the save file this record mirrors. `slug` is rolled once at
  * creation, from the league name, the same way `engine/identity`'s
  * `slug()` already identifies a team — see `app/state/leagueStore`'s
  * `addLeague`. It is what League Detail (Task 25) routes by.

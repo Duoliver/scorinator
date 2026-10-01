@@ -16,8 +16,8 @@
 
 .track {
   position: relative;
-  width: 3.25rem;
-  height: 1.625rem;
+  width: 3.5rem;
+  height: 1.875rem;
   flex-shrink: 0;
   border: var(--border-width) solid var(--color-border);
   background: var(--color-surface);
@@ -27,8 +27,8 @@
   position: absolute;
   top: var(--border-width);
   left: var(--border-width);
-  width: 1.125rem;
-  height: 1.125rem;
+  width: 1.375rem;
+  height: 1.375rem;
   background: var(--color-fg);
   border: var(--border-width) solid var(--color-border);
 }

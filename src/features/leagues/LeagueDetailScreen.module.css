@@ -11,8 +11,16 @@
   text-decoration: none;
 }
 
-.title {
+.titleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
   margin: var(--space-2) 0 var(--space-1);
+}
+
+.title {
+  margin: 0;
 }
 
 .meta {

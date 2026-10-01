@@ -13,7 +13,12 @@ import { DEFAULT_POINTS_CONFIG } from '@/engine/standings';
 
 beforeEach(() => {
   vi.restoreAllMocks();
-  useFileStore.setState({ currentLeagueSlug: null, paths: {}, status: null });
+  useFileStore.setState({
+    currentLeagueSlug: null,
+    paths: {},
+    savedLeagues: {},
+    status: null,
+  });
   useTeamsStore.setState({ teams: [] });
   useLeagueStore.setState({ leagues: [] });
   useLeagueDraftStore.setState({

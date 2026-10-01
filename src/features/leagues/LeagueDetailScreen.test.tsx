@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { render, screen } from '@testing-library/preact';
+import { act, render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { LeagueDetailScreen } from './LeagueDetailScreen';
 import { useLeagueStore } from '@/app/state/leagueStore';
@@ -25,7 +25,12 @@ const league = (overrides: Partial<LeagueRecord> = {}): LeagueRecord => ({
 });
 
 beforeEach(() => {
-  useFileStore.setState({ currentLeagueSlug: null, paths: {}, status: null });
+  useFileStore.setState({
+    currentLeagueSlug: null,
+    paths: {},
+    savedLeagues: {},
+    status: null,
+  });
   useLeagueStore.setState({ leagues: [league()] });
 });
 
@@ -38,6 +43,26 @@ describe('LeagueDetailScreen', () => {
     expect(screen.getByText(/2 teams/)).toBeInTheDocument();
     expect(screen.getByText(/Home adv\. on/)).toBeInTheDocument();
     expect(screen.getByText(/3\/1\/0 pts/)).toBeInTheDocument();
+  });
+
+  it('shows an Unsaved badge next to the title until the league is saved', () => {
+    render(<LeagueDetailScreen slug="coastal-premier" />);
+    expect(screen.getByText('Unsaved')).toBeInTheDocument();
+
+    act(() => useFileStore.getState().markSaved(useLeagueStore.getState().leagues[0]));
+
+    expect(screen.queryByText('Unsaved')).not.toBeInTheDocument();
+  });
+
+  it('shows the Unsaved badge again after a scorinate in Fixtures', async () => {
+    useFileStore.getState().markSaved(useLeagueStore.getState().leagues[0]);
+    render(<LeagueDetailScreen slug="coastal-premier" />);
+    expect(screen.queryByText('Unsaved')).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('tab', { name: 'Fixtures' }));
+    await userEvent.click(screen.getAllByRole('button', { name: 'Scorinate' })[0]!);
+
+    expect(screen.getByText('Unsaved')).toBeInTheDocument();
   });
 
   it('makes the league on screen the current one for Ctrl+S', () => {

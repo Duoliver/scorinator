@@ -12,7 +12,7 @@ export async function saveLeagueBySlug(
   slug: string,
   options: { saveAs?: boolean } = {}
 ): Promise<void> {
-  const { setPath, setCurrent, setStatus } = useFileStore.getState();
+  const { setPath, setCurrent, setStatus, markSaved } = useFileStore.getState();
   const league = useLeagueStore.getState().leagues.find((candidate) => candidate.slug === slug);
   if (!league) {
     setStatus({ tone: 'error', message: `Cannot save: league "${slug}" was not found.` });
@@ -30,6 +30,9 @@ export async function saveLeagueBySlug(
       return;
     }
     setPath(slug, path);
+    // The object read before the write, not whatever the store holds now: a
+    // change made while the file was writing stays unsaved (Task 26).
+    markSaved(league);
     setCurrent(slug);
     setStatus({ tone: 'info', message: `Saved ${league.name} to ${path}` });
   } catch (error) {

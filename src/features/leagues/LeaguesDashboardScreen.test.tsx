@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/preact';
+import { act, render, screen, within } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { LeaguesDashboardScreen } from './LeaguesDashboardScreen';
 import * as leagueFile from '@/app/data/leagueFile';
@@ -26,7 +26,12 @@ beforeEach(() => {
   vi.restoreAllMocks();
   useLeagueStore.setState({ leagues: [] });
   useTeamsStore.setState({ teams: [] });
-  useFileStore.setState({ currentLeagueSlug: null, paths: {}, status: null });
+  useFileStore.setState({
+    currentLeagueSlug: null,
+    paths: {},
+    savedLeagues: {},
+    status: null,
+  });
 });
 
 describe('LeaguesDashboardScreen', () => {
@@ -126,6 +131,31 @@ describe('LeaguesDashboardScreen', () => {
     expect(screen.getByText(/1 team · Home adv\. on/)).toBeInTheDocument();
     expect(screen.getByText(/0 teams · Home adv\. off/)).toBeInTheDocument();
     expect(screen.getAllByText('3/1/0 pts')).toHaveLength(2);
+  });
+
+  it('shows an Unsaved badge on a league with unsaved changes, and on no other', () => {
+    const saved = league();
+    const unsaved = league({ slug: 'iron-valley-cup', name: 'Iron Valley Cup' });
+    useLeagueStore.setState({ leagues: [saved, unsaved] });
+    useFileStore.getState().markSaved(saved);
+    render(<LeaguesDashboardScreen />);
+
+    expect(screen.getAllByText('Unsaved')).toHaveLength(1);
+    const unsavedCard = screen.getByRole('heading', {
+      name: 'Iron Valley Cup',
+    }).parentElement!;
+    expect(within(unsavedCard).getByText('Unsaved')).toBeInTheDocument();
+  });
+
+  it('drops the Unsaved badge once the league is saved', () => {
+    const open = league();
+    useLeagueStore.setState({ leagues: [open] });
+    render(<LeaguesDashboardScreen />);
+    expect(screen.getByText('Unsaved')).toBeInTheDocument();
+
+    act(() => useFileStore.getState().markSaved(open));
+
+    expect(screen.queryByText('Unsaved')).not.toBeInTheDocument();
   });
 
   it("links each card to that league's detail page", () => {

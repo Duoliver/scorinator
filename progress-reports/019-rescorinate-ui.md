@@ -1,6 +1,6 @@
 # Task 19 — Re-scorinate UI
 
-**Status:** Review — 2026-10-01
+**Status:** Done — 2026-10-01
 
 ## What was built
 

@@ -7,6 +7,7 @@ import { useLeagueStore } from '@/app/state/leagueStore';
 import { useTeamsStore } from '@/app/state/teamsStore';
 import { saveLeagueBySlug } from '@/app/saveActions';
 import type { LoadedLeagueFile } from '@/app/data/leagueFile';
+import { exportResultsTxt } from '@/app/data/resultsTxt';
 import { exportTeamsCsv, importTeamsCsv } from '@/app/data/teamsCsv';
 import { importTeamsJson } from '@/app/data/teamsJson';
 import { teamRecordToCsvRecord } from '@/app/data/importMerge';
@@ -24,7 +25,9 @@ import styles from './FileScreen.module.css';
  * Manager.dc.html`. Team CSV/JSON import and export moved here from
  * `TeamsScreen`, unchanged apart from where their result message goes: every
  * action on this screen reports through `fileStore`'s status line, the
- * same one Ctrl+S uses. Export results is a placeholder until Task 18. */
+ * same one Ctrl+S uses. Export results (Task 18) writes one league's
+ * plain-text summary. It leaves the saved path and the current league
+ * alone, since a summary is not a save file. */
 export function FileScreen(): JSX.Element {
   const leagues = useLeagueStore((state) => state.leagues);
   const currentLeagueSlug = useFileStore((state) => state.currentLeagueSlug);
@@ -32,6 +35,7 @@ export function FileScreen(): JSX.Element {
   const { setStatus } = useFileStore.getState();
 
   const leagueSelect = useRef<FieldHandle<string>>(null);
+  const resultsSelect = useRef<FieldHandle<string>>(null);
   const [pendingLoad, setPendingLoad] = useState<LoadedLeagueFile | null>(null);
 
   // A league picked in the selector, or else the current one, or else the first.
@@ -65,6 +69,30 @@ export function FileScreen(): JSX.Element {
   const handleImportCsv = (): Promise<void> => importTeams(() => importTeamsCsv());
 
   const handleImportJson = (): Promise<void> => importTeams(() => importTeamsJson());
+
+  const handleExportResults = async (): Promise<void> => {
+    const slug = resultsSelect.current?.getValue() || defaultLeagueSlug;
+    const target = leagues.find((league) => league.slug === slug);
+    if (!target) {
+      setStatus({
+        tone: 'error',
+        message: `Cannot export: league "${slug}" was not found.`,
+      });
+      return;
+    }
+    try {
+      const path = await exportResultsTxt(target, useTeamsStore.getState().teams);
+      setStatus({
+        tone: 'info',
+        message:
+          path === null
+            ? 'Export canceled.'
+            : `Exported ${target.name} results to ${path}`,
+      });
+    } catch (error) {
+      setStatus({ tone: 'error', message: (error as Error).message });
+    }
+  };
 
   const handleExportCsv = async (): Promise<void> => {
     try {
@@ -186,10 +214,29 @@ export function FileScreen(): JSX.Element {
         <FileCard
           title="Export results"
           description="Read-only, human-readable summary — for reading, not re-importing."
+          input={
+            leagues.length === 0 ? (
+              <span class={styles.hint}>No leagues to export yet.</span>
+            ) : (
+              <Select
+                ref={resultsSelect}
+                label="League to export"
+                defaultValue={defaultLeagueSlug}
+                options={leagues.map((league) => ({
+                  label: league.name,
+                  value: league.slug,
+                }))}
+              />
+            )
+          }
         >
-          <span class={styles.hint}>Coming soon.</span>
-          <Button variant="secondary" size="sm" disabled>
-            Export results...
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled={leagues.length === 0}
+            onClick={handleExportResults}
+          >
+            Export TXT...
           </Button>
         </FileCard>
       </div>

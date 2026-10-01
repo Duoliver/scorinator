@@ -6,6 +6,7 @@ import * as saveActions from '@/app/saveActions';
 import * as leagueFile from '@/app/data/leagueFile';
 import * as csvIO from '@/app/data/teamsCsv';
 import * as jsonIO from '@/app/data/teamsJson';
+import * as resultsTxtIO from '@/app/data/resultsTxt';
 import { useFileStore } from '@/app/state/fileStore';
 import { useLeagueStore } from '@/app/state/leagueStore';
 import { useTeamsStore } from '@/app/state/teamsStore';
@@ -118,7 +119,10 @@ describe('FileScreen', () => {
 
     it('shows the status the save left in the file store', () => {
       useFileStore.setState({
-        status: { tone: 'info', message: 'Saved Coastal Premier to /saves/coastal.json' },
+        status: {
+          tone: 'info',
+          message: 'Saved Coastal Premier to /saves/coastal.json',
+        },
       });
       render(<FileScreen />);
 
@@ -139,10 +143,14 @@ describe('FileScreen', () => {
 
       await userEvent.click(screen.getByRole('button', { name: 'Load...' }));
 
-      expect(await screen.findByText('Loaded Coastal Premier from /saves/coastal.json')).toBeInTheDocument();
+      expect(
+        await screen.findByText('Loaded Coastal Premier from /saves/coastal.json')
+      ).toBeInTheDocument();
       expect(useLeagueStore.getState().leagues).toEqual([league()]);
       expect(useTeamsStore.getState().teams).toEqual(teams);
-      expect(useFileStore.getState().paths['coastal-premier']).toBe('/saves/coastal.json');
+      expect(useFileStore.getState().paths['coastal-premier']).toBe(
+        '/saves/coastal.json'
+      );
       expect(useFileStore.getState().currentLeagueSlug).toBe('coastal-premier');
     });
 
@@ -158,7 +166,15 @@ describe('FileScreen', () => {
 
     describe('when a league with the same slug is already open', () => {
       const played = league({
-        results: [{ matchday: 1, home: 'fc-united', away: 'fc-rivals', homeGoals: 3, awayGoals: 0 }],
+        results: [
+          {
+            matchday: 1,
+            home: 'fc-united',
+            away: 'fc-rivals',
+            homeGoals: 3,
+            awayGoals: 0,
+          },
+        ],
       });
 
       beforeEach(async () => {
@@ -173,7 +189,9 @@ describe('FileScreen', () => {
       });
 
       it('asks before replacing, and changes nothing yet', async () => {
-        expect(await screen.findByText(/Replace "Coastal Premier"\?/)).toBeInTheDocument();
+        expect(
+          await screen.findByText(/Replace "Coastal Premier"\?/)
+        ).toBeInTheDocument();
         expect(useLeagueStore.getState().leagues).toEqual([league()]);
       });
 
@@ -181,8 +199,12 @@ describe('FileScreen', () => {
         await userEvent.click(await screen.findByRole('button', { name: 'Replace' }));
 
         expect(useLeagueStore.getState().leagues).toEqual([played]);
-        expect(useFileStore.getState().paths['coastal-premier']).toBe('/saves/coastal.json');
-        expect(screen.queryByText(/Replace "Coastal Premier"\?/)).not.toBeInTheDocument();
+        expect(useFileStore.getState().paths['coastal-premier']).toBe(
+          '/saves/coastal.json'
+        );
+        expect(
+          screen.queryByText(/Replace "Coastal Premier"\?/)
+        ).not.toBeInTheDocument();
       });
 
       it('keeps the open league on Cancel', async () => {
@@ -190,7 +212,9 @@ describe('FileScreen', () => {
 
         expect(useLeagueStore.getState().leagues).toEqual([league()]);
         expect(useFileStore.getState().paths).toEqual({});
-        expect(screen.queryByText(/Replace "Coastal Premier"\?/)).not.toBeInTheDocument();
+        expect(
+          screen.queryByText(/Replace "Coastal Premier"\?/)
+        ).not.toBeInTheDocument();
       });
     });
 
@@ -270,9 +294,13 @@ describe('FileScreen', () => {
     });
 
     it('exports the current roster to CSV', async () => {
-      const exportSpy = vi.spyOn(csvIO, 'exportTeamsCsv').mockResolvedValue('/teams.csv');
+      const exportSpy = vi
+        .spyOn(csvIO, 'exportTeamsCsv')
+        .mockResolvedValue('/teams.csv');
       useTeamsStore.setState({
-        teams: [{ slug: 'ashfield-town', name: 'Ashfield Town', colour: '', tier: 'C' }],
+        teams: [
+          { slug: 'ashfield-town', name: 'Ashfield Town', colour: '', tier: 'C' },
+        ],
       });
       render(<FileScreen />);
 
@@ -295,11 +323,85 @@ describe('FileScreen', () => {
   });
 
   describe('Export results', () => {
-    it('is not available yet: a disabled button and a Coming soon note', () => {
+    it('disables the button, with a hint, when there are no leagues', () => {
       render(<FileScreen />);
 
-      expect(screen.getByRole('button', { name: 'Export results...' })).toBeDisabled();
-      expect(screen.getByText('Coming soon.')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Export TXT...' })).toBeDisabled();
+      expect(screen.getByText('No leagues to export yet.')).toBeInTheDocument();
+    });
+
+    it('exports the current league by default, with the team roster', async () => {
+      const exportSpy = vi
+        .spyOn(resultsTxtIO, 'exportResultsTxt')
+        .mockResolvedValue('/r.txt');
+      const current = league();
+      useLeagueStore.setState({
+        leagues: [league({ slug: 'inland-cup', name: 'Inland Cup' }), current],
+      });
+      useTeamsStore.setState({ teams });
+      useFileStore.setState({ currentLeagueSlug: 'coastal-premier' });
+      render(<FileScreen />);
+
+      await userEvent.click(screen.getByRole('button', { name: 'Export TXT...' }));
+
+      expect(exportSpy).toHaveBeenCalledWith(current, teams);
+      expect(
+        await screen.findByText('Exported Coastal Premier results to /r.txt')
+      ).toBeInTheDocument();
+    });
+
+    it('exports the league picked in the selector', async () => {
+      const exportSpy = vi
+        .spyOn(resultsTxtIO, 'exportResultsTxt')
+        .mockResolvedValue('/r.txt');
+      const other = league({ slug: 'inland-cup', name: 'Inland Cup' });
+      useLeagueStore.setState({ leagues: [other, league()] });
+      useTeamsStore.setState({ teams });
+      useFileStore.setState({ currentLeagueSlug: 'coastal-premier' });
+      render(<FileScreen />);
+
+      await userEvent.selectOptions(
+        screen.getByLabelText('League to export'),
+        'inland-cup'
+      );
+      await userEvent.click(screen.getByRole('button', { name: 'Export TXT...' }));
+
+      expect(exportSpy).toHaveBeenCalledWith(other, teams);
+    });
+
+    it('says so when the dialog is canceled', async () => {
+      vi.spyOn(resultsTxtIO, 'exportResultsTxt').mockResolvedValue(null);
+      useLeagueStore.setState({ leagues: [league()] });
+      render(<FileScreen />);
+
+      await userEvent.click(screen.getByRole('button', { name: 'Export TXT...' }));
+
+      expect(await screen.findByText('Export canceled.')).toBeInTheDocument();
+    });
+
+    it('shows the error when the export fails', async () => {
+      vi.spyOn(resultsTxtIO, 'exportResultsTxt').mockRejectedValue(
+        new Error('Disk is full.')
+      );
+      useLeagueStore.setState({ leagues: [league()] });
+      render(<FileScreen />);
+
+      await userEvent.click(screen.getByRole('button', { name: 'Export TXT...' }));
+
+      expect(await screen.findByText('Disk is full.')).toBeInTheDocument();
+      expect(useFileStore.getState().status?.tone).toBe('error');
+    });
+
+    it('leaves the saved path and the current league alone', async () => {
+      vi.spyOn(resultsTxtIO, 'exportResultsTxt').mockResolvedValue('/r.txt');
+      useLeagueStore.setState({ leagues: [league()] });
+      render(<FileScreen />);
+
+      await userEvent.click(screen.getByRole('button', { name: 'Export TXT...' }));
+      await screen.findByText('Exported Coastal Premier results to /r.txt');
+
+      expect(useFileStore.getState().paths).toEqual({});
+      expect(useFileStore.getState().currentLeagueSlug).toBeNull();
     });
   });
 });

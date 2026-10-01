@@ -1,5 +1,5 @@
 import type { JSX } from 'preact';
-import { useState } from 'preact/hooks';
+import { useLayoutEffect, useRef, useState } from 'preact/hooks';
 import { Badge, Button } from '@/design-system';
 import { useTeamsStore } from '@/app/state/teamsStore';
 import { useLeagueStore } from '@/app/state/leagueStore';
@@ -27,12 +27,26 @@ interface TeamDisplay {
   colour: string;
 }
 
+/** How long a freshly generated score shows in the accent colour. */
+const SCORE_FLASH_MS = 500;
+
+const fixtureKey = (match: { matchday: number; home: string; away: string }): string =>
+  `${match.matchday}-${match.home}-${match.away}`;
+
 /** Scorination (Task 15) plays an unplayed match, or a whole unplayed
  * matchday, via `useLeagueStore`'s `scorinateFixture`/`scorinateMatchday`.
  * A played match shows its real score, and its button turns into
  * Re-scorinate (Task 7 store action, Task 19 UI), which draws a new score
  * and overwrites the old one with no confirm — MVP1 §1: a round-robin
- * match feeds nothing downstream. */
+ * match feeds nothing downstream.
+ *
+ * A score flashes in the accent colour for `SCORE_FLASH_MS` whenever it is
+ * generated, the first time or on a re-scorinate. A generated score is a
+ * result object the previous render did not hold (`scorinateFixture` adds
+ * one, `rescorinateFixture` replaces one, and both leave every other result
+ * as the same object). So the flash does not depend on the new score
+ * differing from the old, does not play for results that exist when the view
+ * opens, and does not replay when the user changes matchday. */
 export function FixturesView({
   league,
   initialMatchday = 1,
@@ -43,6 +57,38 @@ export function FixturesView({
   const rescorinateFixture = useLeagueStore((state) => state.rescorinateFixture);
   const scorinateMatchday = useLeagueStore((state) => state.scorinateMatchday);
   const [matchday, setMatchday] = useState(initialMatchday);
+  const [flashing, setFlashing] = useState<ReadonlySet<string>>(new Set());
+  const seenResults = useRef(league.results);
+  const flashTimers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
+
+  useLayoutEffect(() => {
+    const previous = new Set(seenResults.current);
+    seenResults.current = league.results;
+    const generated = league.results.filter((result) => !previous.has(result));
+    if (generated.length === 0) return;
+
+    const keys = generated.map(fixtureKey);
+    setFlashing((current) => new Set([...current, ...keys]));
+    for (const key of keys) {
+      clearTimeout(flashTimers.current.get(key));
+      flashTimers.current.set(
+        key,
+        setTimeout(() => {
+          flashTimers.current.delete(key);
+          setFlashing((current) => {
+            const next = new Set(current);
+            next.delete(key);
+            return next;
+          });
+        }, SCORE_FLASH_MS)
+      );
+    }
+  }, [league.results]);
+
+  useLayoutEffect(() => {
+    const timers = flashTimers.current;
+    return (): void => timers.forEach(clearTimeout);
+  }, []);
 
   const goToMatchday = (next: number): void => {
     setMatchday(next);
@@ -151,7 +197,10 @@ export function FixturesView({
                 {home.name}
                 <span class={styles.swatch} style={{ background: home.colour }} />
               </div>
-              <span class={styles.score}>
+              <span
+                class={styles.score}
+                data-flashing={flashing.has(fixtureKey(fixture)) ? '' : undefined}
+              >
                 {result ? `${result.homeGoals} - ${result.awayGoals}` : 'vs'}
               </span>
               <div class={styles.away}>

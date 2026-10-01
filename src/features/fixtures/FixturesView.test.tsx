@@ -1,5 +1,5 @@
 import type { JSX } from 'preact';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { generateRoundRobin } from '@/engine/fixtures';
@@ -234,6 +234,107 @@ describe('FixturesView', () => {
     expect(screen.queryByRole('button', { name: 'Scorinate' })).not.toBeInTheDocument();
     expect(screen.queryByText('vs')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Scorinate matchday' })).toBeDisabled();
+  });
+
+  describe('score flash', () => {
+    const twoTeams = (results: LeagueRecord['results'] = []): void => {
+      const { fixtures, byes } = generateRoundRobin(['fc-united', 'fc-rivals']);
+      useLeagueStore.setState({
+        leagues: [
+          league({
+            teams: [
+              { slug: 'fc-united', ovr: 70 },
+              { slug: 'fc-rivals', ovr: 65 },
+            ],
+            fixtures,
+            byes,
+            results: results.map((result, i) => ({ ...fixtures[i], ...result })),
+          }),
+        ],
+      });
+    };
+    const user = (): ReturnType<typeof userEvent.setup> =>
+      userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('turns a new score green for 500ms, then back', async () => {
+      twoTeams();
+      render(<FixturesViewFromStore slug="coastal-premier" />);
+
+      await user().click(screen.getByRole('button', { name: 'Scorinate' }));
+
+      const score = screen.getByText(/^\d+ - \d+$/);
+      expect(score).toHaveAttribute('data-flashing');
+      act(() => {
+        vi.advanceTimersByTime(499);
+      });
+      expect(score).toHaveAttribute('data-flashing');
+      act(() => {
+        vi.advanceTimersByTime(1);
+      });
+      expect(score).not.toHaveAttribute('data-flashing');
+    });
+
+    it('turns a re-scorinated score green too', async () => {
+      twoTeams([{ homeGoals: 99, awayGoals: 99 } as LeagueRecord['results'][number]]);
+      render(<FixturesViewFromStore slug="coastal-premier" />);
+      expect(screen.getByText('99 - 99')).not.toHaveAttribute('data-flashing');
+
+      await user().click(screen.getByRole('button', { name: 'Re-scorinate' }));
+
+      expect(screen.getByText(/^\d+ - \d+$/)).toHaveAttribute('data-flashing');
+      act(() => {
+        vi.advanceTimersByTime(500);
+      });
+      expect(screen.getByText(/^\d+ - \d+$/)).not.toHaveAttribute('data-flashing');
+    });
+
+    it('flashes every score that Scorinate matchday generates', async () => {
+      const { fixtures, byes } = generateRoundRobin([
+        'fc-united',
+        'fc-rivals',
+        'fc-town',
+        'fc-rangers',
+      ]);
+      useLeagueStore.setState({
+        leagues: [
+          league({
+            teams: [
+              { slug: 'fc-united', ovr: 70 },
+              { slug: 'fc-rivals', ovr: 65 },
+              { slug: 'fc-town', ovr: 60 },
+              { slug: 'fc-rangers', ovr: 55 },
+            ],
+            fixtures,
+            byes,
+          }),
+        ],
+      });
+      render(<FixturesViewFromStore slug="coastal-premier" />);
+
+      await user().click(screen.getByRole('button', { name: 'Scorinate matchday' }));
+
+      const scores = screen.getAllByText(/^\d+ - \d+$/);
+      expect(scores).toHaveLength(2);
+      scores.forEach((score) => expect(score).toHaveAttribute('data-flashing'));
+    });
+
+    it('does not flash scores that already exist when the view opens or the matchday changes', async () => {
+      twoTeams([{ homeGoals: 2, awayGoals: 1 } as LeagueRecord['results'][number]]);
+      render(<FixturesViewFromStore slug="coastal-premier" />);
+      expect(screen.getByText('2 - 1')).not.toHaveAttribute('data-flashing');
+
+      await user().click(screen.getByRole('button', { name: /Next matchday/ }));
+      await user().click(screen.getByRole('button', { name: /Previous matchday/ }));
+
+      expect(screen.getByText('2 - 1')).not.toHaveAttribute('data-flashing');
+    });
   });
 
   describe('matchday jump buttons', () => {

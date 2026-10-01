@@ -86,6 +86,11 @@
   color: var(--color-fg-muted);
 }
 
+/* Set by `FixturesView` for `SCORE_FLASH_MS` after a score is generated. */
+.score[data-flashing] {
+  color: var(--color-accent);
+}
+
 .action {
   display: flex;
   justify-content: flex-end;

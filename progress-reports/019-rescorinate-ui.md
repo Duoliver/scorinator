@@ -9,6 +9,8 @@ The button now reads `Re-scorinate`, uses the `secondary` variant, and calls `re
 An unplayed match still shows the `primary` `Scorinate` button.
 Both states use one `Button`, so the element stays in place and keyboard focus survives a click.
 The action column in `FixturesView.module.css` grew from `8rem` to `9rem`.
+A score also flashes in the accent colour (`--color-accent`, the main green) for 500ms when it is generated, the first time or on a re-scorinate. This was a small addition the user asked for after the review started.
+`FixturesView` detects a generated score by its result object: a new object that the previous render did not hold. The flash therefore plays even when a re-scorinate draws the same score, and does not play for existing results on open or on a matchday change. A `data-flashing` attribute on the score drives the CSS, and a timer per fixture clears it.
 The Standings tab needed no change: `StandingsView` recomputes from `league.results` on every render.
 
 ## Test approach
@@ -16,8 +18,9 @@ The Standings tab needed no change: `StandingsView` recomputes from `league.resu
 - `FixturesView.test.tsx`: the old "removes its button" case now checks that `Scorinate` becomes `Re-scorinate`.
 - New case: a store result of 99-99 (far outside what the engine draws) turns into a different score on click. Exactly one score stays for the match, and the store holds one result. The result is not random.
 - `LeagueDetailScreen.test.tsx`: new integration case. After a re-scorinate in Fixtures, the Standings tab no longer shows the 99 goals, and each team shows `played: 1`.
-- `type-check`, `lint`, and the full suite (456 tests) stay clean.
-- Not verified: the layout in a real browser. This sandbox has no display.
+- 4 new cases for the flash, with fake timers: green at 499ms and back at 500ms after a first score, the same after a re-scorinate, every score from `Scorinate matchday`, and no flash for existing scores on open or on a matchday change.
+- `type-check`, `lint`, and the full suite stay clean.
+- Not verified: the layout and the look of the flash in a real browser. This sandbox has no display.
 
 ## Decisions made
 

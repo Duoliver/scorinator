@@ -90,7 +90,7 @@ A short record of resolved judgment calls. This stops a later session from silen
 
 **START BELOW, LAST ON TOP:**
 
-- **2026-10-01 (Task 19 — Re-scorinate UI):** See [`progress-reports/019-rescorinate-ui.md`](/progress-reports/019-rescorinate-ui.md). Confirmed with the user before the build: no confirm dialog, the `secondary` variant for the button as in the prototype, and no dirty flag, which stays with Task 26. The change is in `FixturesView`, not `features/scorination`. The Standings tab needed no change. `type-check`, `lint`, and the full suite (456 tests) stay clean.
+- **2026-10-01 (Task 19 — Re-scorinate UI):** See [`progress-reports/019-rescorinate-ui.md`](/progress-reports/019-rescorinate-ui.md). Confirmed with the user before the build: no confirm dialog, the `secondary` variant for the button as in the prototype, and no dirty flag, which stays with Task 26. The change is in `FixturesView`, not `features/scorination`. The Standings tab needed no change. Later, the user asked for a small touch: a generated score flashes in `--color-accent` for 500ms, on a first score and on a re-scorinate. `type-check`, `lint`, and the full suite (460 tests) stay clean.
 
 - **2026-10-01 (Task 7 — Re-scorinate):** See [`progress-reports/007-rescorinate.md`](/progress-reports/007-rescorinate.md). Confirmed with the user before the build: (1) the work lives in `app/state/leagueStore` and not in `engine/scorination`, since the engine has no new logic to add and the overwrite is state, (2) `rescorinateFixture` does nothing for a fixture with no result, (3) one fixture only, with no re-scorinate-matchday action. New `rescorinateFixture` replaces the result in place. `type-check`, `lint`, and the full suite (454 tests) stay clean.
 

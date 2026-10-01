@@ -86,7 +86,9 @@ describe('FixturesView', () => {
 
     const totalMatchdays = Math.max(...fixtures.map((f) => f.matchday));
     expect(screen.getByText(`Matchday 2 / ${totalMatchdays}`)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Previous matchday/ })).not.toBeDisabled();
+    expect(
+      screen.getByRole('button', { name: /Previous matchday/ })
+    ).not.toBeDisabled();
   });
 
   it('opens on initialMatchday, and reports each matchday change through onMatchdayChange', async () => {
@@ -119,7 +121,9 @@ describe('FixturesView', () => {
       await userEvent.click(screen.getByRole('button', { name: /Next matchday/ }));
     }
 
-    expect(screen.getByText(`Matchday ${totalMatchdays} / ${totalMatchdays}`)).toBeInTheDocument();
+    expect(
+      screen.getByText(`Matchday ${totalMatchdays} / ${totalMatchdays}`)
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Next matchday/ })).toBeDisabled();
   });
 
@@ -145,7 +149,7 @@ describe('FixturesView', () => {
     expect(screen.getByText('ghost-fc')).toBeInTheDocument();
   });
 
-  it('turns a match’s "vs" into a real score on Scorinate, and removes its button', async () => {
+  it('turns a match’s "vs" into a real score on Scorinate, and swaps its button for Re-scorinate', async () => {
     const { fixtures, byes } = generateRoundRobin(['fc-united', 'fc-rivals']);
     useLeagueStore.setState({
       leagues: [
@@ -167,8 +171,35 @@ describe('FixturesView', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Scorinate' }));
 
     expect(screen.queryByRole('button', { name: 'Scorinate' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Re-scorinate' })).toBeInTheDocument();
     expect(screen.queryByText('vs')).not.toBeInTheDocument();
     expect(screen.getByText(/^\d+ - \d+$/)).toBeInTheDocument();
+  });
+
+  it('replaces a played score on Re-scorinate, and keeps exactly one score for the match', async () => {
+    const { fixtures, byes } = generateRoundRobin(['fc-united', 'fc-rivals']);
+    useLeagueStore.setState({
+      leagues: [
+        league({
+          teams: [
+            { slug: 'fc-united', ovr: 70 },
+            { slug: 'fc-rivals', ovr: 65 },
+          ],
+          fixtures,
+          byes,
+          // 99-99 is far outside what the engine can draw, so a changed score proves the overwrite.
+          results: [{ ...fixtures[0], homeGoals: 99, awayGoals: 99 }],
+        }),
+      ],
+    });
+    render(<FixturesViewFromStore slug="coastal-premier" />);
+    expect(screen.getByText('99 - 99')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Re-scorinate' }));
+
+    expect(screen.queryByText('99 - 99')).not.toBeInTheDocument();
+    expect(screen.getAllByText(/^\d+ - \d+$/)).toHaveLength(1);
+    expect(useLeagueStore.getState().leagues[0].results).toHaveLength(1);
   });
 
   it('scorinates every remaining match on Scorinate matchday, then disables that button', async () => {
@@ -194,7 +225,9 @@ describe('FixturesView', () => {
     });
     render(<FixturesViewFromStore slug="coastal-premier" />);
 
-    expect(screen.getByRole('button', { name: 'Scorinate matchday' })).not.toBeDisabled();
+    expect(
+      screen.getByRole('button', { name: 'Scorinate matchday' })
+    ).not.toBeDisabled();
 
     await userEvent.click(screen.getByRole('button', { name: 'Scorinate matchday' }));
 
@@ -224,13 +257,17 @@ describe('FixturesView', () => {
     it('goes to the last and back to the first matchday, and reports both changes', async () => {
       const changes: number[] = [];
       const found = useLeagueStore.getState().leagues[0]!;
-      render(<FixturesView league={found} onMatchdayChange={(next) => changes.push(next)} />);
+      render(
+        <FixturesView league={found} onMatchdayChange={(next) => changes.push(next)} />
+      );
 
       expect(screen.getByRole('button', { name: 'First matchday' })).toBeDisabled();
       expect(screen.getByRole('button', { name: 'Last matchday' })).not.toBeDisabled();
 
       await userEvent.click(screen.getByRole('button', { name: 'Last matchday' }));
-      expect(screen.getByText(`Matchday ${lastMatchday} / ${lastMatchday}`)).toBeInTheDocument();
+      expect(
+        screen.getByText(`Matchday ${lastMatchday} / ${lastMatchday}`)
+      ).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Last matchday' })).toBeDisabled();
 
       await userEvent.click(screen.getByRole('button', { name: 'First matchday' }));
@@ -246,7 +283,9 @@ describe('FixturesView', () => {
 
       await userEvent.click(screen.getByRole('button', { name: 'Scorinate matchday' }));
       await userEvent.click(screen.getByRole('button', { name: 'Last matchday' }));
-      expect(screen.getByRole('button', { name: 'Current matchday' })).not.toBeDisabled();
+      expect(
+        screen.getByRole('button', { name: 'Current matchday' })
+      ).not.toBeDisabled();
 
       await userEvent.click(screen.getByRole('button', { name: 'Current matchday' }));
       expect(screen.getByText(`Matchday 2 / ${lastMatchday}`)).toBeInTheDocument();
@@ -266,7 +305,9 @@ describe('FixturesView', () => {
         }
       });
 
-      expect(screen.queryByRole('button', { name: 'Current matchday' })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: 'Current matchday' })
+      ).not.toBeInTheDocument();
       expect(screen.getByText('League completed')).toBeInTheDocument();
       // The first and last buttons stay available on a completed league.
       expect(screen.getByRole('button', { name: 'Last matchday' })).not.toBeDisabled();

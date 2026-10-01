@@ -3,7 +3,11 @@ import { useState } from 'preact/hooks';
 import { Badge, Button } from '@/design-system';
 import { useTeamsStore } from '@/app/state/teamsStore';
 import { useLeagueStore } from '@/app/state/leagueStore';
-import { findCurrentMatchday, findResult, isMatchdayFullyPlayed } from '@/features/scorination';
+import {
+  findCurrentMatchday,
+  findResult,
+  isMatchdayFullyPlayed,
+} from '@/features/scorination';
 import type { LeagueRecord } from '@/features/leagues/types';
 import styles from './FixturesView.module.css';
 
@@ -25,9 +29,10 @@ interface TeamDisplay {
 
 /** Scorination (Task 15) plays an unplayed match, or a whole unplayed
  * matchday, via `useLeagueStore`'s `scorinateFixture`/`scorinateMatchday`.
- * A played match shows its real score, with no button — re-scorinate is
- * Task 7 (engine) plus Task 19 (UI), confirmed out of scope here, see the
- * Task 15 decisions log entry. */
+ * A played match shows its real score, and its button turns into
+ * Re-scorinate (Task 7 store action, Task 19 UI), which draws a new score
+ * and overwrites the old one with no confirm — MVP1 §1: a round-robin
+ * match feeds nothing downstream. */
 export function FixturesView({
   league,
   initialMatchday = 1,
@@ -35,6 +40,7 @@ export function FixturesView({
 }: FixturesViewProps): JSX.Element {
   const teams = useTeamsStore((state) => state.teams);
   const scorinateFixture = useLeagueStore((state) => state.scorinateFixture);
+  const rescorinateFixture = useLeagueStore((state) => state.rescorinateFixture);
   const scorinateMatchday = useLeagueStore((state) => state.scorinateMatchday);
   const [matchday, setMatchday] = useState(initialMatchday);
 
@@ -153,15 +159,17 @@ export function FixturesView({
                 {away.name}
               </div>
               <div class={styles.action}>
-                {!result && (
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={() => scorinateFixture(league.slug, fixture)}
-                  >
-                    Scorinate
-                  </Button>
-                )}
+                <Button
+                  variant={result ? 'secondary' : 'primary'}
+                  size="sm"
+                  onClick={() =>
+                    result
+                      ? rescorinateFixture(league.slug, fixture)
+                      : scorinateFixture(league.slug, fixture)
+                  }
+                >
+                  {result ? 'Re-scorinate' : 'Scorinate'}
+                </Button>
               </div>
             </div>
           );

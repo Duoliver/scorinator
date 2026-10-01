@@ -89,6 +89,27 @@ describe('LeagueDetailScreen', () => {
     expect(screen.queryByText('No matches played yet.')).not.toBeInTheDocument();
   });
 
+  it('updates Standings after a re-scorinate in Fixtures', async () => {
+    useLeagueStore.setState({
+      leagues: [
+        league({ results: [{ ...fixtures[0], homeGoals: 99, awayGoals: 99 }] }),
+      ],
+    });
+    render(<LeagueDetailScreen slug="coastal-premier" />);
+    expect(screen.getAllByText('99')).not.toHaveLength(0);
+
+    await userEvent.click(screen.getByRole('tab', { name: 'Fixtures' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Re-scorinate' }));
+    await userEvent.click(screen.getByRole('tab', { name: 'Standings' }));
+
+    expect(screen.queryByText('99')).not.toBeInTheDocument();
+    const played = screen
+      .getAllByRole('row')
+      .slice(1)
+      .map((row) => row.children[2]?.textContent);
+    expect(played).toEqual(['1', '1']);
+  });
+
   it('switches to the Fixtures tab on click, showing the generated schedule', async () => {
     render(<LeagueDetailScreen slug="coastal-premier" />);
     await userEvent.click(screen.getByRole('tab', { name: 'Fixtures' }));

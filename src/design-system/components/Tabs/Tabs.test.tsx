@@ -1,6 +1,6 @@
 import { createRef } from 'preact';
 import { act } from 'preact/test-utils';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { Tabs } from './Tabs';
@@ -114,5 +114,46 @@ describe('Tabs', () => {
   it('does not stretch the tablist by default', () => {
     render(<Tabs tabs={tabs} defaultTab="standings" />);
     expect(screen.getByRole('tablist').className).not.toMatch(/tabsFullWidth/);
+  });
+  describe('scrollToTopOnChange', () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it('scrolls the window to the top when a tab is clicked', async () => {
+      const scrollTo = vi.spyOn(window, 'scrollTo');
+      render(<Tabs tabs={tabs} defaultTab="standings" scrollToTopOnChange />);
+      await userEvent.click(screen.getByRole('tab', { name: 'Fixtures' }));
+      expect(scrollTo).toHaveBeenCalledTimes(1);
+      expect(scrollTo).toHaveBeenCalledWith({ top: 0 });
+    });
+
+    it('scrolls the window to the top on ref.setValue', () => {
+      const scrollTo = vi.spyOn(window, 'scrollTo');
+      const ref = createRef<FieldHandle<string>>();
+      render(<Tabs tabs={tabs} defaultTab="standings" scrollToTopOnChange ref={ref} />);
+      act(() => ref.current?.setValue('fixtures'));
+      expect(scrollTo).toHaveBeenCalledWith({ top: 0 });
+    });
+
+    it('does not scroll on mount', () => {
+      const scrollTo = vi.spyOn(window, 'scrollTo');
+      render(<Tabs tabs={tabs} defaultTab="standings" scrollToTopOnChange />);
+      expect(scrollTo).not.toHaveBeenCalled();
+    });
+
+    it('does not scroll when the active tab is clicked again', async () => {
+      const scrollTo = vi.spyOn(window, 'scrollTo');
+      render(<Tabs tabs={tabs} defaultTab="standings" scrollToTopOnChange />);
+      await userEvent.click(screen.getByRole('tab', { name: 'Standings' }));
+      expect(scrollTo).not.toHaveBeenCalled();
+    });
+
+    it('does not scroll without the prop', async () => {
+      const scrollTo = vi.spyOn(window, 'scrollTo');
+      render(<Tabs tabs={tabs} defaultTab="standings" />);
+      await userEvent.click(screen.getByRole('tab', { name: 'Fixtures' }));
+      expect(scrollTo).not.toHaveBeenCalled();
+    });
   });
 });

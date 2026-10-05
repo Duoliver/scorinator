@@ -108,6 +108,14 @@ describe('LeagueSetupScreen', () => {
     expect(useLeagueDraftStore.getState().selectedSlugs).toEqual([]);
   });
 
+  it('scrolls the window to the top when Next changes the step', async () => {
+    const scrollTo = vi.spyOn(window, 'scrollTo');
+    render(<LeagueSetupScreen />);
+    await userEvent.click(screen.getByText('Next: Teams →'));
+    expect(scrollTo).toHaveBeenCalledWith({ top: 0 });
+    scrollTo.mockRestore();
+  });
+
   it('jumps directly to a step when its stepper button is clicked', async () => {
     render(<LeagueSetupScreen />);
     await userEvent.click(screen.getByText('2 · Teams'));

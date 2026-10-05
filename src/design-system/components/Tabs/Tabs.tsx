@@ -1,5 +1,11 @@
 import { forwardRef } from 'preact/compat';
-import { useCallback, useImperativeHandle, useRef, useState } from 'preact/hooks';
+import {
+  useCallback,
+  useImperativeHandle,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'preact/hooks';
 import type TabsProps from './types';
 import type { TabItem } from './types';
 import type { FieldHandle } from '@/design-system/field';
@@ -12,7 +18,7 @@ export type { TabsProps, TabItem };
  * what lets a caller outside `Tabs` switch tabs (`tabsRef.current?.setValue(id)`)
  * without lifting the active-tab state up into its own parent. */
 export const Tabs = forwardRef<FieldHandle<string>, TabsProps>(
-  ({ tabs, defaultTab, onChange, fullWidth }, ref) => {
+  ({ tabs, defaultTab, onChange, fullWidth, scrollToTopOnChange }, ref) => {
     const [activeId, setActiveId] = useState(defaultTab);
     const activeIdRef = useRef(activeId);
     const listenersRef = useRef(new Set<(value: string) => void>());
@@ -40,6 +46,16 @@ export const Tabs = forwardRef<FieldHandle<string>, TabsProps>(
       }),
       [commitValue]
     );
+
+    // Starts at `defaultTab`, so the mount itself never counts as a change.
+    // A layout effect, so the scroll happens before the paint, and the new
+    // tab never shows for one frame at the old scroll position.
+    const scrolledForIdRef = useRef(activeId);
+    useLayoutEffect(() => {
+      if (scrolledForIdRef.current === activeId) return;
+      scrolledForIdRef.current = activeId;
+      if (scrollToTopOnChange) window.scrollTo({ top: 0 });
+    }, [activeId, scrollToTopOnChange]);
 
     const activeTab = tabs.find((tab) => tab.id === activeId);
 

@@ -194,6 +194,7 @@ export function LeagueSetupScreen(): JSX.Element {
         onChange={(id) => goToStep(id as LeagueSetupStep)}
         ref={stepsRef}
         fullWidth
+        scrollToTopOnChange
       />
 
       {status && <span class={styles.status}>{status}</span>}

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { generateRoundRobin } from './index';
+import { createSeededRng } from '@/engine/rng';
 import type { Bye, Fixture } from './types';
 
 function teamsOf(n: number): string[] {
@@ -84,10 +85,67 @@ describe('generateRoundRobin', () => {
     expect(() => generateRoundRobin(['OnlyTeam'])).toThrow(RangeError);
   });
 
-  it('is deterministic: the same team list and order gives the same schedule', () => {
+  it('is deterministic without an Rng: the same team list and order gives the same schedule', () => {
     const teams = teamsOf(5);
     const first = generateRoundRobin(teams);
     const second = generateRoundRobin(teams);
     expect(second).toEqual(first);
+  });
+  describe('with an injected Rng: shuffled match order inside each matchday', () => {
+    const sortFixtures = (fixtures: Fixture<string>[]): Fixture<string>[] =>
+      [...fixtures].sort(
+        (x, y) =>
+          x.matchday - y.matchday ||
+          x.home.localeCompare(y.home) ||
+          x.away.localeCompare(y.away)
+      );
+
+    it('keeps the same fixtures, home and away sides, and byes as without an Rng', () => {
+      for (const n of [4, 5, 8]) {
+        const plain = generateRoundRobin(teamsOf(n));
+        const shuffled = generateRoundRobin(teamsOf(n), createSeededRng(42));
+        expect(sortFixtures(shuffled.fixtures)).toEqual(sortFixtures(plain.fixtures));
+        expect(shuffled.byes).toEqual(plain.byes);
+      }
+    });
+
+    it('keeps the fixtures in matchday order', () => {
+      const { fixtures } = generateRoundRobin(teamsOf(8), createSeededRng(7));
+      const matchdays = fixtures.map((fixture) => fixture.matchday);
+      expect(matchdays).toEqual([...matchdays].sort((x, y) => x - y));
+    });
+
+    it('is deterministic for the same seed', () => {
+      const first = generateRoundRobin(teamsOf(8), createSeededRng(123));
+      const second = generateRoundRobin(teamsOf(8), createSeededRng(123));
+      expect(second).toEqual(first);
+    });
+
+    it('does not keep the first roster team in the first match of every matchday', () => {
+      // Without an Rng, the circle method keeps T1 in the first match of
+      // every matchday. With 8 teams (4 matches a matchday), a fair shuffle
+      // puts T1 first in about 1 matchday of 4. 200 seeds x 14 matchdays.
+      let firstMatchdays = 0;
+      let total = 0;
+      for (let seed = 1; seed <= 200; seed++) {
+        const { fixtures } = generateRoundRobin(teamsOf(8), createSeededRng(seed));
+        for (let matchday = 1; matchday <= 14; matchday++) {
+          const first = fixtures.find((fixture) => fixture.matchday === matchday);
+          total++;
+          if (first?.home === 'T1' || first?.away === 'T1') firstMatchdays++;
+        }
+      }
+      const share = firstMatchdays / total;
+      expect(share).toBeGreaterThan(0.2);
+      expect(share).toBeLessThan(0.3);
+    });
+  });
+
+  it('without an Rng, keeps the circle method order: the first roster team plays first', () => {
+    const { fixtures } = generateRoundRobin(teamsOf(8));
+    for (let matchday = 1; matchday <= 14; matchday++) {
+      const first = fixtures.find((fixture) => fixture.matchday === matchday);
+      expect([first?.home, first?.away]).toContain('T1');
+    }
   });
 });

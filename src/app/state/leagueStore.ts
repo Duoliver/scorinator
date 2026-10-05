@@ -91,7 +91,8 @@ function playFixture(
  * stops a user from creating a league with 0 or 1 team today, so this
  * guards the call instead of letting league creation crash — a league
  * with too few teams simply gets an empty schedule. See the Task 14
- * decisions log entry.
+ * decisions log entry. It passes the same seeded `rng` as the OVR roll, so
+ * the match order inside each matchday is shuffled (Task 30).
  *
  * `addLeague` also makes the new league the one Ctrl+S saves (Task 17,
  * `fileStore`). `loadLeague` (Task 17) puts a league read from a save file
@@ -119,7 +120,7 @@ export const useLeagueStore = create<LeagueState>()((set, get) => ({
     }));
     const slugs = teams.map((team) => team.slug);
     const { fixtures, byes } =
-      slugs.length >= 2 ? generateRoundRobin(slugs) : { fixtures: [], byes: [] };
+      slugs.length >= 2 ? generateRoundRobin(slugs, rng) : { fixtures: [], byes: [] };
     const league: LeagueRecord = {
       slug: slug(input.name),
       name: input.name,

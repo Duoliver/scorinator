@@ -137,6 +137,21 @@ describe('LeagueSetupScreen', () => {
     expect(screen.getByRole('tab', { name: '1 · Details' })).toHaveFocus();
   });
 
+  it('shows the name and settings from the Details step at the top of the Teams step', async () => {
+    render(<LeagueSetupScreen />);
+    await userEvent.type(screen.getByLabelText('League name'), 'Coastal Premier');
+    await userEvent.click(screen.getByLabelText('Home advantage'));
+    await userEvent.click(screen.getByText('Next: Teams →'));
+
+    expect(screen.getByText('Coastal Premier')).toBeInTheDocument();
+    expect(screen.getByText('Home adv. on')).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        `${DEFAULT_POINTS_CONFIG.win}/${DEFAULT_POINTS_CONFIG.draw}/${DEFAULT_POINTS_CONFIG.loss} pts`
+      )
+    ).toBeInTheDocument();
+  });
+
   it('jumps directly to a step when its stepper button is clicked', async () => {
     render(<LeagueSetupScreen />);
     await userEvent.click(screen.getByText('2 · Teams'));

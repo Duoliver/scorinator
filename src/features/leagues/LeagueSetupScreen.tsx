@@ -162,6 +162,9 @@ export function LeagueSetupScreen(): JSX.Element {
       label: '2 · Teams',
       content: (
         <TeamsStep
+          name={details.name}
+          homeAdvantage={details.homeAdvantage}
+          points={details.points}
           selectedSlugs={selectedSlugs}
           onToggleTeam={toggleTeam}
           onSelectAll={selectAllTeams}

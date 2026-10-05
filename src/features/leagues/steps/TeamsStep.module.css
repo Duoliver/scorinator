@@ -4,6 +4,19 @@
   gap: 1.375rem;
 }
 
+.summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  color: var(--color-fg-muted);
+}
+
+.leagueName {
+  margin: 0;
+  font-size: var(--font-size-md);
+}
+
 .toolbar {
   display: flex;
   gap: var(--space-3);

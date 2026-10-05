@@ -2,6 +2,7 @@ import type { JSX } from 'preact';
 import { Button, Card } from '@/design-system';
 import type { PointsConfig } from '@/engine/standings';
 import type { TeamRecord } from '@/features/components';
+import { SetupChips, settingsChipLabels } from './SetupChips';
 import styles from './ReviewStep.module.css';
 
 interface ReviewStepProps {
@@ -26,14 +27,13 @@ export function ReviewStep({
       <div class={styles.step}>
         <h3>{name || 'Untitled league'}</h3>
 
-        <div class={styles.chips}>
-          <span class={styles.chip}>Round robin (two-way)</span>
-          <span class={styles.chip}>Home adv. {homeAdvantage ? 'on' : 'off'}</span>
-          <span class={styles.chip}>
-            {points.win}/{points.draw}/{points.loss} pts
-          </span>
-          <span class={styles.chip}>{selectedTeams.length} teams</span>
-        </div>
+        <SetupChips
+          labels={[
+            'Round robin (two-way)',
+            ...settingsChipLabels(homeAdvantage, points),
+            `${selectedTeams.length} teams`,
+          ]}
+        />
 
         <ul class={styles.teamList}>
           {selectedTeams.map((team) => (

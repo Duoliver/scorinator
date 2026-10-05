@@ -56,3 +56,7 @@ This module follows the general `types.ts`-per-component convention: a props int
 The values are placeholders, and a later design pass can change them. Their tests check rules only (16 entries, valid hex, unique names and values, the default is in the palette), so a palette change needs no test change.
 
 A team stores its hex value, not a palette entry. After a palette change, an old team keeps its old colour, and `SwatchPicker` shows no swatch as selected for it. The match against the palette ignores case.
+
+## The body has no margin
+
+`tokens/elements.css` sets `margin: 0` and the `--color-bg` background on `body`. The browser default is an 8px margin on a white body. The app's background started inside that margin, so a white strip showed around the content area, and the page was 16px taller than the window (2026-10-05). The fixed sidebar ignored the margin, so only the content area showed the strip.

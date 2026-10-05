@@ -116,6 +116,27 @@ describe('LeagueSetupScreen', () => {
     scrollTo.mockRestore();
   });
 
+  it('moves focus to the new step tab after Next', async () => {
+    render(<LeagueSetupScreen />);
+    await userEvent.click(screen.getByText('Next: Teams →'));
+    expect(screen.getByRole('tab', { name: '2 · Teams' })).toHaveFocus();
+    // Next on the Teams step stays disabled until a team is selected.
+    await userEvent.click(screen.getByLabelText('FC United'));
+    await userEvent.click(screen.getByText('Next: Review →'));
+    expect(screen.getByRole('tab', { name: '3 · Review' })).toHaveFocus();
+  });
+
+  it('moves focus to the new step tab after Back', async () => {
+    render(<LeagueSetupScreen />);
+    await userEvent.click(screen.getByText('Next: Teams →'));
+    await userEvent.click(screen.getByLabelText('FC United'));
+    await userEvent.click(screen.getByText('Next: Review →'));
+    await userEvent.click(screen.getByRole('button', { name: 'Back' }));
+    expect(screen.getByRole('tab', { name: '2 · Teams' })).toHaveFocus();
+    await userEvent.click(screen.getByRole('button', { name: 'Back' }));
+    expect(screen.getByRole('tab', { name: '1 · Details' })).toHaveFocus();
+  });
+
   it('jumps directly to a step when its stepper button is clicked', async () => {
     render(<LeagueSetupScreen />);
     await userEvent.click(screen.getByText('2 · Teams'));

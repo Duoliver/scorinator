@@ -83,9 +83,13 @@ export function LeagueSetupScreen(): JSX.Element {
     return next;
   };
 
+  // Back and Next live inside the step, so the step change removes the
+  // button that has focus. Focus moves to the new step tab, which stays on
+  // the page. On a tab click, that tab already has focus.
   const goToStep = (next: LeagueSetupStep): void => {
     syncDetailsFromRef();
     stepsRef.current?.setValue(next);
+    stepsRef.current?.focus();
     setStep(next);
   };
 

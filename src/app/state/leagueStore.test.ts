@@ -79,6 +79,21 @@ describe('useLeagueStore', () => {
     ).toThrow(RangeError);
   });
 
+  it('addLeague throws for a slug another league already uses, and adds nothing', () => {
+    const input = {
+      name: 'Coastal Premier',
+      homeAdvantage: false,
+      points: { win: 3, draw: 1, loss: 0 },
+      teams: [],
+    };
+    useLeagueStore.getState().addLeague(input);
+
+    expect(() =>
+      useLeagueStore.getState().addLeague({ ...input, name: 'coastal premier!' })
+    ).toThrow(RangeError);
+    expect(useLeagueStore.getState().leagues).toHaveLength(1);
+  });
+
   it('rolls an OVR for every selected team, inside that team Tier range', () => {
     const league = useLeagueStore.getState().addLeague({
       name: 'Coastal Premier',

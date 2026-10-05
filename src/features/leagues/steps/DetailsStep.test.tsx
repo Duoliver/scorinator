@@ -106,6 +106,28 @@ describe('DetailsStep', () => {
       expect(screen.queryByText(hint)).not.toBeInTheDocument();
     });
 
+    it('disables Next and says why when another league uses the name', async () => {
+      render(
+        <DetailsStep
+          initial={baseDetails}
+          takenSlugs={['coastal-premier']}
+          onNext={vi.fn()}
+        />
+      );
+      await userEvent.type(screen.getByLabelText('League name'), 'Coastal Premier');
+
+      expect(screen.getByText('Next: Teams →')).toBeDisabled();
+      expect(
+        screen.getByText('A league with this name already exists.')
+      ).toBeInTheDocument();
+
+      await userEvent.type(screen.getByLabelText('League name'), ' II');
+      expect(screen.getByText('Next: Teams →')).toBeEnabled();
+      expect(
+        screen.queryByText('A league with this name already exists.')
+      ).not.toBeInTheDocument();
+    });
+
     it('enables Next on mount when the draft already has a valid name', () => {
       render(
         <DetailsStep

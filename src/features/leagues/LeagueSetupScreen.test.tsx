@@ -157,6 +157,42 @@ describe('LeagueSetupScreen', () => {
     ).toBeInTheDocument();
   });
 
+  describe('a second league with the same slug (Task 40)', () => {
+    beforeEach(() => {
+      useLeagueStore.getState().addLeague({
+        name: 'Coastal Premier',
+        homeAdvantage: false,
+        points: DEFAULT_POINTS_CONFIG,
+        teams: [],
+      });
+    });
+
+    it('blocks Next on page 1 and says why', async () => {
+      render(<LeagueSetupScreen />);
+      await userEvent.type(screen.getByLabelText('League name'), 'coastal premier!');
+
+      expect(screen.getByText('Next: Teams →')).toBeDisabled();
+      expect(
+        screen.getByText('A league with this name already exists.')
+      ).toBeInTheDocument();
+    });
+
+    it('creates nothing when the step tabs reach Create', async () => {
+      render(<LeagueSetupScreen />);
+      await userEvent.type(screen.getByLabelText('League name'), 'Coastal Premier');
+      await userEvent.click(screen.getByRole('tab', { name: '2 · Teams' }));
+      await userEvent.click(screen.getByLabelText('FC United'));
+      await userEvent.click(screen.getByRole('tab', { name: '3 · Review' }));
+      await userEvent.click(screen.getByText('Create league'));
+
+      expect(route).not.toHaveBeenCalled();
+      expect(useLeagueStore.getState().leagues).toHaveLength(1);
+      expect(
+        screen.getByText('A league with this name already exists.')
+      ).toBeInTheDocument();
+    });
+  });
+
   it('shows the name and settings from the Details step at the top of the Teams step', async () => {
     render(<LeagueSetupScreen />);
     await userEvent.type(screen.getByLabelText('League name'), 'Coastal Premier');

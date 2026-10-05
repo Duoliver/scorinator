@@ -83,7 +83,10 @@ function playFixture(
  * `engine/identity` `slug()` call `TeamForm` already makes. `slug()`
  * throws a `RangeError` for a degenerate name (blank, or symbols-only) —
  * the caller guards this, the same way `TeamForm.handleSave` does for a
- * team name. See `LeagueSetupScreen.handleCreate`.
+ * team name. See `LeagueSetupScreen.handleCreate`. It also throws a
+ * `RangeError` when another league already uses that slug (Task 40): two
+ * leagues with one slug share a route, a save path, and every
+ * slug-keyed store action.
  *
  * `addLeague` also generates the league's two-way round-robin schedule
  * (Task 14), from the just-rolled teams' slugs. `generateRoundRobin`
@@ -113,6 +116,11 @@ function playFixture(
 export const useLeagueStore = create<LeagueState>()((set, get) => ({
   leagues: [],
   addLeague: (input): LeagueRecord => {
+    // Throws before any roll, so a rejected league leaves nothing behind.
+    const leagueSlug = slug(input.name);
+    if (get().leagues.some((league) => league.slug === leagueSlug)) {
+      throw new RangeError(`A league with the slug "${leagueSlug}" already exists.`);
+    }
     const rng = createSeededRng(freshSeed());
     const teams = input.teams.map((team) => ({
       slug: team.slug,
@@ -122,7 +130,7 @@ export const useLeagueStore = create<LeagueState>()((set, get) => ({
     const { fixtures, byes } =
       slugs.length >= 2 ? generateRoundRobin(slugs, rng) : { fixtures: [], byes: [] };
     const league: LeagueRecord = {
-      slug: slug(input.name),
+      slug: leagueSlug,
       name: input.name,
       homeAdvantage: input.homeAdvantage,
       points: input.points,

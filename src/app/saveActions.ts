@@ -7,16 +7,19 @@ import { useTeamsStore } from '@/app/state/teamsStore';
  * as buttons share, so the two cannot drift apart. It reads the stores,
  * calls the `app/data` save, remembers the path it got, and writes the
  * outcome to `fileStore`'s status line. It never throws: a failed save
- * becomes an error status, not an unhandled rejection from a key handler. */
+ * becomes an error status, not an unhandled rejection from a key handler.
+ * Resolves to `true` only when the league was written: a canceled dialog, an
+ * error, and an unknown slug resolve to `false`. The close guard (Task 28)
+ * needs this to keep the window open after a save that did not happen. */
 export async function saveLeagueBySlug(
   slug: string,
   options: { saveAs?: boolean } = {}
-): Promise<void> {
-  const { setPath, setCurrent, setStatus } = useFileStore.getState();
+): Promise<boolean> {
+  const { setPath, setCurrent, setStatus, markSaved } = useFileStore.getState();
   const league = useLeagueStore.getState().leagues.find((candidate) => candidate.slug === slug);
   if (!league) {
     setStatus({ tone: 'error', message: `Cannot save: league "${slug}" was not found.` });
-    return;
+    return false;
   }
 
   const roster = useTeamsStore.getState().teams;
@@ -27,13 +30,18 @@ export async function saveLeagueBySlug(
       : await saveLeagueFile(league, roster, knownPath);
     if (path === null) {
       setStatus({ tone: 'info', message: 'Save canceled.' });
-      return;
+      return false;
     }
     setPath(slug, path);
+    // The object read before the write, not whatever the store holds now: a
+    // change made while the file was writing stays unsaved (Task 26).
+    markSaved(league);
     setCurrent(slug);
     setStatus({ tone: 'info', message: `Saved ${league.name} to ${path}` });
+    return true;
   } catch (error) {
     setStatus({ tone: 'error', message: (error as Error).message });
+    return false;
   }
 }
 

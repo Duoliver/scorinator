@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { render, screen } from '@testing-library/preact';
+import { act, render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { LeagueDetailScreen } from './LeagueDetailScreen';
 import { useLeagueStore } from '@/app/state/leagueStore';
@@ -25,7 +25,12 @@ const league = (overrides: Partial<LeagueRecord> = {}): LeagueRecord => ({
 });
 
 beforeEach(() => {
-  useFileStore.setState({ currentLeagueSlug: null, paths: {}, status: null });
+  useFileStore.setState({
+    currentLeagueSlug: null,
+    paths: {},
+    savedLeagues: {},
+    status: null,
+  });
   useLeagueStore.setState({ leagues: [league()] });
 });
 
@@ -38,6 +43,26 @@ describe('LeagueDetailScreen', () => {
     expect(screen.getByText(/2 teams/)).toBeInTheDocument();
     expect(screen.getByText(/Home adv\. on/)).toBeInTheDocument();
     expect(screen.getByText(/3\/1\/0 pts/)).toBeInTheDocument();
+  });
+
+  it('shows an Unsaved badge next to the title until the league is saved', () => {
+    render(<LeagueDetailScreen slug="coastal-premier" />);
+    expect(screen.getByText('Unsaved')).toBeInTheDocument();
+
+    act(() => useFileStore.getState().markSaved(useLeagueStore.getState().leagues[0]));
+
+    expect(screen.queryByText('Unsaved')).not.toBeInTheDocument();
+  });
+
+  it('shows the Unsaved badge again after a scorinate in Fixtures', async () => {
+    useFileStore.getState().markSaved(useLeagueStore.getState().leagues[0]);
+    render(<LeagueDetailScreen slug="coastal-premier" />);
+    expect(screen.queryByText('Unsaved')).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('tab', { name: 'Fixtures' }));
+    await userEvent.click(screen.getAllByRole('button', { name: 'Scorinate' })[0]!);
+
+    expect(screen.getByText('Unsaved')).toBeInTheDocument();
   });
 
   it('makes the league on screen the current one for Ctrl+S', () => {
@@ -87,6 +112,27 @@ describe('LeagueDetailScreen', () => {
       .map((row) => row.children[2]?.textContent);
     expect(played).toEqual(['1', '1']);
     expect(screen.queryByText('No matches played yet.')).not.toBeInTheDocument();
+  });
+
+  it('updates Standings after a re-scorinate in Fixtures', async () => {
+    useLeagueStore.setState({
+      leagues: [
+        league({ results: [{ ...fixtures[0], homeGoals: 99, awayGoals: 99 }] }),
+      ],
+    });
+    render(<LeagueDetailScreen slug="coastal-premier" />);
+    expect(screen.getAllByText('99')).not.toHaveLength(0);
+
+    await userEvent.click(screen.getByRole('tab', { name: 'Fixtures' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Re-scorinate' }));
+    await userEvent.click(screen.getByRole('tab', { name: 'Standings' }));
+
+    expect(screen.queryByText('99')).not.toBeInTheDocument();
+    const played = screen
+      .getAllByRole('row')
+      .slice(1)
+      .map((row) => row.children[2]?.textContent);
+    expect(played).toEqual(['1', '1']);
   });
 
   it('switches to the Fixtures tab on click, showing the generated schedule', async () => {

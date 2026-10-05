@@ -8,12 +8,18 @@ import { useLeagueStore } from '@/app/state/leagueStore';
 import { useLeagueDraftStore } from '@/app/state/leagueDraftStore';
 import { useFileStore } from '@/app/state/fileStore';
 import * as saveActions from '@/app/saveActions';
+import * as closeGuard from '@/app/closeGuard';
 import * as leagueFile from '@/app/data/leagueFile';
 import { DEFAULT_POINTS_CONFIG } from '@/engine/standings';
 
 beforeEach(() => {
   vi.restoreAllMocks();
-  useFileStore.setState({ currentLeagueSlug: null, paths: {}, status: null });
+  useFileStore.setState({
+    currentLeagueSlug: null,
+    paths: {},
+    savedLeagues: {},
+    status: null,
+  });
   useTeamsStore.setState({ teams: [] });
   useLeagueStore.setState({ leagues: [] });
   useLeagueDraftStore.setState({
@@ -24,6 +30,18 @@ beforeEach(() => {
 });
 
 describe('AppShell', () => {
+  it('installs the close guard on mount, and removes it on unmount', () => {
+    const remove = vi.fn();
+    const install = vi.spyOn(closeGuard, 'installCloseGuard').mockReturnValue(remove);
+
+    const { unmount } = render(<AppShell />);
+    expect(install).toHaveBeenCalledOnce();
+    expect(remove).not.toHaveBeenCalled();
+
+    unmount();
+    expect(remove).toHaveBeenCalledOnce();
+  });
+
   it('lands on Leagues by default, with Leagues marked as the active nav item', () => {
     render(<AppShell />);
 

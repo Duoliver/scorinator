@@ -29,12 +29,14 @@ export function isLeagueOpen(slug: string): boolean {
 }
 
 /** Opens a loaded league: it replaces an open league with the same slug,
- * merges the file's teams into the roster, and remembers the file path. */
+ * merges the file's teams into the roster, remembers the file path, and
+ * marks the league saved (Task 26). */
 export function applyLoadedLeague(loaded: LoadedLeagueFile): void {
-  const { setPath, setCurrent, setStatus } = useFileStore.getState();
+  const { setPath, setCurrent, setStatus, markSaved } = useFileStore.getState();
   useLeagueStore.getState().loadLeague(loaded.league);
   const { teams, setTeams } = useTeamsStore.getState();
   setTeams(mergeImportedTeams(teams, loaded.teams));
+  markSaved(loaded.league);
   setPath(loaded.league.slug, loaded.path);
   setCurrent(loaded.league.slug);
   setStatus({

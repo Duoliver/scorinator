@@ -1,8 +1,11 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useLeagueStore } from './leagueStore';
-import { useFileStore } from './fileStore';
+import { isLeagueUnsaved, useFileStore } from './fileStore';
 import type { LeagueRecord } from '@/features/leagues/types';
 import { TIER_OVR_RANGES } from '@/engine/tier-ovr';
+import { createSeededRng } from '@/engine/rng';
+import { applyHomeAdvantage, scorinateMatch } from '@/engine/scorination';
+import { calculateStandings } from '@/engine/standings';
 import type { TeamRecord } from '@/features/components';
 
 const team = (overrides: Partial<TeamRecord> = {}): TeamRecord => ({
@@ -27,7 +30,12 @@ const record = (overrides: Partial<LeagueRecord> = {}): LeagueRecord => ({
 
 beforeEach(() => {
   useLeagueStore.setState({ leagues: [] });
-  useFileStore.setState({ currentLeagueSlug: null, paths: {}, status: null });
+  useFileStore.setState({
+    currentLeagueSlug: null,
+    paths: {},
+    savedLeagues: {},
+    status: null,
+  });
 });
 
 describe('useLeagueStore', () => {
@@ -204,6 +212,183 @@ describe('useLeagueStore', () => {
       const { results } = useLeagueStore.getState().leagues[0];
       expect(results).toHaveLength(1);
       expect(results[0]).toEqual(firstResult);
+    });
+  });
+
+  describe('rescorinateFixture', () => {
+    const setupLeague = (homeAdvantage = false): LeagueRecord =>
+      useLeagueStore.getState().addLeague({
+        name: 'Coastal Premier',
+        homeAdvantage,
+        points: { win: 3, draw: 1, loss: 0 },
+        teams: [
+          team({ slug: 'fc-united', tier: 'S' }),
+          team({ slug: 'fc-rivals', tier: 'F' }),
+          team({ slug: 'fc-town', tier: 'C' }),
+        ],
+      });
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it('replaces the result in place: same count, same position, other results untouched', () => {
+      const league = setupLeague();
+      const [first, second, third] = league.fixtures;
+      const store = useLeagueStore.getState();
+      store.scorinateFixture(league.slug, first);
+      store.scorinateFixture(league.slug, second);
+      store.scorinateFixture(league.slug, third);
+      const before = useLeagueStore.getState().leagues[0].results;
+
+      store.rescorinateFixture(league.slug, second);
+
+      const after = useLeagueStore.getState().leagues[0].results;
+      expect(after).toHaveLength(3);
+      expect(after[0]).toEqual(before[0]);
+      expect(after[2]).toEqual(before[2]);
+      expect(after[1]).toMatchObject({
+        matchday: second.matchday,
+        home: second.home,
+        away: second.away,
+      });
+    });
+
+    it('draws a fresh score from the engine, with the home advantage boost when the league has it on', () => {
+      const league = setupLeague(true);
+      const fixture = league.fixtures[0];
+      useLeagueStore.getState().scorinateFixture(league.slug, fixture);
+
+      const random = 0.3141;
+      vi.spyOn(Math, 'random').mockReturnValue(random);
+      useLeagueStore.getState().rescorinateFixture(league.slug, fixture);
+
+      const homeOvr = league.teams.find((t) => t.slug === fixture.home)!.ovr;
+      const awayOvr = league.teams.find((t) => t.slug === fixture.away)!.ovr;
+      const expected = scorinateMatch(
+        applyHomeAdvantage(homeOvr),
+        awayOvr,
+        createSeededRng(Math.floor(random * 0xffffffff))
+      );
+      expect(useLeagueStore.getState().leagues[0].results[0]).toEqual({
+        matchday: fixture.matchday,
+        home: fixture.home,
+        away: fixture.away,
+        ...expected,
+      });
+    });
+
+    it('leaves the standings with one played match per team, using the new score', () => {
+      const league = setupLeague();
+      const fixture = league.fixtures[0];
+      useLeagueStore.getState().scorinateFixture(league.slug, fixture);
+      useLeagueStore.getState().rescorinateFixture(league.slug, fixture);
+
+      const { results, teams, points } = useLeagueStore.getState().leagues[0];
+      const rows = calculateStandings(
+        teams.map((t) => t.slug),
+        results,
+        points
+      );
+      const home = rows.find((row) => row.team === fixture.home)!;
+      const away = rows.find((row) => row.team === fixture.away)!;
+      expect(home.played).toBe(1);
+      expect(away.played).toBe(1);
+      expect(home.goalsFor).toBe(results[0].homeGoals);
+      expect(home.goalsAgainst).toBe(results[0].awayGoals);
+    });
+
+    it('does nothing for a fixture with no result yet', () => {
+      const league = setupLeague();
+
+      useLeagueStore.getState().rescorinateFixture(league.slug, league.fixtures[0]);
+
+      expect(useLeagueStore.getState().leagues[0].results).toEqual([]);
+    });
+
+    it('does nothing for an unknown league slug', () => {
+      const league = setupLeague();
+      useLeagueStore.getState().scorinateFixture(league.slug, league.fixtures[0]);
+      const before = useLeagueStore.getState().leagues;
+
+      useLeagueStore
+        .getState()
+        .rescorinateFixture('no-such-league', league.fixtures[0]);
+
+      expect(useLeagueStore.getState().leagues).toEqual(before);
+    });
+  });
+
+  describe('unsaved tracking', () => {
+    const setup = (): LeagueRecord =>
+      useLeagueStore.getState().addLeague({
+        name: 'Coastal Premier',
+        homeAdvantage: false,
+        points: { win: 3, draw: 1, loss: 0 },
+        teams: [team({ slug: 'fc-united' }), team({ slug: 'fc-rivals' })],
+      });
+    const unsaved = (): boolean =>
+      isLeagueUnsaved(
+        useLeagueStore.getState().leagues[0],
+        useFileStore.getState().savedLeagues
+      );
+    const markSaved = (): void =>
+      useFileStore.getState().markSaved(useLeagueStore.getState().leagues[0]);
+
+    it('leaves a new league unsaved, since it was never written', () => {
+      setup();
+      expect(unsaved()).toBe(true);
+    });
+
+    it('leaves a saved league unsaved after a scorinate', () => {
+      const league = setup();
+      markSaved();
+      expect(unsaved()).toBe(false);
+
+      useLeagueStore.getState().scorinateFixture(league.slug, league.fixtures[0]);
+
+      expect(unsaved()).toBe(true);
+    });
+
+    it('leaves a saved league unsaved after a re-scorinate', () => {
+      const league = setup();
+      useLeagueStore.getState().scorinateFixture(league.slug, league.fixtures[0]);
+      markSaved();
+
+      useLeagueStore.getState().rescorinateFixture(league.slug, league.fixtures[0]);
+
+      expect(unsaved()).toBe(true);
+    });
+
+    it('keeps a saved league saved when a scorinate does nothing', () => {
+      const league = setup();
+      useLeagueStore.getState().scorinateFixture(league.slug, league.fixtures[0]);
+      markSaved();
+
+      useLeagueStore.getState().scorinateFixture(league.slug, league.fixtures[0]);
+      useLeagueStore.getState().rescorinateFixture(league.slug, league.fixtures[1]);
+
+      expect(unsaved()).toBe(false);
+    });
+
+    it('leaves the other leagues saved when one changes', () => {
+      const first = setup();
+      useLeagueStore.getState().addLeague({
+        name: 'Inland Cup',
+        homeAdvantage: false,
+        points: { win: 3, draw: 1, loss: 0 },
+        teams: [team({ slug: 'fc-united' }), team({ slug: 'fc-rivals' })],
+      });
+      for (const league of useLeagueStore.getState().leagues) {
+        useFileStore.getState().markSaved(league);
+      }
+
+      useLeagueStore.getState().scorinateFixture(first.slug, first.fixtures[0]);
+
+      const [changed, untouched] = useLeagueStore.getState().leagues;
+      const { savedLeagues } = useFileStore.getState();
+      expect(isLeagueUnsaved(changed, savedLeagues)).toBe(true);
+      expect(isLeagueUnsaved(untouched, savedLeagues)).toBe(false);
     });
   });
 

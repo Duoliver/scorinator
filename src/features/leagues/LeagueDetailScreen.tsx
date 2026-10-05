@@ -1,8 +1,8 @@
 import type { JSX } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
-import { Tabs, type TabItem } from '@/design-system';
+import { Badge, Tabs, type TabItem } from '@/design-system';
 import { useLeagueStore } from '@/app/state/leagueStore';
-import { useFileStore } from '@/app/state/fileStore';
+import { isLeagueUnsaved, useFileStore } from '@/app/state/fileStore';
 import { ROUTES } from '@/app/routes';
 import { FixturesView } from '@/features/fixtures';
 import { StandingsView } from '@/features/standings';
@@ -18,9 +18,11 @@ interface LeagueDetailScreenProps {
  * (Task 14) renders the matchday browser, and its Scorinate buttons
  * (Task 15) play a match or a whole matchday. Standings (Task 16) renders
  * the live league table from the same `league` record, so a scorinate in
- * Fixtures shows up there on the next tab switch. */
+ * Fixtures shows up there on the next tab switch. An `Unsaved` badge
+ * (Task 26) sits beside the title while the league has unsaved changes. */
 export function LeagueDetailScreen({ slug }: LeagueDetailScreenProps): JSX.Element {
   const leagues = useLeagueStore((state) => state.leagues);
+  const savedLeagues = useFileStore((state) => state.savedLeagues);
   // `Tabs` unmounts the inactive tab, so `FixturesView`'s own matchday state
   // would reset on every switch. Kept here instead, and fed back in below.
   const [fixturesMatchday, setFixturesMatchday] = useState(1);
@@ -71,7 +73,10 @@ export function LeagueDetailScreen({ slug }: LeagueDetailScreenProps): JSX.Eleme
         <a href={ROUTES.leaguesDashboard} class={styles.backLink}>
           ← Leagues
         </a>
-        <h1 class={styles.title}>{league.name}</h1>
+        <div class={styles.titleRow}>
+          <h1 class={styles.title}>{league.name}</h1>
+          {isLeagueUnsaved(league, savedLeagues) && <Badge tone="warning">Unsaved</Badge>}
+        </div>
         <span class={styles.meta}>{meta}</span>
       </div>
 

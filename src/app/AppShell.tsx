@@ -16,6 +16,7 @@ import { FileScreen } from '@/features/file';
 import { PlaygroundScreen } from '@/features/playground';
 import { useFileStore } from '@/app/state/fileStore';
 import { saveCurrentLeague } from '@/app/saveActions';
+import { installCloseGuard } from '@/app/closeGuard';
 import { ROUTES, type RoutePath } from './routes';
 import styles from './AppShell.module.css';
 
@@ -91,6 +92,9 @@ export function AppShell(): JSX.Element {
     window.addEventListener('keydown', handleKeyDown);
     return (): void => window.removeEventListener('keydown', handleKeyDown);
   }, []);
+
+  // Closing the window with unsaved changes asks first (Task 28).
+  useEffect(() => installCloseGuard(), []);
 
   // The status line clears itself. A new status restarts the timer.
   useEffect(() => {

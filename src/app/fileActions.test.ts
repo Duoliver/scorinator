@@ -7,7 +7,7 @@ import {
 } from './fileActions';
 import * as leagueFile from '@/app/data/leagueFile';
 import type { LoadedLeagueFile } from '@/app/data/leagueFile';
-import { useFileStore } from '@/app/state/fileStore';
+import { isLeagueUnsaved, useFileStore } from '@/app/state/fileStore';
 import { useLeagueStore } from '@/app/state/leagueStore';
 import { useTeamsStore } from '@/app/state/teamsStore';
 import type { LeagueRecord } from '@/features/leagues/types';
@@ -34,7 +34,12 @@ beforeEach(() => {
   vi.restoreAllMocks();
   useLeagueStore.setState({ leagues: [] });
   useTeamsStore.setState({ teams: [] });
-  useFileStore.setState({ currentLeagueSlug: null, paths: {}, status: null });
+  useFileStore.setState({
+    currentLeagueSlug: null,
+    paths: {},
+    savedLeagues: {},
+    status: null,
+  });
 });
 
 describe('openLeagueFile', () => {
@@ -121,5 +126,41 @@ describe('importTeams', () => {
       tone: 'error',
       message: 'Bad CSV.',
     });
+  });
+});
+
+describe('applyLoadedLeague unsaved tracking', () => {
+  it('marks the loaded league saved', () => {
+    const file = loaded();
+
+    applyLoadedLeague(file);
+
+    expect(
+      isLeagueUnsaved(
+        useLeagueStore.getState().leagues[0],
+        useFileStore.getState().savedLeagues
+      )
+    ).toBe(false);
+  });
+
+  it('marks a league unsaved again after it changes, then saved on a reload', () => {
+    applyLoadedLeague(loaded());
+    const [opened] = useLeagueStore.getState().leagues;
+    useLeagueStore.setState({ leagues: [{ ...opened, name: 'Renamed' }] });
+    expect(
+      isLeagueUnsaved(
+        useLeagueStore.getState().leagues[0],
+        useFileStore.getState().savedLeagues
+      )
+    ).toBe(true);
+
+    applyLoadedLeague(loaded());
+
+    expect(
+      isLeagueUnsaved(
+        useLeagueStore.getState().leagues[0],
+        useFileStore.getState().savedLeagues
+      )
+    ).toBe(false);
   });
 });

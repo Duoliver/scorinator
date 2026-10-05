@@ -18,3 +18,8 @@ With manual save (File > Save, Ctrl+S) as the committed MVP1 mechanism, and unsa
 Post-hoc linking of an already-existing standalone League (created and played outside any Season, per the Instance Wrapper design) into a Season later on — either by upgrading its existing wrapper in place into a full Season, or by merging two already-existing standalone Leagues (each with their own independently-scoped Team Instances) into one shared Season together. This raises open questions around Team Instance identity/continuity — does existing OVR/Tier state carry over, or re-roll fresh? — that aren't addressed by MVP3/4 as currently scoped, since those specs only describe Seasons being set up fresh, not an existing League being absorbed into one afterward.
 
 *Raised during: technical caveats discussion — Instance Wrapper design (MVP3+).*
+
+## 4. Venue choice for replays
+In MVP2, a replay is always played at a neutral venue, with no home advantage. Later, the user picks the venue per replay: neutral, or either team's home. The picker should show which of the two teams had the better campaign so far in that competition, to help the user decide.
+
+* Raised during: MVP1 → MVP2 impact review.

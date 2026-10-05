@@ -103,6 +103,13 @@ export const DetailsStep = forwardRef<DetailsStepHandle, DetailsStepProps>(
           />
 
           <div class={styles.footer}>
+            {/* Says why Next is off. Same text as the Create guard in
+                `LeagueSetupScreen.handleCreate`. */}
+            {!nameValid && (
+              <span class={styles.hint}>
+                Enter a league name with at least one letter or number.
+              </span>
+            )}
             <Button onClick={onNext} disabled={!nameValid}>
               Next: Teams →
             </Button>

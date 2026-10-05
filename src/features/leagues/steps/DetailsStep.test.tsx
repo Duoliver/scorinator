@@ -94,6 +94,18 @@ describe('DetailsStep', () => {
       expect(screen.getByText('Next: Teams →')).toBeDisabled();
     });
 
+    it('explains next to the disabled Next why it is off, and hides the hint for a valid name', async () => {
+      const hint = 'Enter a league name with at least one letter or number.';
+      render(<DetailsStep initial={baseDetails} onNext={vi.fn()} />);
+      expect(screen.getByText(hint)).toBeInTheDocument();
+
+      await userEvent.type(screen.getByLabelText('League name'), '!!!');
+      expect(screen.getByText(hint)).toBeInTheDocument();
+
+      await userEvent.type(screen.getByLabelText('League name'), 'A');
+      expect(screen.queryByText(hint)).not.toBeInTheDocument();
+    });
+
     it('enables Next on mount when the draft already has a valid name', () => {
       render(
         <DetailsStep

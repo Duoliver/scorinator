@@ -27,6 +27,31 @@
 ### Standings
 - Points system is **configurable per league**, defaulting to **3 / 1 / 0** (win/draw/loss).
 
+### Team Colours
+- A team colour is picked from a **16-colour palette**. *(Added on 2026-10-05. Before that date, the palette was MVP3 scope.)*
+- MVP1 uses the **placeholder palette** below. The values can change later, for example after a Claude Design pass.
+- Keep the palette values in **one place** in the code, so a change to the palette is one edit.
+- A custom colour (hex field, live preview, RGB sliders) is MVP3 scope.
+
+| # | Name | Hex (placeholder) |
+|---|------|------|
+| 1 | Red | #E53935 |
+| 2 | Maroon | #7B1E1E |
+| 3 | Orange | #FB8C00 |
+| 4 | Gold | #F9A825 |
+| 5 | Yellow | #FDD835 |
+| 6 | Olive | #827717 |
+| 7 | Green | #2E7D32 |
+| 8 | Teal | #00897B |
+| 9 | Sky Blue | #039BE5 |
+| 10 | Navy | #1A237E |
+| 11 | Blue | #1E88E5 |
+| 12 | Purple | #6A1B9A |
+| 13 | Pink | #D81B60 |
+| 14 | Black | #212121 |
+| 15 | Grey | #9E9E9E |
+| 16 | White | #FAFAFA |
+
 ### Data Portability
 - **Team CSV** (import/export) columns: `ID/slug`, `Name`, `Colours`, `Tier`. *(Extended in MVP3 to add `City`, once teams gain location data.)*
 - **Save/Load**: JSON, fully re-importable (teams, fixtures, results, league config).
@@ -38,6 +63,7 @@
 
 ### Epic: Team Management
 - As a user, I want to create a team with a Name, Colours, and Tier, so that it can be entered into a league.
+- As a user, I want to pick a team colour from the 16-colour palette, so that every team has a consistent, valid colour.
 - As a user, I want the system to auto-generate an ID/slug for each team, so that it can be reliably matched on re-import.
 - As a user, I want to import a list of teams from a CSV file, so that I don't have to manually re-enter teams I already have.
 - As a user, I want to export my current team list to CSV, so that I can back it up or reuse it elsewhere.
@@ -72,6 +98,7 @@
 ---
 
 ## 3. Open Items for Later MVPs
+- Final 16-colour palette values. MVP1 uses the placeholder values, and a later Claude Design pass can change them.
 - Continental/world/national-team leagues (mentioned as future scope in original doc).
 - Season-to-season OVR/tier-range reconfiguration (Story Mode).
 - Match events/stats beyond final score.

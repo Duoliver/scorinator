@@ -131,8 +131,9 @@
   color: var(--color-fg-muted);
 }
 
-/* Wide by default: the full counter shows, the short one does not. */
-.counterShort {
+/* Wide by default: the full text shows, the short one does not. Used by
+ * the matchday counter and the League completed badge. */
+.shortText {
   display: none;
 }
 
@@ -141,17 +142,20 @@
  * (1008px) switches a little before it would wrap. The compact header
  * stays on one line down to about 557px. The buttons keep their full names through
  * `aria-label`, so `display: none` on the words is safe for screen
- * readers. The full counter stays for screen readers, visually hidden. */
+ * readers. The full counter and the full badge text stay for screen
+ * readers, visually hidden. The badge needs its short form too: with
+ * "League completed" in full, the compact header needed 601px, not
+ * 557px, and wrapped before the stacked layout below started. */
 @container fixtures (max-width: 63rem) {
   .wideOnly {
     display: none;
   }
 
-  .counterShort {
+  .shortText {
     display: inline;
   }
 
-  .counterFull {
+  .fullText {
     position: absolute;
     width: 1px;
     height: 1px;
@@ -181,9 +185,16 @@
     min-width: 0;
   }
 
-  /* Centred, so the League completed badge reads like the buttons. */
+  /* Equal columns. `flex: 1` shares only the free space, so a button,
+   * with more padding than the badge, came out 8px wider. Centred, so the
+   * League completed badge reads like the buttons. */
+  .actions {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+  }
+
   .actions > * {
-    flex: 1;
     justify-content: center;
   }
 

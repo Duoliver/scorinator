@@ -413,6 +413,18 @@ describe('FixturesView', () => {
       // The first and last buttons stay available on a completed league.
       expect(screen.getByRole('button', { name: 'Last matchday' })).not.toBeDisabled();
     });
+
+    it('gives the League completed badge a short Completed form for a compact header, hidden from screen readers', () => {
+      render(<FixturesViewFromStore slug="coastal-premier" />);
+      act(() => {
+        for (let matchday = 1; matchday <= lastMatchday; matchday += 1) {
+          useLeagueStore.getState().scorinateMatchday('coastal-premier', matchday);
+        }
+      });
+
+      expect(screen.getByText('League completed')).not.toHaveAttribute('aria-hidden');
+      expect(screen.getByText('Completed')).toHaveAttribute('aria-hidden', 'true');
+    });
   });
   describe('compact header on a narrow width (Task 35)', () => {
     // jsdom applies no container query, so these tests check the markup the

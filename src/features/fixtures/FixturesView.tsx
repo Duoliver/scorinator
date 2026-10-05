@@ -149,10 +149,10 @@ export function FixturesView({
             {/* Two counters, so each one stays a single text node: the full
                 one for screen readers and text search, hidden from view on
                 a narrow width, and a short one shown only there. */}
-            <span class={styles.counterFull}>
+            <span class={styles.fullText}>
               Matchday {matchday} / {totalMatchdays}
             </span>
-            <span class={styles.counterShort} aria-hidden="true">
+            <span class={styles.shortText} aria-hidden="true">
               {matchday} / {totalMatchdays}
             </span>
           </span>
@@ -182,7 +182,12 @@ export function FixturesView({
         </div>
         <div class={styles.actions}>
           {currentMatchday === undefined ? (
-            <Badge tone="accent">League completed</Badge>
+            <Badge tone="accent">
+              <span class={styles.fullText}>League completed</span>
+              <span class={styles.shortText} aria-hidden="true">
+                Completed
+              </span>
+            </Badge>
           ) : (
             <Button
               variant="secondary"

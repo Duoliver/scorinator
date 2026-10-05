@@ -215,21 +215,38 @@ export function FixturesView({
           const home = teamDisplay(fixture.home);
           const away = teamDisplay(fixture.away);
           const result = findResult(league, fixture);
+          const flash = flashing.has(fixtureKey(fixture)) ? '' : undefined;
+          // The goals spans serve only the stacked layout (Task 39), where
+          // each team has its own line. The score span stays the one text
+          // that screen readers and tests read, in both layouts.
           return (
             <div class={styles.match} key={`${fixture.home}-${fixture.away}`}>
               <div class={styles.home}>
-                {home.name}
+                <span class={styles.teamName}>{home.name}</span>
                 <span class={styles.swatch} style={{ background: home.colour }} />
+                <span
+                  class={styles.goals}
+                  data-goals="home"
+                  data-flashing={flash}
+                  aria-hidden="true"
+                >
+                  {result?.homeGoals}
+                </span>
               </div>
-              <span
-                class={styles.score}
-                data-flashing={flashing.has(fixtureKey(fixture)) ? '' : undefined}
-              >
+              <span class={styles.score} data-flashing={flash}>
                 {result ? `${result.homeGoals} - ${result.awayGoals}` : 'vs'}
               </span>
               <div class={styles.away}>
                 <span class={styles.swatch} style={{ background: away.colour }} />
-                {away.name}
+                <span class={styles.teamName}>{away.name}</span>
+                <span
+                  class={styles.goals}
+                  data-goals="away"
+                  data-flashing={flash}
+                  aria-hidden="true"
+                >
+                  {result?.awayGoals}
+                </span>
               </div>
               <div class={styles.action}>
                 <Button

@@ -90,8 +90,18 @@
 }
 
 /* Set by `FixturesView` for `SCORE_FLASH_MS` after a score is generated. */
-.score[data-flashing] {
+.score[data-flashing],
+.goals[data-flashing] {
   color: var(--color-accent);
+}
+
+/* One team's goals, for the stacked match row only (Task 39). */
+.goals {
+  display: none;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: var(--font-size-lg);
+  color: var(--color-fg-muted);
 }
 
 .action {
@@ -175,5 +185,48 @@
   .actions > * {
     flex: 1;
     justify-content: center;
+  }
+
+  /* Stacked match row (Task 39): one line for each team, home first, each
+   * `[colour] [name] [goals]`, then the button at full width. The full
+   * score stays for screen readers, visually hidden. */
+  .match {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-2);
+  }
+
+  .home,
+  .away {
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .home > .swatch {
+    order: -1;
+  }
+
+  .teamName {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .goals {
+    display: inline;
+  }
+
+  .score {
+    position: absolute;
+    width: 1px;
+    min-width: 0;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .action > * {
+    flex: 1;
   }
 }

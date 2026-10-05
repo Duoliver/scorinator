@@ -464,4 +464,68 @@ describe('FixturesView', () => {
       expect(screen.getByText(`1 / ${total}`)).toHaveAttribute('aria-hidden', 'true');
     });
   });
+  describe('per-team goals for the stacked match row (Task 39)', () => {
+    // jsdom applies no container query, so these tests check the markup the
+    // stacked layout relies on. The layout itself needs a browser check.
+    const goals = (side: 'home' | 'away'): HTMLElement =>
+      document.querySelector(`[data-goals="${side}"]`) as HTMLElement;
+
+    const twoTeamLeague = (results: LeagueRecord['results'] = []): void => {
+      const { fixtures, byes } = generateRoundRobin(['fc-united', 'fc-rivals']);
+      useLeagueStore.setState({
+        leagues: [
+          league({
+            teams: [
+              { slug: 'fc-united', ovr: 70 },
+              { slug: 'fc-rivals', ovr: 65 },
+            ],
+            fixtures,
+            byes,
+            results: results.map((result, i) => ({ ...fixtures[i], ...result })),
+          }),
+        ],
+      });
+    };
+
+    it('shows each team its own goals after a result, hidden from screen readers', () => {
+      twoTeamLeague([
+        { homeGoals: 2, awayGoals: 1 } as LeagueRecord['results'][number],
+      ]);
+      render(<FixturesViewFromStore slug="coastal-premier" />);
+
+      expect(goals('home')).toHaveTextContent(/^2$/);
+      expect(goals('away')).toHaveTextContent(/^1$/);
+      expect(goals('home')).toHaveAttribute('aria-hidden', 'true');
+      expect(goals('away')).toHaveAttribute('aria-hidden', 'true');
+    });
+
+    it('leaves both goals empty before a result, with no vs', () => {
+      twoTeamLeague();
+      render(<FixturesViewFromStore slug="coastal-premier" />);
+
+      expect(goals('home')).toBeEmptyDOMElement();
+      expect(goals('away')).toBeEmptyDOMElement();
+    });
+
+    it('puts the home goals in the home team block and the away goals in the away block', () => {
+      twoTeamLeague([
+        { homeGoals: 3, awayGoals: 0 } as LeagueRecord['results'][number],
+      ]);
+      render(<FixturesViewFromStore slug="coastal-premier" />);
+
+      expect(goals('home').parentElement).toHaveTextContent('FC United');
+      expect(goals('away').parentElement).toHaveTextContent('FC Rivals');
+    });
+
+    it('flashes both goals with the score after a scorinate', async () => {
+      twoTeamLeague();
+      render(<FixturesViewFromStore slug="coastal-premier" />);
+
+      await userEvent.click(screen.getByRole('button', { name: 'Scorinate' }));
+
+      expect(screen.getByText(/^\d+ - \d+$/)).toHaveAttribute('data-flashing');
+      expect(goals('home')).toHaveAttribute('data-flashing');
+      expect(goals('away')).toHaveAttribute('data-flashing');
+    });
+  });
 });

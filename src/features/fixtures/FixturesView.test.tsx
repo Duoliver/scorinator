@@ -414,4 +414,54 @@ describe('FixturesView', () => {
       expect(screen.getByRole('button', { name: 'Last matchday' })).not.toBeDisabled();
     });
   });
+  describe('compact header on a narrow width (Task 35)', () => {
+    // jsdom applies no container query, so these tests check the markup the
+    // CSS relies on: stable accessible names, and the short text marked
+    // aria-hidden. The narrow look itself needs a browser check.
+    const slugs = ['fc-united', 'fc-rivals', 'fc-town', 'fc-rangers'];
+    const { fixtures, byes } = generateRoundRobin(slugs);
+
+    const renderView = (): void => {
+      useLeagueStore.setState({
+        leagues: [
+          league({ teams: slugs.map((slug) => ({ slug, ovr: 60 })), fixtures, byes }),
+        ],
+      });
+      render(<FixturesView league={useLeagueStore.getState().leagues[0]!} />);
+    };
+
+    it('gives the four text buttons a full accessible name that does not depend on the visible label', () => {
+      renderView();
+      for (const name of [
+        'Previous matchday',
+        'Next matchday',
+        'Current matchday',
+        'Scorinate matchday',
+      ]) {
+        expect(screen.getByRole('button', { name })).toHaveAttribute(
+          'aria-label',
+          name
+        );
+      }
+    });
+
+    it('hides the arrows of Previous and Next from screen readers', () => {
+      renderView();
+      for (const name of ['Previous matchday', 'Next matchday']) {
+        const arrow = screen
+          .getByRole('button', { name })
+          .querySelector('[aria-hidden="true"]');
+        expect(arrow?.textContent).toMatch(/[←→]/);
+      }
+    });
+
+    it('keeps the full counter for screen readers, and marks the short counter aria-hidden', () => {
+      renderView();
+      const total = Math.max(...fixtures.map((f) => f.matchday));
+      expect(screen.getByText(`Matchday 1 / ${total}`)).not.toHaveAttribute(
+        'aria-hidden'
+      );
+      expect(screen.getByText(`1 / ${total}`)).toHaveAttribute('aria-hidden', 'true');
+    });
+  });
 });

@@ -1,4 +1,7 @@
+/* A size container, not a viewport query, because the 220px sidebar takes
+ * width from the content. See the compact header rules at the end. */
 .view {
+  container: fixtures / inline-size;
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
@@ -116,4 +119,61 @@
 .empty {
   margin: 0;
   color: var(--color-fg-muted);
+}
+
+/* Wide by default: the full counter shows, the short one does not. */
+.counterShort {
+  display: none;
+}
+
+/* Compact header (Task 35). The full header needs 987px for one line
+ * (measured: 640px matchday group + 331px actions + 16px gap), so 63rem
+ * (1008px) switches a little before it would wrap. The compact header
+ * stays on one line down to about 557px. The buttons keep their full names through
+ * `aria-label`, so `display: none` on the words is safe for screen
+ * readers. The full counter stays for screen readers, visually hidden. */
+@container fixtures (max-width: 63rem) {
+  .wideOnly {
+    display: none;
+  }
+
+  .counterShort {
+    display: inline;
+  }
+
+  .counterFull {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .matchday {
+    min-width: 5rem;
+  }
+}
+
+/* Stacked header. The compact header needs about 557px for one line, so
+ * below 35rem (560px) it becomes a column, and each row spans the full
+ * width: the counter takes the free space in the top row, and the bottom
+ * row's items share it equally. A container query, not a wrap, so the
+ * stacked layout never depends on where `flex-wrap` happens to break. */
+@container fixtures (max-width: 35rem) {
+  .nav {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .matchday {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* Centred, so the League completed badge reads like the buttons. */
+  .actions > * {
+    flex: 1;
+    justify-content: center;
+  }
 }

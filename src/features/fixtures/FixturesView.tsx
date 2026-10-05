@@ -134,21 +134,39 @@ export function FixturesView({
           <Button
             variant="secondary"
             size="sm"
+            aria-label="Previous matchday"
             disabled={matchday <= 1}
             onClick={() => goToMatchday(matchday - 1)}
           >
-            ← Previous matchday
+            {/* One outer span: `Button` is a flex row with a gap, and the
+                inner text must keep normal word spacing. */}
+            <span>
+              <span aria-hidden="true">←</span>
+              <span class={styles.wideOnly}> Previous matchday</span>
+            </span>
           </Button>
           <span class={styles.matchday}>
-            Matchday {matchday} / {totalMatchdays}
+            {/* Two counters, so each one stays a single text node: the full
+                one for screen readers and text search, hidden from view on
+                a narrow width, and a short one shown only there. */}
+            <span class={styles.counterFull}>
+              Matchday {matchday} / {totalMatchdays}
+            </span>
+            <span class={styles.counterShort} aria-hidden="true">
+              {matchday} / {totalMatchdays}
+            </span>
           </span>
           <Button
             variant="secondary"
             size="sm"
+            aria-label="Next matchday"
             disabled={matchday >= totalMatchdays}
             onClick={() => goToMatchday(matchday + 1)}
           >
-            Next matchday →
+            <span>
+              <span class={styles.wideOnly}>Next matchday </span>
+              <span aria-hidden="true">→</span>
+            </span>
           </Button>
           <Button
             variant="secondary"
@@ -169,19 +187,25 @@ export function FixturesView({
             <Button
               variant="secondary"
               size="sm"
+              aria-label="Current matchday"
               disabled={matchday === currentMatchday}
               onClick={() => goToMatchday(currentMatchday)}
             >
-              Current matchday
+              <span>
+                Current<span class={styles.wideOnly}> matchday</span>
+              </span>
             </Button>
           )}
           <Button
             variant="primary"
             size="sm"
+            aria-label="Scorinate matchday"
             disabled={isMatchdayFullyPlayed(league, matchday)}
             onClick={() => scorinateMatchday(league.slug, matchday)}
           >
-            Scorinate matchday
+            <span>
+              Scorinate<span class={styles.wideOnly}> matchday</span>
+            </span>
           </Button>
         </div>
       </div>

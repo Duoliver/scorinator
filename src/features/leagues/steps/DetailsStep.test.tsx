@@ -62,8 +62,46 @@ describe('DetailsStep', () => {
 
   it('calls onNext when Next is clicked', async () => {
     const onNext = vi.fn();
-    render(<DetailsStep initial={baseDetails} onNext={onNext} />);
+    render(
+      <DetailsStep
+        initial={{ ...baseDetails, name: 'Coastal Premier' }}
+        onNext={onNext}
+      />
+    );
     await userEvent.click(screen.getByText('Next: Teams →'));
     expect(onNext).toHaveBeenCalled();
+  });
+
+  describe('Next needs a league name', () => {
+    it('disables Next while the name is blank', () => {
+      render(<DetailsStep initial={baseDetails} onNext={vi.fn()} />);
+      expect(screen.getByText('Next: Teams →')).toBeDisabled();
+    });
+
+    it('enables Next once the name has a letter or a number, and disables it again when cleared', async () => {
+      render(<DetailsStep initial={baseDetails} onNext={vi.fn()} />);
+      await userEvent.type(screen.getByLabelText('League name'), 'Coastal Premier');
+      expect(screen.getByText('Next: Teams →')).toBeEnabled();
+      await userEvent.clear(screen.getByLabelText('League name'));
+      expect(screen.getByText('Next: Teams →')).toBeDisabled();
+    });
+
+    it('keeps Next disabled for a name with only spaces or symbols, which slug() rejects', async () => {
+      render(<DetailsStep initial={baseDetails} onNext={vi.fn()} />);
+      await userEvent.type(screen.getByLabelText('League name'), '   ');
+      expect(screen.getByText('Next: Teams →')).toBeDisabled();
+      await userEvent.type(screen.getByLabelText('League name'), '!!!');
+      expect(screen.getByText('Next: Teams →')).toBeDisabled();
+    });
+
+    it('enables Next on mount when the draft already has a valid name', () => {
+      render(
+        <DetailsStep
+          initial={{ ...baseDetails, name: 'Coastal Premier' }}
+          onNext={vi.fn()}
+        />
+      );
+      expect(screen.getByText('Next: Teams →')).toBeEnabled();
+    });
   });
 });

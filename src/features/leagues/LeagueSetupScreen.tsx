@@ -125,9 +125,10 @@ export function LeagueSetupScreen(): JSX.Element {
         teams: selectedTeams,
       });
     } catch {
-      // `addLeague` rolls a slug from the trimmed name — the Review step's
-      // disable check only catches a blank name, not a symbols-only one
-      // like "!!!", which `slug()` also rejects. `TeamForm.handleSave`
+      // `addLeague` rolls a slug from the trimmed name, and `slug()` rejects
+      // a blank or symbols-only name like "!!!". The Details step turns off
+      // Next for such a name, but the step tabs still reach Review, so this
+      // is the last guard. `TeamForm.handleSave`
       // guards the same gap the same way for a team name, with its own
       // fixed copy rather than the thrown message — `slug()`'s own message
       // literally says "team name", which would be wrong here.

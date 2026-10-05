@@ -57,7 +57,9 @@ describe('LeagueSetupScreen', () => {
     render(<LeagueSetupScreen />);
 
     await userEvent.type(screen.getByLabelText('League name'), '!!!');
-    await userEvent.click(screen.getByText('Next: Teams →'));
+    expect(screen.getByText('Next: Teams →')).toBeDisabled();
+    // The step tabs still allow a jump past the disabled Next.
+    await userEvent.click(screen.getByRole('tab', { name: '2 · Teams' }));
     await userEvent.click(screen.getByLabelText('FC United'));
     await userEvent.click(screen.getByText('Next: Review →'));
     await userEvent.click(screen.getByText('Create league'));
@@ -111,6 +113,7 @@ describe('LeagueSetupScreen', () => {
   it('scrolls the window to the top when Next changes the step', async () => {
     const scrollTo = vi.spyOn(window, 'scrollTo');
     render(<LeagueSetupScreen />);
+    await userEvent.type(screen.getByLabelText('League name'), 'Coastal Premier');
     await userEvent.click(screen.getByText('Next: Teams →'));
     expect(scrollTo).toHaveBeenCalledWith({ top: 0 });
     scrollTo.mockRestore();
@@ -118,6 +121,7 @@ describe('LeagueSetupScreen', () => {
 
   it('moves focus to the new step tab after Next', async () => {
     render(<LeagueSetupScreen />);
+    await userEvent.type(screen.getByLabelText('League name'), 'Coastal Premier');
     await userEvent.click(screen.getByText('Next: Teams →'));
     expect(screen.getByRole('tab', { name: '2 · Teams' })).toHaveFocus();
     // Next on the Teams step stays disabled until a team is selected.
@@ -128,6 +132,7 @@ describe('LeagueSetupScreen', () => {
 
   it('moves focus to the new step tab after Back', async () => {
     render(<LeagueSetupScreen />);
+    await userEvent.type(screen.getByLabelText('League name'), 'Coastal Premier');
     await userEvent.click(screen.getByText('Next: Teams →'));
     await userEvent.click(screen.getByLabelText('FC United'));
     await userEvent.click(screen.getByText('Next: Review →'));
@@ -135,6 +140,21 @@ describe('LeagueSetupScreen', () => {
     expect(screen.getByRole('tab', { name: '2 · Teams' })).toHaveFocus();
     await userEvent.click(screen.getByRole('button', { name: 'Back' }));
     expect(screen.getByRole('tab', { name: '1 · Details' })).toHaveFocus();
+  });
+
+  it('does not create a league from a blank name reached through the Review tab', async () => {
+    render(<LeagueSetupScreen />);
+
+    await userEvent.click(screen.getByRole('tab', { name: '2 · Teams' }));
+    await userEvent.click(screen.getByLabelText('FC United'));
+    await userEvent.click(screen.getByRole('tab', { name: '3 · Review' }));
+    await userEvent.click(screen.getByText('Create league'));
+
+    expect(route).not.toHaveBeenCalled();
+    expect(useLeagueStore.getState().leagues).toEqual([]);
+    expect(
+      screen.getByText('Enter a league name with at least one letter or number.')
+    ).toBeInTheDocument();
   });
 
   it('shows the name and settings from the Details step at the top of the Teams step', async () => {

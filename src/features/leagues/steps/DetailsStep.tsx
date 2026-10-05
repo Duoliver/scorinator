@@ -1,7 +1,8 @@
 import { forwardRef } from 'preact/compat';
-import { useImperativeHandle, useRef } from 'preact/hooks';
+import { useImperativeHandle, useRef, useState } from 'preact/hooks';
 import { Button, Card, Input, Switch } from '@/design-system';
 import type { FieldHandle } from '@/design-system/field';
+import { slug } from '@/engine/identity';
 import type { LeagueDraftDetails } from '@/app/state/leagueDraftStore';
 import styles from './DetailsStep.module.css';
 
@@ -18,6 +19,17 @@ interface DetailsStepProps {
   onNext: () => void;
 }
 
+/** A league name must give a slug: at least one letter or number. The
+ * same rule `addLeague` applies, through `slug()`, which throws otherwise. */
+function isValidLeagueName(name: string): boolean {
+  try {
+    slug(name.trim());
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function parsePoints(value: string, fallback: number): number {
   if (value.trim() === '') return fallback;
   const parsed = Number(value);
@@ -31,6 +43,10 @@ export const DetailsStep = forwardRef<DetailsStepHandle, DetailsStepProps>(
     const drawRef = useRef<FieldHandle<string>>(null);
     const lossRef = useRef<FieldHandle<string>>(null);
     const homeAdvantageRef = useRef<FieldHandle<boolean>>(null);
+    // Next stays off until the name is valid, so a nameless league never
+    // reaches Review through Next. The field stays uncontrolled: only this
+    // flag updates while the user types.
+    const [nameValid, setNameValid] = useState(() => isValidLeagueName(initial.name));
 
     useImperativeHandle(
       ref,
@@ -55,6 +71,7 @@ export const DetailsStep = forwardRef<DetailsStepHandle, DetailsStepProps>(
             label="League name"
             defaultValue={initial.name}
             placeholder="e.g. Coastal Premier"
+            onChange={(name) => setNameValid(isValidLeagueName(name))}
             ref={nameRef}
           />
 
@@ -86,7 +103,9 @@ export const DetailsStep = forwardRef<DetailsStepHandle, DetailsStepProps>(
           />
 
           <div class={styles.footer}>
-            <Button onClick={onNext}>Next: Teams →</Button>
+            <Button onClick={onNext} disabled={!nameValid}>
+              Next: Teams →
+            </Button>
           </div>
         </div>
       </Card>

@@ -52,10 +52,10 @@ export function ReviewStep({
           <Button variant="secondary" onClick={onBack}>
             Back
           </Button>
-          <Button
-            onClick={onCreate}
-            disabled={!name.trim() || selectedTeams.length === 0}
-          >
+          {/* No name check here: the Details step turns off Next for an
+              invalid name. A jump through the step tabs still reaches
+              this button, and `LeagueSetupScreen.handleCreate` reports it. */}
+          <Button onClick={onCreate} disabled={selectedTeams.length === 0}>
             Create league
           </Button>
         </div>

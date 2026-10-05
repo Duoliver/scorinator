@@ -71,7 +71,7 @@ describe('FileScreen', () => {
     });
 
     it('saves the current league by default', async () => {
-      const save = vi.spyOn(saveActions, 'saveLeagueBySlug').mockResolvedValue();
+      const save = vi.spyOn(saveActions, 'saveLeagueBySlug').mockResolvedValue(true);
       useLeagueStore.setState({
         leagues: [league({ slug: 'inland-cup', name: 'Inland Cup' }), league()],
       });
@@ -84,7 +84,7 @@ describe('FileScreen', () => {
     });
 
     it('saves the league picked in the selector', async () => {
-      const save = vi.spyOn(saveActions, 'saveLeagueBySlug').mockResolvedValue();
+      const save = vi.spyOn(saveActions, 'saveLeagueBySlug').mockResolvedValue(true);
       useLeagueStore.setState({
         leagues: [league({ slug: 'inland-cup', name: 'Inland Cup' }), league()],
       });
@@ -98,7 +98,7 @@ describe('FileScreen', () => {
     });
 
     it('falls back to the first league when there is no current one', async () => {
-      const save = vi.spyOn(saveActions, 'saveLeagueBySlug').mockResolvedValue();
+      const save = vi.spyOn(saveActions, 'saveLeagueBySlug').mockResolvedValue(true);
       useLeagueStore.setState({ leagues: [league()] });
       render(<FileScreen />);
 
@@ -108,7 +108,7 @@ describe('FileScreen', () => {
     });
 
     it('Save as asks for a new file', async () => {
-      const save = vi.spyOn(saveActions, 'saveLeagueBySlug').mockResolvedValue();
+      const save = vi.spyOn(saveActions, 'saveLeagueBySlug').mockResolvedValue(true);
       useLeagueStore.setState({ leagues: [league()] });
       render(<FileScreen />);
 

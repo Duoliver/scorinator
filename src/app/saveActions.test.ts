@@ -92,11 +92,32 @@ describe('saveLeagueBySlug', () => {
       new Error('Disk is full.')
     );
 
-    await expect(saveLeagueBySlug('coastal-premier')).resolves.toBeUndefined();
+    await expect(saveLeagueBySlug('coastal-premier')).resolves.toBe(false);
 
     expect(useFileStore.getState().status).toEqual({
       tone: 'error',
       message: 'Disk is full.',
+    });
+  });
+
+  describe('result', () => {
+    it('is true after a save', async () => {
+      vi.spyOn(leagueFile, 'saveLeagueFile').mockResolvedValue('/saves/coastal.json');
+      expect(await saveLeagueBySlug('coastal-premier')).toBe(true);
+    });
+
+    it('is false after a canceled dialog', async () => {
+      vi.spyOn(leagueFile, 'saveLeagueFile').mockResolvedValue(null);
+      expect(await saveLeagueBySlug('coastal-premier')).toBe(false);
+    });
+
+    it('is false after a failed save', async () => {
+      vi.spyOn(leagueFile, 'saveLeagueFile').mockRejectedValue(new Error('Disk is full.'));
+      expect(await saveLeagueBySlug('coastal-premier')).toBe(false);
+    });
+
+    it('is false for an unknown league slug', async () => {
+      expect(await saveLeagueBySlug('no-such-league')).toBe(false);
     });
   });
 

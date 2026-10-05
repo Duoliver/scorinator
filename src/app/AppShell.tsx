@@ -112,6 +112,15 @@ export function AppShell(): JSX.Element {
     // browser url — normalize it to the path it actually rendered, so the
     // nav highlight matches.
     setActivePath(args.url === ROUTES.root ? DEFAULT_PATH : args.url);
+    // A new screen starts at its top (Task 38). `previous` is undefined on
+    // the first render, and the router does not call `onChange` for the
+    // current url, so neither case scrolls. `onChange` runs during the
+    // router render, so the scroll happens before the new screen paints.
+    // Not a layout effect on `activePath`: it starts at `DEFAULT_PATH`, so a
+    // first load at another path would count as a change.
+    if (args.previous !== undefined && args.previous !== args.url) {
+      window.scrollTo({ top: 0 });
+    }
   };
 
   const handleNavClick =

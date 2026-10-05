@@ -320,4 +320,48 @@ describe('AppShell', () => {
       expect(screen.getAllByRole('status')).toHaveLength(1);
     });
   });
+
+  describe('scroll to the top on a screen change (Task 38)', () => {
+    it('does not scroll on the first render', () => {
+      const scrollTo = vi.spyOn(window, 'scrollTo');
+      render(<AppShell />);
+      expect(scrollTo).not.toHaveBeenCalled();
+    });
+
+    it('scrolls to the top when a nav click opens another screen', async () => {
+      const scrollTo = vi.spyOn(window, 'scrollTo');
+      render(<AppShell />);
+      // The jsdom url carries over between tests, so start from a known screen.
+      await userEvent.click(screen.getByRole('link', { name: 'Leagues' }));
+      scrollTo.mockClear();
+
+      await userEvent.click(screen.getByRole('link', { name: 'Teams' }));
+
+      expect(scrollTo).toHaveBeenCalledTimes(1);
+      expect(scrollTo).toHaveBeenCalledWith({ top: 0 });
+    });
+
+    it('scrolls to the top when a link on a screen opens another screen', async () => {
+      const scrollTo = vi.spyOn(window, 'scrollTo');
+      render(<AppShell />);
+      await userEvent.click(screen.getByRole('link', { name: 'Leagues' }));
+      scrollTo.mockClear();
+
+      await userEvent.click(screen.getByRole('link', { name: 'Create league' }));
+
+      expect(screen.getByRole('heading', { name: 'League Setup' })).toBeInTheDocument();
+      expect(scrollTo).toHaveBeenCalledWith({ top: 0 });
+    });
+
+    it('does not scroll when the active nav item is clicked again', async () => {
+      const scrollTo = vi.spyOn(window, 'scrollTo');
+      render(<AppShell />);
+      await userEvent.click(screen.getByRole('link', { name: 'Teams' }));
+      scrollTo.mockClear();
+
+      await userEvent.click(screen.getByRole('link', { name: 'Teams' }));
+
+      expect(scrollTo).not.toHaveBeenCalled();
+    });
+  });
 });

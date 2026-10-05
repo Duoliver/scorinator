@@ -13,6 +13,11 @@
   gap: var(--space-4);
 }
 
+.actions {
+  display: flex;
+  gap: var(--space-3);
+}
+
 .swatch {
   width: 1.375rem;
   height: 1.375rem;

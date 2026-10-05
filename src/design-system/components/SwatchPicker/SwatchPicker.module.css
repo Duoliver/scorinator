@@ -1,0 +1,63 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.label {
+  font-family: var(--font-condensed);
+  font-weight: 700;
+  font-size: var(--font-size-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: var(--space-2);
+}
+
+.swatch {
+  position: relative;
+  display: block;
+  aspect-ratio: 1;
+  cursor: pointer;
+}
+
+/* The native radio covers the swatch, so a click anywhere on it picks it,
+   but stays invisible. The chip after it shows the state. */
+.input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.chip {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: var(--border-width) solid var(--color-border);
+}
+
+/* The selected swatch: a heavy accent border with a white ring inside it,
+   so it stands out from the near-black border of the other swatches. */
+.input:checked + .chip {
+  border: var(--border-width-heavy) solid var(--color-accent);
+  box-shadow: inset 0 0 0 var(--border-width) var(--color-surface);
+}
+
+.input:focus-visible + .chip {
+  box-shadow: var(--shadow-accent-sm);
+}
+
+/* After the two rules above, so a focused, selected swatch keeps both. */
+.input:checked:focus-visible + .chip {
+  box-shadow:
+    inset 0 0 0 var(--border-width) var(--color-surface),
+    var(--shadow-accent-sm);
+}

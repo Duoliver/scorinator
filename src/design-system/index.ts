@@ -28,4 +28,9 @@ export type { SwitchProps } from './components/Switch';
 export { Drawer } from './components/Drawer';
 export type { DrawerProps } from './components/Drawer';
 
+export { SwatchPicker } from './components/SwatchPicker';
+export type { SwatchPickerProps, SwatchOption } from './components/SwatchPicker';
+
 export { colors, aaaTextPairs } from './tokens';
+export { TEAM_PALETTE, DEFAULT_TEAM_COLOUR } from './tokens/teamPalette';
+export type { TeamPaletteEntry } from './tokens/teamPalette';

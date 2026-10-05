@@ -14,7 +14,12 @@
   - **Match elasticity (shared per-match randomness)**: a single random "openness" value rolled once per match and applied equally to both teams — it scales the total goal volume up or down (anywhere from a tight 0-0 to an open 6-5) without touching the relative split OVR already established. This is deliberately **not** a persistent per-team "playstyle" attribute — it's pure match-to-match randomness, so the same two teams can produce a tight 1-0 one match and a wild 4-3 the next.
   - Net effect: two evenly-matched teams (regardless of whether they're both S-tier or both F-tier) trend toward similar, moderate scorelines on average — elasticity is what varies the game open or shut, not tier level. A large OVR gap still reliably produces a lopsided result.
   - Feeds a **Poisson-style distribution** per team for the actual score generation, producing a **weighted-probability outcome** — stronger teams are favored, upsets remain possible.
-- **Home advantage** (league-level toggle): when enabled, the home team gets a **percentage boost to its OVR** for that match only.
+- **Home advantage** (league-level toggle): when enabled, the home team gets an **OVR boost with two parts** for that match only. Its stored OVR does not change. *(Changed on 2026-10-05, MVP1 Task 32. Before, the boost was a percentage only.)*
+  - **Flat part: +5 OVR.** It is the same for every team. It stands for pitch familiarity and the travel fatigue of the away team, which do not depend on team strength.
+  - **Percentage part: +5% of the home team's OVR.** It grows with team strength. It stands for crowd size, because a stronger team usually has a bigger stadium.
+  - Boosted OVR = round(OVR × 1.05) + 5. For example, OVR 65 becomes 73 for the match. The boosted OVR can go above 99.
+  - Target: two equal teams at OVR 65 give the home team a win rate about 16 percentage points above the away team's (real football, approximately). Measured: +13 at OVR 35, +16 at OVR 65, +21 at OVR 95.
+  - Geography and travel distance play no part.
 - Scoreline distribution follows **standard 11-a-side football** (not high-scoring) — league average around ~1.3 goals/team.
 - Match output for MVP1: **final score only** (e.g. 2–1). No events, no stats.
 - **Matches can be re-scorinated** after already having a result — this simply overwrites the previous score and recalculates standings. Since round-robin matches don't feed into anything downstream (no advancement at stake), re-scorination here has no cascading effects — unlike Bracket ties in MVP2, which do.

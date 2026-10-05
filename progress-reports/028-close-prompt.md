@@ -1,6 +1,6 @@
 # Task 28 — Unsaved-changes prompt when the window closes
 
-**Status:** Review — 2026-10-01
+**Status:** Done — review closed by the user (recorded 2026-10-05)
 
 ## What was built
 
@@ -46,3 +46,5 @@ Confirmed with the user before the build:
 - **Risk:** if `core:window:allow-destroy` does not take effect, the window cannot close once the guard exists. Step 1 of the manual check finds this at once.
 - A team edit does not trigger the prompt yet. Task 36 changes the `isLeagueUnsaved` call, and `allowWindowClose` then needs a one-line update.
 - Prettier formatted only the new files.
+
+**2026-10-05:** Task 36 was cancelled, so the prompt stays league-only in MVP1. See the `PROGRESS.md` Decisions log entry "MVP1 known gap: unsaved teams".

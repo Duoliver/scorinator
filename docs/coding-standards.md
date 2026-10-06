@@ -34,7 +34,13 @@ export default interface BadgeProps {
 }
 ```
 
-The component file imports the default export from `./types`, plus any named types it uses. It re-exports the same names. This keeps the public API unchanged — the API is what a barrel `index.ts` or any other consumer imports:
+The component file imports the default export from `./types`, plus any named types it uses. Three rules decide who imports what:
+
+1. **The component file always re-exports its props type by name**, for example `export type { BadgeProps }`. The folder's `index.ts` barrel exports it from the component file, not from `./types`.
+2. **It re-exports another named type from `types.ts` only when a file outside the folder needs it.** A type that only the folder uses stays unexported from the component file.
+3. **Only the files in the component's own folder import the default export from `./types`.** That includes the component, its hooks, and its helpers. Every other file imports the named type from the component or from its barrel, for example `import type { BadgeProps } from '@/design-system'`.
+
+So the public API of a component is what its component file and its barrel export. `types.ts` is a private detail of the folder:
 
 ```ts
 // components/Badge/Badge.tsx
@@ -49,7 +55,7 @@ export function Badge({ children, tone = 'neutral' }: BadgeProps) {
 }
 ```
 
-A generic component's props interface follows the same pattern: a plain `export default interface Props<Row> { ... }` in `types.ts`. TypeScript allows a generic default export the same way. See `design-system/components/Table/types.ts` for a real example: `TableProps<Row>` is the default export, and `TableColumn<Row>` is a named export it depends on. Types used only inside `types.ts` stay as named exports there. Re-export a type from the component file only when a consumer needs it.
+A generic component's props interface follows the same pattern: a plain `export default interface Props<Row> { ... }` in `types.ts`. TypeScript allows a generic default export the same way. See `design-system/components/Table/types.ts` for a real example: `TableProps<Row>` is the default export, and `TableColumn<Row>` is a named export it depends on. Types used only inside `types.ts` stay as named exports there. Rules 1 to 3 above apply the same way.
 
 ## A component has three layers: helpers, a `useX` hook, and the markup
 

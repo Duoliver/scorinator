@@ -20,6 +20,8 @@ const COLOUR_OPTIONS = TEAM_PALETTE.map(({ name, hex }) => ({
   value: hex,
 }));
 
+export type { TeamFormProps };
+
 export function TeamForm({
   saveLabel,
   initial,

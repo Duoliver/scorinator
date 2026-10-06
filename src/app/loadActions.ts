@@ -1,8 +1,15 @@
 import type { TeamCsvRecord } from '@/adapters/csv';
 import { loadLeagueFile, type LoadedLeagueFile } from '@/app/data/leagueFile';
 import { csvRecordToTeamRecord, mergeImportedTeams } from '@/app/data/importMerge';
-import { useFileStore } from '@/app/state/fileStore';
+import {
+  markLeagueSaved,
+  setCurrentLeague,
+  setFileStatus,
+  setLeaguePath,
+} from '@/app/state/fileActions';
+import { loadLeague } from '@/app/state/leagueActions';
 import { useLeagueStore } from '@/app/state/leagueStore';
+import { setTeams } from '@/app/state/teamsActions';
 import { useTeamsStore } from '@/app/state/teamsStore';
 
 /** The load and team-import actions that the File screen and the Leagues
@@ -17,9 +24,7 @@ export async function openLeagueFile(): Promise<LoadedLeagueFile | null> {
   try {
     return await loadLeagueFile();
   } catch (error) {
-    useFileStore
-      .getState()
-      .setStatus({ tone: 'error', message: (error as Error).message });
+    setFileStatus({ tone: 'error', message: (error as Error).message });
     return null;
   }
 }
@@ -32,14 +37,12 @@ export function isLeagueOpen(slug: string): boolean {
  * merges the file's teams into the roster, remembers the file path, and
  * marks the league saved (Task 26). */
 export function applyLoadedLeague(loaded: LoadedLeagueFile): void {
-  const { setPath, setCurrent, setStatus, markSaved } = useFileStore.getState();
-  useLeagueStore.getState().loadLeague(loaded.league);
-  const { teams, setTeams } = useTeamsStore.getState();
-  setTeams(mergeImportedTeams(teams, loaded.teams));
-  markSaved(loaded.league);
-  setPath(loaded.league.slug, loaded.path);
-  setCurrent(loaded.league.slug);
-  setStatus({
+  loadLeague(loaded.league);
+  setTeams(mergeImportedTeams(useTeamsStore.getState().teams, loaded.teams));
+  markLeagueSaved(loaded.league);
+  setLeaguePath(loaded.league.slug, loaded.path);
+  setCurrentLeague(loaded.league.slug);
+  setFileStatus({
     tone: 'info',
     message: `Loaded ${loaded.league.name} from ${loaded.path}`,
   });
@@ -50,18 +53,16 @@ export function applyLoadedLeague(loaded: LoadedLeagueFile): void {
 export async function importTeams(
   importer: () => Promise<TeamCsvRecord[] | null>
 ): Promise<void> {
-  const { setStatus } = useFileStore.getState();
   try {
     const imported = await importer();
     if (imported === null) return;
     const records = imported.map(csvRecordToTeamRecord);
-    const { teams, setTeams } = useTeamsStore.getState();
-    setTeams(mergeImportedTeams(teams, records));
-    setStatus({
+    setTeams(mergeImportedTeams(useTeamsStore.getState().teams, records));
+    setFileStatus({
       tone: 'info',
       message: `Imported ${records.length} team${records.length === 1 ? '' : 's'}.`,
     });
   } catch (error) {
-    setStatus({ tone: 'error', message: (error as Error).message });
+    setFileStatus({ tone: 'error', message: (error as Error).message });
   }
 }

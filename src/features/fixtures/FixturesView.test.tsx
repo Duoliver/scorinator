@@ -1,5 +1,6 @@
 import type { JSX } from 'preact';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { scorinateMatchday } from '@/app/state/leagueActions';
 import { act, render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { generateRoundRobin } from '@/engine/fixtures';
@@ -402,7 +403,7 @@ describe('FixturesView', () => {
       render(<FixturesViewFromStore slug="coastal-premier" />);
       act(() => {
         for (let matchday = 1; matchday <= lastMatchday; matchday += 1) {
-          useLeagueStore.getState().scorinateMatchday('coastal-premier', matchday);
+          scorinateMatchday('coastal-premier', matchday);
         }
       });
 
@@ -418,7 +419,7 @@ describe('FixturesView', () => {
       render(<FixturesViewFromStore slug="coastal-premier" />);
       act(() => {
         for (let matchday = 1; matchday <= lastMatchday; matchday += 1) {
-          useLeagueStore.getState().scorinateMatchday('coastal-premier', matchday);
+          scorinateMatchday('coastal-premier', matchday);
         }
       });
 

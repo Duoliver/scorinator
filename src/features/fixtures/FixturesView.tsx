@@ -2,7 +2,11 @@ import type { JSX } from 'preact';
 import { useLayoutEffect, useRef, useState } from 'preact/hooks';
 import { Badge, Button } from '@/design-system';
 import { useTeamsStore } from '@/app/state/teamsStore';
-import { useLeagueStore } from '@/app/state/leagueStore';
+import {
+  rescorinateFixture,
+  scorinateFixture,
+  scorinateMatchday,
+} from '@/app/state/leagueActions';
 import {
   findCurrentMatchday,
   findResult,
@@ -34,9 +38,9 @@ const fixtureKey = (match: { matchday: number; home: string; away: string }): st
   `${match.matchday}-${match.home}-${match.away}`;
 
 /** Scorination (Task 15) plays an unplayed match, or a whole unplayed
- * matchday, via `useLeagueStore`'s `scorinateFixture`/`scorinateMatchday`.
+ * matchday, via `leagueActions`' `scorinateFixture`/`scorinateMatchday`.
  * A played match shows its real score, and its button turns into
- * Re-scorinate (Task 7 store action, Task 19 UI), which draws a new score
+ * Re-scorinate (Task 7 action, Task 19 UI), which draws a new score
  * and overwrites the old one with no confirm — MVP1 §1: a round-robin
  * match feeds nothing downstream.
  *
@@ -53,9 +57,6 @@ export function FixturesView({
   onMatchdayChange,
 }: FixturesViewProps): JSX.Element {
   const teams = useTeamsStore((state) => state.teams);
-  const scorinateFixture = useLeagueStore((state) => state.scorinateFixture);
-  const rescorinateFixture = useLeagueStore((state) => state.rescorinateFixture);
-  const scorinateMatchday = useLeagueStore((state) => state.scorinateMatchday);
   const [matchday, setMatchday] = useState(initialMatchday);
   const [flashing, setFlashing] = useState<ReadonlySet<string>>(new Set());
   const seenResults = useRef(league.results);

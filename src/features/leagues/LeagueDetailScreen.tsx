@@ -2,6 +2,7 @@ import type { JSX } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
 import { Badge, Tabs, type TabItem } from '@/design-system';
 import { useLeagueStore } from '@/app/state/leagueStore';
+import { setCurrentLeague } from '@/app/state/fileActions';
 import { isLeagueUnsaved, useFileStore } from '@/app/state/fileStore';
 import { ROUTES } from '@/app/routes';
 import { FixturesView } from '@/features/fixtures';
@@ -31,7 +32,7 @@ export function LeagueDetailScreen({ slug }: LeagueDetailScreenProps): JSX.Eleme
 
   // The league on screen is the one Ctrl+S saves (Task 17).
   useEffect(() => {
-    if (found) useFileStore.getState().setCurrent(slug);
+    if (found) setCurrentLeague(slug);
   }, [slug, found]);
 
   if (!league) {
@@ -75,7 +76,9 @@ export function LeagueDetailScreen({ slug }: LeagueDetailScreenProps): JSX.Eleme
         </a>
         <div class={styles.titleRow}>
           <h1 class={styles.title}>{league.name}</h1>
-          {isLeagueUnsaved(league, savedLeagues) && <Badge tone="warning">Unsaved</Badge>}
+          {isLeagueUnsaved(league, savedLeagues) && (
+            <Badge tone="warning">Unsaved</Badge>
+          )}
         </div>
         <span class={styles.meta}>{meta}</span>
       </div>

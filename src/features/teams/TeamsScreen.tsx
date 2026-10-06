@@ -3,7 +3,8 @@ import type { JSX } from 'preact';
 import { Badge, Button, Table, type TableColumn } from '@/design-system';
 import { TeamFormDrawer, type TeamRecord } from '@/features/components';
 import { importTeamsFile } from '@/app/data/teamsFile';
-import { importTeams } from '@/app/fileActions';
+import { importTeams } from '@/app/loadActions';
+import { addTeam, updateTeam } from '@/app/state/teamsActions';
 import { useTeamsStore } from '@/app/state/teamsStore';
 import styles from './TeamsScreen.module.css';
 
@@ -16,8 +17,6 @@ interface TeamRow extends TeamRecord {
 
 export function TeamsScreen(): JSX.Element {
   const teams = useTeamsStore((state) => state.teams);
-  const addTeam = useTeamsStore((state) => state.addTeam);
-  const updateTeam = useTeamsStore((state) => state.updateTeam);
   const [drawer, setDrawer] = useState<TeamDrawerState>(null);
 
   const handleSave = (record: TeamRecord): void => {

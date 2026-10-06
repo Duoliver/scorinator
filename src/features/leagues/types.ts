@@ -4,7 +4,7 @@ import type { TeamRecord } from '@/features/components';
 
 /** One team as League Setup rolled it into a league: a reference back to
  * the shared team roster (`slug`) plus the OVR rolled for it at league
- * creation. See `app/state/leagueStore`'s `addLeague` for the roll. */
+ * creation. See `app/state/leagueActions`' `addLeague` for the roll. */
 export interface LeagueTeam {
   slug: string;
   ovr: number;
@@ -29,7 +29,7 @@ export interface LeagueResult extends MatchResult<string> {
  * 14), from `generateRoundRobin` — a team's slug is its `TeamId` here,
  * matching `adapters/json-io/types.ts`'s `SavedLeague`. `results` starts
  * empty and fills in as Fixtures' Scorinate actions play each match (Task
- * 15) — see `app/state/leagueStore`'s `scorinateFixture`. */
+ * 15) — see `app/state/leagueActions`' `scorinateFixture`. */
 export interface LeagueRecord {
   slug: string;
   name: string;
@@ -42,7 +42,7 @@ export interface LeagueRecord {
 }
 
 /** What `LeagueSetupScreen` assembles across its three steps and hands to
- * `useLeagueStore().addLeague()` on submit. `teams` here is the full
+ * `addLeague()` (`app/state/leagueActions`) on submit. `teams` here is the full
  * selected `TeamRecord`s (Tier included, OVR not yet rolled) — `addLeague`
  * is what turns this into a `LeagueRecord`'s `LeagueTeam[]`. */
 export interface CreateLeagueInput {

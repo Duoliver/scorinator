@@ -39,7 +39,9 @@ The module map below is a direct transcription of decisions already made in the 
                        required import direction between the two.
 
   /app                 Tauri bootstrap, routing, wiring of adapters to features.
-                       /state holds shared in-memory stores (Zustand).
+                       /state holds shared in-memory stores (Zustand),
+                       each with a sibling *Actions.ts file for the
+                       actions that change it — see coding-standards.md.
                        /data holds the thin adapter-calling functions this
                        page's crossing rule requires — see the entry below.
 ```

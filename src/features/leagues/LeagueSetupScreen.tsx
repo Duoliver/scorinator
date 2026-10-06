@@ -4,7 +4,9 @@ import { route } from 'preact-router';
 import { Tabs, type TabItem } from '@/design-system';
 import type { FieldHandle } from '@/design-system/field';
 import { useTeamsStore } from '@/app/state/teamsStore';
+import { addLeague } from '@/app/state/leagueActions';
 import { useLeagueStore, type LeagueRecord } from '@/app/state/leagueStore';
+import { resetLeagueDraft, setLeagueDraft } from '@/app/state/leagueDraftActions';
 import { leagueDetailPath } from '@/app/routes';
 import {
   useLeagueDraftStore,
@@ -19,7 +21,6 @@ import styles from './LeagueSetupScreen.module.css';
 
 export function LeagueSetupScreen(): JSX.Element {
   const teams = useTeamsStore((state) => state.teams);
-  const addLeague = useLeagueStore((state) => state.addLeague);
   // The whole list, not a mapped selector: a new array on every call would
   // make the store hook re-render without end.
   const leagues = useLeagueStore((state) => state.leagues);
@@ -69,7 +70,7 @@ export function LeagueSetupScreen(): JSX.Element {
       // eslint-disable-next-line react-hooks/exhaustive-deps -- see above
       const fromRef = detailsStepRef.current?.getValues();
       const currentDetails = fromRef ?? latestRef.current.details;
-      useLeagueDraftStore.getState().setDraft({
+      setLeagueDraft({
         details: currentDetails,
         selectedSlugs: latestRef.current.selectedSlugs,
         step: latestRef.current.step,
@@ -150,7 +151,7 @@ export function LeagueSetupScreen(): JSX.Element {
     // this component. Local state itself needs no reset: this instance is
     // about to unmount and never render again.
     suppressDraftSyncRef.current = true;
-    useLeagueDraftStore.getState().reset();
+    resetLeagueDraft();
     route(leagueDetailPath(league.slug));
   };
 

@@ -2,6 +2,7 @@ import { useRef, useState } from 'preact/hooks';
 import type { JSX } from 'preact';
 import { Button, Select } from '@/design-system';
 import type { FieldHandle } from '@/design-system/field';
+import { setFileStatus } from '@/app/state/fileActions';
 import { useFileStore } from '@/app/state/fileStore';
 import { useLeagueStore } from '@/app/state/leagueStore';
 import { useTeamsStore } from '@/app/state/teamsStore';
@@ -16,7 +17,7 @@ import {
   importTeams,
   isLeagueOpen,
   openLeagueFile,
-} from '@/app/fileActions';
+} from '@/app/loadActions';
 import { FileCard } from './FileCard';
 import styles from './FileScreen.module.css';
 
@@ -32,7 +33,6 @@ export function FileScreen(): JSX.Element {
   const leagues = useLeagueStore((state) => state.leagues);
   const currentLeagueSlug = useFileStore((state) => state.currentLeagueSlug);
   const status = useFileStore((state) => state.status);
-  const { setStatus } = useFileStore.getState();
 
   const leagueSelect = useRef<FieldHandle<string>>(null);
   const resultsSelect = useRef<FieldHandle<string>>(null);
@@ -74,7 +74,7 @@ export function FileScreen(): JSX.Element {
     const slug = resultsSelect.current?.getValue() || defaultLeagueSlug;
     const target = leagues.find((league) => league.slug === slug);
     if (!target) {
-      setStatus({
+      setFileStatus({
         tone: 'error',
         message: `Cannot export: league "${slug}" was not found.`,
       });
@@ -82,7 +82,7 @@ export function FileScreen(): JSX.Element {
     }
     try {
       const path = await exportResultsTxt(target, useTeamsStore.getState().teams);
-      setStatus({
+      setFileStatus({
         tone: 'info',
         message:
           path === null
@@ -90,7 +90,7 @@ export function FileScreen(): JSX.Element {
             : `Exported ${target.name} results to ${path}`,
       });
     } catch (error) {
-      setStatus({ tone: 'error', message: (error as Error).message });
+      setFileStatus({ tone: 'error', message: (error as Error).message });
     }
   };
 
@@ -99,12 +99,12 @@ export function FileScreen(): JSX.Element {
       const path = await exportTeamsCsv(
         useTeamsStore.getState().teams.map(teamRecordToCsvRecord)
       );
-      setStatus({
+      setFileStatus({
         tone: 'info',
         message: path === null ? 'Export canceled.' : `Saved to ${path}`,
       });
     } catch (error) {
-      setStatus({ tone: 'error', message: (error as Error).message });
+      setFileStatus({ tone: 'error', message: (error as Error).message });
     }
   };
 

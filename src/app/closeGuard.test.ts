@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { markLeagueSaved } from '@/app/state/fileActions';
 import {
   allowWindowClose,
   describeUnsavedLeagues,
@@ -65,8 +66,8 @@ describe('describeUnsavedLeagues', () => {
 
 describe('allowWindowClose', () => {
   it('allows the close with no prompt when every league is saved', async () => {
-    useFileStore.getState().markSaved(coastal);
-    useFileStore.getState().markSaved(inland);
+    markLeagueSaved(coastal);
+    markLeagueSaved(inland);
     const adapter = adapterAnswering('cancel');
 
     expect(await allowWindowClose(adapter, vi.fn())).toBe(true);
@@ -82,7 +83,7 @@ describe('allowWindowClose', () => {
   });
 
   it('names only the unsaved leagues in the prompt', async () => {
-    useFileStore.getState().markSaved(coastal);
+    markLeagueSaved(coastal);
     const adapter = adapterAnswering('cancel');
 
     await allowWindowClose(adapter, vi.fn());
@@ -93,7 +94,7 @@ describe('allowWindowClose', () => {
   });
 
   it('saves each unsaved league in turn on Save, then allows the close', async () => {
-    useFileStore.getState().markSaved(coastal);
+    markLeagueSaved(coastal);
     const save = vi.fn().mockResolvedValue(true);
 
     expect(await allowWindowClose(adapterAnswering('save'), save)).toBe(true);

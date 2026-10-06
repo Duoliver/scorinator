@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { markLeagueSaved } from '@/app/state/fileActions';
 import { act, render, screen, within } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { LeaguesDashboardScreen } from './LeaguesDashboardScreen';
@@ -137,7 +138,7 @@ describe('LeaguesDashboardScreen', () => {
     const saved = league();
     const unsaved = league({ slug: 'iron-valley-cup', name: 'Iron Valley Cup' });
     useLeagueStore.setState({ leagues: [saved, unsaved] });
-    useFileStore.getState().markSaved(saved);
+    markLeagueSaved(saved);
     render(<LeaguesDashboardScreen />);
 
     expect(screen.getAllByText('Unsaved')).toHaveLength(1);
@@ -153,7 +154,7 @@ describe('LeaguesDashboardScreen', () => {
     render(<LeaguesDashboardScreen />);
     expect(screen.getByText('Unsaved')).toBeInTheDocument();
 
-    act(() => useFileStore.getState().markSaved(open));
+    act(() => markLeagueSaved(open));
 
     expect(screen.queryByText('Unsaved')).not.toBeInTheDocument();
   });

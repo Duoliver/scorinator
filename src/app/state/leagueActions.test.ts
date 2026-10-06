@@ -1,4 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+  addLeague,
+  loadLeague,
+  rescorinateFixture,
+  scorinateFixture,
+  scorinateMatchday,
+} from './leagueActions';
+import { markLeagueSaved } from './fileActions';
 import { useLeagueStore } from './leagueStore';
 import { isLeagueUnsaved, useFileStore } from './fileStore';
 import type { LeagueRecord } from '@/features/leagues/types';
@@ -44,7 +52,7 @@ describe('useLeagueStore', () => {
   });
 
   it('addLeague appends a league carrying the given name, home advantage flag, and points config', () => {
-    const league = useLeagueStore.getState().addLeague({
+    const league = addLeague({
       name: 'Coastal Premier',
       homeAdvantage: true,
       points: { win: 3, draw: 1, loss: 0 },
@@ -58,7 +66,7 @@ describe('useLeagueStore', () => {
   });
 
   it('addLeague rolls a slug from the given name', () => {
-    const league = useLeagueStore.getState().addLeague({
+    const league = addLeague({
       name: 'Coastal Premier',
       homeAdvantage: true,
       points: { win: 3, draw: 1, loss: 0 },
@@ -70,7 +78,7 @@ describe('useLeagueStore', () => {
 
   it('addLeague throws for a degenerate name, same as team slug()', () => {
     expect(() =>
-      useLeagueStore.getState().addLeague({
+      addLeague({
         name: '!!!',
         homeAdvantage: false,
         points: { win: 3, draw: 1, loss: 0 },
@@ -86,16 +94,14 @@ describe('useLeagueStore', () => {
       points: { win: 3, draw: 1, loss: 0 },
       teams: [],
     };
-    useLeagueStore.getState().addLeague(input);
+    addLeague(input);
 
-    expect(() =>
-      useLeagueStore.getState().addLeague({ ...input, name: 'coastal premier!' })
-    ).toThrow(RangeError);
+    expect(() => addLeague({ ...input, name: 'coastal premier!' })).toThrow(RangeError);
     expect(useLeagueStore.getState().leagues).toHaveLength(1);
   });
 
   it('rolls an OVR for every selected team, inside that team Tier range', () => {
-    const league = useLeagueStore.getState().addLeague({
+    const league = addLeague({
       name: 'Coastal Premier',
       homeAdvantage: false,
       points: { win: 3, draw: 1, loss: 0 },
@@ -117,7 +123,7 @@ describe('useLeagueStore', () => {
   });
 
   it('generates a two-way round-robin schedule from the selected teams, for 2 or more teams', () => {
-    const league = useLeagueStore.getState().addLeague({
+    const league = addLeague({
       name: 'Coastal Premier',
       homeAdvantage: false,
       points: { win: 3, draw: 1, loss: 0 },
@@ -136,7 +142,7 @@ describe('useLeagueStore', () => {
     // every matchday. With 8 teams, a shuffle leaves that in all 14
     // matchdays with a chance of about 1 in 270 million.
     const slugs = ['t1', 't2', 't3', 't4', 't5', 't6', 't7', 't8'];
-    const league = useLeagueStore.getState().addLeague({
+    const league = addLeague({
       name: 'Coastal Premier',
       homeAdvantage: false,
       points: { win: 3, draw: 1, loss: 0 },
@@ -152,13 +158,13 @@ describe('useLeagueStore', () => {
   });
 
   it('stores an empty schedule for fewer than 2 teams, rather than throwing', () => {
-    const oneTeam = useLeagueStore.getState().addLeague({
+    const oneTeam = addLeague({
       name: 'Solo League',
       homeAdvantage: false,
       points: { win: 3, draw: 1, loss: 0 },
       teams: [team({ slug: 'fc-united' })],
     });
-    const noTeams = useLeagueStore.getState().addLeague({
+    const noTeams = addLeague({
       name: 'Empty League',
       homeAdvantage: false,
       points: { win: 3, draw: 1, loss: 0 },
@@ -172,7 +178,7 @@ describe('useLeagueStore', () => {
   });
 
   it('addLeague makes the new league the current one for saving', () => {
-    useLeagueStore.getState().addLeague({
+    addLeague({
       name: 'Coastal Premier',
       homeAdvantage: true,
       points: { win: 3, draw: 1, loss: 0 },
@@ -188,7 +194,7 @@ describe('useLeagueStore', () => {
       useLeagueStore.setState({ leagues: [existing] });
 
       const loaded = record();
-      useLeagueStore.getState().loadLeague(loaded);
+      loadLeague(loaded);
 
       expect(useLeagueStore.getState().leagues).toEqual([existing, loaded]);
     });
@@ -200,7 +206,7 @@ describe('useLeagueStore', () => {
       useLeagueStore.setState({ leagues: [first, old, last] });
 
       const loaded = record({ homeAdvantage: true });
-      useLeagueStore.getState().loadLeague(loaded);
+      loadLeague(loaded);
 
       expect(useLeagueStore.getState().leagues).toEqual([first, loaded, last]);
     });
@@ -208,14 +214,14 @@ describe('useLeagueStore', () => {
 
   describe('scorinateFixture', () => {
     it('appends a result for the given fixture, with plausible goal counts', () => {
-      const league = useLeagueStore.getState().addLeague({
+      const league = addLeague({
         name: 'Coastal Premier',
         homeAdvantage: false,
         points: { win: 3, draw: 1, loss: 0 },
         teams: [team({ slug: 'fc-united' }), team({ slug: 'fc-rivals' })],
       });
 
-      useLeagueStore.getState().scorinateFixture(league.slug, league.fixtures[0]);
+      scorinateFixture(league.slug, league.fixtures[0]);
 
       const [updated] = useLeagueStore.getState().leagues;
       expect(updated.results).toEqual([
@@ -232,7 +238,7 @@ describe('useLeagueStore', () => {
     });
 
     it('does nothing for a fixture that already has a result', () => {
-      const league = useLeagueStore.getState().addLeague({
+      const league = addLeague({
         name: 'Coastal Premier',
         homeAdvantage: false,
         points: { win: 3, draw: 1, loss: 0 },
@@ -240,9 +246,9 @@ describe('useLeagueStore', () => {
       });
       const fixture = league.fixtures[0];
 
-      useLeagueStore.getState().scorinateFixture(league.slug, fixture);
+      scorinateFixture(league.slug, fixture);
       const firstResult = useLeagueStore.getState().leagues[0].results[0];
-      useLeagueStore.getState().scorinateFixture(league.slug, fixture);
+      scorinateFixture(league.slug, fixture);
 
       const { results } = useLeagueStore.getState().leagues[0];
       expect(results).toHaveLength(1);
@@ -252,7 +258,7 @@ describe('useLeagueStore', () => {
 
   describe('rescorinateFixture', () => {
     const setupLeague = (homeAdvantage = false): LeagueRecord =>
-      useLeagueStore.getState().addLeague({
+      addLeague({
         name: 'Coastal Premier',
         homeAdvantage,
         points: { win: 3, draw: 1, loss: 0 },
@@ -270,13 +276,12 @@ describe('useLeagueStore', () => {
     it('replaces the result in place: same count, same position, other results untouched', () => {
       const league = setupLeague();
       const [first, second, third] = league.fixtures;
-      const store = useLeagueStore.getState();
-      store.scorinateFixture(league.slug, first);
-      store.scorinateFixture(league.slug, second);
-      store.scorinateFixture(league.slug, third);
+      scorinateFixture(league.slug, first);
+      scorinateFixture(league.slug, second);
+      scorinateFixture(league.slug, third);
       const before = useLeagueStore.getState().leagues[0].results;
 
-      store.rescorinateFixture(league.slug, second);
+      rescorinateFixture(league.slug, second);
 
       const after = useLeagueStore.getState().leagues[0].results;
       expect(after).toHaveLength(3);
@@ -292,11 +297,11 @@ describe('useLeagueStore', () => {
     it('draws a fresh score from the engine, with the home advantage boost when the league has it on', () => {
       const league = setupLeague(true);
       const fixture = league.fixtures[0];
-      useLeagueStore.getState().scorinateFixture(league.slug, fixture);
+      scorinateFixture(league.slug, fixture);
 
       const random = 0.3141;
       vi.spyOn(Math, 'random').mockReturnValue(random);
-      useLeagueStore.getState().rescorinateFixture(league.slug, fixture);
+      rescorinateFixture(league.slug, fixture);
 
       const homeOvr = league.teams.find((t) => t.slug === fixture.home)!.ovr;
       const awayOvr = league.teams.find((t) => t.slug === fixture.away)!.ovr;
@@ -316,8 +321,8 @@ describe('useLeagueStore', () => {
     it('leaves the standings with one played match per team, using the new score', () => {
       const league = setupLeague();
       const fixture = league.fixtures[0];
-      useLeagueStore.getState().scorinateFixture(league.slug, fixture);
-      useLeagueStore.getState().rescorinateFixture(league.slug, fixture);
+      scorinateFixture(league.slug, fixture);
+      rescorinateFixture(league.slug, fixture);
 
       const { results, teams, points } = useLeagueStore.getState().leagues[0];
       const rows = calculateStandings(
@@ -336,19 +341,17 @@ describe('useLeagueStore', () => {
     it('does nothing for a fixture with no result yet', () => {
       const league = setupLeague();
 
-      useLeagueStore.getState().rescorinateFixture(league.slug, league.fixtures[0]);
+      rescorinateFixture(league.slug, league.fixtures[0]);
 
       expect(useLeagueStore.getState().leagues[0].results).toEqual([]);
     });
 
     it('does nothing for an unknown league slug', () => {
       const league = setupLeague();
-      useLeagueStore.getState().scorinateFixture(league.slug, league.fixtures[0]);
+      scorinateFixture(league.slug, league.fixtures[0]);
       const before = useLeagueStore.getState().leagues;
 
-      useLeagueStore
-        .getState()
-        .rescorinateFixture('no-such-league', league.fixtures[0]);
+      rescorinateFixture('no-such-league', league.fixtures[0]);
 
       expect(useLeagueStore.getState().leagues).toEqual(before);
     });
@@ -356,7 +359,7 @@ describe('useLeagueStore', () => {
 
   describe('unsaved tracking', () => {
     const setup = (): LeagueRecord =>
-      useLeagueStore.getState().addLeague({
+      addLeague({
         name: 'Coastal Premier',
         homeAdvantage: false,
         points: { win: 3, draw: 1, loss: 0 },
@@ -367,8 +370,7 @@ describe('useLeagueStore', () => {
         useLeagueStore.getState().leagues[0],
         useFileStore.getState().savedLeagues
       );
-    const markSaved = (): void =>
-      useFileStore.getState().markSaved(useLeagueStore.getState().leagues[0]);
+    const markSaved = (): void => markLeagueSaved(useLeagueStore.getState().leagues[0]);
 
     it('leaves a new league unsaved, since it was never written', () => {
       setup();
@@ -380,45 +382,45 @@ describe('useLeagueStore', () => {
       markSaved();
       expect(unsaved()).toBe(false);
 
-      useLeagueStore.getState().scorinateFixture(league.slug, league.fixtures[0]);
+      scorinateFixture(league.slug, league.fixtures[0]);
 
       expect(unsaved()).toBe(true);
     });
 
     it('leaves a saved league unsaved after a re-scorinate', () => {
       const league = setup();
-      useLeagueStore.getState().scorinateFixture(league.slug, league.fixtures[0]);
+      scorinateFixture(league.slug, league.fixtures[0]);
       markSaved();
 
-      useLeagueStore.getState().rescorinateFixture(league.slug, league.fixtures[0]);
+      rescorinateFixture(league.slug, league.fixtures[0]);
 
       expect(unsaved()).toBe(true);
     });
 
     it('keeps a saved league saved when a scorinate does nothing', () => {
       const league = setup();
-      useLeagueStore.getState().scorinateFixture(league.slug, league.fixtures[0]);
+      scorinateFixture(league.slug, league.fixtures[0]);
       markSaved();
 
-      useLeagueStore.getState().scorinateFixture(league.slug, league.fixtures[0]);
-      useLeagueStore.getState().rescorinateFixture(league.slug, league.fixtures[1]);
+      scorinateFixture(league.slug, league.fixtures[0]);
+      rescorinateFixture(league.slug, league.fixtures[1]);
 
       expect(unsaved()).toBe(false);
     });
 
     it('leaves the other leagues saved when one changes', () => {
       const first = setup();
-      useLeagueStore.getState().addLeague({
+      addLeague({
         name: 'Inland Cup',
         homeAdvantage: false,
         points: { win: 3, draw: 1, loss: 0 },
         teams: [team({ slug: 'fc-united' }), team({ slug: 'fc-rivals' })],
       });
       for (const league of useLeagueStore.getState().leagues) {
-        useFileStore.getState().markSaved(league);
+        markLeagueSaved(league);
       }
 
-      useLeagueStore.getState().scorinateFixture(first.slug, first.fixtures[0]);
+      scorinateFixture(first.slug, first.fixtures[0]);
 
       const [changed, untouched] = useLeagueStore.getState().leagues;
       const { savedLeagues } = useFileStore.getState();
@@ -429,7 +431,7 @@ describe('useLeagueStore', () => {
 
   describe('scorinateMatchday', () => {
     it('scorinates every unplayed fixture on the given matchday, and none from another matchday', () => {
-      const league = useLeagueStore.getState().addLeague({
+      const league = addLeague({
         name: 'Coastal Premier',
         homeAdvantage: false,
         points: { win: 3, draw: 1, loss: 0 },
@@ -441,7 +443,7 @@ describe('useLeagueStore', () => {
         ],
       });
 
-      useLeagueStore.getState().scorinateMatchday(league.slug, 1);
+      scorinateMatchday(league.slug, 1);
 
       const { results, fixtures } = useLeagueStore.getState().leagues[0];
       const matchdayOne = fixtures.filter((fixture) => fixture.matchday === 1);
@@ -450,16 +452,16 @@ describe('useLeagueStore', () => {
     });
 
     it('skips a fixture that already has a result', () => {
-      const league = useLeagueStore.getState().addLeague({
+      const league = addLeague({
         name: 'Coastal Premier',
         homeAdvantage: false,
         points: { win: 3, draw: 1, loss: 0 },
         teams: [team({ slug: 'fc-united' }), team({ slug: 'fc-rivals' })],
       });
-      useLeagueStore.getState().scorinateFixture(league.slug, league.fixtures[0]);
+      scorinateFixture(league.slug, league.fixtures[0]);
       const firstResult = useLeagueStore.getState().leagues[0].results[0];
 
-      useLeagueStore.getState().scorinateMatchday(league.slug, 1);
+      scorinateMatchday(league.slug, 1);
 
       const { results } = useLeagueStore.getState().leagues[0];
       expect(results).toHaveLength(1);

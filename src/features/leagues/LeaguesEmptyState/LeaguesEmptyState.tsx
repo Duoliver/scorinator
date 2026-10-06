@@ -2,7 +2,7 @@ import type { JSX } from 'preact';
 import { Button, Card } from '@/design-system';
 import { ROUTES } from '@/app/routes';
 import { importTeamsFile } from '@/app/data/teamsFile';
-import { applyLoadedLeague, importTeams, openLeagueFile } from '@/app/fileActions';
+import { applyLoadedLeague, importTeams, openLeagueFile } from '@/app/loadActions';
 import styles from './LeaguesEmptyState.module.css';
 
 /** What the Leagues start screen shows with no leagues (Task 29): the four

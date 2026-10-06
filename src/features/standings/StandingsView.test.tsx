@@ -1,5 +1,6 @@
 import type { JSX } from 'preact';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { scorinateFixture } from '@/app/state/leagueActions';
 import { act, render, screen } from '@testing-library/preact';
 import { generateRoundRobin } from '@/engine/fixtures';
 import { useTeamsStore } from '@/app/state/teamsStore';
@@ -80,8 +81,20 @@ describe('StandingsView', () => {
       <StandingsView
         league={league({
           results: [
-            { matchday: 1, home: 'fc-united', away: 'fc-rivals', homeGoals: 2, awayGoals: 0 },
-            { matchday: 2, home: 'fc-town', away: 'fc-rivals', homeGoals: 1, awayGoals: 1 },
+            {
+              matchday: 1,
+              home: 'fc-united',
+              away: 'fc-rivals',
+              homeGoals: 2,
+              awayGoals: 0,
+            },
+            {
+              matchday: 2,
+              home: 'fc-town',
+              away: 'fc-rivals',
+              homeGoals: 1,
+              awayGoals: 1,
+            },
           ],
         })}
       />
@@ -103,7 +116,9 @@ describe('StandingsView', () => {
     unmount();
 
     render(
-      <StandingsView league={league({ results, points: { win: 2, draw: 1, loss: 0 } })} />
+      <StandingsView
+        league={league({ results, points: { win: 2, draw: 1, loss: 0 } })}
+      />
     );
     expect(pointsOf(dataRows()[0])).toBe('2');
   });
@@ -117,7 +132,13 @@ describe('StandingsView', () => {
             { slug: 'fc-rivals', ovr: 65 },
           ],
           results: [
-            { matchday: 1, home: 'fc-united', away: 'fc-rivals', homeGoals: 1, awayGoals: 1 },
+            {
+              matchday: 1,
+              home: 'fc-united',
+              away: 'fc-rivals',
+              homeGoals: 1,
+              awayGoals: 1,
+            },
           ],
         })}
       />
@@ -166,7 +187,7 @@ describe('StandingsView', () => {
 
     const first = fixtures[0];
     if (!first) throw new Error('expected a generated fixture');
-    act(() => useLeagueStore.getState().scorinateFixture('coastal-premier', first));
+    act(() => scorinateFixture('coastal-premier', first));
 
     const rows = dataRows();
     expect(rows.map((row) => row[2])).toEqual(['1', '1']);

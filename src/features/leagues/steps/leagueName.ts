@@ -5,7 +5,7 @@ export const LEAGUE_NAME_INVALID =
 export const LEAGUE_NAME_TAKEN = 'A league with this name already exists.';
 
 /** Why a league name cannot be used, or `null` when it can. A league's slug
- * comes from its name (`leagueStore.addLeague`), so the name must give a
+ * comes from its name (`leagueActions.addLeague`), so the name must give a
  * slug — `slug()` throws for a blank or symbols-only name — and no open
  * league may use that slug already (Task 40). The Details step shows the
  * result next to Next, and `LeagueSetupScreen.handleCreate` checks it again,

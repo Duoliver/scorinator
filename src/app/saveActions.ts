@@ -1,4 +1,10 @@
 import { saveLeagueFile, saveLeagueFileAs } from '@/app/data/leagueFile';
+import {
+  markLeagueSaved,
+  setCurrentLeague,
+  setFileStatus,
+  setLeaguePath,
+} from '@/app/state/fileActions';
 import { useFileStore } from '@/app/state/fileStore';
 import { useLeagueStore } from '@/app/state/leagueStore';
 import { useTeamsStore } from '@/app/state/teamsStore';
@@ -15,10 +21,14 @@ export async function saveLeagueBySlug(
   slug: string,
   options: { saveAs?: boolean } = {}
 ): Promise<boolean> {
-  const { setPath, setCurrent, setStatus, markSaved } = useFileStore.getState();
-  const league = useLeagueStore.getState().leagues.find((candidate) => candidate.slug === slug);
+  const league = useLeagueStore
+    .getState()
+    .leagues.find((candidate) => candidate.slug === slug);
   if (!league) {
-    setStatus({ tone: 'error', message: `Cannot save: league "${slug}" was not found.` });
+    setFileStatus({
+      tone: 'error',
+      message: `Cannot save: league "${slug}" was not found.`,
+    });
     return false;
   }
 
@@ -29,18 +39,18 @@ export async function saveLeagueBySlug(
       ? await saveLeagueFileAs(league, roster, knownPath)
       : await saveLeagueFile(league, roster, knownPath);
     if (path === null) {
-      setStatus({ tone: 'info', message: 'Save canceled.' });
+      setFileStatus({ tone: 'info', message: 'Save canceled.' });
       return false;
     }
-    setPath(slug, path);
+    setLeaguePath(slug, path);
     // The object read before the write, not whatever the store holds now: a
     // change made while the file was writing stays unsaved (Task 26).
-    markSaved(league);
-    setCurrent(slug);
-    setStatus({ tone: 'info', message: `Saved ${league.name} to ${path}` });
+    markLeagueSaved(league);
+    setCurrentLeague(slug);
+    setFileStatus({ tone: 'info', message: `Saved ${league.name} to ${path}` });
     return true;
   } catch (error) {
-    setStatus({ tone: 'error', message: (error as Error).message });
+    setFileStatus({ tone: 'error', message: (error as Error).message });
     return false;
   }
 }
@@ -48,9 +58,12 @@ export async function saveLeagueBySlug(
 /** Ctrl+S: saves the current league (the last one created, opened, or
  * loaded), from any screen. */
 export async function saveCurrentLeague(): Promise<void> {
-  const { currentLeagueSlug, setStatus } = useFileStore.getState();
+  const { currentLeagueSlug } = useFileStore.getState();
   if (currentLeagueSlug === null) {
-    setStatus({ tone: 'info', message: 'No league to save. Open or create a league first.' });
+    setFileStatus({
+      tone: 'info',
+      message: 'No league to save. Open or create a league first.',
+    });
     return;
   }
   await saveLeagueBySlug(currentLeagueSlug);

@@ -4,7 +4,7 @@ import {
   importTeams,
   isLeagueOpen,
   openLeagueFile,
-} from './fileActions';
+} from './loadActions';
 import * as leagueFile from '@/app/data/leagueFile';
 import type { LoadedLeagueFile } from '@/app/data/leagueFile';
 import { isLeagueUnsaved, useFileStore } from '@/app/state/fileStore';

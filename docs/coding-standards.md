@@ -55,16 +55,18 @@ A generic component's props interface follows the same pattern: a plain `export 
 
 `preact-router` fully unmounts a screen on nav-away, and fully remounts it on nav-back. Any plain `useState` inside that screen resets on remount. A wizard, a multi-field form, or any screen holding real in-progress work needs a place to keep its draft between those two events. Without one, the user loses it.
 
-Reach for a small Zustand slice under `app/state/`, next to `teamsStore.ts` and `leagueStore.ts` — see `leagueDraftStore.ts` for a worked example. Keep that store to exactly this shape:
+Reach for a small Zustand slice under `app/state/`, next to `teamsStore.ts` and `leagueStore.ts` — see `leagueDraftStore.ts` and `leagueDraftActions.ts` for a worked example. Keep that store to exactly this shape, with its two actions in a sibling `xDraftActions.ts` (see the store actions rule below):
 
 ```ts
-export interface XDraftState extends XDraft {
-  setDraft: (draft: XDraft) => void;
-  reset: () => void;
-}
+// app/state/xDraftStore.ts
+export type XDraftState = XDraft;
+
+// app/state/xDraftActions.ts
+export function setXDraft(draft: XDraft): void { /* ... */ }
+export function resetXDraft(): void { /* ... */ }
 ```
 
-No per-field action (`setName`, `toggleTeam`, and so on) on the store itself. Those stay local to the screen, exactly as they would with no store at all. The store holds one snapshot, plus two ways to change it. It is not a live API surface that grows with every field the screen ever gains.
+No per-field action (`setName`, `toggleTeam`, and so on). Those stay local to the screen, exactly as they would with no store at all. The store holds one snapshot, plus two ways to change it. It is not a live API surface that grows with every field the screen ever gains.
 
 Read and write that store at exactly three points, never per keystroke or per click:
 
@@ -75,6 +77,46 @@ Read and write that store at exactly three points, never per keystroke or per cl
 For a text or number field edited at typing speed, do not wire its `onChange` to the store. Do not even wire it to the screen's own local reactive state. Make the field fully uncontrolled instead. Hold a `FieldHandle` ref to it — `Input`, `Select`, `Switch`, and `Checkbox` all already expose one. Read `.getValue()` only at one of the three points above. If the field lives inside a child component, wrap that child in a small `forwardRef` plus `useImperativeHandle` — see `DetailsStep`'s `getValues()` handle for a worked example. `TeamsStep`'s own `checkboxHandles` map already does the same thing, for a set of checkboxes. This is not a new pattern for this codebase, only a new place to use it.
 
 The point of the three-point rule: a screen with `N` fields and `M` keystrokes should cost the store one read and a handful of writes, never `M` writes. The same rule, and the same uncontrolled-field technique, apply to any future screen with this draft-loss problem. The League Setup wizard is the first case here, not the only one.
+
+## A store holds state only. Its actions live in a sibling `*Actions.ts` file
+
+This rule applies to every Zustand store under `app/state/`. The store file (`xStore.ts`) holds the state interface, the `create()` call with the initial state, and pure read helpers such as `isLeagueUnsaved`. It holds no action. Each action is a plain exported function in a sibling file, `xActions.ts`. The action changes the store through `useXStore.setState` and reads it through `useXStore.getState`. Zustand calls this the "no store actions" pattern.
+
+```ts
+// app/state/teamsStore.ts
+export interface TeamsState {
+  teams: TeamRecord[];
+}
+
+export const useTeamsStore = create<TeamsState>()(() => ({
+  teams: [],
+}));
+
+// app/state/teamsActions.ts
+export function addTeam(team: TeamRecord): void {
+  useTeamsStore.setState((state) => ({ teams: [...state.teams, team] }));
+}
+```
+
+A component imports the action directly. It uses the store hook only to read state:
+
+```tsx
+// Don't
+const addTeam = useTeamsStore((state) => state.addTeam);
+
+// Do
+import { addTeam } from '@/app/state/teamsActions';
+const teams = useTeamsStore((state) => state.teams);
+```
+
+Rules for the actions file:
+
+- **Name an action for what it does, with the store's subject in the name.** The action is a module-level export, so a name like `setStatus` or `reset` loses its context at the call site. Write `setFileStatus` and `resetLeagueDraft`.
+- **An action may call an action of another store.** Import it from that store's actions file. For example, `addLeague` calls `setCurrentLeague` from `fileActions.ts`. Do not call another store's `setState` directly.
+- **Keep helpers private.** A helper that only actions use, such as `playFixture` in `leagueActions.ts`, stays an unexported function in the actions file.
+- **Tests go in `xActions.test.ts`.** A test resets the store with `useXStore.setState(...)` in `beforeEach`, calls the action, and asserts on `useXStore.getState()`.
+
+An action that uses several stores and an `app/data` function, such as a save or a load, is an app action. It lives one level up, in `app/` (`saveActions.ts`, `loadActions.ts`). It follows the same plain-function shape.
 
 ## Use absolute imports, not relative
 

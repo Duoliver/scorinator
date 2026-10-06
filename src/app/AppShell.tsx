@@ -14,6 +14,7 @@ import {
 } from '@/features/leagues';
 import { FileScreen } from '@/features/file';
 import { PlaygroundScreen } from '@/features/playground';
+import { clearFileStatus } from '@/app/state/fileActions';
 import { useFileStore } from '@/app/state/fileStore';
 import { saveCurrentLeague } from '@/app/saveActions';
 import { installCloseGuard } from '@/app/closeGuard';
@@ -99,10 +100,7 @@ export function AppShell(): JSX.Element {
   // The status line clears itself. A new status restarts the timer.
   useEffect(() => {
     if (!status) return;
-    const timer = setTimeout(
-      () => useFileStore.getState().clearStatus(),
-      STATUS_VISIBLE_MS
-    );
+    const timer = setTimeout(() => clearFileStatus(), STATUS_VISIBLE_MS);
     return (): void => clearTimeout(timer);
   }, [status]);
 

@@ -11,6 +11,7 @@ import {
 } from '@/design-system';
 import type { FieldHandle } from '@/design-system/field';
 import { TeamFormDrawer, type TeamRecord } from '@/features/components';
+import { addTeam } from '@/app/state/teamsActions';
 import { useTeamsStore } from '@/app/state/teamsStore';
 import type { PointsConfig } from '@/engine/standings';
 import { SetupChips, settingsChipLabels } from './SetupChips';
@@ -43,7 +44,6 @@ export function TeamsStep({
   onNext,
 }: TeamsStepProps): JSX.Element {
   const teams = useTeamsStore((state) => state.teams);
-  const addTeam = useTeamsStore((state) => state.addTeam);
   const [query, setQuery] = useState('');
   const [showCreateTeam, setShowCreateTeam] = useState(false);
   const checkboxHandles = useRef(new Map<string, FieldHandle<boolean>>());

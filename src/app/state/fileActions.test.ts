@@ -1,4 +1,11 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import {
+  clearFileStatus,
+  markLeagueSaved,
+  setCurrentLeague,
+  setFileStatus,
+  setLeaguePath,
+} from './fileActions';
 import { isLeagueUnsaved, useFileStore } from './fileStore';
 import type { LeagueRecord } from '@/features/leagues/types';
 
@@ -31,15 +38,15 @@ describe('useFileStore', () => {
     expect(state.status).toBeNull();
   });
 
-  it('setCurrent remembers the current league slug', () => {
-    useFileStore.getState().setCurrent('coastal-premier');
+  it('setCurrentLeague remembers the current league slug', () => {
+    setCurrentLeague('coastal-premier');
     expect(useFileStore.getState().currentLeagueSlug).toBe('coastal-premier');
   });
 
-  it('setPath keeps one saved path per league, without touching the others', () => {
-    useFileStore.getState().setPath('coastal-premier', '/saves/coastal.json');
-    useFileStore.getState().setPath('inland-cup', '/saves/inland.json');
-    useFileStore.getState().setPath('coastal-premier', '/saves/coastal-v2.json');
+  it('setLeaguePath keeps one saved path per league, without touching the others', () => {
+    setLeaguePath('coastal-premier', '/saves/coastal.json');
+    setLeaguePath('inland-cup', '/saves/inland.json');
+    setLeaguePath('coastal-premier', '/saves/coastal-v2.json');
 
     expect(useFileStore.getState().paths).toEqual({
       'coastal-premier': '/saves/coastal-v2.json',
@@ -47,22 +54,22 @@ describe('useFileStore', () => {
     });
   });
 
-  it('setStatus and clearStatus set and remove the status line', () => {
-    useFileStore.getState().setStatus({ tone: 'error', message: 'Could not save.' });
+  it('setFileStatus and clearFileStatus set and remove the status line', () => {
+    setFileStatus({ tone: 'error', message: 'Could not save.' });
     expect(useFileStore.getState().status).toEqual({
       tone: 'error',
       message: 'Could not save.',
     });
 
-    useFileStore.getState().clearStatus();
+    clearFileStatus();
     expect(useFileStore.getState().status).toBeNull();
   });
 
-  it('markSaved keeps the saved league per slug, without touching the others', () => {
+  it('markLeagueSaved keeps the saved league per slug, without touching the others', () => {
     const coastal = league();
     const inland = league({ slug: 'inland-cup' });
-    useFileStore.getState().markSaved(coastal);
-    useFileStore.getState().markSaved(inland);
+    markLeagueSaved(coastal);
+    markLeagueSaved(inland);
 
     expect(useFileStore.getState().savedLeagues).toEqual({
       'coastal-premier': coastal,

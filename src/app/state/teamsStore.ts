@@ -6,22 +6,13 @@ import type { TeamRecord } from '@/features/components';
  * a team created on one screen is visible on the other without a page
  * reload. Holds no disk state — CSV/JSON import and export go through the
  * sibling `app/data/teamsCsv.ts`/`teamsJson.ts` seam, which reads the
- * current roster from here and writes results back here. */
+ * current roster from here and writes results back here.
+ *
+ * State only. The actions that change it live in `teamsActions.ts`. */
 export interface TeamsState {
   teams: TeamRecord[];
-  addTeam: (team: TeamRecord) => void;
-  updateTeam: (index: number, team: TeamRecord) => void;
-  setTeams: (teams: TeamRecord[]) => void;
 }
 
-export const useTeamsStore = create<TeamsState>()((set) => ({
+export const useTeamsStore = create<TeamsState>()(() => ({
   teams: [],
-  addTeam: (team): void => set((state) => ({ teams: [...state.teams, team] })),
-  updateTeam: (index, team): void =>
-    set((state) => {
-      const next = [...state.teams];
-      next[index] = team;
-      return { teams: next };
-    }),
-  setTeams: (teams): void => set({ teams }),
 }));

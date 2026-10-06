@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { addLeague } from '@/app/state/leagueActions';
 import { cleanup, render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { route } from 'preact-router';
@@ -159,7 +160,7 @@ describe('LeagueSetupScreen', () => {
 
   describe('a second league with the same slug (Task 40)', () => {
     beforeEach(() => {
-      useLeagueStore.getState().addLeague({
+      addLeague({
         name: 'Coastal Premier',
         homeAdvantage: false,
         points: DEFAULT_POINTS_CONFIG,

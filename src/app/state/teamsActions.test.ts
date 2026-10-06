@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { addTeam, setTeams, updateTeam } from './teamsActions';
 import { useTeamsStore } from './teamsStore';
 import type { TeamRecord } from '@/features/components';
 
@@ -20,14 +21,14 @@ describe('useTeamsStore', () => {
   });
 
   it('addTeam appends to the roster', () => {
-    useTeamsStore.getState().addTeam(team());
+    addTeam(team());
     expect(useTeamsStore.getState().teams).toEqual([team()]);
   });
 
   it('updateTeam replaces the team at the given index', () => {
-    useTeamsStore.getState().addTeam(team({ slug: 'team-one', name: 'Team One' }));
-    useTeamsStore.getState().addTeam(team({ slug: 'team-two', name: 'Team Two' }));
-    useTeamsStore.getState().updateTeam(1, team({ slug: 'team-two', name: 'Team 2' }));
+    addTeam(team({ slug: 'team-one', name: 'Team One' }));
+    addTeam(team({ slug: 'team-two', name: 'Team Two' }));
+    updateTeam(1, team({ slug: 'team-two', name: 'Team 2' }));
 
     expect(useTeamsStore.getState().teams.map((t) => t.name)).toEqual([
       'Team One',
@@ -36,8 +37,8 @@ describe('useTeamsStore', () => {
   });
 
   it('setTeams replaces the whole roster', () => {
-    useTeamsStore.getState().addTeam(team());
-    useTeamsStore.getState().setTeams([team({ slug: 'other', name: 'Other FC' })]);
+    addTeam(team());
+    setTeams([team({ slug: 'other', name: 'Other FC' })]);
 
     expect(useTeamsStore.getState().teams).toEqual([
       team({ slug: 'other', name: 'Other FC' }),

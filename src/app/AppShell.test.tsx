@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { setFileStatus } from '@/app/state/fileActions';
 import { act, render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { route } from 'preact-router';
@@ -285,9 +286,7 @@ describe('AppShell', () => {
     it('shows the latest save or load result in the sidebar', () => {
       render(<AppShell />);
 
-      act(() =>
-        useFileStore.getState().setStatus({ tone: 'info', message: 'Saved it.' })
-      );
+      act(() => setFileStatus({ tone: 'info', message: 'Saved it.' }));
 
       expect(screen.getByRole('status')).toHaveTextContent('Saved it.');
     });
@@ -296,9 +295,7 @@ describe('AppShell', () => {
       vi.useFakeTimers();
       render(<AppShell />);
 
-      act(() =>
-        useFileStore.getState().setStatus({ tone: 'info', message: 'Saved it.' })
-      );
+      act(() => setFileStatus({ tone: 'info', message: 'Saved it.' }));
       expect(screen.getByRole('status')).toBeInTheDocument();
 
       act(() => {
@@ -313,9 +310,7 @@ describe('AppShell', () => {
       render(<AppShell />);
       await userEvent.click(screen.getByRole('link', { name: 'File' }));
 
-      act(() =>
-        useFileStore.getState().setStatus({ tone: 'info', message: 'Saved it.' })
-      );
+      act(() => setFileStatus({ tone: 'info', message: 'Saved it.' }));
 
       expect(screen.getAllByRole('status')).toHaveLength(1);
     });

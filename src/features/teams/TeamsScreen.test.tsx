@@ -1,11 +1,15 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { TeamsScreen } from './TeamsScreen';
+import * as teamsFile from '@/app/data/teamsFile';
+import { useFileStore } from '@/app/state/fileStore';
 import { useTeamsStore } from '@/app/state/teamsStore';
 
 beforeEach(() => {
+  vi.restoreAllMocks();
   useTeamsStore.setState({ teams: [] });
+  useFileStore.setState({ status: null });
 });
 
 describe('TeamsScreen', () => {
@@ -74,5 +78,57 @@ describe('TeamsScreen', () => {
     expect(editButtons).toHaveLength(2);
     await userEvent.click(editButtons[1]);
     expect(screen.getByLabelText('Team name')).toHaveValue('Team Two');
+  });
+  describe('Import teams', () => {
+    it('shows an Import teams button', () => {
+      render(<TeamsScreen />);
+      expect(
+        screen.getByRole('button', { name: 'Import teams...' })
+      ).toBeInTheDocument();
+    });
+
+    it('imports teams from one CSV-or-JSON dialog and lists them', async () => {
+      const importer = vi.spyOn(teamsFile, 'importTeamsFile').mockResolvedValue([
+        { slug: 'fc-united', name: 'FC United', colour: '#E53935', tier: 'B' },
+        { slug: 'harborview-sc', name: 'Harborview SC', colour: '#1E88E5', tier: 'A' },
+      ]);
+      render(<TeamsScreen />);
+
+      await userEvent.click(screen.getByRole('button', { name: 'Import teams...' }));
+
+      expect(importer).toHaveBeenCalledTimes(1);
+      expect(await screen.findByText('FC United')).toBeInTheDocument();
+      expect(screen.getByText('Harborview SC')).toBeInTheDocument();
+      expect(screen.getByText('2 teams')).toBeInTheDocument();
+      expect(useFileStore.getState().status).toEqual({
+        tone: 'info',
+        message: 'Imported 2 teams.',
+      });
+    });
+
+    it('changes nothing when the dialog is canceled', async () => {
+      vi.spyOn(teamsFile, 'importTeamsFile').mockResolvedValue(null);
+      render(<TeamsScreen />);
+
+      await userEvent.click(screen.getByRole('button', { name: 'Import teams...' }));
+
+      expect(screen.getByText('0 teams')).toBeInTheDocument();
+      expect(useFileStore.getState().status).toBeNull();
+    });
+
+    it('reports an import error in the status line', async () => {
+      vi.spyOn(teamsFile, 'importTeamsFile').mockRejectedValue(
+        new Error('Row 2: Tier is required.')
+      );
+      render(<TeamsScreen />);
+
+      await userEvent.click(screen.getByRole('button', { name: 'Import teams...' }));
+
+      expect(useFileStore.getState().status).toEqual({
+        tone: 'error',
+        message: 'Row 2: Tier is required.',
+      });
+      expect(screen.getByText('0 teams')).toBeInTheDocument();
+    });
   });
 });

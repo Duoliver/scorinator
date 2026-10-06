@@ -1,7 +1,7 @@
 /*
  * Base rules for raw HTML elements, tied to design tokens instead of
- * repeated per component. Every element uses border-box sizing, and only
- * h1/h2/h3 get a typography rule here — every current use
+ * repeated per component. Every element uses border-box sizing, body has
+ * no margin, and only h1/h2/h3 get a typography rule here — every current use
  * of each is a plain page, section, or sub-section title with no
  * per-instance styling.
  * A heading that genuinely needs to look different should override with
@@ -14,6 +14,15 @@
 *::before,
 *::after {
   box-sizing: border-box;
+}
+
+/* The browser default gives body an 8px margin and a white background.
+ * The app's own background then starts inside that margin, so a white
+ * strip showed around the content area, and the margin added 16px to the
+ * page height. The fixed sidebar ignored it. */
+body {
+  margin: 0;
+  background: var(--color-bg);
 }
 
 h1 {

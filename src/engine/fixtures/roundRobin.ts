@@ -1,3 +1,4 @@
+import type { Rng } from '@/engine/rng';
 import type { Bye, Fixture, RoundRobinSchedule } from './types';
 
 // Internal marker for the odd-team-out placeholder in the circle method
@@ -13,15 +14,21 @@ interface Pairing<TeamId> {
 
 /**
  * Generates a two-way (home-and-away) round-robin schedule for N teams,
- * per MVP1 spec §1 "Fixtures". No RNG: fixture generation is not
- * stochastic, so the same team list and order always produce the same
- * schedule (see the determinism test).
+ * per MVP1 spec §1 "Fixtures". The pairings and the home and away sides
+ * are not stochastic: the same team list and order always give the same
+ * fixtures.
+ *
+ * `rng` is optional, and only shuffles the order of the matches inside
+ * each matchday (Task 30). Without the shuffle, the circle method keeps
+ * the first team in the first match of every matchday. Without an `rng`,
+ * the order is the circle method's, the same on every call (see the
+ * determinism test).
  *
  * Not in scope here: single-duels round robin's randomized-but-balanced
  * home/away assignment. That is MVP2's `groups round robin`, a separate
  * generator, not an extension of this one.
  */
-export function generateRoundRobin<TeamId>(teams: readonly TeamId[]): RoundRobinSchedule<TeamId> {
+export function generateRoundRobin<TeamId>(teams: readonly TeamId[], rng?: Rng): RoundRobinSchedule<TeamId> {
   if (teams.length < 2) {
     throw new RangeError(
       `generateRoundRobin needs at least 2 teams, got ${teams.length}. This is a deliberate rejection, not a spec rule — see the Task 3 decision log.`
@@ -46,7 +53,24 @@ export function generateRoundRobin<TeamId>(teams: readonly TeamId[]): RoundRobin
     addLegTwo(pairing, roundsPerLeg, fixtures, byes);
   }
 
-  return { fixtures, byes };
+  return { fixtures: rng ? shuffleWithinMatchdays(fixtures, rng) : fixtures, byes };
+}
+
+// `fixtures` arrives in matchday order. Fisher-Yates on each matchday's run
+// of fixtures, so the matchday order stays and only the match order moves.
+function shuffleWithinMatchdays<T extends { matchday: number }>(fixtures: T[], rng: Rng): T[] {
+  const shuffled = fixtures.slice();
+  let start = 0;
+  while (start < shuffled.length) {
+    let end = start;
+    while (end < shuffled.length && shuffled[end].matchday === shuffled[start].matchday) end++;
+    for (let i = end - 1; i > start; i--) {
+      const j = start + Math.floor(rng() * (i - start + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    start = end;
+  }
+  return shuffled;
 }
 
 function pairLegOne<TeamId>(

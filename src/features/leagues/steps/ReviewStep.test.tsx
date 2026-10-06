@@ -55,4 +55,17 @@ describe('ReviewStep', () => {
     );
     expect(screen.getByText('Create league')).toBeDisabled();
   });
+  it('does not disable Create league for a blank name: the Details step blocks it, and the screen reports a tab jump', () => {
+    render(
+      <ReviewStep
+        name=""
+        homeAdvantage={false}
+        points={{ win: 3, draw: 1, loss: 0 }}
+        selectedTeams={selectedTeams}
+        onBack={vi.fn()}
+        onCreate={vi.fn()}
+      />
+    );
+    expect(screen.getByText('Create league')).toBeEnabled();
+  });
 });

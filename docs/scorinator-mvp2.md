@@ -23,7 +23,7 @@ Builds on MVP 1 (single round-robin league). MVP 2 introduces **mixed-format lea
 - **Layout**: group cards **wrap to the next line** when there are many groups, rather than horizontally scrolling.
 
 ### Round Robin (Single Duels) — Home/Away Balancing
-- Even though single duels has no return leg, home advantage still applies per-match (same OVR boost rule as two-way).
+- Even though single duels has no return leg, home advantage still applies per-match (same OVR boost rule as two-way: a flat +5 plus 5% of the home OVR, see MVP1 §1).
 - Since there's no guaranteed pairing of home/away like a two-way round robin provides, home/away assignment is **randomized per match**, with the schedule generator ensuring each team plays **as close to an equal number of home and away matches as possible** (exact split if the group size allows it, roughly equal — off by one — if not).
 
 ### Tiebreak Resolution (for phases/matches requiring a decisive result, e.g. Bracket)

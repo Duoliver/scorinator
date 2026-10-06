@@ -17,4 +17,11 @@
 .footer {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.hint {
+  font-size: var(--font-size-md);
+  color: var(--color-fg-muted);
 }

@@ -97,25 +97,34 @@ function samplePoisson(lambda: number, rng: Rng): number {
 }
 
 /**
- * League-level home-advantage boost (spec §1): a league that enables it
- * gives the home team a percentage OVR boost, for that match only — the
- * team's stored OVR never changes. The spec names no exact percentage.
- * This session proposes 5%, a modest boost in line with real-world home
- * advantage effect sizes, and flags it as a balancing detail rather than
- * picking it silently, per `tdd.md`. See the Task 6 decision log entry.
+ * League-level home-advantage boost (MVP1 spec §1): a league that enables
+ * it gives the home team an OVR boost with two parts, for that match only —
+ * the team's stored OVR never changes.
+ *
+ * - The flat part is the same for every team: pitch familiarity, and the
+ *   travel fatigue of the away team.
+ * - The percentage part grows with team strength: crowd size, since a
+ *   stronger team usually has a bigger stadium.
+ *
+ * The user chose +5 and 5% (Task 32). Measured with this engine, two equal
+ * teams then give a home win gap of about +13, +16, and +21 points at OVR
+ * 35, 65, and 95. Real football is about +16. Before Task 32 the boost was
+ * 5% only, which gave about +6 at OVR 65.
  */
-export const HOME_ADVANTAGE_BOOST = 0.05;
+export const HOME_ADVANTAGE_FLAT = 5;
+export const HOME_ADVANTAGE_PERCENT = 0.05;
 
 /**
- * Applies the home-advantage boost to one OVR value, rounded back to a
- * whole number (OVR is always an integer, see `engine/tier-ovr`). A
+ * Applies the home-advantage boost to one OVR value: the percentage part
+ * first, rounded back to a whole number (OVR is always an integer, see
+ * `engine/tier-ovr`), then the flat part. The result can go above 99. A
  * league with home advantage enabled calls this on the home team's OVR
  * before it reaches `scorinateMatch`; a league without it skips the call
  * entirely — this function carries no on/off state of its own. MVP2's
  * single-duels format uses the same boost rule (spec §2).
  */
 export function applyHomeAdvantage(ovr: number): number {
-  return Math.round(ovr * (1 + HOME_ADVANTAGE_BOOST));
+  return Math.round(ovr * (1 + HOME_ADVANTAGE_PERCENT)) + HOME_ADVANTAGE_FLAT;
 }
 
 /**

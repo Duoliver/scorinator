@@ -36,3 +36,9 @@ if (!HTMLDialogElement.prototype.showModal) {
     if (!cancelled) dialog.close();
   });
 }
+
+// jsdom does not implement `window.scrollTo` and logs a "Not implemented"
+// error on each call. `Tabs` calls it on a step change in League Setup, so
+// a no-op keeps every screen test quiet. A test that checks the scroll spies
+// on this stub with `vi.spyOn(window, 'scrollTo')`.
+window.scrollTo = (): void => {};

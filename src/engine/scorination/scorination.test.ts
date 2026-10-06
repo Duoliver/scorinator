@@ -7,7 +7,8 @@ import {
   DIFF_WEIGHT,
   ELASTICITY_MAX,
   ELASTICITY_MIN,
-  HOME_ADVANTAGE_BOOST,
+  HOME_ADVANTAGE_FLAT,
+  HOME_ADVANTAGE_PERCENT,
   REFERENCE_OVR,
   applyHomeAdvantage,
   computeExpectedGoals,
@@ -163,9 +164,19 @@ describe('scorinateMatch', () => {
 });
 
 describe('applyHomeAdvantage', () => {
-  it('boosts OVR by the configured percentage, rounded to a whole number', () => {
-    expect(applyHomeAdvantage(80)).toBe(Math.round(80 * (1 + HOME_ADVANTAGE_BOOST)));
-    expect(applyHomeAdvantage(80)).toBe(84);
+  it('adds the percentage part first, rounds, then adds the flat part (MVP1 spec §1)', () => {
+    for (const ovr of [30, 35, 65, 80, 95, 99]) {
+      expect(applyHomeAdvantage(ovr)).toBe(
+        Math.round(ovr * (1 + HOME_ADVANTAGE_PERCENT)) + HOME_ADVANTAGE_FLAT
+      );
+    }
+  });
+
+  it('gives +5 flat and +5%: 35 -> 42, 65 -> 73, 80 -> 89, 99 -> 109', () => {
+    expect(applyHomeAdvantage(35)).toBe(42);
+    expect(applyHomeAdvantage(65)).toBe(73);
+    expect(applyHomeAdvantage(80)).toBe(89);
+    expect(applyHomeAdvantage(99)).toBe(109);
   });
 
   it('never lowers an OVR value', () => {
@@ -176,22 +187,36 @@ describe('applyHomeAdvantage', () => {
 });
 
 describe('home advantage effect on scorinateMatch', () => {
-  it("raises the home team's win rate against an otherwise evenly matched away team", () => {
-    const homeWinRate = (homeOvr: number, awayOvr: number): number => {
-      let homeWins = 0;
-      for (let seed = 0; seed < TRIALS; seed++) {
-        const { homeGoals, awayGoals } = scorinateMatch(
-          homeOvr,
-          awayOvr,
-          createSeededRng(seed)
-        );
-        if (homeGoals > awayGoals) homeWins++;
-      }
-      return homeWins / TRIALS;
-    };
-    const withoutBoost = homeWinRate(70, 70);
-    const withBoost = homeWinRate(applyHomeAdvantage(70), 70);
-    expect(withBoost).toBeGreaterThan(withoutBoost);
+  const WIN_GAP_TRIALS = 20000;
+
+  /** Home win rate minus away win rate, in percentage points, for two teams
+   * of equal OVR with the home boost on. Seeded, so the result is fixed. */
+  const winGap = (ovr: number): number => {
+    let homeWins = 0;
+    let awayWins = 0;
+    for (let seed = 0; seed < WIN_GAP_TRIALS; seed++) {
+      const { homeGoals, awayGoals } = scorinateMatch(
+        applyHomeAdvantage(ovr),
+        ovr,
+        createSeededRng(seed)
+      );
+      if (homeGoals > awayGoals) homeWins++;
+      else if (awayGoals > homeGoals) awayWins++;
+    }
+    return ((homeWins - awayWins) / WIN_GAP_TRIALS) * 100;
+  };
+
+  // Targets from the Task 32 measurement (200,000 matches each): +13.2,
+  // +15.9, and +20.7 points. Real football is about +16 (MVP1 spec §1).
+  // Each band is the target +/- 2.5 points.
+  it.each([
+    [35, 13.2],
+    [65, 15.9],
+    [95, 20.7],
+  ])('gives equal teams at OVR %i a home win gap near %f points', (ovr, target) => {
+    const gap = winGap(ovr);
+    expect(gap).toBeGreaterThan(target - 2.5);
+    expect(gap).toBeLessThan(target + 2.5);
   });
 });
 
@@ -205,7 +230,8 @@ describe('module surface', () => {
         'ABS_WEIGHT',
         'ELASTICITY_MIN',
         'ELASTICITY_MAX',
-        'HOME_ADVANTAGE_BOOST',
+        'HOME_ADVANTAGE_FLAT',
+        'HOME_ADVANTAGE_PERCENT',
         'rollElasticity',
         'computeExpectedGoals',
         'applyHomeAdvantage',

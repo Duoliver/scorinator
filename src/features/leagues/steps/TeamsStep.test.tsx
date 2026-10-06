@@ -5,6 +5,9 @@ import { TeamsStep } from './TeamsStep';
 import { useTeamsStore } from '@/app/state/teamsStore';
 
 const baseProps = {
+  name: 'Coastal Premier',
+  homeAdvantage: true,
+  points: { win: 3, draw: 1, loss: 0 },
   selectedSlugs: [] as string[],
   onToggleTeam: vi.fn(),
   onSelectAll: vi.fn(),
@@ -118,5 +121,30 @@ describe('TeamsStep', () => {
     render(<TeamsStep {...baseProps} />);
     await userEvent.type(screen.getByLabelText('Search teams'), 'nonexistent');
     expect(screen.getByText('Select all')).toBeDisabled();
+  });
+  describe('league summary from the Details step', () => {
+    it('shows the league name and the settings chips', () => {
+      render(<TeamsStep {...baseProps} />);
+      expect(screen.getByText('Coastal Premier')).toBeInTheDocument();
+      expect(screen.getByText('Home adv. on')).toBeInTheDocument();
+      expect(screen.getByText('3/1/0 pts')).toBeInTheDocument();
+    });
+
+    it('shows the other values when they change', () => {
+      render(
+        <TeamsStep
+          {...baseProps}
+          homeAdvantage={false}
+          points={{ win: 2, draw: 1, loss: 0 }}
+        />
+      );
+      expect(screen.getByText('Home adv. off')).toBeInTheDocument();
+      expect(screen.getByText('2/1/0 pts')).toBeInTheDocument();
+    });
+
+    it('shows Untitled league for a blank name, as the Review step does', () => {
+      render(<TeamsStep {...baseProps} name="" />);
+      expect(screen.getByText('Untitled league')).toBeInTheDocument();
+    });
   });
 });

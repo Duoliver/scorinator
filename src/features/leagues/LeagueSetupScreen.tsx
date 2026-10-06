@@ -14,11 +14,16 @@ import {
 import { DetailsStep, type DetailsStepHandle } from './steps/DetailsStep';
 import { TeamsStep } from './steps/TeamsStep';
 import { ReviewStep } from './steps/ReviewStep';
+import { leagueNameProblem } from './steps/leagueName';
 import styles from './LeagueSetupScreen.module.css';
 
 export function LeagueSetupScreen(): JSX.Element {
   const teams = useTeamsStore((state) => state.teams);
   const addLeague = useLeagueStore((state) => state.addLeague);
+  // The whole list, not a mapped selector: a new array on every call would
+  // make the store hook re-render without end.
+  const leagues = useLeagueStore((state) => state.leagues);
+  const takenSlugs = leagues.map((league) => league.slug);
 
   // Read the persisted draft once, on mount — not a subscribed selector.
   // Nothing below ties this screen's render to `leagueDraftStore` while it
@@ -83,9 +88,13 @@ export function LeagueSetupScreen(): JSX.Element {
     return next;
   };
 
+  // Back and Next live inside the step, so the step change removes the
+  // button that has focus. Focus moves to the new step tab, which stays on
+  // the page. On a tab click, that tab already has focus.
   const goToStep = (next: LeagueSetupStep): void => {
     syncDetailsFromRef();
     stepsRef.current?.setValue(next);
+    stepsRef.current?.focus();
     setStep(next);
   };
 
@@ -112,6 +121,13 @@ export function LeagueSetupScreen(): JSX.Element {
   const handleCreate = (): void => {
     // `DetailsStep` is unmounted by the time Review is reachable — `details`
     // already holds its final values, synced by `goToStep` on the way out.
+    // The step tabs can reach Review past a disabled Next, so check the
+    // name again here: invalid, or taken by an open league (Task 40).
+    const nameProblem = leagueNameProblem(details.name, takenSlugs);
+    if (nameProblem) {
+      setStatus(nameProblem);
+      return;
+    }
     let league: LeagueRecord;
     try {
       league = addLeague({
@@ -120,14 +136,11 @@ export function LeagueSetupScreen(): JSX.Element {
         points: details.points,
         teams: selectedTeams,
       });
-    } catch {
-      // `addLeague` rolls a slug from the trimmed name — the Review step's
-      // disable check only catches a blank name, not a symbols-only one
-      // like "!!!", which `slug()` also rejects. `TeamForm.handleSave`
-      // guards the same gap the same way for a team name, with its own
-      // fixed copy rather than the thrown message — `slug()`'s own message
-      // literally says "team name", which would be wrong here.
-      setStatus('Enter a league name with at least one letter or number.');
+    } catch (error) {
+      // The check above covers both errors `addLeague` can throw (a name
+      // with no slug, a taken slug). This only keeps the screen up if a
+      // store change elsewhere ever adds another.
+      setStatus((error as Error).message);
       return;
     }
 
@@ -148,6 +161,7 @@ export function LeagueSetupScreen(): JSX.Element {
       content: (
         <DetailsStep
           initial={details}
+          takenSlugs={takenSlugs}
           onNext={() => goToStep('teams')}
           ref={detailsStepRef}
         />
@@ -158,6 +172,9 @@ export function LeagueSetupScreen(): JSX.Element {
       label: '2 · Teams',
       content: (
         <TeamsStep
+          name={details.name}
+          homeAdvantage={details.homeAdvantage}
+          points={details.points}
           selectedSlugs={selectedSlugs}
           onToggleTeam={toggleTeam}
           onSelectAll={selectAllTeams}
@@ -194,6 +211,7 @@ export function LeagueSetupScreen(): JSX.Element {
         onChange={(id) => goToStep(id as LeagueSetupStep)}
         ref={stepsRef}
         fullWidth
+        scrollToTopOnChange
       />
 
       {status && <span class={styles.status}>{status}</span>}

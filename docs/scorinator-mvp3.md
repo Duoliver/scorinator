@@ -38,27 +38,9 @@ Builds on MVP 1 (single round-robin league) and MVP 2 (mixed-format phases). MVP
 - Updated columns: `ID/slug`, `Name`, `Colours`, `Tier`, `City`.
 
 ### Team Colours
-- Colours are picked from a **16-colour palette**.
-- For MVP3, we lock in a **placeholder palette** (final palette/hex values to be revisited in the Claude Design phase):
-
-| # | Name | Hex (placeholder) |
-|---|------|------|
-| 1 | Red | #E53935 |
-| 2 | Maroon | #7B1E1E |
-| 3 | Orange | #FB8C00 |
-| 4 | Gold | #F9A825 |
-| 5 | Yellow | #FDD835 |
-| 6 | Olive | #827717 |
-| 7 | Green | #2E7D32 |
-| 8 | Teal | #00897B |
-| 9 | Sky Blue | #039BE5 |
-| 10 | Navy | #1A237E |
-| 11 | Blue | #1E88E5 |
-| 12 | Purple | #6A1B9A |
-| 13 | Pink | #D81B60 |
-| 14 | Black | #212121 |
-| 15 | Grey | #9E9E9E |
-| 16 | White | #FAFAFA |
+- **The 16-colour palette ships in MVP1, not MVP3** (changed on 2026-10-05, MVP1 Task 34). See MVP1 §1, Team Colours, for the palette and its placeholder values.
+- **MVP3 adds a custom colour**, for a colour that is not in the palette: a **hex field**, a **live preview**, and **RGB sliders**, all kept in sync. The design of this custom colour picker is pending (see Open Items).
+- The palette stays available in MVP3, next to the custom colour picker.
 
 ---
 
@@ -89,10 +71,10 @@ Builds on MVP 1 (single round-robin league) and MVP 2 (mixed-format phases). MVP
 - As a user, I want to run multiple independent Seasons in the same database, so that unrelated league setups don't interfere with each other.
 
 ### Epic: Team Colours
-- As a user, I want to pick a team's colours from the 16-colour placeholder palette, so that every team has a consistent, valid colour choice.
+- As a user, I want to set a custom team colour with a hex field or RGB sliders, and see a live preview, so that a team can use a colour outside the palette. *(The palette itself ships in MVP1.)*
 - As a user, I want the crest generator (from the original spec) to use the team's selected colours when no custom crest image is provided, so that every team has a usable visual identity.
 
 ---
 
 ## 3. Open Items
-- Exact final 16-colour palette/hex values — placeholder above, to be revisited during the Claude Design phase.
+- Custom colour picker design (hex field, live preview, RGB sliders) — pending the user's design. It also needs a `Slider` primitive in `design-system/`.

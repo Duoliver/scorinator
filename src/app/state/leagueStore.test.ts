@@ -79,6 +79,21 @@ describe('useLeagueStore', () => {
     ).toThrow(RangeError);
   });
 
+  it('addLeague throws for a slug another league already uses, and adds nothing', () => {
+    const input = {
+      name: 'Coastal Premier',
+      homeAdvantage: false,
+      points: { win: 3, draw: 1, loss: 0 },
+      teams: [],
+    };
+    useLeagueStore.getState().addLeague(input);
+
+    expect(() =>
+      useLeagueStore.getState().addLeague({ ...input, name: 'coastal premier!' })
+    ).toThrow(RangeError);
+    expect(useLeagueStore.getState().leagues).toHaveLength(1);
+  });
+
   it('rolls an OVR for every selected team, inside that team Tier range', () => {
     const league = useLeagueStore.getState().addLeague({
       name: 'Coastal Premier',
@@ -114,6 +129,26 @@ describe('useLeagueStore', () => {
       { matchday: 1, home: 'fc-united', away: 'fc-rivals' },
       { matchday: 2, home: 'fc-rivals', away: 'fc-united' },
     ]);
+  });
+
+  it('shuffles the match order inside each matchday', () => {
+    // Without a shuffle, the first selected team plays the first match of
+    // every matchday. With 8 teams, a shuffle leaves that in all 14
+    // matchdays with a chance of about 1 in 270 million.
+    const slugs = ['t1', 't2', 't3', 't4', 't5', 't6', 't7', 't8'];
+    const league = useLeagueStore.getState().addLeague({
+      name: 'Coastal Premier',
+      homeAdvantage: false,
+      points: { win: 3, draw: 1, loss: 0 },
+      teams: slugs.map((slug) => team({ slug })),
+    });
+
+    const firstMatchHasT1 = Array.from({ length: 14 }, (_, i) => {
+      const first = league.fixtures.find((fixture) => fixture.matchday === i + 1);
+      return first?.home === 't1' || first?.away === 't1';
+    });
+    expect(firstMatchHasT1.every(Boolean)).toBe(false);
+    expect(league.fixtures).toHaveLength(56);
   });
 
   it('stores an empty schedule for fewer than 2 teams, rather than throwing', () => {

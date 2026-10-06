@@ -413,5 +413,131 @@ describe('FixturesView', () => {
       // The first and last buttons stay available on a completed league.
       expect(screen.getByRole('button', { name: 'Last matchday' })).not.toBeDisabled();
     });
+
+    it('gives the League completed badge a short Completed form for a compact header, hidden from screen readers', () => {
+      render(<FixturesViewFromStore slug="coastal-premier" />);
+      act(() => {
+        for (let matchday = 1; matchday <= lastMatchday; matchday += 1) {
+          useLeagueStore.getState().scorinateMatchday('coastal-premier', matchday);
+        }
+      });
+
+      expect(screen.getByText('League completed')).not.toHaveAttribute('aria-hidden');
+      expect(screen.getByText('Completed')).toHaveAttribute('aria-hidden', 'true');
+    });
+  });
+  describe('compact header on a narrow width (Task 35)', () => {
+    // jsdom applies no container query, so these tests check the markup the
+    // CSS relies on: stable accessible names, and the short text marked
+    // aria-hidden. The narrow look itself needs a browser check.
+    const slugs = ['fc-united', 'fc-rivals', 'fc-town', 'fc-rangers'];
+    const { fixtures, byes } = generateRoundRobin(slugs);
+
+    const renderView = (): void => {
+      useLeagueStore.setState({
+        leagues: [
+          league({ teams: slugs.map((slug) => ({ slug, ovr: 60 })), fixtures, byes }),
+        ],
+      });
+      render(<FixturesView league={useLeagueStore.getState().leagues[0]!} />);
+    };
+
+    it('gives the four text buttons a full accessible name that does not depend on the visible label', () => {
+      renderView();
+      for (const name of [
+        'Previous matchday',
+        'Next matchday',
+        'Current matchday',
+        'Scorinate matchday',
+      ]) {
+        expect(screen.getByRole('button', { name })).toHaveAttribute(
+          'aria-label',
+          name
+        );
+      }
+    });
+
+    it('hides the arrows of Previous and Next from screen readers', () => {
+      renderView();
+      for (const name of ['Previous matchday', 'Next matchday']) {
+        const arrow = screen
+          .getByRole('button', { name })
+          .querySelector('[aria-hidden="true"]');
+        expect(arrow?.textContent).toMatch(/[←→]/);
+      }
+    });
+
+    it('keeps the full counter for screen readers, and marks the short counter aria-hidden', () => {
+      renderView();
+      const total = Math.max(...fixtures.map((f) => f.matchday));
+      expect(screen.getByText(`Matchday 1 / ${total}`)).not.toHaveAttribute(
+        'aria-hidden'
+      );
+      expect(screen.getByText(`1 / ${total}`)).toHaveAttribute('aria-hidden', 'true');
+    });
+  });
+  describe('per-team goals for the stacked match row (Task 39)', () => {
+    // jsdom applies no container query, so these tests check the markup the
+    // stacked layout relies on. The layout itself needs a browser check.
+    const goals = (side: 'home' | 'away'): HTMLElement =>
+      document.querySelector(`[data-goals="${side}"]`) as HTMLElement;
+
+    const twoTeamLeague = (results: LeagueRecord['results'] = []): void => {
+      const { fixtures, byes } = generateRoundRobin(['fc-united', 'fc-rivals']);
+      useLeagueStore.setState({
+        leagues: [
+          league({
+            teams: [
+              { slug: 'fc-united', ovr: 70 },
+              { slug: 'fc-rivals', ovr: 65 },
+            ],
+            fixtures,
+            byes,
+            results: results.map((result, i) => ({ ...fixtures[i], ...result })),
+          }),
+        ],
+      });
+    };
+
+    it('shows each team its own goals after a result, hidden from screen readers', () => {
+      twoTeamLeague([
+        { homeGoals: 2, awayGoals: 1 } as LeagueRecord['results'][number],
+      ]);
+      render(<FixturesViewFromStore slug="coastal-premier" />);
+
+      expect(goals('home')).toHaveTextContent(/^2$/);
+      expect(goals('away')).toHaveTextContent(/^1$/);
+      expect(goals('home')).toHaveAttribute('aria-hidden', 'true');
+      expect(goals('away')).toHaveAttribute('aria-hidden', 'true');
+    });
+
+    it('leaves both goals empty before a result, with no vs', () => {
+      twoTeamLeague();
+      render(<FixturesViewFromStore slug="coastal-premier" />);
+
+      expect(goals('home')).toBeEmptyDOMElement();
+      expect(goals('away')).toBeEmptyDOMElement();
+    });
+
+    it('puts the home goals in the home team block and the away goals in the away block', () => {
+      twoTeamLeague([
+        { homeGoals: 3, awayGoals: 0 } as LeagueRecord['results'][number],
+      ]);
+      render(<FixturesViewFromStore slug="coastal-premier" />);
+
+      expect(goals('home').parentElement).toHaveTextContent('FC United');
+      expect(goals('away').parentElement).toHaveTextContent('FC Rivals');
+    });
+
+    it('flashes both goals with the score after a scorinate', async () => {
+      twoTeamLeague();
+      render(<FixturesViewFromStore slug="coastal-premier" />);
+
+      await userEvent.click(screen.getByRole('button', { name: 'Scorinate' }));
+
+      expect(screen.getByText(/^\d+ - \d+$/)).toHaveAttribute('data-flashing');
+      expect(goals('home')).toHaveAttribute('data-flashing');
+      expect(goals('away')).toHaveAttribute('data-flashing');
+    });
   });
 });

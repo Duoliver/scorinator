@@ -1,4 +1,7 @@
+/* A size container, not a viewport query, because the 220px sidebar takes
+ * width from the content. See the compact header rules at the end. */
 .view {
+  container: fixtures / inline-size;
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
@@ -87,8 +90,18 @@
 }
 
 /* Set by `FixturesView` for `SCORE_FLASH_MS` after a score is generated. */
-.score[data-flashing] {
+.score[data-flashing],
+.goals[data-flashing] {
   color: var(--color-accent);
+}
+
+/* One team's goals, for the stacked match row only (Task 39). */
+.goals {
+  display: none;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: var(--font-size-lg);
+  color: var(--color-fg-muted);
 }
 
 .action {
@@ -116,4 +129,115 @@
 .empty {
   margin: 0;
   color: var(--color-fg-muted);
+}
+
+/* Wide by default: the full text shows, the short one does not. Used by
+ * the matchday counter and the League completed badge. */
+.shortText {
+  display: none;
+}
+
+/* Compact header (Task 35). The full header needs 987px for one line
+ * (measured: 640px matchday group + 331px actions + 16px gap), so 63rem
+ * (1008px) switches a little before it would wrap. The compact header
+ * stays on one line down to about 557px. The buttons keep their full names through
+ * `aria-label`, so `display: none` on the words is safe for screen
+ * readers. The full counter and the full badge text stay for screen
+ * readers, visually hidden. The badge needs its short form too: with
+ * "League completed" in full, the compact header needed 601px, not
+ * 557px, and wrapped before the stacked layout below started. */
+@container fixtures (max-width: 63rem) {
+  .wideOnly {
+    display: none;
+  }
+
+  .shortText {
+    display: inline;
+  }
+
+  .fullText {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .matchday {
+    min-width: 5rem;
+  }
+}
+
+/* Stacked header. The compact header needs about 557px for one line, so
+ * below 35rem (560px) it becomes a column, and each row spans the full
+ * width: the counter takes the free space in the top row, and the bottom
+ * row's items share it equally. A container query, not a wrap, so the
+ * stacked layout never depends on where `flex-wrap` happens to break. */
+@container fixtures (max-width: 35rem) {
+  .nav {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .matchday {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* Equal columns. `flex: 1` shares only the free space, so a button,
+   * with more padding than the badge, came out 8px wider. Centred, so the
+   * League completed badge reads like the buttons. */
+  .actions {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+  }
+
+  .actions > * {
+    justify-content: center;
+  }
+
+  /* Stacked match row (Task 39): one line for each team, home first, each
+   * `[colour] [name] [goals]`, then the button at full width. The full
+   * score stays for screen readers, visually hidden. */
+  .match {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-2);
+  }
+
+  .home,
+  .away {
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .home > .swatch {
+    order: -1;
+  }
+
+  .teamName {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .goals {
+    display: inline;
+  }
+
+  .score {
+    position: absolute;
+    width: 1px;
+    min-width: 0;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .action > * {
+    flex: 1;
+  }
 }

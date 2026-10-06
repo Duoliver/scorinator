@@ -14,7 +14,12 @@
   - **Match elasticity (shared per-match randomness)**: a single random "openness" value rolled once per match and applied equally to both teams — it scales the total goal volume up or down (anywhere from a tight 0-0 to an open 6-5) without touching the relative split OVR already established. This is deliberately **not** a persistent per-team "playstyle" attribute — it's pure match-to-match randomness, so the same two teams can produce a tight 1-0 one match and a wild 4-3 the next.
   - Net effect: two evenly-matched teams (regardless of whether they're both S-tier or both F-tier) trend toward similar, moderate scorelines on average — elasticity is what varies the game open or shut, not tier level. A large OVR gap still reliably produces a lopsided result.
   - Feeds a **Poisson-style distribution** per team for the actual score generation, producing a **weighted-probability outcome** — stronger teams are favored, upsets remain possible.
-- **Home advantage** (league-level toggle): when enabled, the home team gets a **percentage boost to its OVR** for that match only.
+- **Home advantage** (league-level toggle): when enabled, the home team gets an **OVR boost with two parts** for that match only. Its stored OVR does not change. *(Changed on 2026-10-05, MVP1 Task 32. Before, the boost was a percentage only.)*
+  - **Flat part: +5 OVR.** It is the same for every team. It stands for pitch familiarity and the travel fatigue of the away team, which do not depend on team strength.
+  - **Percentage part: +5% of the home team's OVR.** It grows with team strength. It stands for crowd size, because a stronger team usually has a bigger stadium.
+  - Boosted OVR = round(OVR × 1.05) + 5. For example, OVR 65 becomes 73 for the match. The boosted OVR can go above 99.
+  - Target: two equal teams at OVR 65 give the home team a win rate about 16 percentage points above the away team's (real football, approximately). Measured: +13 at OVR 35, +16 at OVR 65, +21 at OVR 95.
+  - Geography and travel distance play no part.
 - Scoreline distribution follows **standard 11-a-side football** (not high-scoring) — league average around ~1.3 goals/team.
 - Match output for MVP1: **final score only** (e.g. 2–1). No events, no stats.
 - **Matches can be re-scorinated** after already having a result — this simply overwrites the previous score and recalculates standings. Since round-robin matches don't feed into anything downstream (no advancement at stake), re-scorination here has no cascading effects — unlike Bracket ties in MVP2, which do.
@@ -27,6 +32,31 @@
 ### Standings
 - Points system is **configurable per league**, defaulting to **3 / 1 / 0** (win/draw/loss).
 
+### Team Colours
+- A team colour is picked from a **16-colour palette**. *(Added on 2026-10-05. Before that date, the palette was MVP3 scope.)*
+- MVP1 uses the **placeholder palette** below. The values can change later, for example after a Claude Design pass.
+- Keep the palette values in **one place** in the code, so a change to the palette is one edit.
+- A custom colour (hex field, live preview, RGB sliders) is MVP3 scope.
+
+| # | Name | Hex (placeholder) |
+|---|------|------|
+| 1 | Red | #E53935 |
+| 2 | Maroon | #7B1E1E |
+| 3 | Orange | #FB8C00 |
+| 4 | Gold | #F9A825 |
+| 5 | Yellow | #FDD835 |
+| 6 | Olive | #827717 |
+| 7 | Green | #2E7D32 |
+| 8 | Teal | #00897B |
+| 9 | Sky Blue | #039BE5 |
+| 10 | Navy | #1A237E |
+| 11 | Blue | #1E88E5 |
+| 12 | Purple | #6A1B9A |
+| 13 | Pink | #D81B60 |
+| 14 | Black | #212121 |
+| 15 | Grey | #9E9E9E |
+| 16 | White | #FAFAFA |
+
 ### Data Portability
 - **Team CSV** (import/export) columns: `ID/slug`, `Name`, `Colours`, `Tier`. *(Extended in MVP3 to add `City`, once teams gain location data.)*
 - **Save/Load**: JSON, fully re-importable (teams, fixtures, results, league config).
@@ -38,6 +68,7 @@
 
 ### Epic: Team Management
 - As a user, I want to create a team with a Name, Colours, and Tier, so that it can be entered into a league.
+- As a user, I want to pick a team colour from the 16-colour palette, so that every team has a consistent, valid colour.
 - As a user, I want the system to auto-generate an ID/slug for each team, so that it can be reliably matched on re-import.
 - As a user, I want to import a list of teams from a CSV file, so that I don't have to manually re-enter teams I already have.
 - As a user, I want to export my current team list to CSV, so that I can back it up or reuse it elsewhere.
@@ -72,6 +103,7 @@
 ---
 
 ## 3. Open Items for Later MVPs
+- Final 16-colour palette values. MVP1 uses the placeholder values, and a later Claude Design pass can change them.
 - Continental/world/national-team leagues (mentioned as future scope in original doc).
 - Season-to-season OVR/tier-range reconfiguration (Story Mode).
 - Match events/stats beyond final score.

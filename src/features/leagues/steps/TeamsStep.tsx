@@ -12,9 +12,15 @@ import {
 import type { FieldHandle } from '@/design-system/field';
 import { TeamFormDrawer, type TeamRecord } from '@/features/components';
 import { useTeamsStore } from '@/app/state/teamsStore';
+import type { PointsConfig } from '@/engine/standings';
+import { SetupChips, settingsChipLabels } from './SetupChips';
 import styles from './TeamsStep.module.css';
 
 interface TeamsStepProps {
+  /** The Details step values, shown as a quiet summary at the top (Task 33). */
+  name: string;
+  homeAdvantage: boolean;
+  points: PointsConfig;
   selectedSlugs: readonly string[];
   onToggleTeam: (slug: string) => void;
   onSelectAll: (slugs: string[]) => void;
@@ -25,6 +31,9 @@ interface TeamsStepProps {
 }
 
 export function TeamsStep({
+  name,
+  homeAdvantage,
+  points,
   selectedSlugs,
   onToggleTeam,
   onSelectAll,
@@ -97,6 +106,11 @@ export function TeamsStep({
   return (
     <Card padding="lg">
       <div class={styles.step}>
+        <div class={styles.summary}>
+          <p class={styles.leagueName}>{name || 'Untitled league'}</p>
+          <SetupChips labels={settingsChipLabels(homeAdvantage, points)} />
+        </div>
+
         <div class={styles.toolbar}>
           <Input label="Search teams" placeholder="Search teams…" onChange={setQuery} />
           <Button variant="secondary" onClick={() => setShowCreateTeam(true)}>

@@ -1,6 +1,6 @@
 # Task 26 — Unsaved-changes badge
 
-**Status:** Review — 2026-10-01
+**Status:** Done — review closed by the user (recorded 2026-10-05)
 
 ## What was built
 
@@ -48,3 +48,5 @@ Known limits of the reference compare:
 - A team edit on the Teams screen does not mark any league unsaved, although a save writes each league team's name, colour, and tier. This became Task 36, at the user's request. The first note about it said a save writes the whole roster. That was wrong: it writes only the league's own teams.
 - The File screen does not show the badge. The row names the Dashboard and League Detail only.
 - Prettier rewrapped a few unrelated lines in `saveActions.test.ts`. No behavior change.
+
+**2026-10-05:** Task 36 was cancelled. See the `PROGRESS.md` Decisions log entry "MVP1 known gap: unsaved teams".

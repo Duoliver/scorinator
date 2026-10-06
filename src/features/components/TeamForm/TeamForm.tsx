@@ -1,6 +1,13 @@
 import { useRef, useState } from 'preact/hooks';
 import type { JSX } from 'preact';
-import { Button, Input, Select } from '@/design-system';
+import {
+  Button,
+  DEFAULT_TEAM_COLOUR,
+  Input,
+  Select,
+  SwatchPicker,
+  TEAM_PALETTE,
+} from '@/design-system';
 import type { FieldHandle } from '@/design-system/field';
 import { slug } from '@/engine/identity';
 import { TIER_ORDER, type Tier } from '@/engine/tier-ovr';
@@ -8,6 +15,10 @@ import type TeamFormProps from './types';
 import styles from './TeamForm.module.css';
 
 const TIER_OPTIONS = TIER_ORDER.map((tier) => ({ label: tier, value: tier }));
+const COLOUR_OPTIONS = TEAM_PALETTE.map(({ name, hex }) => ({
+  label: name,
+  value: hex,
+}));
 
 export function TeamForm({
   saveLabel,
@@ -69,10 +80,10 @@ export function TeamForm({
         ref={slugRef}
       />
 
-      <Input
+      <SwatchPicker
         label="Colour"
-        defaultValue={initial?.colour}
-        placeholder="#RRGGBB"
+        options={COLOUR_OPTIONS}
+        defaultValue={initial ? initial.colour : DEFAULT_TEAM_COLOUR}
         ref={colourRef}
       />
 

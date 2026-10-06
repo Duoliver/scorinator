@@ -13,23 +13,14 @@ import type { FieldHandle } from '@/design-system/field';
 import { TeamFormDrawer, type TeamRecord } from '@/features/components';
 import { addTeam } from '@/app/state/teamsActions';
 import { useTeamsStore } from '@/app/state/teamsStore';
-import type { PointsConfig } from '@/engine/standings';
-import { SetupChips, settingsChipLabels } from './SetupChips';
+import {
+  SetupChips,
+  settingsChipLabels,
+} from '@/features/leagues/LeagueSetupScreen/steps/SetupChips';
+import type TeamsStepProps from './types';
 import styles from './TeamsStep.module.css';
 
-interface TeamsStepProps {
-  /** The Details step values, shown as a quiet summary at the top (Task 33). */
-  name: string;
-  homeAdvantage: boolean;
-  points: PointsConfig;
-  selectedSlugs: readonly string[];
-  onToggleTeam: (slug: string) => void;
-  onSelectAll: (slugs: string[]) => void;
-  onClearSelection: (slugs: string[]) => void;
-  onTeamCreated: (slug: string) => void;
-  onBack: () => void;
-  onNext: () => void;
-}
+export type { TeamsStepProps };
 
 export function TeamsStep({
   name,

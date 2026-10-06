@@ -3,30 +3,13 @@ import { useImperativeHandle, useRef, useState } from 'preact/hooks';
 import { Button, Card, Input, Switch } from '@/design-system';
 import type { FieldHandle } from '@/design-system/field';
 import type { LeagueDraftDetails } from '@/app/state/leagueDraftStore';
-import { leagueNameProblem } from './leagueName';
+import { leagueNameProblem } from '@/features/leagues/LeagueSetupScreen/leagueName';
+import type DetailsStepProps from './types';
+import type { DetailsStepHandle } from './types';
+import { parsePoints } from './helpers';
 import styles from './DetailsStep.module.css';
 
-/** `LeagueSetupScreen` reads the current field values through this handle,
- * at a step change and at unmount, instead of on every keystroke — see
- * `leagueDraftStore.ts` for why. Each field stays fully uncontrolled below;
- * `getValues()` is the only way out. */
-export interface DetailsStepHandle {
-  getValues: () => LeagueDraftDetails;
-}
-
-interface DetailsStepProps {
-  initial: LeagueDraftDetails;
-  /** Slugs of the leagues already open. A name that gives one of them is
-   * refused, like an invalid name (Task 40). */
-  takenSlugs?: readonly string[];
-  onNext: () => void;
-}
-
-function parsePoints(value: string, fallback: number): number {
-  if (value.trim() === '') return fallback;
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : fallback;
-}
+export type { DetailsStepProps, DetailsStepHandle };
 
 export const DetailsStep = forwardRef<DetailsStepHandle, DetailsStepProps>(
   ({ initial, takenSlugs = [], onNext }, ref) => {

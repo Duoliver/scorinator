@@ -2,7 +2,7 @@ import type { RefObject } from 'preact';
 import type { FieldHandle } from '@/design-system/field';
 import type { LeagueDraftDetails, LeagueSetupStep } from '@/app/state/leagueDraftStore';
 import type { TeamRecord } from '@/features/components';
-import type { DetailsStepHandle } from '@/features/leagues/steps/DetailsStep';
+import type { DetailsStepHandle } from '@/features/leagues/LeagueSetupScreen/steps/DetailsStep';
 
 /** What `useTeamSelection` gives: the teams picked on the Teams step, and
  * the ways to change that pick. */

@@ -1,0 +1,1 @@
+export { LeagueDetailScreen } from './LeagueDetailScreen';

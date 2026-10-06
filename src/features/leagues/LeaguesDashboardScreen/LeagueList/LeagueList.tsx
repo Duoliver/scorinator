@@ -2,7 +2,7 @@ import type { JSX } from 'preact';
 import { Badge, Button, Card } from '@/design-system';
 import { isLeagueUnsaved, useFileStore } from '@/app/state/fileStore';
 import { leagueDetailPath } from '@/app/routes';
-import { describeLeague } from '../leagueSummary';
+import { describeLeague } from '@/features/leagues/leagueSummary';
 import type LeagueListProps from './types';
 import styles from './LeagueList.module.css';
 
@@ -20,7 +20,9 @@ export function LeagueList({ leagues }: LeagueListProps): JSX.Element {
           <div class={styles.card}>
             <div class={styles.titleRow}>
               <h3 class={styles.title}>{league.name}</h3>
-              {isLeagueUnsaved(league, savedLeagues) && <Badge tone="warning">Unsaved</Badge>}
+              {isLeagueUnsaved(league, savedLeagues) && (
+                <Badge tone="warning">Unsaved</Badge>
+              )}
             </div>
             <span class={styles.meta}>{describeLeague(league)}</span>
             <span class={styles.pointsPill}>

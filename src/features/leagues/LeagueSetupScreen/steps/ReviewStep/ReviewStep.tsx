@@ -1,18 +1,13 @@
 import type { JSX } from 'preact';
 import { Button, Card } from '@/design-system';
-import type { PointsConfig } from '@/engine/standings';
-import type { TeamRecord } from '@/features/components';
-import { SetupChips, settingsChipLabels } from './SetupChips';
+import {
+  SetupChips,
+  settingsChipLabels,
+} from '@/features/leagues/LeagueSetupScreen/steps/SetupChips';
+import type ReviewStepProps from './types';
 import styles from './ReviewStep.module.css';
 
-interface ReviewStepProps {
-  name: string;
-  homeAdvantage: boolean;
-  points: PointsConfig;
-  selectedTeams: readonly TeamRecord[];
-  onBack: () => void;
-  onCreate: () => void;
-}
+export type { ReviewStepProps };
 
 export function ReviewStep({
   name,

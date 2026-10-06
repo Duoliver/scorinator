@@ -1,8 +1,8 @@
 import type { JSX } from 'preact';
 import { Tabs, type TabItem } from '@/design-system';
-import { DetailsStep } from '@/features/leagues/steps/DetailsStep';
-import { ReviewStep } from '@/features/leagues/steps/ReviewStep';
-import { TeamsStep } from '@/features/leagues/steps/TeamsStep';
+import { DetailsStep } from '@/features/leagues/LeagueSetupScreen/steps/DetailsStep';
+import { ReviewStep } from '@/features/leagues/LeagueSetupScreen/steps/ReviewStep';
+import { TeamsStep } from '@/features/leagues/LeagueSetupScreen/steps/TeamsStep';
 import { useLeagueSetup } from './useLeagueSetup';
 import styles from './LeagueSetupScreen.module.css';
 

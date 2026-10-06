@@ -7,7 +7,7 @@ export type { DrawerProps };
 
 /** A right-side overlay panel — the generic chrome, with no domain
  * knowledge of what it holds. `TeamForm` is its first consumer, from both
- * `features/teams/TeamsScreen` and `features/leagues/steps/TeamsStep`; see
+ * `features/teams/TeamsScreen` and `features/leagues/LeagueSetupScreen/steps/TeamsStep`; see
  * the design-reference prototypes, which use this exact panel in both
  * places. Mount `Drawer` to open it, unmount it to close it — the same
  * conditional-render pattern already used everywhere else in this

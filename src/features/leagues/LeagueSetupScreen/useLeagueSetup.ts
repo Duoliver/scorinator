@@ -12,8 +12,8 @@ import {
 } from '@/app/state/leagueDraftStore';
 import { useLeagueStore, type LeagueRecord } from '@/app/state/leagueStore';
 import { useTeamsStore } from '@/app/state/teamsStore';
-import type { DetailsStepHandle } from '@/features/leagues/steps/DetailsStep';
-import { leagueNameProblem } from '@/features/leagues/steps/leagueName';
+import type { DetailsStepHandle } from '@/features/leagues/LeagueSetupScreen/steps/DetailsStep';
+import { leagueNameProblem } from './leagueName';
 import type { LeagueSetup } from './types';
 import { useLeagueDraftSync } from './useLeagueDraftSync';
 import { useTeamSelection } from './useTeamSelection';

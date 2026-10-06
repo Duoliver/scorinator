@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'preact/hooks';
 import type { RefObject } from 'preact';
 import { setLeagueDraft } from '@/app/state/leagueDraftActions';
 import type { LeagueDraft } from '@/app/state/leagueDraftStore';
-import type { DetailsStepHandle } from '@/features/leagues/steps/DetailsStep';
+import type { DetailsStepHandle } from '@/features/leagues/LeagueSetupScreen/steps/DetailsStep';
 
 /** Writes the wizard's draft to `leagueDraftStore` when the screen
  * unmounts, so a nav switch does not lose it. See the cold-cache rule in

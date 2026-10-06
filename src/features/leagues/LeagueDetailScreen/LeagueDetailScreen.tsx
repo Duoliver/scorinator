@@ -7,7 +7,7 @@ import { isLeagueUnsaved, useFileStore } from '@/app/state/fileStore';
 import { ROUTES } from '@/app/routes';
 import { FixturesView } from '@/features/fixtures';
 import { StandingsView } from '@/features/standings';
-import { describeLeague } from './leagueSummary';
+import { describeLeague } from '@/features/leagues/leagueSummary';
 import styles from './LeagueDetailScreen.module.css';
 
 interface LeagueDetailScreenProps {

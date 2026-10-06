@@ -122,7 +122,7 @@ Read and write that store at exactly three points, never per keystroke or per cl
 
 1. **On mount**, once, through `useLeagueDraftStore.getState()` — not a subscribed selector — to seed local `useState`.
 2. **On a step or tab change**, in a wizard. Read a value before its field unmounts.
-3. **On unmount**, through a `useEffect` cleanup with an empty dependency array, so the draft survives the actual nav-away.
+3. **On unmount**, through a `useEffect` cleanup with an empty dependency array, so the draft survives the actual nav-away. See `features/leagues/LeagueSetupScreen/useLeagueDraftSync.ts` for this effect in its own hook.
 
 For a text or number field edited at typing speed, do not wire its `onChange` to the store. Do not even wire it to the screen's own local reactive state. Make the field fully uncontrolled instead. Hold a `FieldHandle` ref to it — `Input`, `Select`, `Switch`, and `Checkbox` all already expose one. Read `.getValue()` only at one of the three points above. If the field lives inside a child component, wrap that child in a small `forwardRef` plus `useImperativeHandle` — see `DetailsStep`'s `getValues()` handle for a worked example. `TeamsStep`'s own `checkboxHandles` map already does the same thing, for a set of checkboxes. This is not a new pattern for this codebase, only a new place to use it.
 

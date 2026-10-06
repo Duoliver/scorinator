@@ -19,7 +19,6 @@ import { useLeagueLoad } from './useLeagueLoad';
 export function useFileManager(): FileManager {
   const leagues = useLeagueStore((state) => state.leagues);
   const currentLeagueSlug = useFileStore((state) => state.currentLeagueSlug);
-  const status = useFileStore((state) => state.status);
   const leagueLoad = useLeagueLoad();
 
   const leagueSelect = useRef<FieldHandle<string>>(null);
@@ -31,7 +30,6 @@ export function useFileManager(): FileManager {
 
   return {
     ...leagueLoad,
-    status,
     hasLeagues: leagues.length > 0,
     leagueOptions: toLeagueOptions(leagues),
     defaultLeagueSlug,

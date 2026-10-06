@@ -1,7 +1,6 @@
 import type { RefObject } from 'preact';
 import type { SelectOption } from '@/design-system';
 import type { FieldHandle } from '@/design-system/field';
-import type { FileStatus } from '@/app/state/fileStore';
 
 /** What `useLeagueLoad` gives: the load, and the confirm step it shows when
  * a league with the same slug is already open. */
@@ -16,7 +15,6 @@ export interface LeagueLoad {
 
 /** What `useFileManager` gives `FileScreen`. */
 export interface FileManager extends LeagueLoad {
-  status: FileStatus | null;
   hasLeagues: boolean;
   leagueOptions: SelectOption[];
   /** The league each selector shows first: the current league, or else the

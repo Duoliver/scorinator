@@ -14,10 +14,10 @@ import {
 } from '@/features/leagues';
 import { FileScreen } from '@/features/file';
 import { PlaygroundScreen } from '@/features/playground';
-import { clearFileStatus } from '@/app/state/fileActions';
-import { useFileStore } from '@/app/state/fileStore';
+import { StatusLine } from '@/features/components';
 import { saveCurrentLeague } from '@/app/saveActions';
 import { installCloseGuard } from '@/app/closeGuard';
+import { useStatusAutoClear } from '@/app/useStatusAutoClear';
 import { ROUTES, type RoutePath } from './routes';
 import styles from './AppShell.module.css';
 
@@ -37,9 +37,6 @@ const NAV_ITEMS: NavItem[] = [
 
 /** The start screen (Task 29). It also renders for any unmatched path. */
 const DEFAULT_PATH = ROUTES.leaguesDashboard;
-
-/** How long a save/load result stays in the status line. */
-const STATUS_VISIBLE_MS = 4000;
 
 /** `TeamsScreen`/`LeagueSetupScreen` take no props and stay routing-agnostic,
  * per `module-boundaries.md` — `features/` never needs to know it is routed.
@@ -74,7 +71,6 @@ function LeagueDetailRoute(props: RoutableProps & { slug?: string }): JSX.Elemen
 
 export function AppShell(): JSX.Element {
   const [activePath, setActivePath] = useState<string>(DEFAULT_PATH);
-  const status = useFileStore((state) => state.status);
 
   // Ctrl+S (Cmd+S on macOS) saves the current league, from any screen. A
   // held key still gets its browser default blocked, but saves only once.
@@ -98,11 +94,7 @@ export function AppShell(): JSX.Element {
   useEffect(() => installCloseGuard(), []);
 
   // The status line clears itself. A new status restarts the timer.
-  useEffect(() => {
-    if (!status) return;
-    const timer = setTimeout(() => clearFileStatus(), STATUS_VISIBLE_MS);
-    return (): void => clearTimeout(timer);
-  }, [status]);
+  useStatusAutoClear();
 
   const handleChange = (args: RouterOnChangeArgs): void => {
     // `default` on `LeaguesDashboardRoute` renders it for any unmatched
@@ -152,14 +144,8 @@ export function AppShell(): JSX.Element {
             {item.label}
           </a>
         ))}
-        {status && activePath !== ROUTES.file && (
-          <p
-            role="status"
-            class={`${styles.status} ${status.tone === 'error' ? styles.statusError : ''}`}
-          >
-            {status.message}
-          </p>
-        )}
+        {/* The File screen shows its own status line. */}
+        {activePath !== ROUTES.file && <StatusLine placement="sidebar" />}
       </nav>
       <div class={styles.content}>
         <Router onChange={handleChange}>

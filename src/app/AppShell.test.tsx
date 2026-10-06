@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { setFileStatus } from '@/app/state/fileActions';
+import { clearFileStatus, setFileStatus } from '@/app/state/fileActions';
 import { act, render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { route } from 'preact-router';
@@ -11,6 +11,7 @@ import { useFileStore } from '@/app/state/fileStore';
 import * as saveActions from '@/app/saveActions';
 import * as closeGuard from '@/app/closeGuard';
 import * as leagueFile from '@/app/data/leagueFile';
+import * as leaguesFeature from '@/features/leagues';
 import { DEFAULT_POINTS_CONFIG } from '@/engine/standings';
 
 beforeEach(() => {
@@ -304,6 +305,39 @@ describe('AppShell', () => {
 
       expect(screen.queryByRole('status')).not.toBeInTheDocument();
       expect(useFileStore.getState().status).toBeNull();
+    });
+
+    it('restarts the clear timer when a new status comes', () => {
+      vi.useFakeTimers();
+      render(<AppShell />);
+
+      act(() => setFileStatus({ tone: 'info', message: 'Saved it.' }));
+      act(() => {
+        vi.advanceTimersByTime(3000);
+      });
+      act(() => setFileStatus({ tone: 'info', message: 'Saved again.' }));
+      act(() => {
+        vi.advanceTimersByTime(3000);
+      });
+      expect(screen.getByRole('status')).toHaveTextContent('Saved again.');
+
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
+      expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    });
+
+    it('does not render the active screen again when the status changes (Task 46)', async () => {
+      const dashboard = vi.spyOn(leaguesFeature, 'LeaguesDashboardScreen');
+      render(<AppShell />);
+      await userEvent.click(screen.getByRole('link', { name: 'Leagues' }));
+      const rendersBefore = dashboard.mock.calls.length;
+
+      act(() => setFileStatus({ tone: 'info', message: 'Saved it.' }));
+      act(() => clearFileStatus());
+
+      expect(screen.queryByRole('status')).not.toBeInTheDocument();
+      expect(dashboard.mock.calls.length).toBe(rendersBefore);
     });
 
     it('shows once on the File screen, not in the sidebar too', async () => {

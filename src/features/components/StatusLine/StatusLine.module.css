@@ -1,0 +1,22 @@
+.status {
+  color: var(--color-fg-muted);
+}
+
+/* At the bottom of the app shell nav, under a rule. */
+.sidebar {
+  margin: auto 0 0;
+  padding: var(--space-4) var(--space-5) 0;
+  border-top: var(--border-width) solid var(--color-fg);
+  font-size: var(--font-size-md);
+  overflow-wrap: anywhere;
+}
+
+/* Inside a screen, such as the File screen. */
+.page {
+  margin: 0;
+  font-size: var(--font-size-lg);
+}
+
+.error {
+  color: var(--color-error);
+}

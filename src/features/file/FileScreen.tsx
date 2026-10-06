@@ -1,7 +1,7 @@
 import type { JSX } from 'preact';
 import { Button, Select } from '@/design-system';
+import { StatusLine } from '@/features/components';
 import { FileCard } from './FileCard';
-import { statusClassName } from './helpers';
 import { useFileManager } from './useFileManager';
 import styles from './FileScreen.module.css';
 
@@ -35,11 +35,7 @@ export function FileScreen(): JSX.Element {
         </p>
       </div>
 
-      {file.status && (
-        <p role="status" class={statusClassName(file.status)}>
-          {file.status.message}
-        </p>
-      )}
+      <StatusLine placement="page" />
 
       <div class={styles.cards}>
         <FileCard

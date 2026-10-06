@@ -20,7 +20,7 @@ If a type is not available as a top-level export from `preact`, check `node_modu
 
 ## A component's types live in a sibling `types.ts`, Props as its default export
 
-This rule applies to any parametrized, reusable Preact component. Today that means `design-system/` primitives. The same shape will apply later to `features/` screen sections and other complex components. The component file (`{ComponentName}.tsx`) holds only the component function. Every type or interface it needs goes in a sibling file, `{ComponentName}/types.ts`. This includes variant, size, and tone-style unions, and the props interface. The props interface is that file's **default export**:
+This rule applies to any parametrized, reusable Preact component: the `design-system/` primitives, and the views and screens in `features/` (decided 2026-10-06, Task 42). `features/standings/types.ts` is the first `features/` example. A view's `types.ts` also holds the types its `useX` hook returns. The component file (`{ComponentName}.tsx`) holds only the component function. Every type or interface it needs goes in a sibling file, `{ComponentName}/types.ts`. This includes variant, size, and tone-style unions, and the props interface. The props interface is that file's **default export**:
 
 ```ts
 // components/Badge/types.ts
@@ -50,6 +50,56 @@ export function Badge({ children, tone = 'neutral' }: BadgeProps) {
 ```
 
 A generic component's props interface follows the same pattern: a plain `export default interface Props<Row> { ... }` in `types.ts`. TypeScript allows a generic default export the same way. See `design-system/components/Table/types.ts` for a real example: `TableProps<Row>` is the default export, and `TableColumn<Row>` is a named export it depends on. Types used only inside `types.ts` stay as named exports there. Re-export a type from the component file only when a consumer needs it.
+
+## A component has three layers: helpers, a `useX` hook, and the markup
+
+This rule applies to every component in `features/`. Split the code of a component into three layers, each in its own sibling file. The types go in `types.ts`, per the rule above.
+
+1. **A sibling `helpers.tsx` file.** Anything that does not use props, state, or a hook goes here, outside the component file. Examples: static table columns, small render helpers, constants, and pure functions. Use `helpers.ts` when the file holds no JSX. A component with no such code has no helpers file.
+2. **A `useX` hook in a sibling `useX.ts` file.** Store reads, derived data, effects, refs, and event handlers go here. The hook returns data that is ready for the view, for example rows with the team name already joined in.
+3. **The component.** It calls the hook and returns JSX. It holds no logic of its own.
+
+See `features/standings/` for a worked example:
+
+```
+features/standings/
+  StandingsView.tsx         the component only
+  StandingsView.module.css
+  types.ts                  StandingsViewProps (default), StandingsViewRow, Standings
+  useStandings.ts           the hook
+  helpers.tsx               COLUMNS, mono, rowKey
+```
+
+```tsx
+// features/standings/useStandings.ts
+export function useStandings(league: LeagueRecord): Standings {
+  const lookupTeam = useTeamLookup();
+  const rows = useMemo(() => /* calculateStandings + team names */, [league, lookupTeam]);
+  return { rows, hasTeams: league.teams.length > 0, hasResults: league.results.length > 0 };
+}
+
+// features/standings/helpers.tsx
+export const COLUMNS: TableColumn<StandingsViewRow>[] = [/* static */];
+
+// features/standings/StandingsView.tsx
+export function StandingsView({ league }: StandingsViewProps): JSX.Element {
+  const { rows, hasTeams, hasResults } = useStandings(league);
+  if (!hasTeams) return <p class={styles.note}>No teams in this league yet.</p>;
+  return <Table columns={COLUMNS} rows={rows} rowKey={rowKey} />;
+}
+```
+
+A large component can have more than one hook, one for each concern, for example `useScoreFlash` and `useMatchdayNav`. A hook that more than one screen folder needs goes in `features/components/`, for example `useTeamLookup`. See `FEATURES.md`.
+
+**Test a component through its screen, with Testing Library, as `docs/tdd.md` says.** Give a hook its own `useX.test.ts` with `renderHook` only when the hook is shared or holds logic that the screen tests cannot reach easily.
+
+### When to use `useMemo` and `useCallback`
+
+A function or object that a render makes again costs microseconds. It causes extra work only when something compares it by reference. So do not wrap everything by default:
+
+- **`useMemo`:** use it for an expensive derivation, such as an `engine/` call over all results. Also use it when another hook lists the value as a dependency and must not run again on each render. `useTeamLookup` does this, so `useStandings` can list the lookup in its own `useMemo`.
+- **`useCallback`:** use it only when a `memo()` child or an effect lists the function as a dependency. No component in `src/` uses `memo()` today.
+- **Neither:** for a handler passed to a design-system primitive, or for a small value. Move it to `helpers.tsx` if it does not use props or state.
 
 ## A screen that must survive a nav switch keeps its draft in a cold-cache store
 

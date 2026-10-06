@@ -14,6 +14,8 @@ Holds components with real business logic that more than one screen needs. This 
 
 This is a one-way dependency. No lint rule enforces it yet — flag it in review if a `features/components/` file ever imports from a screen folder. The reason is cyclic imports. If `features/leagues` imported `TeamForm` straight out of `features/teams`, and a later change made `features/teams` import something from `features/leagues`, the two folders would import each other. Routing every shared component through `features/components/` instead keeps the dependency graph one-directional: screens depend on shared components, shared components depend on nothing above them in `features/`.
 
+A hook that more than one screen folder needs lives here too, as `features/components/useX.ts`, with the same import rule. `useTeamLookup` is the first example: `StandingsView` and `FixturesView` both show a team name and colour from a slug. Its `TeamDisplay` type lives in `features/components/types.ts`. See the three-layer rule in `docs/coding-standards.md`.
+
 A type that a shared component needs also lives in `features/components/`, not in the screen folder that happens to use it most. `TeamRecord`, which `TeamForm` takes as its `initial` prop, is the example — see `features/components/types.ts`. A screen folder that also needs that type imports it from `features/components/`, the same way it imports the component itself.
 
 ## Where this fits with `module-boundaries.md`

@@ -1,7 +1,6 @@
 import type { JSX } from 'preact';
 import { useLayoutEffect, useRef, useState } from 'preact/hooks';
 import { Badge, Button } from '@/design-system';
-import { useTeamsStore } from '@/app/state/teamsStore';
 import {
   rescorinateFixture,
   scorinateFixture,
@@ -12,6 +11,7 @@ import {
   findResult,
   isMatchdayFullyPlayed,
 } from '@/features/scorination';
+import { useTeamLookup } from '@/features/components';
 import type { LeagueRecord } from '@/features/leagues/types';
 import styles from './FixturesView.module.css';
 
@@ -24,11 +24,6 @@ interface FixturesViewProps {
    * inactive tab, so a parent that must keep the matchday across a tab
    * switch stores it here and passes it back as `initialMatchday`. */
   onMatchdayChange?: (matchday: number) => void;
-}
-
-interface TeamDisplay {
-  name: string;
-  colour: string;
 }
 
 /** How long a freshly generated score shows in the accent colour. */
@@ -56,7 +51,7 @@ export function FixturesView({
   initialMatchday = 1,
   onMatchdayChange,
 }: FixturesViewProps): JSX.Element {
-  const teams = useTeamsStore((state) => state.teams);
+  const teamDisplay = useTeamLookup();
   const [matchday, setMatchday] = useState(initialMatchday);
   const [flashing, setFlashing] = useState<ReadonlySet<string>>(new Set());
   const seenResults = useRef(league.results);
@@ -99,11 +94,6 @@ export function FixturesView({
   if (league.fixtures.length === 0) {
     return <p class={styles.empty}>Not enough teams to generate fixtures yet.</p>;
   }
-
-  const teamDisplay = (slug: string): TeamDisplay => {
-    const team = teams.find((candidate) => candidate.slug === slug);
-    return team ? { name: team.name, colour: team.colour } : { name: slug, colour: '' };
-  };
 
   const totalMatchdays = Math.max(
     ...league.fixtures.map((fixture) => fixture.matchday),

@@ -166,7 +166,7 @@ Rules for the actions file:
 - **Keep helpers private.** A helper that only actions use, such as `playFixture` in `leagueActions.ts`, stays an unexported function in the actions file.
 - **Tests go in `xActions.test.ts`.** A test resets the store with `useXStore.setState(...)` in `beforeEach`, calls the action, and asserts on `useXStore.getState()`.
 
-An action that uses several stores and an `app/data` function, such as a save or a load, is an app action. It lives one level up, in `app/` (`saveActions.ts`, `loadActions.ts`). It follows the same plain-function shape.
+An action that uses several stores and an `app/data` function, such as a save or a load, is an app action. It lives one level up, in `app/` (`saveActions.ts`, `loadActions.ts`, `exportActions.ts`). It follows the same plain-function shape.
 
 ## Use absolute imports, not relative
 

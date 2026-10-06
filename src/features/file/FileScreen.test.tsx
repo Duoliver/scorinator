@@ -37,7 +37,12 @@ beforeEach(() => {
   vi.restoreAllMocks();
   useTeamsStore.setState({ teams: [] });
   useLeagueStore.setState({ leagues: [] });
-  useFileStore.setState({ currentLeagueSlug: null, paths: {}, savedLeagues: {}, status: null });
+  useFileStore.setState({
+    currentLeagueSlug: null,
+    paths: {},
+    savedLeagues: {},
+    status: null,
+  });
 });
 
 describe('FileScreen', () => {

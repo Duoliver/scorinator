@@ -1,127 +1,30 @@
-import { useRef, useState } from 'preact/hooks';
 import type { JSX } from 'preact';
 import { Button, Select } from '@/design-system';
-import type { FieldHandle } from '@/design-system/field';
-import { setFileStatus } from '@/app/state/fileActions';
-import { useFileStore } from '@/app/state/fileStore';
-import { useLeagueStore } from '@/app/state/leagueStore';
-import { useTeamsStore } from '@/app/state/teamsStore';
-import { saveLeagueBySlug } from '@/app/saveActions';
-import type { LoadedLeagueFile } from '@/app/data/leagueFile';
-import { exportResultsTxt } from '@/app/data/resultsTxt';
-import { exportTeamsCsv, importTeamsCsv } from '@/app/data/teamsCsv';
-import { importTeamsJson } from '@/app/data/teamsJson';
-import { teamRecordToCsvRecord } from '@/app/data/importMerge';
-import {
-  applyLoadedLeague,
-  importTeams,
-  isLeagueOpen,
-  openLeagueFile,
-} from '@/app/loadActions';
 import { FileCard } from './FileCard';
+import { statusClassName } from './helpers';
+import { useFileManager } from './useFileManager';
 import styles from './FileScreen.module.css';
 
-/** The File screen (Task 17): save and load a league, import and export
- * team lists, and export results. Layout follows `Footballer - File
- * Manager.dc.html`. Team CSV/JSON import and export moved here from
- * `TeamsScreen`, unchanged apart from where their result message goes: every
- * action on this screen reports through `fileStore`'s status line, the
- * same one Ctrl+S uses. Export results (Task 18) writes one league's
- * plain-text summary. It leaves the saved path and the current league
- * alone, since a summary is not a save file. */
+/** The File screen. Layout follows `Footballer - File Manager.dc.html`.
+ * `useFileManager` gives the data and the handlers. */
 export function FileScreen(): JSX.Element {
-  const leagues = useLeagueStore((state) => state.leagues);
-  const currentLeagueSlug = useFileStore((state) => state.currentLeagueSlug);
-  const status = useFileStore((state) => state.status);
+  const file = useFileManager();
 
-  const leagueSelect = useRef<FieldHandle<string>>(null);
-  const resultsSelect = useRef<FieldHandle<string>>(null);
-  const [pendingLoad, setPendingLoad] = useState<LoadedLeagueFile | null>(null);
-
-  // A league picked in the selector, or else the current one, or else the first.
-  const defaultLeagueSlug = leagues.some((league) => league.slug === currentLeagueSlug)
-    ? (currentLeagueSlug as string)
-    : (leagues[0]?.slug ?? '');
-
-  const selectedSlug = (): string =>
-    leagueSelect.current?.getValue() || defaultLeagueSlug;
-
-  const handleSave = (saveAs: boolean): void => {
-    const slug = selectedSlug();
-    void (saveAs ? saveLeagueBySlug(slug, { saveAs: true }) : saveLeagueBySlug(slug));
-  };
-
-  const handleLoad = async (): Promise<void> => {
-    const loaded = await openLeagueFile();
-    if (loaded === null) return;
-    if (isLeagueOpen(loaded.league.slug)) {
-      setPendingLoad(loaded);
-      return;
-    }
-    applyLoadedLeague(loaded);
-  };
-
-  const confirmReplace = (): void => {
-    if (pendingLoad) applyLoadedLeague(pendingLoad);
-    setPendingLoad(null);
-  };
-
-  const handleImportCsv = (): Promise<void> => importTeams(() => importTeamsCsv());
-
-  const handleImportJson = (): Promise<void> => importTeams(() => importTeamsJson());
-
-  const handleExportResults = async (): Promise<void> => {
-    const slug = resultsSelect.current?.getValue() || defaultLeagueSlug;
-    const target = leagues.find((league) => league.slug === slug);
-    if (!target) {
-      setFileStatus({
-        tone: 'error',
-        message: `Cannot export: league "${slug}" was not found.`,
-      });
-      return;
-    }
-    try {
-      const path = await exportResultsTxt(target, useTeamsStore.getState().teams);
-      setFileStatus({
-        tone: 'info',
-        message:
-          path === null
-            ? 'Export canceled.'
-            : `Exported ${target.name} results to ${path}`,
-      });
-    } catch (error) {
-      setFileStatus({ tone: 'error', message: (error as Error).message });
-    }
-  };
-
-  const handleExportCsv = async (): Promise<void> => {
-    try {
-      const path = await exportTeamsCsv(
-        useTeamsStore.getState().teams.map(teamRecordToCsvRecord)
-      );
-      setFileStatus({
-        tone: 'info',
-        message: path === null ? 'Export canceled.' : `Saved to ${path}`,
-      });
-    } catch (error) {
-      setFileStatus({ tone: 'error', message: (error as Error).message });
-    }
-  };
-
-  const confirmFooter = pendingLoad ? (
-    <div class={styles.confirm}>
-      <p class={styles.confirmText}>
-        Replace "{pendingLoad.league.name}"? A league with this name is already open.
-        Unsaved changes to it are lost.
-      </p>
-      <Button variant="primary" size="sm" onClick={confirmReplace}>
-        Replace
-      </Button>
-      <Button variant="secondary" size="sm" onClick={() => setPendingLoad(null)}>
-        Cancel
-      </Button>
-    </div>
-  ) : undefined;
+  const confirmFooter =
+    file.pendingLeagueName !== null ? (
+      <div class={styles.confirm}>
+        <p class={styles.confirmText}>
+          Replace "{file.pendingLeagueName}"? A league with this name is already open.
+          Unsaved changes to it are lost.
+        </p>
+        <Button variant="primary" size="sm" onClick={file.confirmReplace}>
+          Replace
+        </Button>
+        <Button variant="secondary" size="sm" onClick={file.cancelReplace}>
+          Cancel
+        </Button>
+      </div>
+    ) : undefined;
 
   return (
     <div class={styles.screen}>
@@ -132,12 +35,9 @@ export function FileScreen(): JSX.Element {
         </p>
       </div>
 
-      {status && (
-        <p
-          role="status"
-          class={`${styles.status} ${status.tone === 'error' ? styles.statusError : ''}`}
-        >
-          {status.message}
+      {file.status && (
+        <p role="status" class={statusClassName(file.status)}>
+          {file.status.message}
         </p>
       )}
 
@@ -146,33 +46,26 @@ export function FileScreen(): JSX.Element {
           title="Save league"
           description="Writes teams, fixtures, results and config to a re-importable JSON file."
           input={
-            leagues.length === 0 ? (
-              <span class={styles.hint}>No leagues to save yet.</span>
-            ) : (
+            file.hasLeagues ? (
               <Select
-                ref={leagueSelect}
+                ref={file.leagueSelect}
                 label="League"
-                defaultValue={defaultLeagueSlug}
-                options={leagues.map((league) => ({
-                  label: league.name,
-                  value: league.slug,
-                }))}
+                defaultValue={file.defaultLeagueSlug}
+                options={file.leagueOptions}
               />
+            ) : (
+              <span class={styles.hint}>No leagues to save yet.</span>
             )
           }
         >
-          <Button
-            size="md"
-            disabled={leagues.length === 0}
-            onClick={() => handleSave(false)}
-          >
+          <Button size="md" disabled={!file.hasLeagues} onClick={file.handleSave}>
             Save
           </Button>
           <Button
             variant="secondary"
             size="md"
-            disabled={leagues.length === 0}
-            onClick={() => handleSave(true)}
+            disabled={!file.hasLeagues}
+            onClick={file.handleSaveAs}
           >
             Save as...
           </Button>
@@ -183,7 +76,7 @@ export function FileScreen(): JSX.Element {
           description="Resume exactly where you left off from a previously saved JSON file."
           footer={confirmFooter}
         >
-          <Button variant="secondary" size="md" onClick={handleLoad}>
+          <Button variant="secondary" size="md" onClick={file.handleLoad}>
             Load...
           </Button>
         </FileCard>
@@ -194,10 +87,10 @@ export function FileScreen(): JSX.Element {
           title="Import teams"
           description="CSV columns: Slug, Name, Colour, Tier."
         >
-          <Button variant="secondary" size="sm" onClick={handleImportJson}>
+          <Button variant="secondary" size="sm" onClick={file.handleImportJson}>
             Import JSON...
           </Button>
-          <Button variant="secondary" size="sm" onClick={handleImportCsv}>
+          <Button variant="secondary" size="sm" onClick={file.handleImportCsv}>
             Import CSV...
           </Button>
         </FileCard>
@@ -206,7 +99,7 @@ export function FileScreen(): JSX.Element {
           title="Export teams"
           description="Back up or reuse your current team list elsewhere."
         >
-          <Button variant="secondary" size="sm" onClick={handleExportCsv}>
+          <Button variant="secondary" size="sm" onClick={file.handleExportTeams}>
             Export CSV...
           </Button>
         </FileCard>
@@ -215,26 +108,23 @@ export function FileScreen(): JSX.Element {
           title="Export results"
           description="Read-only, human-readable summary — for reading, not re-importing."
           input={
-            leagues.length === 0 ? (
-              <span class={styles.hint}>No leagues to export yet.</span>
-            ) : (
+            file.hasLeagues ? (
               <Select
-                ref={resultsSelect}
+                ref={file.resultsSelect}
                 label="League to export"
-                defaultValue={defaultLeagueSlug}
-                options={leagues.map((league) => ({
-                  label: league.name,
-                  value: league.slug,
-                }))}
+                defaultValue={file.defaultLeagueSlug}
+                options={file.leagueOptions}
               />
+            ) : (
+              <span class={styles.hint}>No leagues to export yet.</span>
             )
           }
         >
           <Button
             variant="secondary"
             size="sm"
-            disabled={leagues.length === 0}
-            onClick={handleExportResults}
+            disabled={!file.hasLeagues}
+            onClick={file.handleExportResults}
           >
             Export TXT...
           </Button>

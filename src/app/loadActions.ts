@@ -1,6 +1,8 @@
-import type { TeamListRecord } from '@/persistence/types';
 import { loadLeagueFile, type LoadedLeagueFile } from '@/app/data/leagueFile';
-import { csvRecordToTeamRecord, mergeImportedTeams } from '@/app/data/importMerge';
+import { mergeImportedTeams } from '@/app/data/importMerge';
+import { importTeamsCsv } from '@/app/data/teamsCsv';
+import { importTeamsFile } from '@/app/data/teamsFile';
+import { importTeamsJson } from '@/app/data/teamsJson';
 import {
   markLeagueSaved,
   setCurrentLeague,
@@ -11,11 +13,11 @@ import { loadLeague } from '@/app/state/leagueActions';
 import { useLeagueStore } from '@/app/state/leagueStore';
 import { setTeams } from '@/app/state/teamsActions';
 import { useTeamsStore } from '@/app/state/teamsStore';
+import type { TeamRecord } from '@/domain';
 
-/** The load and team-import actions that the File screen and the Leagues
- * empty state (Task 29) share, the same way `saveActions.ts` shares save
- * between the File screen and Ctrl+S. Each one reports through
- * `fileStore`'s status line and never throws. */
+/** The league load and the team imports, as app actions, so every screen
+ * loads a file the same way. Each one reports through `fileStore`'s status
+ * line and never throws. */
 
 /** Asks for a league save file and reads it. Changes no store, so the
  * caller can ask before it replaces an open league (see `isLeagueOpen`).
@@ -48,19 +50,34 @@ export function applyLoadedLeague(loaded: LoadedLeagueFile): void {
   });
 }
 
-/** Runs one of the `app/data` team imports and merges its teams into the
- * roster by slug. */
-export async function importTeams(
-  importer: () => Promise<TeamListRecord[] | null>
+/** Imports a team list from one dialog that takes `.csv` or `.json`. */
+export function importTeamsFromFile(): Promise<void> {
+  return importTeams(importTeamsFile);
+}
+
+/** Imports a team list from a `.csv` file. */
+export function importTeamsFromCsv(): Promise<void> {
+  return importTeams(importTeamsCsv);
+}
+
+/** Imports a team list from a `.json` file. */
+export function importTeamsFromJson(): Promise<void> {
+  return importTeams(importTeamsJson);
+}
+
+/** Runs one `app/data` team import and merges its teams into the roster by
+ * slug. The importer is called with no argument, so it uses the real
+ * Tauri file system and dialog. */
+async function importTeams(
+  importer: () => Promise<TeamRecord[] | null>
 ): Promise<void> {
   try {
     const imported = await importer();
     if (imported === null) return;
-    const records = imported.map(csvRecordToTeamRecord);
-    setTeams(mergeImportedTeams(useTeamsStore.getState().teams, records));
+    setTeams(mergeImportedTeams(useTeamsStore.getState().teams, imported));
     setFileStatus({
       tone: 'info',
-      message: `Imported ${records.length} team${records.length === 1 ? '' : 's'}.`,
+      message: `Imported ${imported.length} team${imported.length === 1 ? '' : 's'}.`,
     });
   } catch (error) {
     setFileStatus({ tone: 'error', message: (error as Error).message });

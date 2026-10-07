@@ -1,11 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   applyLoadedLeague,
-  importTeams,
+  importTeamsFromCsv,
+  importTeamsFromFile,
+  importTeamsFromJson,
   isLeagueOpen,
   openLeagueFile,
 } from './loadActions';
 import * as leagueFile from '@/app/data/leagueFile';
+import * as teamsCsv from '@/app/data/teamsCsv';
+import * as teamsFile from '@/app/data/teamsFile';
+import * as teamsJson from '@/app/data/teamsJson';
 import type { LoadedLeagueFile } from '@/app/data/leagueFile';
 import { isLeagueUnsaved, useFileStore } from '@/app/state/fileStore';
 import { useLeagueStore } from '@/app/state/leagueStore';
@@ -92,14 +97,21 @@ describe('applyLoadedLeague', () => {
   });
 });
 
-describe('importTeams', () => {
+describe('team imports', () => {
+  const fcUnited = {
+    slug: 'fc-united',
+    name: 'FC United',
+    colour: '#E53935',
+    tier: 'B',
+  } as const;
+
   it('merges the imported teams into the roster and reports the count', async () => {
     useTeamsStore.setState({
       teams: [{ slug: 'old-town', name: 'Old Town', colour: '#000000', tier: 'C' }],
     });
-    await importTeams(async () => [
-      { slug: '', name: 'FC United', colour: '#E53935', tier: 'B' },
-    ]);
+    vi.spyOn(teamsCsv, 'importTeamsCsv').mockResolvedValue([fcUnited]);
+
+    await importTeamsFromCsv();
 
     expect(useTeamsStore.getState().teams.map((team) => team.slug)).toEqual([
       'old-town',
@@ -112,20 +124,38 @@ describe('importTeams', () => {
   });
 
   it('changes nothing when the dialog is canceled', async () => {
-    await importTeams(async () => null);
+    vi.spyOn(teamsCsv, 'importTeamsCsv').mockResolvedValue(null);
+    await importTeamsFromCsv();
     expect(useTeamsStore.getState().teams).toEqual([]);
     expect(useFileStore.getState().status).toBeNull();
   });
 
   it('reports an error and changes nothing when the import fails', async () => {
-    await importTeams(async () => {
-      throw new Error('Bad CSV.');
-    });
+    vi.spyOn(teamsCsv, 'importTeamsCsv').mockRejectedValue(new Error('Bad CSV.'));
+    await importTeamsFromCsv();
     expect(useTeamsStore.getState().teams).toEqual([]);
     expect(useFileStore.getState().status).toEqual({
       tone: 'error',
       message: 'Bad CSV.',
     });
+  });
+
+  it('reads a JSON team list through the JSON import', async () => {
+    const importer = vi
+      .spyOn(teamsJson, 'importTeamsJson')
+      .mockResolvedValue([fcUnited]);
+    await importTeamsFromJson();
+    expect(importer).toHaveBeenCalledOnce();
+    expect(useTeamsStore.getState().teams).toEqual([fcUnited]);
+  });
+
+  it('reads a CSV or JSON team list through the one-dialog import', async () => {
+    const importer = vi
+      .spyOn(teamsFile, 'importTeamsFile')
+      .mockResolvedValue([fcUnited]);
+    await importTeamsFromFile();
+    expect(importer).toHaveBeenCalledOnce();
+    expect(useTeamsStore.getState().teams).toEqual([fcUnited]);
   });
 });
 

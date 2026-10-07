@@ -1,4 +1,3 @@
-import { teamRecordToCsvRecord } from '@/app/data/importMerge';
 import { exportResultsTxt } from '@/app/data/resultsTxt';
 import { exportTeamsCsv } from '@/app/data/teamsCsv';
 import { setFileStatus } from '@/app/state/fileActions';
@@ -13,9 +12,7 @@ import { useTeamsStore } from '@/app/state/teamsStore';
 /** Writes the whole roster to a team CSV file. */
 export async function exportTeams(): Promise<void> {
   try {
-    const path = await exportTeamsCsv(
-      useTeamsStore.getState().teams.map(teamRecordToCsvRecord)
-    );
+    const path = await exportTeamsCsv(useTeamsStore.getState().teams);
     setFileStatus({
       tone: 'info',
       message: path === null ? 'Export canceled.' : `Saved to ${path}`,

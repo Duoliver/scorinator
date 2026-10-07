@@ -1,8 +1,11 @@
 import type { JSX } from 'preact';
 import { Button, Card } from '@/design-system';
 import { ROUTES } from '@/app/routes';
-import { importTeamsFile } from '@/app/data/teamsFile';
-import { applyLoadedLeague, importTeams, openLeagueFile } from '@/app/loadActions';
+import {
+  applyLoadedLeague,
+  importTeamsFromFile,
+  openLeagueFile,
+} from '@/app/loadActions';
 import styles from './LeaguesEmptyState.module.css';
 
 /** What the Leagues start screen shows with no leagues (Task 29): the four
@@ -34,7 +37,7 @@ export function LeaguesEmptyState(): JSX.Element {
               <Button
                 variant="secondary"
                 size="md"
-                onClick={() => void importTeams(() => importTeamsFile())}
+                onClick={() => void importTeamsFromFile()}
               >
                 Load teams...
               </Button>

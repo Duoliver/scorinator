@@ -40,6 +40,18 @@ describe('importTeamsCsv', () => {
     ]);
   });
 
+  it('fills in a blank slug from the team name', async () => {
+    const csv = 'Slug,Name,Colour,Tier\n,Harborview SC,,A\n';
+    const fs = fakeFs({ readTextFile: vi.fn().mockResolvedValue(csv) });
+    const dialog = fakeDialog({
+      pickOpenPath: vi.fn().mockResolvedValue('/teams.csv'),
+    });
+    const result = await importTeamsCsv(fs, dialog);
+    expect(result).toEqual([
+      { slug: 'harborview-sc', name: 'Harborview SC', colour: '', tier: 'A' },
+    ]);
+  });
+
   it('opens the dialog filtered to .csv, not .json', async () => {
     const pickOpenPath = vi.fn().mockResolvedValue(null);
     await importTeamsCsv(fakeFs(), fakeDialog({ pickOpenPath }));

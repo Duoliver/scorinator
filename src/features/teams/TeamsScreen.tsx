@@ -3,8 +3,7 @@ import type { JSX } from 'preact';
 import { Badge, Button, Table, type TableColumn } from '@/design-system';
 import { TeamFormDrawer } from '@/features/components';
 import type { TeamRecord } from '@/domain';
-import { importTeamsFile } from '@/app/data/teamsFile';
-import { importTeams } from '@/app/loadActions';
+import { importTeamsFromFile } from '@/app/loadActions';
 import { addTeam, updateTeam } from '@/app/state/teamsActions';
 import { useTeamsStore } from '@/app/state/teamsStore';
 import styles from './TeamsScreen.module.css';
@@ -83,10 +82,7 @@ export function TeamsScreen(): JSX.Element {
         <div class={styles.actions}>
           {/* The same one-dialog CSV-or-JSON import as the Leagues empty
               state. Export stays on the File screen only (Task 27). */}
-          <Button
-            variant="secondary"
-            onClick={() => void importTeams(() => importTeamsFile())}
-          >
+          <Button variant="secondary" onClick={() => void importTeamsFromFile()}>
             Import teams...
           </Button>
           <Button onClick={() => setDrawer({ mode: 'create' })}>+ New team</Button>

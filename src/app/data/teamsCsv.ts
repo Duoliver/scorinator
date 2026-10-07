@@ -5,12 +5,9 @@ import {
   tauriFileSystem,
 } from '@/adapters/tauri-fs';
 import { parseTeamsCsv, serializeTeamsCsv } from '@/adapters/csv';
-import type {
-  FileFilter,
-  FileSystem,
-  SaveFileDialog,
-  TeamListRecord,
-} from '@/persistence/types';
+import type { FileFilter, FileSystem, SaveFileDialog } from '@/persistence/types';
+import type { TeamRecord } from '@/domain';
+import { teamListRecordToTeamRecord } from './importMerge';
 
 /** The thin `app/` → `adapters/` data layer `module-boundaries.md`
  * requires, so `features/` never imports `adapters/csv` or
@@ -27,17 +24,17 @@ const CSV_FILTERS: readonly FileFilter[] = [{ name: 'Team CSV', extensions: ['cs
 export async function importTeamsCsv(
   fs: FileSystem = tauriFileSystem,
   dialog: SaveFileDialog = tauriDialog
-): Promise<TeamListRecord[] | null> {
+): Promise<TeamRecord[] | null> {
   const opened = await openTextFileWithDialog(fs, dialog, CSV_FILTERS);
   if (opened === null) return null;
-  return parseTeamsCsv(opened.contents);
+  return parseTeamsCsv(opened.contents).map(teamListRecordToTeamRecord);
 }
 
 export async function exportTeamsCsv(
-  records: readonly TeamListRecord[],
+  teams: readonly TeamRecord[],
   fs: FileSystem = tauriFileSystem,
   dialog: SaveFileDialog = tauriDialog
 ): Promise<string | null> {
-  const contents = serializeTeamsCsv(records);
+  const contents = serializeTeamsCsv(teams);
   return saveTextFileWithDialog(fs, dialog, contents, 'teams.csv', CSV_FILTERS);
 }

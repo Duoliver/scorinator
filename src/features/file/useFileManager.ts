@@ -1,9 +1,7 @@
 import { useRef } from 'preact/hooks';
 import type { FieldHandle } from '@/design-system/field';
-import { importTeamsCsv } from '@/app/data/teamsCsv';
-import { importTeamsJson } from '@/app/data/teamsJson';
 import { exportResultsBySlug, exportTeams } from '@/app/exportActions';
-import { importTeams } from '@/app/loadActions';
+import { importTeamsFromCsv, importTeamsFromJson } from '@/app/loadActions';
 import { saveLeagueBySlug } from '@/app/saveActions';
 import { useFileStore } from '@/app/state/fileStore';
 import { useLeagueStore } from '@/app/state/leagueStore';
@@ -38,8 +36,8 @@ export function useFileManager(): FileManager {
     handleSave: (): void => void saveLeagueBySlug(pickedLeague(leagueSelect)),
     handleSaveAs: (): void =>
       void saveLeagueBySlug(pickedLeague(leagueSelect), { saveAs: true }),
-    handleImportCsv: () => importTeams(() => importTeamsCsv()),
-    handleImportJson: () => importTeams(() => importTeamsJson()),
+    handleImportCsv: importTeamsFromCsv,
+    handleImportJson: importTeamsFromJson,
     handleExportTeams: exportTeams,
     handleExportResults: () => exportResultsBySlug(pickedLeague(resultsSelect)),
   };

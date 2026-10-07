@@ -239,7 +239,7 @@ describe('FileScreen', () => {
   describe('Import and export teams', () => {
     it('imports teams from CSV and merges them into the roster', async () => {
       vi.spyOn(csvIO, 'importTeamsCsv').mockResolvedValue([
-        { slug: '', name: 'FC United', colour: '#E53935', tier: 'B' },
+        { slug: 'fc-united', name: 'FC United', colour: '#E53935', tier: 'B' },
       ]);
       render(<FileScreen />);
 
@@ -265,7 +265,7 @@ describe('FileScreen', () => {
 
     it('imports teams from JSON and merges them into the roster', async () => {
       vi.spyOn(jsonIO, 'importTeamsJson').mockResolvedValue([
-        { slug: '', name: 'FC United', colour: '#E53935', tier: 'B' },
+        { slug: 'fc-united', name: 'FC United', colour: '#E53935', tier: 'B' },
       ]);
       render(<FileScreen />);
 

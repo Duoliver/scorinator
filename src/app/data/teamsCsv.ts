@@ -8,8 +8,8 @@ import { parseTeamsCsv, serializeTeamsCsv, type TeamCsvRecord } from '@/adapters
 import type { FileFilter, FileSystem, SaveFileDialog } from '@/persistence/types';
 
 /** The thin `app/` → `adapters/` data layer `module-boundaries.md`
- * requires. `features/teams` calls these functions instead of importing
- * `adapters/csv` or `adapters/tauri-fs` directly. `fs`/`dialog` default to
+ * requires, so `features/` never imports `adapters/csv` or
+ * `adapters/tauri-fs` directly. `fs`/`dialog` default to
  * the real Tauri adapters and are only overridden in tests. */
 
 /** Restricts the open/save dialog to `.csv` files. Without this, both calls

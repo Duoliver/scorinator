@@ -11,7 +11,7 @@ import type {
 import { setCurrentLeague } from './fileActions';
 import { useLeagueStore } from './leagueStore';
 
-/** Matches the seeding already used at `App.tsx`'s scorinator playground:
+/** Matches the seeding the Playground screen's scorinator uses:
  * a fresh, non-deterministic seed per call, fed into the deterministic
  * `Rng` every stochastic `engine/` function requires. */
 function freshSeed(): number {
@@ -62,7 +62,7 @@ function playFixture(
  * `engine/identity` `slug()` call `TeamForm` already makes. `slug()`
  * throws a `RangeError` for a degenerate name (blank, or symbols-only) —
  * the caller guards this, the same way `TeamForm.handleSave` does for a
- * team name. See `LeagueSetupScreen.handleCreate`. It also throws a
+ * team name. See `useLeagueSetup`'s `handleCreate`. It also throws a
  * `RangeError` when another league already uses that slug (Task 40): two
  * leagues with one slug share a route, a save path, and every
  * slug-keyed action.

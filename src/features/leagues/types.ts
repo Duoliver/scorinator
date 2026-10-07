@@ -23,7 +23,7 @@ export interface LeagueResult extends MatchResult<string> {
  * saved lives in `app/state/fileStore` (Task 17), since a path is session
  * state, not part of the save file this record mirrors. `slug` is rolled once at
  * creation, from the league name, the same way `engine/identity`'s
- * `slug()` already identifies a team — see `app/state/leagueStore`'s
+ * `slug()` already identifies a team — see `app/state/leagueActions`'
  * `addLeague`. It is what League Detail (Task 25) routes by.
  * `fixtures`/`byes` are generated once at that same creation step (Task
  * 14), from `generateRoundRobin` — a team's slug is its `TeamId` here,

@@ -26,6 +26,8 @@ Use this list for every review in this repo. It comes from `CLAUDE.md`, `docs/co
 - [ ] Confirm the component file re-exports only the names a consumer needs.
 - [ ] Reject `!important` in any stylesheet. Require the author to resolve a specificity conflict through source order or an added selector.
 - [ ] Reject a `style` prop on a component or element, unless the value comes from data at runtime (e.g. a user-chosen colour). Require static layout and token values in a CSS module instead.
+- [ ] Reject a new or changed comment that lists the callers of a function or the users of a file. Require a comment that says why the code exists.
+- [ ] When the change renames or moves a function, hook, component, type, or file, search the repo for the old name. Confirm no comment, doc, or test name still uses it.
 
 ## 4. Tests, by layer
 

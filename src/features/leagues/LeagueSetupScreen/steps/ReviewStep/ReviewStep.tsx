@@ -49,7 +49,7 @@ export function ReviewStep({
           </Button>
           {/* No name check here: the Details step turns off Next for an
               invalid name. A jump through the step tabs still reaches
-              this button, and `LeagueSetupScreen.handleCreate` reports it. */}
+              this button, and `useLeagueSetup`'s `handleCreate` reports it. */}
           <Button onClick={onCreate} disabled={selectedTeams.length === 0}>
             Create league
           </Button>

@@ -13,7 +13,7 @@ export interface FileStatus {
  * `currentLeagueSlug` is the league Ctrl+S saves — the last one created,
  * opened, or loaded. `paths` holds where each league was last saved or
  * loaded, so a later save writes there without a dialog. `status` is the
- * one-line result of the latest save or load, shown by `AppShell`.
+ * one-line result of the latest save or load, shown by `StatusLine`.
  *
  * `savedLeagues` (Task 26) holds each league object as it was when last
  * saved or loaded. It is a reference, not a copy. `isLeagueUnsaved` compares

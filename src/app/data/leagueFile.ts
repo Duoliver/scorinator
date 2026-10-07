@@ -17,9 +17,9 @@ import type { TeamRecord } from '@/features/components';
 import type { LeagueRecord } from '@/features/leagues/types';
 
 /** The thin `app/` → `adapters/` data layer for Save/Load (Task 17), the
- * same seam `teamsCsv.ts` is for team CSV. `features/file` calls these
- * instead of `adapters/json-io` or `adapters/tauri-fs`. `fs`/`dialog`
- * default to the real Tauri adapters and are only overridden in tests. */
+ * same seam `teamsCsv.ts` is for team CSV, so `features/` never imports
+ * `adapters/json-io` or `adapters/tauri-fs` directly. `fs`/`dialog` default to
+ * the real Tauri adapters and are only overridden in tests. */
 
 export interface LoadedLeagueFile {
   path: string;

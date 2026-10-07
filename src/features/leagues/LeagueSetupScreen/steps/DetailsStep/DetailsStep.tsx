@@ -80,7 +80,7 @@ export const DetailsStep = forwardRef<DetailsStepHandle, DetailsStepProps>(
 
           <div class={styles.footer}>
             {/* Says why Next is off. Same text as the Create guard in
-                `LeagueSetupScreen.handleCreate`. */}
+                `useLeagueSetup`'s `handleCreate`. */}
             {nameProblem && <span class={styles.hint}>{nameProblem}</span>}
             <Button onClick={onNext} disabled={nameProblem !== null}>
               Next: Teams →

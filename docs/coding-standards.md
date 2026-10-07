@@ -224,3 +224,32 @@ import styles from './TeamsScreen.module.css';
 ```
 
 A `style` prop is acceptable only for a value your code computes at runtime from data. One example is a team's user-chosen hex colour swatch. Never use it for a static layout or token value.
+
+## Comments: say why, and search for an old name after a rename
+
+A comment goes stale when the code it names changes. Task 52 fixed 12 stale comments. Each one named a function, a file, or a caller that a rename or a move changed. Two rules keep this from coming back.
+
+### Write why the code exists, not who calls it
+
+A comment explains a reason, a rule, or a trap that the code cannot show. Do not list the callers of a function, or the screen that uses a file. A search or the editor gives that list, and it is always correct. A caller list in a comment goes stale with the next move.
+
+```ts
+// Don't
+/** `features/file` calls these instead of `adapters/json-io`. */
+
+// Do
+/** The thin `app/` → `adapters/` data layer, so `features/` never imports
+ * `adapters/` directly (`module-boundaries.md`). */
+```
+
+A comment can still name another piece of code when the reason needs it. For example, it can name a rule, a design decision, or the one place that must change together with this code. Existing caller lists change when a task touches their file. No task rewrites them all at once.
+
+### After a rename or a move, search for the old name
+
+When a task renames or moves a function, a hook, a component, a type, or a file, search the whole repo for the old name before the task finishes. Include comments, `.md` docs, and test names. The TypeScript rename in the editor changes the code, but not the comments or the docs.
+
+```bash
+grep -rn "oldName" src docs
+```
+
+Fix each match, or say in the task notes why it stays. The search finds nothing when the task is done.

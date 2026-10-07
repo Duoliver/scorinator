@@ -8,7 +8,7 @@ export const LEAGUE_NAME_TAKEN = 'A league with this name already exists.';
  * comes from its name (`leagueActions.addLeague`), so the name must give a
  * slug — `slug()` throws for a blank or symbols-only name — and no open
  * league may use that slug already (Task 40). The Details step shows the
- * result next to Next, and `LeagueSetupScreen.handleCreate` checks it again,
+ * result next to Next, and `useLeagueSetup`'s `handleCreate` checks it again,
  * since the step tabs can reach Review past a disabled Next. */
 export function leagueNameProblem(
   name: string,

@@ -5,11 +5,11 @@ import {
   teamRecordToCsvRecord,
 } from './importMerge';
 import type { TeamRecord } from '@/domain';
-import type { TeamCsvRecord } from '@/adapters/csv';
+import type { TeamListRecord } from '@/persistence/types';
 
 describe('csvRecordToTeamRecord', () => {
   it('keeps a non-blank slug from the CSV row as-is', () => {
-    const record: TeamCsvRecord = {
+    const record: TeamListRecord = {
       slug: 'salt-marsh-utd',
       name: 'Salt Marsh United',
       colour: '#039BE5',
@@ -19,7 +19,7 @@ describe('csvRecordToTeamRecord', () => {
   });
 
   it('generates a slug from the name when the CSV row has a blank slug', () => {
-    const record: TeamCsvRecord = {
+    const record: TeamListRecord = {
       slug: '',
       name: 'Harborview SC',
       colour: '',

@@ -1,4 +1,4 @@
-import type { TeamCsvRecord } from '@/adapters/csv';
+import type { TeamListRecord } from '@/persistence/types';
 import { loadLeagueFile, type LoadedLeagueFile } from '@/app/data/leagueFile';
 import { csvRecordToTeamRecord, mergeImportedTeams } from '@/app/data/importMerge';
 import {
@@ -51,7 +51,7 @@ export function applyLoadedLeague(loaded: LoadedLeagueFile): void {
 /** Runs one of the `app/data` team imports and merges its teams into the
  * roster by slug. */
 export async function importTeams(
-  importer: () => Promise<TeamCsvRecord[] | null>
+  importer: () => Promise<TeamListRecord[] | null>
 ): Promise<void> {
   try {
     const imported = await importer();

@@ -1,7 +1,12 @@
 import { tauriDialog, tauriFileSystem } from '@/adapters/tauri-fs';
-import { parseTeamsCsv, type TeamCsvRecord } from '@/adapters/csv';
+import { parseTeamsCsv } from '@/adapters/csv';
 import { parseTeamsJson } from '@/adapters/json-io';
-import type { FileFilter, FileSystem, SaveFileDialog } from '@/persistence/types';
+import type {
+  FileFilter,
+  FileSystem,
+  SaveFileDialog,
+  TeamListRecord,
+} from '@/persistence/types';
 
 /** A team import that takes either format (Task 29), for the Leagues
  * empty state's single "Load teams" button. It opens one dialog for `.csv`
@@ -14,7 +19,7 @@ const TEAM_LIST_FILTERS: readonly FileFilter[] = [
 export async function importTeamsFile(
   fs: FileSystem = tauriFileSystem,
   dialog: SaveFileDialog = tauriDialog
-): Promise<TeamCsvRecord[] | null> {
+): Promise<TeamListRecord[] | null> {
   const path = await dialog.pickOpenPath(TEAM_LIST_FILTERS);
   if (path === null) return null;
 

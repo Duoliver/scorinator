@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { parseTeamsCsv, serializeTeamsCsv } from './teams';
-import type { TeamCsvRecord } from './types';
+import type { TeamListRecord } from '@/persistence/types';
 
 describe('parseTeamsCsv', () => {
   it('parses a well-formed file with all four columns', () => {
@@ -64,7 +64,7 @@ describe('parseTeamsCsv', () => {
 
 describe('serializeTeamsCsv', () => {
   it('quotes only the fields that need it', () => {
-    const records: TeamCsvRecord[] = [
+    const records: TeamListRecord[] = [
       { slug: 'a-fc', name: 'A, FC', colour: '#fff', tier: 'A' },
     ];
     expect(serializeTeamsCsv(records)).toBe(
@@ -73,7 +73,7 @@ describe('serializeTeamsCsv', () => {
   });
 
   it('round-trips through parseTeamsCsv, including special characters', () => {
-    const records: TeamCsvRecord[] = [
+    const records: TeamListRecord[] = [
       {
         slug: 'salt-marsh-utd',
         name: 'Salt Marsh United',

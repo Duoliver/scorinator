@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createSeededRng } from '@/engine/rng';
 import * as tierOvrModule from './index';
-import { TIER_ORDER, TIER_OVR_RANGES, rollOVR } from './index';
+import { TIER_ORDER, TIER_OVR_RANGES, isTier, rollOVR } from './index';
 
 describe('TIER_OVR_RANGES', () => {
   it('gives every tier a defined range, S = 90-99 as the spec anchor', () => {
@@ -59,6 +59,24 @@ describe('rollOVR', () => {
 
   it('is the only exported way to produce an OVR value (no direct setter)', () => {
     const exportedNames = Object.keys(tierOvrModule);
-    expect(exportedNames).toEqual(['TIER_ORDER', 'TIER_OVR_RANGES', 'rollOVR']);
+    expect(exportedNames.sort()).toEqual(
+      ['TIER_ORDER', 'TIER_OVR_RANGES', 'isTier', 'rollOVR'].sort()
+    );
+  });
+});
+
+describe('isTier', () => {
+  it('accepts each tier letter', () => {
+    for (const tier of TIER_ORDER) expect(isTier(tier)).toBe(true);
+  });
+
+  it('rejects a lower-case letter, an unknown letter, and a blank string', () => {
+    for (const value of ['s', 'G', '', ' S']) expect(isTier(value)).toBe(false);
+  });
+
+  it('rejects a value that is not a string', () => {
+    for (const value of [undefined, null, 1, ['S'], { tier: 'S' }]) {
+      expect(isTier(value)).toBe(false);
+    }
   });
 });

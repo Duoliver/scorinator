@@ -21,6 +21,12 @@ export const TIER_OVR_RANGES: Readonly<Record<Tier, TierOvrRange>> = {
   F: { min: 30, max: 39 },
 };
 
+/** True for one of the seven tier letters, upper case only. A file parser
+ * calls it on a value it reads, before it trusts the value as a `Tier`. */
+export function isTier(value: unknown): value is Tier {
+  return typeof value === 'string' && (TIER_ORDER as readonly string[]).includes(value);
+}
+
 /**
  * Rolls a team's OVR from its Tier's range. This is the only supported way
  * to produce an OVR value — Tier is always the source of truth (spec §1),

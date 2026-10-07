@@ -1,10 +1,10 @@
 import { slug } from '@/engine/identity';
-import type { TeamCsvRecord } from '@/adapters/csv';
+import type { TeamListRecord } from '@/persistence/types';
 import type { TeamRecord } from '@/domain';
 
 /** `parseTeamsCsv` leaves a blank Slug column as `''` — this fills it in
  * from the Name, the wiring Task 11's decision log deferred to this task. */
-export function csvRecordToTeamRecord(record: TeamCsvRecord): TeamRecord {
+export function csvRecordToTeamRecord(record: TeamListRecord): TeamRecord {
   return {
     slug: record.slug === '' ? slug(record.name) : record.slug,
     name: record.name,
@@ -13,7 +13,7 @@ export function csvRecordToTeamRecord(record: TeamCsvRecord): TeamRecord {
   };
 }
 
-export function teamRecordToCsvRecord(record: TeamRecord): TeamCsvRecord {
+export function teamRecordToCsvRecord(record: TeamRecord): TeamListRecord {
   return { ...record };
 }
 

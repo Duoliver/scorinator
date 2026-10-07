@@ -1,7 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { importTeamsCsv, exportTeamsCsv } from './teamsCsv';
-import type { FileSystem, SaveFileDialog } from '@/persistence/types';
-import type { TeamCsvRecord } from '@/adapters/csv';
+import type { FileSystem, SaveFileDialog, TeamListRecord } from '@/persistence/types';
 
 function fakeFs(overrides: Partial<FileSystem> = {}): FileSystem {
   return {
@@ -58,7 +57,7 @@ describe('exportTeamsCsv', () => {
   });
 
   it('serializes the given records and writes them to the chosen path', async () => {
-    const records: TeamCsvRecord[] = [
+    const records: TeamListRecord[] = [
       { slug: 'fc-united', name: 'FC United', colour: '#E53935', tier: 'B' },
     ];
     const writeTextFile = vi.fn();

@@ -6,19 +6,13 @@ import {
   Input,
   Select,
   SwatchPicker,
-  TEAM_PALETTE,
 } from '@/design-system';
 import type { FieldHandle } from '@/design-system/field';
 import { slug } from '@/engine/identity';
-import { TIER_ORDER, type Tier } from '@/engine/tier-ovr';
+import type { Tier } from '@/engine/tier-ovr';
 import type TeamFormProps from './types';
+import { COLOUR_OPTIONS, TIER_OPTIONS } from './helpers';
 import styles from './TeamForm.module.css';
-
-const TIER_OPTIONS = TIER_ORDER.map((tier) => ({ label: tier, value: tier }));
-const COLOUR_OPTIONS = TEAM_PALETTE.map(({ name, hex }) => ({
-  label: name,
-  value: hex,
-}));
 
 export type { TeamFormProps };
 

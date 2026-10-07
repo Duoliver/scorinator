@@ -3,3 +3,7 @@ dist/
 build/
 *.config.js
 pnpm-lock.yaml
+
+# Markdown docs: Prettier pads table cells to the widest cell, which makes
+# wide tables hard to read in the raw file (Task 51).
+*.md

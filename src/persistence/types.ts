@@ -21,6 +21,9 @@ export interface FileFilter {
  * restricts which files the dialog shows/allows; each adapter picks its own
  * default when the caller omits it. */
 export interface SaveFileDialog {
-  pickSavePath(defaultPath?: string, filters?: readonly FileFilter[]): Promise<string | null>;
+  pickSavePath(
+    defaultPath?: string,
+    filters?: readonly FileFilter[]
+  ): Promise<string | null>;
   pickOpenPath(filters?: readonly FileFilter[]): Promise<string | null>;
 }

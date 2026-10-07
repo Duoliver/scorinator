@@ -112,7 +112,9 @@ describe('saveLeagueBySlug', () => {
     });
 
     it('is false after a failed save', async () => {
-      vi.spyOn(leagueFile, 'saveLeagueFile').mockRejectedValue(new Error('Disk is full.'));
+      vi.spyOn(leagueFile, 'saveLeagueFile').mockRejectedValue(
+        new Error('Disk is full.')
+      );
       expect(await saveLeagueBySlug('coastal-premier')).toBe(false);
     });
 

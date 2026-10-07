@@ -28,7 +28,10 @@ interface Pairing<TeamId> {
  * home/away assignment. That is MVP2's `groups round robin`, a separate
  * generator, not an extension of this one.
  */
-export function generateRoundRobin<TeamId>(teams: readonly TeamId[], rng?: Rng): RoundRobinSchedule<TeamId> {
+export function generateRoundRobin<TeamId>(
+  teams: readonly TeamId[],
+  rng?: Rng
+): RoundRobinSchedule<TeamId> {
   if (teams.length < 2) {
     throw new RangeError(
       `generateRoundRobin needs at least 2 teams, got ${teams.length}. This is a deliberate rejection, not a spec rule — see the Task 3 decision log.`
@@ -58,12 +61,16 @@ export function generateRoundRobin<TeamId>(teams: readonly TeamId[], rng?: Rng):
 
 // `fixtures` arrives in matchday order. Fisher-Yates on each matchday's run
 // of fixtures, so the matchday order stays and only the match order moves.
-function shuffleWithinMatchdays<T extends { matchday: number }>(fixtures: T[], rng: Rng): T[] {
+function shuffleWithinMatchdays<T extends { matchday: number }>(
+  fixtures: T[],
+  rng: Rng
+): T[] {
   const shuffled = fixtures.slice();
   let start = 0;
   while (start < shuffled.length) {
     let end = start;
-    while (end < shuffled.length && shuffled[end].matchday === shuffled[start].matchday) end++;
+    while (end < shuffled.length && shuffled[end].matchday === shuffled[start].matchday)
+      end++;
     for (let i = end - 1; i > start; i--) {
       const j = start + Math.floor(rng() * (i - start + 1));
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
@@ -83,7 +90,11 @@ function pairLegOne<TeamId>(
 
   for (let round = 0; round < roundsPerLeg; round++) {
     for (let i = 0; i < half; i++) {
-      pairings.push({ matchday: round + 1, a: rotating[i], b: rotating[rotating.length - 1 - i] });
+      pairings.push({
+        matchday: round + 1,
+        a: rotating[i],
+        b: rotating[rotating.length - 1 - i],
+      });
     }
     rotateKeepingFirstFixed(rotating);
   }
@@ -98,7 +109,11 @@ function rotateKeepingFirstFixed<T>(slots: T[]): void {
   if (last !== undefined) slots.splice(1, 0, last);
 }
 
-function addLegOne<TeamId>(pairing: Pairing<TeamId>, fixtures: Fixture<TeamId>[], byes: Bye<TeamId>[]): void {
+function addLegOne<TeamId>(
+  pairing: Pairing<TeamId>,
+  fixtures: Fixture<TeamId>[],
+  byes: Bye<TeamId>[]
+): void {
   const { matchday, a, b } = pairing;
   if (a === BYE || b === BYE) {
     byes.push({ matchday, team: (a === BYE ? b : a) as TeamId });
@@ -107,7 +122,9 @@ function addLegOne<TeamId>(pairing: Pairing<TeamId>, fixtures: Fixture<TeamId>[]
   // Alternate which side of the pairing is home by round, so a fixed
   // anchor team is not home every round of the first leg.
   const homeIsB = matchday % 2 === 0;
-  fixtures.push(homeIsB ? { matchday, home: b, away: a } : { matchday, home: a, away: b });
+  fixtures.push(
+    homeIsB ? { matchday, home: b, away: a } : { matchday, home: a, away: b }
+  );
 }
 
 function addLegTwo<TeamId>(

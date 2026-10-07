@@ -4,7 +4,10 @@ import type { MatchResult, StandingsRow } from './types';
 
 const TEAMS = ['Alpha', 'Bravo', 'Charlie', 'Delta'];
 
-function row(teamId: string, table: readonly StandingsRow<string>[]): StandingsRow<string> {
+function row(
+  teamId: string,
+  table: readonly StandingsRow<string>[]
+): StandingsRow<string> {
   const found = table.find((r) => r.team === teamId);
   if (!found) throw new Error(`no row for ${teamId}`);
   return found;
@@ -47,7 +50,9 @@ describe('calculateStandings', () => {
   });
 
   it('uses a configurable points system instead of the default', () => {
-    const results: MatchResult<string>[] = [{ home: 'Alpha', away: 'Bravo', homeGoals: 1, awayGoals: 0 }];
+    const results: MatchResult<string>[] = [
+      { home: 'Alpha', away: 'Bravo', homeGoals: 1, awayGoals: 0 },
+    ];
     const table = calculateStandings(TEAMS, results, { win: 2, draw: 1, loss: 0 });
     expect(row('Alpha', table).points).toBe(2);
   });
@@ -162,9 +167,17 @@ describe('calculateStandings', () => {
     // Alpha, Bravo, and Charlie play no one, so all three stay level at
     // 0 points, 0 goal difference, 0 goals for. Delta beats Echo, so
     // Delta sits above the trio and Echo sits below it.
-    const results: MatchResult<string>[] = [{ home: 'Delta', away: 'Echo', homeGoals: 1, awayGoals: 0 }];
+    const results: MatchResult<string>[] = [
+      { home: 'Delta', away: 'Echo', homeGoals: 1, awayGoals: 0 },
+    ];
     const table = calculateStandings(roster, results);
-    expect(table.map((r) => r.team)).toEqual(['Delta', 'Charlie', 'Bravo', 'Alpha', 'Echo']);
+    expect(table.map((r) => r.team)).toEqual([
+      'Delta',
+      'Charlie',
+      'Bravo',
+      'Alpha',
+      'Echo',
+    ]);
     expect(table.map((r) => r.sortOrder)).toEqual([1, 2, 3, 4, 5]);
     expect(table.map((r) => r.position)).toEqual([1, 2, 2, 2, 5]);
     expect(table.map((r) => r.positionText)).toEqual(['1', '2', '-', '-', '5']);
@@ -186,11 +199,19 @@ describe('calculateStandings', () => {
     expect(row('Alpha', table).points).toBe(row('Bravo', table).points);
     expect(row('Bravo', table).points).toBe(row('Charlie', table).points);
     expect(row('Alpha', table).goalDifference).toBe(row('Bravo', table).goalDifference);
-    expect(row('Bravo', table).goalDifference).toBe(row('Charlie', table).goalDifference);
+    expect(row('Bravo', table).goalDifference).toBe(
+      row('Charlie', table).goalDifference
+    );
     // The mini-league among just Alpha, Bravo, and Charlie reproduces the
     // same cycle, so it cannot separate them either — all three land on
     // one shared position, ordered among themselves by roster order.
-    expect(table.map((r) => r.team)).toEqual(['Delta', 'Charlie', 'Bravo', 'Alpha', 'Echo']);
+    expect(table.map((r) => r.team)).toEqual([
+      'Delta',
+      'Charlie',
+      'Bravo',
+      'Alpha',
+      'Echo',
+    ]);
     expect(table.map((r) => r.sortOrder)).toEqual([1, 2, 3, 4, 5]);
     expect(table.map((r) => r.position)).toEqual([1, 2, 2, 2, 5]);
     expect(table.map((r) => r.positionText)).toEqual(['1', '2', '-', '-', '5']);
@@ -254,15 +275,25 @@ describe('calculateStandings', () => {
     // own order, with no tied block left over. Echo sits outside that
     // group (its overall goals-for is 6, not the group's 3) and tops the
     // table in its own right.
-    expect(table.map((r) => r.team)).toEqual(['Echo', 'Alpha', 'Bravo', 'Charlie', 'Delta']);
+    expect(table.map((r) => r.team)).toEqual([
+      'Echo',
+      'Alpha',
+      'Bravo',
+      'Charlie',
+      'Delta',
+    ]);
     expect(table.map((r) => r.sortOrder)).toEqual([1, 2, 3, 4, 5]);
     expect(table.map((r) => r.position)).toEqual([1, 2, 3, 4, 5]);
     expect(table.map((r) => r.positionText)).toEqual(['1', '2', '3', '4', '5']);
   });
 
   it('reflects an updated result set on recalculation, as a re-scorinate would', () => {
-    const before: MatchResult<string>[] = [{ home: 'Alpha', away: 'Bravo', homeGoals: 1, awayGoals: 1 }];
-    const after: MatchResult<string>[] = [{ home: 'Alpha', away: 'Bravo', homeGoals: 3, awayGoals: 0 }];
+    const before: MatchResult<string>[] = [
+      { home: 'Alpha', away: 'Bravo', homeGoals: 1, awayGoals: 1 },
+    ];
+    const after: MatchResult<string>[] = [
+      { home: 'Alpha', away: 'Bravo', homeGoals: 3, awayGoals: 0 },
+    ];
     const tableBefore = calculateStandings(TEAMS, before);
     const tableAfter = calculateStandings(TEAMS, after);
     expect(row('Alpha', tableBefore).points).toBe(1);
@@ -270,7 +301,9 @@ describe('calculateStandings', () => {
   });
 
   it('rejects a result for a team outside the given roster', () => {
-    const results: MatchResult<string>[] = [{ home: 'Alpha', away: 'Zulu', homeGoals: 1, awayGoals: 0 }];
+    const results: MatchResult<string>[] = [
+      { home: 'Alpha', away: 'Zulu', homeGoals: 1, awayGoals: 0 },
+    ];
     expect(() => calculateStandings(TEAMS, results)).toThrow(RangeError);
   });
 });

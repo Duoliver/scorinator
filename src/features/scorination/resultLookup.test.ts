@@ -30,24 +30,30 @@ const result = (overrides: Partial<LeagueResult> = {}): LeagueResult => ({
 describe('findResult', () => {
   it('returns the result matching the exact matchday/home/away triple', () => {
     const played = result();
-    const found = findResult(
-      league({ results: [played] }),
-      { matchday: 1, home: 'fc-united', away: 'fc-rivals' }
-    );
+    const found = findResult(league({ results: [played] }), {
+      matchday: 1,
+      home: 'fc-united',
+      away: 'fc-rivals',
+    });
     expect(found).toEqual(played);
   });
 
   it('returns undefined for a fixture with no recorded result', () => {
-    const found = findResult(league(), { matchday: 1, home: 'fc-united', away: 'fc-rivals' });
+    const found = findResult(league(), {
+      matchday: 1,
+      home: 'fc-united',
+      away: 'fc-rivals',
+    });
     expect(found).toBeUndefined();
   });
 
   it('does not match a result from a different matchday, even with the same teams', () => {
     const wrongMatchday = result({ matchday: 2 });
-    const found = findResult(
-      league({ results: [wrongMatchday] }),
-      { matchday: 1, home: 'fc-united', away: 'fc-rivals' }
-    );
+    const found = findResult(league({ results: [wrongMatchday] }), {
+      matchday: 1,
+      home: 'fc-united',
+      away: 'fc-rivals',
+    });
     expect(found).toBeUndefined();
   });
 });
@@ -94,7 +100,9 @@ describe('findCurrentMatchday', () => {
   });
 
   it('is undefined once every fixture has a result', () => {
-    expect(findCurrentMatchday(league({ results: [...matchdayOne, matchdayTwo] }))).toBeUndefined();
+    expect(
+      findCurrentMatchday(league({ results: [...matchdayOne, matchdayTwo] }))
+    ).toBeUndefined();
   });
 
   it('is undefined for a league with no fixtures', () => {

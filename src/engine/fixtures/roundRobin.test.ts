@@ -7,7 +7,10 @@ function teamsOf(n: number): string[] {
   return Array.from({ length: n }, (_, i) => `T${i + 1}`);
 }
 
-function groupTeamsByMatchday(fixtures: Fixture<string>[], byes: Bye<string>[]): Map<number, string[]> {
+function groupTeamsByMatchday(
+  fixtures: Fixture<string>[],
+  byes: Bye<string>[]
+): Map<number, string[]> {
   const byMatchday = new Map<number, string[]>();
   const add = (matchday: number, team: string): void => {
     const list = byMatchday.get(matchday) ?? [];
@@ -50,7 +53,10 @@ describe('generateRoundRobin', () => {
   it('gives exactly one bye per matchday, and an equal bye count per team (odd N)', () => {
     const teams = teamsOf(5);
     const { fixtures, byes } = generateRoundRobin(teams);
-    const matchdays = new Set([...fixtures.map((f) => f.matchday), ...byes.map((b) => b.matchday)]);
+    const matchdays = new Set([
+      ...fixtures.map((f) => f.matchday),
+      ...byes.map((b) => b.matchday),
+    ]);
     for (const matchday of matchdays) {
       const byesThatDay = byes.filter((b) => b.matchday === matchday);
       expect(byesThatDay).toHaveLength(1);

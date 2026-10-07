@@ -4,10 +4,20 @@ import { parseTeamsJson } from './teams';
 describe('parseTeamsJson', () => {
   it('parses a well-formed array of team objects', () => {
     const json = JSON.stringify([
-      { slug: 'salt-marsh-utd', name: 'Salt Marsh United', colour: '#039BE5', tier: 'A' },
+      {
+        slug: 'salt-marsh-utd',
+        name: 'Salt Marsh United',
+        colour: '#039BE5',
+        tier: 'A',
+      },
     ]);
     expect(parseTeamsJson(json)).toEqual([
-      { slug: 'salt-marsh-utd', name: 'Salt Marsh United', colour: '#039BE5', tier: 'A' },
+      {
+        slug: 'salt-marsh-utd',
+        name: 'Salt Marsh United',
+        colour: '#039BE5',
+        tier: 'A',
+      },
     ]);
   });
 

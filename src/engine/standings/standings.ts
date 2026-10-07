@@ -1,7 +1,11 @@
 import type { MatchResult, PointsConfig, StandingsRow } from './types';
 
 /** MVP1 spec §1 "Standings": win/draw/loss defaults to 3/1/0. */
-export const DEFAULT_POINTS_CONFIG: Readonly<PointsConfig> = { win: 3, draw: 1, loss: 0 };
+export const DEFAULT_POINTS_CONFIG: Readonly<PointsConfig> = {
+  win: 3,
+  draw: 1,
+  loss: 0,
+};
 
 /**
  * Computes a standings table from a roster and a set of played results.
@@ -52,10 +56,14 @@ function applyResult<TeamId>(
   const home = rows.get(result.home);
   const away = rows.get(result.away);
   if (!home) {
-    throw new RangeError(`calculateStandings got a result for a team not in the roster: ${String(result.home)}.`);
+    throw new RangeError(
+      `calculateStandings got a result for a team not in the roster: ${String(result.home)}.`
+    );
   }
   if (!away) {
-    throw new RangeError(`calculateStandings got a result for a team not in the roster: ${String(result.away)}.`);
+    throw new RangeError(
+      `calculateStandings got a result for a team not in the roster: ${String(result.away)}.`
+    );
   }
 
   home.played++;
@@ -137,12 +145,17 @@ function orderAndPosition<TeamId>(
       results,
       pointsConfig
     );
-    const compareByMiniLeague = (a: StandingsRow<TeamId>, b: StandingsRow<TeamId>): number => {
+    const compareByMiniLeague = (
+      a: StandingsRow<TeamId>,
+      b: StandingsRow<TeamId>
+    ): number => {
       const miniA = miniLeague.get(a.team);
       const miniB = miniLeague.get(b.team);
-      if (!miniA || !miniB) throw new RangeError('mini-league is missing a group member.');
+      if (!miniA || !miniB)
+        throw new RangeError('mini-league is missing a group member.');
       if (miniB.points !== miniA.points) return miniB.points - miniA.points;
-      if (miniB.goalDifference !== miniA.goalDifference) return miniB.goalDifference - miniA.goalDifference;
+      if (miniB.goalDifference !== miniA.goalDifference)
+        return miniB.goalDifference - miniA.goalDifference;
       return miniB.goalsFor - miniA.goalsFor;
     };
 
@@ -162,7 +175,10 @@ function orderAndPosition<TeamId>(
 }
 
 // Points desc, then goal difference desc, then goals for desc.
-function compareByMainCriteria<TeamId>(a: StandingsRow<TeamId>, b: StandingsRow<TeamId>): number {
+function compareByMainCriteria<TeamId>(
+  a: StandingsRow<TeamId>,
+  b: StandingsRow<TeamId>
+): number {
   if (b.points !== a.points) return b.points - a.points;
   if (b.goalDifference !== a.goalDifference) return b.goalDifference - a.goalDifference;
   return b.goalsFor - a.goalsFor;
@@ -173,7 +189,11 @@ function compareByMainCriteria<TeamId>(a: StandingsRow<TeamId>, b: StandingsRow<
 // treats as equal. Both comparators passed in here are plain numeric
 // comparisons, so they are always transitive, and an adjacent-pair check
 // is enough to find a run's true boundaries.
-function groupBy<T>(items: T[], compareCriteria: (a: T, b: T) => number, tieBreak: (a: T, b: T) => number): T[][] {
+function groupBy<T>(
+  items: T[],
+  compareCriteria: (a: T, b: T) => number,
+  tieBreak: (a: T, b: T) => number
+): T[][] {
   const sorted = [...items].sort((a, b) => compareCriteria(a, b) || tieBreak(a, b));
   const groups: T[][] = [];
   for (const item of sorted) {

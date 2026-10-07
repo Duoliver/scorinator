@@ -5,10 +5,26 @@ import { SAVE_FORMAT_VERSION, type SavedLeague } from './types';
 function buildLeague(): SavedLeague {
   return {
     formatVersion: SAVE_FORMAT_VERSION,
-    league: { name: 'Coastal Premier', homeAdvantage: true, points: { win: 3, draw: 1, loss: 0 } },
+    league: {
+      name: 'Coastal Premier',
+      homeAdvantage: true,
+      points: { win: 3, draw: 1, loss: 0 },
+    },
     teams: [
-      { slug: 'salt-marsh-united', name: 'Salt Marsh United', colour: '#1155cc', tier: 'B', ovr: 74 },
-      { slug: 'harborview-sc', name: 'Harborview SC', colour: '#cc4411', tier: 'C', ovr: 63 },
+      {
+        slug: 'salt-marsh-united',
+        name: 'Salt Marsh United',
+        colour: '#1155cc',
+        tier: 'B',
+        ovr: 74,
+      },
+      {
+        slug: 'harborview-sc',
+        name: 'Harborview SC',
+        colour: '#cc4411',
+        tier: 'C',
+        ovr: 63,
+      },
     ],
     fixtures: [
       { matchday: 1, home: 'salt-marsh-united', away: 'harborview-sc' },
@@ -16,7 +32,13 @@ function buildLeague(): SavedLeague {
     ],
     byes: [],
     results: [
-      { matchday: 1, home: 'salt-marsh-united', away: 'harborview-sc', homeGoals: 2, awayGoals: 1 },
+      {
+        matchday: 1,
+        home: 'salt-marsh-united',
+        away: 'harborview-sc',
+        homeGoals: 2,
+        awayGoals: 1,
+      },
     ],
   };
 }

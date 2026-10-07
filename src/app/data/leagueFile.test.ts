@@ -50,7 +50,9 @@ const league = (overrides: Partial<LeagueRecord> = {}): LeagueRecord => ({
     { matchday: 2, home: 'fc-rivals', away: 'fc-united' },
   ],
   byes: [],
-  results: [{ matchday: 1, home: 'fc-united', away: 'fc-rivals', homeGoals: 2, awayGoals: 1 }],
+  results: [
+    { matchday: 1, home: 'fc-united', away: 'fc-rivals', homeGoals: 2, awayGoals: 1 },
+  ],
   ...overrides,
 });
 
@@ -105,7 +107,9 @@ describe('savedToLeague', () => {
   });
 
   it('throws for a fixture naming a team that is not in the file', () => {
-    const bad = saved({ fixtures: [{ matchday: 1, home: 'fc-united', away: 'ghost-fc' }] });
+    const bad = saved({
+      fixtures: [{ matchday: 1, home: 'fc-united', away: 'ghost-fc' }],
+    });
     expect(() => savedToLeague(bad)).toThrow(/ghost-fc/);
   });
 
@@ -116,14 +120,30 @@ describe('savedToLeague', () => {
 
   it('throws for a result naming a team that is not in the file', () => {
     const bad = saved({
-      results: [{ matchday: 1, home: 'ghost-fc', away: 'fc-rivals', homeGoals: 0, awayGoals: 0 }],
+      results: [
+        {
+          matchday: 1,
+          home: 'ghost-fc',
+          away: 'fc-rivals',
+          homeGoals: 0,
+          awayGoals: 0,
+        },
+      ],
     });
     expect(() => savedToLeague(bad)).toThrow(/ghost-fc/);
   });
 
   it('throws for a result that matches no fixture', () => {
     const bad = saved({
-      results: [{ matchday: 9, home: 'fc-united', away: 'fc-rivals', homeGoals: 1, awayGoals: 1 }],
+      results: [
+        {
+          matchday: 9,
+          home: 'fc-united',
+          away: 'fc-rivals',
+          homeGoals: 1,
+          awayGoals: 1,
+        },
+      ],
     });
     expect(() => savedToLeague(bad)).toThrow(/no matching fixture/);
   });
@@ -149,14 +169,23 @@ describe('saveLeagueFile', () => {
 
     expect(result).toBe('/saves/coastal.json');
     expect(pickSavePath).not.toHaveBeenCalled();
-    expect(rename).toHaveBeenCalledWith(expect.stringContaining('/saves/coastal.json.tmp-'), '/saves/coastal.json');
+    expect(rename).toHaveBeenCalledWith(
+      expect.stringContaining('/saves/coastal.json.tmp-'),
+      '/saves/coastal.json'
+    );
     const [, contents] = writeTextFile.mock.calls[0]!;
     expect(parseLeague(contents as string).league.name).toBe('Coastal Premier');
   });
 
   it('opens the dialog with <slug>.json as the default name when no path is known', async () => {
     const pickSavePath = vi.fn().mockResolvedValue('/picked.json');
-    const result = await saveLeagueFile(league(), roster, null, fakeFs(), fakeDialog({ pickSavePath }));
+    const result = await saveLeagueFile(
+      league(),
+      roster,
+      null,
+      fakeFs(),
+      fakeDialog({ pickSavePath })
+    );
 
     expect(result).toBe('/picked.json');
     expect(pickSavePath).toHaveBeenCalledWith('coastal-premier.json', undefined);
@@ -194,7 +223,13 @@ describe('saveLeagueFileAs', () => {
 
   it('falls back to <slug>.json when no path is known yet', async () => {
     const pickSavePath = vi.fn().mockResolvedValue(null);
-    await saveLeagueFileAs(league(), roster, null, fakeFs(), fakeDialog({ pickSavePath }));
+    await saveLeagueFileAs(
+      league(),
+      roster,
+      null,
+      fakeFs(),
+      fakeDialog({ pickSavePath })
+    );
     expect(pickSavePath).toHaveBeenCalledWith('coastal-premier.json', undefined);
   });
 });

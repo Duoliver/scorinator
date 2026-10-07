@@ -4,7 +4,7 @@ import * as leagueFile from '@/app/data/leagueFile';
 import { isLeagueUnsaved, useFileStore } from '@/app/state/fileStore';
 import { useLeagueStore } from '@/app/state/leagueStore';
 import { useTeamsStore } from '@/app/state/teamsStore';
-import type { LeagueRecord } from '@/features/leagues/types';
+import type { LeagueRecord } from '@/domain';
 
 const league = (overrides: Partial<LeagueRecord> = {}): LeagueRecord => ({
   slug: 'coastal-premier',

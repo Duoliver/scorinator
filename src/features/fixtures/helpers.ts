@@ -1,4 +1,4 @@
-import type { LeagueResult } from '@/features/leagues/types';
+import type { LeagueResult } from '@/domain';
 import type { MatchIdentity } from './types';
 
 /** How long a freshly generated score shows in the accent colour. */

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { findCurrentMatchday, findResult, isMatchdayFullyPlayed } from './resultLookup';
-import type { LeagueRecord, LeagueResult } from '@/features/leagues/types';
+import type { LeagueRecord, LeagueResult } from '@/domain';
 
 const league = (overrides: Partial<LeagueRecord> = {}): LeagueRecord => ({
   slug: 'coastal-premier',

@@ -5,8 +5,7 @@ import { act, render, screen } from '@testing-library/preact';
 import { generateRoundRobin } from '@/engine/fixtures';
 import { useTeamsStore } from '@/app/state/teamsStore';
 import { useLeagueStore } from '@/app/state/leagueStore';
-import type { TeamRecord } from '@/features/components';
-import type { LeagueRecord } from '@/features/leagues/types';
+import type { LeagueRecord, TeamRecord } from '@/domain';
 import { StandingsView } from './StandingsView';
 
 const team = (overrides: Partial<TeamRecord> = {}): TeamRecord => ({

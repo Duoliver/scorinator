@@ -3,11 +3,7 @@ import { rollOVR } from '@/engine/tier-ovr';
 import { slug } from '@/engine/identity';
 import { generateRoundRobin, type Fixture } from '@/engine/fixtures';
 import { applyHomeAdvantage, scorinateMatch } from '@/engine/scorination';
-import type {
-  CreateLeagueInput,
-  LeagueRecord,
-  LeagueResult,
-} from '@/features/leagues/types';
+import type { CreateLeagueInput, LeagueRecord, LeagueResult } from '@/domain';
 import { setCurrentLeague } from './fileActions';
 import { useLeagueStore } from './leagueStore';
 

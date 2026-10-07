@@ -1,7 +1,7 @@
 import { useMemo } from 'preact/hooks';
 import { calculateStandings } from '@/engine/standings';
 import { useTeamLookup } from '@/features/components';
-import type { LeagueRecord } from '@/features/leagues/types';
+import type { LeagueRecord } from '@/domain';
 import type { Standings, StandingsViewRow } from './types';
 
 /** The league table for one league, ready for `StandingsView` to render.

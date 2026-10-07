@@ -15,7 +15,6 @@ A screen folder that holds more than one component gives each component its own 
 ```
 features/leagues/
   index.ts                  the barrel for the three screens
-  types.ts                  domain types (LeagueRecord), shared
   leagueSummary.ts          used by LeagueDetailScreen and LeagueList
   LeagueDetailScreen/
   LeaguesDashboardScreen/
@@ -40,7 +39,7 @@ This is a one-way dependency. No lint rule enforces it yet — flag it in review
 
 A hook that more than one screen folder needs lives here too, as `features/components/useX.ts`, with the same import rule. `useTeamLookup` is the first example: `StandingsView` and `FixturesView` both show a team name and colour from a slug. Its `TeamDisplay` type lives in `features/components/types.ts`. See the three-layer rule in `docs/coding-standards.md`.
 
-A type that a shared component needs also lives in `features/components/`, not in the screen folder that happens to use it most. `TeamRecord`, which `TeamForm` takes as its `initial` prop, is the example — see `features/components/types.ts`. A screen folder that also needs that type imports it from `features/components/`, the same way it imports the component itself.
+A view type that a shared component needs also lives in `features/components/`, not in the screen folder that uses it most. `TeamDisplay` is the example. A record type that `app/` also uses, such as `TeamRecord` or `LeagueRecord`, does not live in `features/` at all. It lives in `src/domain/`. See `src/domain/DOMAIN.md`.
 
 ## Where this fits with `module-boundaries.md`
 

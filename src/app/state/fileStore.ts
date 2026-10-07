@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { LeagueRecord } from '@/features/leagues/types';
+import type { LeagueRecord } from '@/domain';
 
 export interface FileStatus {
   tone: 'info' | 'error';

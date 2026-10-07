@@ -9,7 +9,7 @@ import { useFileStore } from '@/app/state/fileStore';
 import { useLeagueStore } from '@/app/state/leagueStore';
 import { useTeamsStore } from '@/app/state/teamsStore';
 import { ROUTES, leagueDetailPath } from '@/app/routes';
-import type { LeagueRecord } from '@/features/leagues/types';
+import type { LeagueRecord } from '@/domain';
 
 const league = (overrides: Partial<LeagueRecord> = {}): LeagueRecord => ({
   slug: 'coastal-premier',

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { describeLeague } from './leagueSummary';
-import type { LeagueRecord } from './types';
+import type { LeagueRecord } from '@/domain';
 
 const league = (overrides: Partial<LeagueRecord> = {}): LeagueRecord => ({
   slug: 'coastal-premier',

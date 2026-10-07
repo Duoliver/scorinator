@@ -67,6 +67,7 @@ General source specs live in [docs](/docs/):
 
 Module-specific documentation lives at the root of that module.
 - [`ENGINE`](/src/engine/ENGINE.md) — scorinator engine determinism requirements
+- [`DOMAIN`](/src/domain/DOMAIN.md) — the app's record types, shared by `app/` and `features/`, and who may import them
 - [`PERSISTENCE`](/src/persistence/PERSISTENCE.md) — persistence/storage architecture
 - [`DESIGN_SYSTEM`](/src/design-system/DESIGN_SYSTEM.md) — tokens/primitives implementation rules (fonts, units, spacing)
 - [`FEATURES`](/src/features/FEATURES.md) — screen folders vs. the shared `features/components/` folder, and the required import direction between them

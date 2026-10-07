@@ -1,4 +1,4 @@
-import type { LeagueRecord } from '@/features/leagues/types';
+import type { LeagueRecord } from '@/domain';
 
 export default interface LeagueListProps {
   leagues: readonly LeagueRecord[];

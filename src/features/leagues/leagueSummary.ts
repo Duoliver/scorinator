@@ -1,4 +1,4 @@
-import type { LeagueRecord } from './types';
+import type { LeagueRecord } from '@/domain';
 
 /** Round-robin (two-way) is hardcoded, not read off `LeagueRecord` — it is
  * the only fixture format `engine/fixtures` generates today (Task 3), and

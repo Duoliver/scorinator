@@ -10,7 +10,8 @@ import {
   type LeagueDraftDetails,
   type LeagueSetupStep,
 } from '@/app/state/leagueDraftStore';
-import { useLeagueStore, type LeagueRecord } from '@/app/state/leagueStore';
+import { useLeagueStore } from '@/app/state/leagueStore';
+import type { LeagueRecord } from '@/domain';
 import { useTeamsStore } from '@/app/state/teamsStore';
 import type { DetailsStepHandle } from '@/features/leagues/LeagueSetupScreen/steps/DetailsStep';
 import { leagueNameProblem } from './leagueName';

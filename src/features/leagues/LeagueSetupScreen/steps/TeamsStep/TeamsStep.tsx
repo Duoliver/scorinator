@@ -10,7 +10,8 @@ import {
   type TableColumn,
 } from '@/design-system';
 import type { FieldHandle } from '@/design-system/field';
-import { TeamFormDrawer, type TeamRecord } from '@/features/components';
+import { TeamFormDrawer } from '@/features/components';
+import type { TeamRecord } from '@/domain';
 import { addTeam } from '@/app/state/teamsActions';
 import { useTeamsStore } from '@/app/state/teamsStore';
 import {

@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, useState } from 'preact/hooks';
-import type { LeagueResult } from '@/features/leagues/types';
+import type { LeagueResult } from '@/domain';
 import { SCORE_FLASH_MS, fixtureKey } from './helpers';
 import type { MatchIdentity } from './types';
 

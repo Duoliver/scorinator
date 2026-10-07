@@ -9,12 +9,11 @@ import {
 import { markLeagueSaved } from './fileActions';
 import { useLeagueStore } from './leagueStore';
 import { isLeagueUnsaved, useFileStore } from './fileStore';
-import type { LeagueRecord } from '@/features/leagues/types';
+import type { LeagueRecord, TeamRecord } from '@/domain';
 import { TIER_OVR_RANGES } from '@/engine/tier-ovr';
 import { createSeededRng } from '@/engine/rng';
 import { applyHomeAdvantage, scorinateMatch } from '@/engine/scorination';
 import { calculateStandings } from '@/engine/standings';
-import type { TeamRecord } from '@/features/components';
 
 const team = (overrides: Partial<TeamRecord> = {}): TeamRecord => ({
   slug: 'fc-united',

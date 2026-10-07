@@ -1,6 +1,6 @@
 import { slug } from '@/engine/identity';
 import type { TeamCsvRecord } from '@/adapters/csv';
-import type { TeamRecord } from '@/features/components';
+import type { TeamRecord } from '@/domain';
 
 /** `parseTeamsCsv` leaves a blank Slug column as `''` — this fills it in
  * from the Name, the wiring Task 11's decision log deferred to this task. */

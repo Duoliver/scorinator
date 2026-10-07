@@ -12,7 +12,7 @@ import type {
 } from '@/adapters/tauri-window';
 import { useFileStore } from '@/app/state/fileStore';
 import { useLeagueStore } from '@/app/state/leagueStore';
-import type { LeagueRecord } from '@/features/leagues/types';
+import type { LeagueRecord } from '@/domain';
 
 const league = (slug: string, name = slug): LeagueRecord => ({
   slug,

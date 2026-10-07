@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { act, renderHook } from '@testing-library/preact';
 import { setTeams } from '@/app/state/teamsActions';
 import { useTeamsStore } from '@/app/state/teamsStore';
-import type { TeamRecord } from './types';
+import type { TeamRecord } from '@/domain';
 import { useTeamLookup } from './useTeamLookup';
 
 const team = (overrides: Partial<TeamRecord> = {}): TeamRecord => ({

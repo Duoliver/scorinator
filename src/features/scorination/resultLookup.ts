@@ -1,5 +1,5 @@
 import type { Fixture } from '@/engine/fixtures';
-import type { LeagueRecord, LeagueResult } from '@/features/leagues/types';
+import type { LeagueRecord, LeagueResult } from '@/domain';
 
 /** The result already recorded for one fixture, if it has been
  * scorinated — matched on the `(matchday, home, away)` triple, which

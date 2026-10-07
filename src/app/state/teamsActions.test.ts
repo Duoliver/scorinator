@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { addTeam, setTeams, updateTeam } from './teamsActions';
 import { useTeamsStore } from './teamsStore';
-import type { TeamRecord } from '@/features/components';
+import type { TeamRecord } from '@/domain';
 
 const team = (overrides: Partial<TeamRecord> = {}): TeamRecord => ({
   slug: 'fc-united',

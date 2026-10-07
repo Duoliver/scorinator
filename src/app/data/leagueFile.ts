@@ -13,8 +13,7 @@ import {
 } from '@/adapters/json-io';
 import { slug } from '@/engine/identity';
 import type { FileSystem, SaveFileDialog } from '@/persistence/types';
-import type { TeamRecord } from '@/features/components';
-import type { LeagueRecord } from '@/features/leagues/types';
+import type { LeagueRecord, TeamRecord } from '@/domain';
 
 /** The thin `app/` → `adapters/` data layer for Save/Load (Task 17), the
  * same seam `teamsCsv.ts` is for team CSV, so `features/` never imports

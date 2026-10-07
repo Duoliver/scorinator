@@ -7,7 +7,7 @@ import {
   setLeaguePath,
 } from './fileActions';
 import { isLeagueUnsaved, useFileStore } from './fileStore';
-import type { LeagueRecord } from '@/features/leagues/types';
+import type { LeagueRecord } from '@/domain';
 
 const league = (overrides: Partial<LeagueRecord> = {}): LeagueRecord => ({
   slug: 'coastal-premier',

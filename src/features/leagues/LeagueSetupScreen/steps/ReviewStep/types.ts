@@ -1,5 +1,5 @@
 import type { PointsConfig } from '@/engine/standings';
-import type { TeamRecord } from '@/features/components';
+import type { TeamRecord } from '@/domain';
 
 export default interface ReviewStepProps {
   name: string;

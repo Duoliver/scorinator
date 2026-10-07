@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { TeamForm } from './TeamForm';
 import { DEFAULT_TEAM_COLOUR, TEAM_PALETTE } from '@/design-system';
-import type { TeamRecord } from '@/features/components/types';
+import type { TeamRecord } from '@/domain';
 
 describe('TeamForm', () => {
   it('renders the given save label and every field', () => {

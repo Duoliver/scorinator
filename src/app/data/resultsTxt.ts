@@ -5,8 +5,7 @@ import {
 } from '@/adapters/tauri-fs';
 import { serializeResultsTxt } from '@/adapters/txt';
 import type { FileFilter, FileSystem, SaveFileDialog } from '@/persistence/types';
-import type { TeamRecord } from '@/features/components';
-import type { LeagueRecord } from '@/features/leagues/types';
+import type { LeagueRecord, TeamRecord } from '@/domain';
 import { leagueToSaved } from './leagueFile';
 
 /** The thin `app/` → `adapters/` data layer for the results export (Task

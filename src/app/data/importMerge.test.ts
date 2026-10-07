@@ -4,7 +4,7 @@ import {
   mergeImportedTeams,
   teamRecordToCsvRecord,
 } from './importMerge';
-import type { TeamRecord } from '@/features/components';
+import type { TeamRecord } from '@/domain';
 import type { TeamCsvRecord } from '@/adapters/csv';
 
 describe('csvRecordToTeamRecord', () => {

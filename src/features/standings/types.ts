@@ -1,5 +1,5 @@
 import type { StandingsRow } from '@/engine/standings';
-import type { LeagueRecord } from '@/features/leagues/types';
+import type { LeagueRecord } from '@/domain';
 
 export default interface StandingsViewProps {
   league: LeagueRecord;

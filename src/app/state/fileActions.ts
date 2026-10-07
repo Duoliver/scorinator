@@ -1,4 +1,4 @@
-import type { LeagueRecord } from '@/features/leagues/types';
+import type { LeagueRecord } from '@/domain';
 import { useFileStore, type FileStatus } from './fileStore';
 
 /** Makes `slug` the league Ctrl+S saves. */

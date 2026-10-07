@@ -6,8 +6,7 @@ import userEvent from '@testing-library/user-event';
 import { generateRoundRobin } from '@/engine/fixtures';
 import { useTeamsStore } from '@/app/state/teamsStore';
 import { useLeagueStore } from '@/app/state/leagueStore';
-import type { TeamRecord } from '@/features/components';
-import type { LeagueRecord } from '@/features/leagues/types';
+import type { LeagueRecord, TeamRecord } from '@/domain';
 import { FixturesView } from './FixturesView';
 
 const team = (overrides: Partial<TeamRecord> = {}): TeamRecord => ({

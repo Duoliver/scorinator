@@ -8,8 +8,7 @@ import {
 } from './leagueFile';
 import { parseLeague, serializeLeague, type SavedLeague } from '@/adapters/json-io';
 import type { FileSystem, SaveFileDialog } from '@/persistence/types';
-import type { TeamRecord } from '@/features/components';
-import type { LeagueRecord } from '@/features/leagues/types';
+import type { LeagueRecord, TeamRecord } from '@/domain';
 
 function fakeFs(overrides: Partial<FileSystem> = {}): FileSystem {
   return {

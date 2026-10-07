@@ -6,7 +6,7 @@ import { LeagueDetailScreen } from './LeagueDetailScreen';
 import { useLeagueStore } from '@/app/state/leagueStore';
 import { useFileStore } from '@/app/state/fileStore';
 import { generateRoundRobin } from '@/engine/fixtures';
-import type { LeagueRecord } from '@/features/leagues/types';
+import type { LeagueRecord } from '@/domain';
 
 const { fixtures, byes } = generateRoundRobin(['fc-united', 'fc-rivals']);
 

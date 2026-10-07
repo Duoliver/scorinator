@@ -15,6 +15,7 @@ Use this list for every review in this repo. It comes from `CLAUDE.md`, `docs/co
 - [ ] Confirm `engine/` makes no direct filesystem call.
 - [ ] Confirm `features/` does not import `adapters/` directly. Require it to call `engine/` and a data-access layer built on `persistence/`.
 - [ ] Confirm `persistence/` holds interfaces only. Reject any `fs` or Tauri call inside it.
+- [ ] Confirm `domain/` holds types only and imports only `engine/` types. Confirm `engine/` and `adapters/` never import `domain/`.
 - [ ] Confirm `adapters/` implements a `persistence/` contract, and that `engine/` never imports from `adapters/`.
 - [ ] Confirm only `design-system/` reads the design brief in `docs/design-reference/`. Require `features/` to consume `design-system/` instead.
 - [ ] Reject new empty module scaffolding for work the team has not started yet.

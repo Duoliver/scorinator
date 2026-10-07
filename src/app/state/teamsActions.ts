@@ -1,4 +1,4 @@
-import type { TeamRecord } from '@/features/components';
+import type { TeamRecord } from '@/domain';
 import { useTeamsStore } from './teamsStore';
 
 export function addTeam(team: TeamRecord): void {

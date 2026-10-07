@@ -17,6 +17,10 @@ The module map below is a direct transcription of decisions already made in the 
     /story-mode         (season pipeline, team events, mergers)
     /identity           (UUID generation, skip/fork conflict resolution)
 
+  /domain            the app's record types (TeamRecord, LeagueRecord, ...),
+                      shared by /app and /features. Types only. Imports
+                      only /engine types. See /domain/DOMAIN.md.
+
   /persistence        interfaces only — no direct fs/Tauri calls here either.
                        Defines what an adapter must implement (manifest
                        read/write, wrapper read/write, atomic write contract).
@@ -50,6 +54,7 @@ The module map below is a direct transcription of decisions already made in the 
 - `engine/` never imports from `features/`, `design-system/`, `adapters/`, or Preact/Tauri. If a task seems to need this, stop and flag it. It likely means domain logic leaked into the wrong layer.
 - `features/` never talks to `adapters/` directly. It calls `engine/` functions and a thin data-access layer. That layer itself depends on the interfaces `persistence/` defines.
 - `persistence/` defines contracts. `adapters/` implements them. Engine code never imports `adapters/`.
+- `domain/` imports only `engine/` types. `app/` and `features/` import `domain/`. `engine/` and `adapters/` never import it. Added 2026-10-07 (Task 53): the record types lived in `features/` before, so `app/state` imported from `features/`.
 - `design-system/` is the only layer allowed to reference the design brief. `features/` consumes `design-system/`, never the brief itself. See §4.
 
 **What this map is not:** a license to pre-design the internals of each module before tests exist. That means function signatures, class shapes, and event schemas. Boundaries are fixed. Internals get designed just-in-time, per §2. Do not create empty scaffolding for a module you are not actively building.

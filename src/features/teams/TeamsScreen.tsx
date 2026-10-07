@@ -1,7 +1,8 @@
 import { useState } from 'preact/hooks';
 import type { JSX } from 'preact';
 import { Badge, Button, Table, type TableColumn } from '@/design-system';
-import { TeamFormDrawer, type TeamRecord } from '@/features/components';
+import { TeamFormDrawer } from '@/features/components';
+import type { TeamRecord } from '@/domain';
 import { importTeamsFile } from '@/app/data/teamsFile';
 import { importTeams } from '@/app/loadActions';
 import { addTeam, updateTeam } from '@/app/state/teamsActions';

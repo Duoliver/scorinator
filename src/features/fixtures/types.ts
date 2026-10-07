@@ -1,6 +1,6 @@
 import type { Fixture } from '@/engine/fixtures';
 import type { TeamDisplay } from '@/features/components';
-import type { LeagueRecord, LeagueResult } from '@/features/leagues/types';
+import type { LeagueRecord, LeagueResult } from '@/domain';
 
 export default interface FixturesViewProps {
   league: LeagueRecord;

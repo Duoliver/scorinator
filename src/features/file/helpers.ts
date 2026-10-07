@@ -1,5 +1,5 @@
 import type { SelectOption } from '@/design-system';
-import type { LeagueRecord } from '@/features/leagues/types';
+import type { LeagueRecord } from '@/domain';
 
 export const toLeagueOptions = (leagues: readonly LeagueRecord[]): SelectOption[] =>
   leagues.map((league) => ({ label: league.name, value: league.slug }));

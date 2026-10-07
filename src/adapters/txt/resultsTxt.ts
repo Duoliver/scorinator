@@ -3,7 +3,7 @@ import {
   type MatchResult,
   type PointsConfig,
 } from '@/engine/standings';
-import type { Bye, Fixture } from '@/engine/fixtures';
+import { matchKey, type Bye, type Fixture } from '@/engine/fixtures';
 
 /** What the results summary needs from a league. A `SavedLeague` (see
  * `adapters/json-io`) fits this shape as it is, so a caller can pass the
@@ -49,10 +49,6 @@ function renderTable(
   return [render(header), ...rows.map(render)];
 }
 
-function matchKey(matchday: number, home: string, away: string): string {
-  return JSON.stringify([matchday, home, away]);
-}
-
 /**
  * Builds the read-only, human-readable results summary (MVP1 spec §1,
  * "Export (.txt)"): the league setup, a standings table, and every
@@ -81,17 +77,10 @@ export function serializeResultsTxt(input: ResultsTxtInput): string {
     return name;
   };
 
-  const resultByMatch = new Map(
-    results.map((result) => [
-      matchKey(result.matchday, result.home, result.away),
-      result,
-    ])
-  );
-  const fixtureKeys = new Set(
-    fixtures.map((fixture) => matchKey(fixture.matchday, fixture.home, fixture.away))
-  );
+  const resultByMatch = new Map(results.map((result) => [matchKey(result), result]));
+  const fixtureKeys = new Set(fixtures.map((fixture) => matchKey(fixture)));
   for (const result of results) {
-    if (!fixtureKeys.has(matchKey(result.matchday, result.home, result.away))) {
+    if (!fixtureKeys.has(matchKey(result))) {
       throw new RangeError(
         `The result of matchday ${result.matchday}, "${result.home}" v "${result.away}", has no fixture.`
       );
@@ -99,7 +88,7 @@ export function serializeResultsTxt(input: ResultsTxtInput): string {
   }
 
   const played = fixtures.filter((fixture) =>
-    resultByMatch.has(matchKey(fixture.matchday, fixture.home, fixture.away))
+    resultByMatch.has(matchKey(fixture))
   ).length;
   const completed = fixtures.length > 0 && played === fixtures.length;
 
@@ -161,9 +150,7 @@ export function serializeResultsTxt(input: ResultsTxtInput): string {
 
   const homeWidth = Math.max(0, ...teams.map((team) => team.name.length));
   const scoreOf = (fixture: Fixture<string>): string => {
-    const result = resultByMatch.get(
-      matchKey(fixture.matchday, fixture.home, fixture.away)
-    );
+    const result = resultByMatch.get(matchKey(fixture));
     return result ? `${result.homeGoals} - ${result.awayGoals}` : 'vs';
   };
   const scoreWidth = Math.max(2, ...fixtures.map((fixture) => scoreOf(fixture).length));

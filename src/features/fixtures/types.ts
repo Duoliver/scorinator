@@ -1,4 +1,3 @@
-import type { Fixture } from '@/engine/fixtures';
 import type { TeamDisplay } from '@/features/components';
 import type { LeagueRecord, LeagueResult } from '@/domain';
 
@@ -55,7 +54,3 @@ export interface Fixtures {
   matchdayFullyPlayed: boolean;
   scorinateMatchday: () => void;
 }
-
-/** The fields that identify one match, shared by `Fixture` and
- * `LeagueResult`. */
-export type MatchIdentity = Pick<Fixture<string>, 'matchday' | 'home' | 'away'>;

@@ -1,2 +1,9 @@
 export { generateRoundRobin } from './roundRobin';
-export type { Fixture, Bye, RoundRobinSchedule } from './types';
+export {
+  findCurrentMatchday,
+  findResult,
+  isMatchdayFullyPlayed,
+  isSameMatch,
+  matchKey,
+} from './schedule';
+export type { Fixture, Bye, MatchIdentity, RoundRobinSchedule } from './types';

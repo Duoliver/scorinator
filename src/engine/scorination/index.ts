@@ -11,5 +11,6 @@ export {
   computeExpectedGoals,
   applyHomeAdvantage,
   scorinateMatch,
+  playMatch,
 } from './scorination';
 export type { MatchScore } from './types';

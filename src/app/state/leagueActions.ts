@@ -1,8 +1,8 @@
 import { createSeededRng } from '@/engine/rng';
 import { rollOVR } from '@/engine/tier-ovr';
 import { slug } from '@/engine/identity';
-import { generateRoundRobin, type Fixture } from '@/engine/fixtures';
-import { applyHomeAdvantage, scorinateMatch } from '@/engine/scorination';
+import { generateRoundRobin, isSameMatch, type Fixture } from '@/engine/fixtures';
+import { playMatch } from '@/engine/scorination';
 import type { CreateLeagueInput, LeagueRecord, LeagueResult } from '@/domain';
 import { setCurrentLeague } from './fileActions';
 import { useLeagueStore } from './leagueStore';
@@ -14,19 +14,9 @@ function freshSeed(): number {
   return Math.floor(Math.random() * 0xffffffff);
 }
 
-function isResultOf(result: LeagueResult, fixture: Fixture<string>): boolean {
-  return (
-    result.matchday === fixture.matchday &&
-    result.home === fixture.home &&
-    result.away === fixture.away
-  );
-}
-
 /** Plays one fixture with a fresh seed and returns its result, or
- * `undefined` when either team is missing from the league. Applies the
- * home-advantage boost to the home OVR when the league has it on. Shared by
- * `scorinateFixture` and `rescorinateFixture`, so a re-scorinate draws a
- * score the same way the first one did. */
+ * `undefined` when either team is missing from the league. One function for
+ * the first scorinate and a re-scorinate, so both draw a score the same way. */
 function playFixture(
   league: LeagueRecord,
   fixture: Fixture<string>
@@ -35,17 +25,17 @@ function playFixture(
   const awayTeam = league.teams.find((team) => team.slug === fixture.away);
   if (!homeTeam || !awayTeam) return undefined;
 
-  const rng = createSeededRng(freshSeed());
-  const homeOvr = league.homeAdvantage
-    ? applyHomeAdvantage(homeTeam.ovr)
-    : homeTeam.ovr;
-  const { homeGoals, awayGoals } = scorinateMatch(homeOvr, awayTeam.ovr, rng);
+  const score = playMatch(
+    homeTeam.ovr,
+    awayTeam.ovr,
+    league.homeAdvantage,
+    createSeededRng(freshSeed())
+  );
   return {
     matchday: fixture.matchday,
     home: fixture.home,
     away: fixture.away,
-    homeGoals,
-    awayGoals,
+    ...score,
   };
 }
 
@@ -123,7 +113,7 @@ export function scorinateFixture(leagueSlug: string, fixture: Fixture<string>): 
   useLeagueStore.setState((state) => ({
     leagues: state.leagues.map((league) => {
       if (league.slug !== leagueSlug) return league;
-      if (league.results.some((result) => isResultOf(result, fixture))) return league;
+      if (league.results.some((result) => isSameMatch(result, fixture))) return league;
       const result = playFixture(league, fixture);
       return result ? { ...league, results: [...league.results, result] } : league;
     }),
@@ -140,13 +130,13 @@ export function rescorinateFixture(leagueSlug: string, fixture: Fixture<string>)
   useLeagueStore.setState((state) => ({
     leagues: state.leagues.map((league) => {
       if (league.slug !== leagueSlug) return league;
-      if (!league.results.some((result) => isResultOf(result, fixture))) return league;
+      if (!league.results.some((result) => isSameMatch(result, fixture))) return league;
       const replacement = playFixture(league, fixture);
       if (!replacement) return league;
       return {
         ...league,
         results: league.results.map((result) =>
-          isResultOf(result, fixture) ? replacement : result
+          isSameMatch(result, fixture) ? replacement : result
         ),
       };
     }),
@@ -163,7 +153,7 @@ export function scorinateMatchday(leagueSlug: string, matchday: number): void {
   const unplayed = league.fixtures.filter(
     (fixture) =>
       fixture.matchday === matchday &&
-      !league.results.some((result) => isResultOf(result, fixture))
+      !league.results.some((result) => isSameMatch(result, fixture))
   );
   for (const fixture of unplayed) {
     scorinateFixture(leagueSlug, fixture);

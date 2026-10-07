@@ -1,11 +1,7 @@
 import type { LeagueResult } from '@/domain';
-import type { MatchIdentity } from './types';
 
 /** How long a freshly generated score shows in the accent colour. */
 export const SCORE_FLASH_MS = 500;
-
-export const fixtureKey = (match: MatchIdentity): string =>
-  `${match.matchday}-${match.home}-${match.away}`;
 
 /** The text of the score span: the real score, or `vs` before a result. */
 export const scoreText = (result: LeagueResult | undefined): string =>

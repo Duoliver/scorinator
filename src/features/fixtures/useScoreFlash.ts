@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'preact/hooks';
 import type { LeagueResult } from '@/domain';
-import { SCORE_FLASH_MS, fixtureKey } from './helpers';
-import type { MatchIdentity } from './types';
+import { matchKey, type MatchIdentity } from '@/engine/fixtures';
+import { SCORE_FLASH_MS } from './helpers';
 
 /** Tells which scores flash in the accent colour. A score flashes for
  * `SCORE_FLASH_MS` whenever it is generated, the first time or on a
@@ -13,7 +13,7 @@ import type { MatchIdentity } from './types';
  * changes matchday. */
 export function useScoreFlash(
   results: readonly LeagueResult[]
-): (match: MatchIdentity) => boolean {
+): (match: MatchIdentity<string>) => boolean {
   const [flashing, setFlashing] = useState<ReadonlySet<string>>(new Set());
   const seenResults = useRef(results);
   const flashTimers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
@@ -24,7 +24,7 @@ export function useScoreFlash(
     const generated = results.filter((result) => !previous.has(result));
     if (generated.length === 0) return;
 
-    const keys = generated.map(fixtureKey);
+    const keys = generated.map(matchKey);
     setFlashing((current) => new Set([...current, ...keys]));
     for (const key of keys) {
       clearTimeout(flashTimers.current.get(key));
@@ -47,5 +47,5 @@ export function useScoreFlash(
     return (): void => timers.forEach(clearTimeout);
   }, []);
 
-  return (match) => flashing.has(fixtureKey(match));
+  return (match) => flashing.has(matchKey(match));
 }

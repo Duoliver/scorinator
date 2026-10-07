@@ -11,6 +11,7 @@ import {
   SAVE_FORMAT_VERSION,
   type SavedLeague,
 } from '@/adapters/json-io';
+import { isSameMatch } from '@/engine/fixtures';
 import { slug } from '@/engine/identity';
 import type { FileSystem, SaveFileDialog } from '@/persistence/types';
 import type { LeagueRecord, TeamRecord } from '@/domain';
@@ -98,12 +99,7 @@ export function savedToLeague(data: SavedLeague): {
   for (const result of data.results) {
     requireKnown(result.home, `a result on matchday ${result.matchday}`);
     requireKnown(result.away, `a result on matchday ${result.matchday}`);
-    const hasFixture = data.fixtures.some(
-      (fixture) =>
-        fixture.matchday === result.matchday &&
-        fixture.home === result.home &&
-        fixture.away === result.away
-    );
+    const hasFixture = data.fixtures.some((fixture) => isSameMatch(fixture, result));
     if (!hasFixture) {
       throw new Error(
         `Invalid save file: the result ${result.home} v ${result.away} on matchday ${result.matchday} has no matching fixture.`

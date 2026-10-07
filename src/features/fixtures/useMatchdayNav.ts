@@ -1,5 +1,5 @@
 import { useState } from 'preact/hooks';
-import { findCurrentMatchday } from '@/features/scorination';
+import { findCurrentMatchday } from '@/engine/fixtures';
 import type FixturesViewProps from './types';
 import type { MatchdayNav } from './types';
 
@@ -24,7 +24,7 @@ export function useMatchdayNav({
     ...league.byes.map((bye) => bye.matchday)
   );
   // `undefined` means every match has a result: the league is completed.
-  const currentMatchday = findCurrentMatchday(league);
+  const currentMatchday = findCurrentMatchday(league.fixtures, league.results);
 
   return {
     matchday,

@@ -12,6 +12,7 @@ import {
   REFERENCE_OVR,
   applyHomeAdvantage,
   computeExpectedGoals,
+  playMatch,
   rollElasticity,
   scorinateMatch,
 } from './index';
@@ -220,6 +221,26 @@ describe('home advantage effect on scorinateMatch', () => {
   });
 });
 
+describe('playMatch', () => {
+  // Same seed, same draws: `playMatch` must give exactly the score that
+  // `scorinateMatch` gives for the OVRs it is meant to pass on.
+  it('scorinates the OVRs unchanged when the league has no home advantage', () => {
+    for (let seed = 1; seed <= 50; seed++) {
+      expect(playMatch(72, 64, false, createSeededRng(seed))).toEqual(
+        scorinateMatch(72, 64, createSeededRng(seed))
+      );
+    }
+  });
+
+  it('boosts only the home OVR when the league has home advantage', () => {
+    for (let seed = 1; seed <= 50; seed++) {
+      expect(playMatch(72, 64, true, createSeededRng(seed))).toEqual(
+        scorinateMatch(applyHomeAdvantage(72), 64, createSeededRng(seed))
+      );
+    }
+  });
+});
+
 describe('module surface', () => {
   it('exports exactly the constants and functions this module intends to expose', () => {
     expect(Object.keys(scorinationModule).sort()).toEqual(
@@ -236,6 +257,7 @@ describe('module surface', () => {
         'computeExpectedGoals',
         'applyHomeAdvantage',
         'scorinateMatch',
+        'playMatch',
       ].sort()
     );
   });

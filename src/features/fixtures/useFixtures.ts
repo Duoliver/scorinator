@@ -1,11 +1,10 @@
+import { findResult, isMatchdayFullyPlayed, matchKey } from '@/engine/fixtures';
 import {
   rescorinateFixture,
   scorinateFixture,
   scorinateMatchday,
 } from '@/app/state/leagueActions';
 import { useTeamLookup } from '@/features/components';
-import { findResult, isMatchdayFullyPlayed } from '@/features/scorination';
-import { fixtureKey } from './helpers';
 import type FixturesViewProps from './types';
 import type { FixtureRow, Fixtures } from './types';
 import { useMatchdayNav } from './useMatchdayNav';
@@ -29,9 +28,9 @@ export function useFixtures(props: FixturesViewProps): Fixtures {
   const rows = league.fixtures
     .filter((fixture) => fixture.matchday === matchday)
     .map((fixture): FixtureRow => {
-      const result = findResult(league, fixture);
+      const result = findResult(league.results, fixture);
       return {
-        key: fixtureKey(fixture),
+        key: matchKey(fixture),
         home: lookupTeam(fixture.home),
         away: lookupTeam(fixture.away),
         result,
@@ -50,7 +49,11 @@ export function useFixtures(props: FixturesViewProps): Fixtures {
     nav,
     rows,
     byeTeamName: bye ? lookupTeam(bye.team).name : undefined,
-    matchdayFullyPlayed: isMatchdayFullyPlayed(league, matchday),
+    matchdayFullyPlayed: isMatchdayFullyPlayed(
+      league.fixtures,
+      league.results,
+      matchday
+    ),
     scorinateMatchday: () => scorinateMatchday(league.slug, matchday),
   };
 }

@@ -7,9 +7,8 @@ import type { CreateLeagueInput, LeagueRecord, LeagueResult } from '@/domain';
 import { setCurrentLeague } from './fileActions';
 import { useLeagueStore } from './leagueStore';
 
-/** Matches the seeding the Playground screen's scorinator uses:
- * a fresh, non-deterministic seed per call, fed into the deterministic
- * `Rng` every stochastic `engine/` function requires. */
+/** A fresh, non-deterministic seed for each call. The engine itself takes a
+ * deterministic `Rng` (see `ENGINE.md`), so the randomness lives here. */
 function freshSeed(): number {
   return Math.floor(Math.random() * 0xffffffff);
 }

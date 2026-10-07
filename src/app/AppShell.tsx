@@ -13,7 +13,6 @@ import {
   LeaguesDashboardScreen,
 } from '@/features/leagues';
 import { FileScreen } from '@/features/file';
-import { PlaygroundScreen } from '@/features/playground';
 import { StatusLine } from '@/features/components';
 import { saveCurrentLeague } from '@/app/saveActions';
 import { installCloseGuard } from '@/app/closeGuard';
@@ -26,13 +25,10 @@ interface NavItem {
   path: RoutePath;
 }
 
-/** Playground is a dev-only diagnostic screen (PROGRESS.md Task 22) — its
- * nav item and route only exist in a dev build, never in a shipped one. */
 const NAV_ITEMS: NavItem[] = [
   { label: 'Leagues', path: ROUTES.leaguesDashboard },
   { label: 'Teams', path: ROUTES.teams },
   { label: 'File', path: ROUTES.file },
-  ...(import.meta.env.DEV ? [{ label: 'Playground', path: ROUTES.playground }] : []),
 ];
 
 /** The start screen (Task 29). It also renders for any unmatched path. */
@@ -57,11 +53,7 @@ function FileRoute(_props: RoutableProps): JSX.Element {
   return <FileScreen />;
 }
 
-function PlaygroundRoute(_props: RoutableProps): JSX.Element {
-  return <PlaygroundScreen />;
-}
-
-/** Unlike the two adapters above, this one does carry a real prop across:
+/** Unlike the adapters above, this one does carry a real prop across:
  * `slug`, the one param `preact-router` injects for `ROUTES.leagueDetail`
  * (`/leagues/:slug`) and the one piece of routing information
  * `LeagueDetailScreen` actually needs. */
@@ -154,7 +146,6 @@ export function AppShell(): JSX.Element {
           <LeagueSetupRoute path={ROUTES.leaguesNew} />
           <LeaguesDashboardRoute path={ROUTES.leaguesDashboard} default />
           <LeagueDetailRoute path={ROUTES.leagueDetail} />
-          {import.meta.env.DEV && <PlaygroundRoute path={ROUTES.playground} />}
         </Router>
       </div>
     </div>

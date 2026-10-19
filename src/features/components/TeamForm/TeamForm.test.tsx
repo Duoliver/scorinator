@@ -57,6 +57,14 @@ describe('TeamForm', () => {
     expect(screen.getByLabelText('Tier')).toHaveValue('B');
   });
 
+  it('clears the slug for a name with no letter or number', async () => {
+    render(<TeamForm saveLabel="Create team" onCancel={vi.fn()} onSave={vi.fn()} />);
+    await userEvent.type(screen.getByLabelText('Team name'), 'FC');
+    await userEvent.clear(screen.getByLabelText('Team name'));
+    await userEvent.type(screen.getByLabelText('Team name'), '!!!');
+    expect(screen.getByLabelText('Slug (auto-generated)')).toHaveValue('');
+  });
+
   it('calls onSave with the assembled record on Save', async () => {
     const onSave = vi.fn();
     render(<TeamForm saveLabel="Create team" onCancel={vi.fn()} onSave={onSave} />);
@@ -138,5 +146,14 @@ describe('TeamForm', () => {
     await userEvent.click(screen.getByText('Create team'));
     expect(onSave).not.toHaveBeenCalled();
     expect(screen.getByText(/enter a team name/i)).toBeInTheDocument();
+  });
+
+  it('removes the validation error after a valid save', async () => {
+    render(<TeamForm saveLabel="Create team" onCancel={vi.fn()} onSave={vi.fn()} />);
+    await userEvent.click(screen.getByText('Create team'));
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    await userEvent.type(screen.getByLabelText('Team name'), 'Harborview SC');
+    await userEvent.click(screen.getByText('Create team'));
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 });

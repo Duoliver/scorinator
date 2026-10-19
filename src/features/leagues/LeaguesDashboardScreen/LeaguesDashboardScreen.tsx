@@ -1,9 +1,9 @@
 import type { JSX } from 'preact';
 import { Button } from '@/design-system';
-import { useLeagueStore } from '@/app/state/leagueStore';
 import { ROUTES } from '@/app/routes';
 import { LeagueList } from './LeagueList';
 import { LeaguesEmptyState } from './LeaguesEmptyState';
+import { useLeaguesDashboard } from './useLeaguesDashboard';
 import styles from './LeaguesDashboardScreen.module.css';
 
 /** Lists every league and gives the wizard's real entry point,
@@ -19,25 +19,23 @@ import styles from './LeaguesDashboardScreen.module.css';
  * `LeaguesEmptyState` and hides `+ New League`, which would repeat the
  * empty state's Create league. */
 export function LeaguesDashboardScreen(): JSX.Element {
-  const leagues = useLeagueStore((state) => state.leagues);
+  const { leagues, hasLeagues, subtitle } = useLeaguesDashboard();
 
   return (
     <div class={styles.screen}>
       <div class={styles.header}>
         <div>
           <h1 class={styles.title}>Leagues</h1>
-          <p class={styles.subtitle}>
-            {leagues.length} league{leagues.length === 1 ? '' : 's'} running
-          </p>
+          <p class={styles.subtitle}>{subtitle}</p>
         </div>
-        {leagues.length > 0 && (
+        {hasLeagues && (
           <Button href={ROUTES.leaguesNew} variant="primary" size="md">
             + New League
           </Button>
         )}
       </div>
 
-      {leagues.length === 0 ? <LeaguesEmptyState /> : <LeagueList leagues={leagues} />}
+      {hasLeagues ? <LeagueList leagues={leagues} /> : <LeaguesEmptyState />}
     </div>
   );
 }

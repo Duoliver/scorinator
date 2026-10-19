@@ -1,22 +1,13 @@
 import type { JSX } from 'preact';
 import { Button, Card } from '@/design-system';
 import { ROUTES } from '@/app/routes';
-import {
-  applyLoadedLeague,
-  importTeamsFromFile,
-  openLeagueFile,
-} from '@/app/loadActions';
+import { useLeaguesEmptyState } from './useLeaguesEmptyState';
 import styles from './LeaguesEmptyState.module.css';
 
 /** What the Leagues start screen shows with no leagues (Task 29): the four
  * ways to begin, in a Teams group and a League group. */
 export function LeaguesEmptyState(): JSX.Element {
-  // With no league open, a loaded league cannot replace one, so this needs
-  // no confirm step, unlike the File screen.
-  const handleLoadLeague = async (): Promise<void> => {
-    const loaded = await openLeagueFile();
-    if (loaded !== null) applyLoadedLeague(loaded);
-  };
+  const { handleLoadTeams, handleLoadLeague } = useLeaguesEmptyState();
 
   return (
     <Card padding="lg">
@@ -34,11 +25,7 @@ export function LeaguesEmptyState(): JSX.Element {
               <Button href={ROUTES.teams} variant="primary" size="md">
                 Create teams
               </Button>
-              <Button
-                variant="secondary"
-                size="md"
-                onClick={() => void importTeamsFromFile()}
-              >
+              <Button variant="secondary" size="md" onClick={handleLoadTeams}>
                 Load teams...
               </Button>
             </div>
@@ -49,11 +36,7 @@ export function LeaguesEmptyState(): JSX.Element {
               <Button href={ROUTES.leaguesNew} variant="primary" size="md">
                 Create league
               </Button>
-              <Button
-                variant="secondary"
-                size="md"
-                onClick={() => void handleLoadLeague()}
-              >
+              <Button variant="secondary" size="md" onClick={handleLoadLeague}>
                 Load league...
               </Button>
             </div>

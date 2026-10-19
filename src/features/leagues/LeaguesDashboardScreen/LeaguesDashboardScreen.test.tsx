@@ -45,6 +45,12 @@ describe('LeaguesDashboardScreen', () => {
     ).not.toBeInTheDocument();
   });
 
+  it('uses the singular for one league', () => {
+    useLeagueStore.setState({ leagues: [league()] });
+    render(<LeaguesDashboardScreen />);
+    expect(screen.getByText('1 league running')).toBeInTheDocument();
+  });
+
   it('offers + New League once a league exists', () => {
     useLeagueStore.setState({ leagues: [league()] });
     render(<LeaguesDashboardScreen />);
@@ -97,6 +103,17 @@ describe('LeaguesDashboardScreen', () => {
       expect(await screen.findByText('Coastal Premier')).toBeInTheDocument();
       expect(screen.queryByText('No leagues yet.')).not.toBeInTheDocument();
       expect(useFileStore.getState().currentLeagueSlug).toBe('coastal-premier');
+    });
+
+    it('changes nothing when the league dialog is canceled', async () => {
+      vi.spyOn(leagueFile, 'loadLeagueFile').mockResolvedValue(null);
+      render(<LeaguesDashboardScreen />);
+
+      await userEvent.click(screen.getByRole('button', { name: 'Load league...' }));
+
+      expect(screen.getByText('No leagues yet.')).toBeInTheDocument();
+      expect(useLeagueStore.getState().leagues).toEqual([]);
+      expect(useFileStore.getState().currentLeagueSlug).toBeNull();
     });
 
     it('does not show the empty state actions once a league exists', () => {

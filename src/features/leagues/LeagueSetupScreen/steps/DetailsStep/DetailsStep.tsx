@@ -1,88 +1,59 @@
 import { forwardRef } from 'preact/compat';
-import { useImperativeHandle, useRef, useState } from 'preact/hooks';
 import { Button, Card, Input, Switch } from '@/design-system';
-import type { FieldHandle } from '@/design-system/field';
-import type { LeagueDraftDetails } from '@/app/state/leagueDraftStore';
-import { leagueNameProblem } from '@/features/leagues/LeagueSetupScreen/leagueName';
 import type DetailsStepProps from './types';
 import type { DetailsStepHandle } from './types';
-import { parsePoints } from './helpers';
+import { useDetailsStep } from './useDetailsStep';
 import styles from './DetailsStep.module.css';
 
 export type { DetailsStepProps, DetailsStepHandle };
 
 export const DetailsStep = forwardRef<DetailsStepHandle, DetailsStepProps>(
-  ({ initial, takenSlugs = [], onNext }, ref) => {
-    const nameRef = useRef<FieldHandle<string>>(null);
-    const winRef = useRef<FieldHandle<string>>(null);
-    const drawRef = useRef<FieldHandle<string>>(null);
-    const lossRef = useRef<FieldHandle<string>>(null);
-    const homeAdvantageRef = useRef<FieldHandle<boolean>>(null);
-    // Next stays off while the name has a problem (invalid, or taken by an
-    // open league), so such a league never reaches Review through Next. The
-    // field stays uncontrolled: this copy of the name only feeds the check.
-    const [name, setName] = useState(initial.name);
-    const nameProblem = leagueNameProblem(name, takenSlugs);
-
-    useImperativeHandle(
-      ref,
-      () => ({
-        getValues: (): LeagueDraftDetails => ({
-          name: nameRef.current?.getValue() ?? initial.name,
-          points: {
-            win: parsePoints(winRef.current?.getValue() ?? '', initial.points.win),
-            draw: parsePoints(drawRef.current?.getValue() ?? '', initial.points.draw),
-            loss: parsePoints(lossRef.current?.getValue() ?? '', initial.points.loss),
-          },
-          homeAdvantage: homeAdvantageRef.current?.getValue() ?? initial.homeAdvantage,
-        }),
-      }),
-      [initial]
-    );
+  ({ onNext, ...props }, ref) => {
+    const step = useDetailsStep(props, ref);
 
     return (
       <Card padding="lg">
         <div class={styles.step}>
           <Input
             label="League name"
-            defaultValue={initial.name}
+            defaultValue={step.startValues.name}
             placeholder="e.g. Coastal Premier"
-            onChange={setName}
-            ref={nameRef}
+            onChange={step.handleNameChange}
+            ref={step.nameRef}
           />
 
           <div class={styles.pointsRow}>
             <Input
               label="Points (win)"
               type="number"
-              defaultValue={String(initial.points.win)}
-              ref={winRef}
+              defaultValue={step.startValues.win}
+              ref={step.winRef}
             />
             <Input
               label="Points (draw)"
               type="number"
-              defaultValue={String(initial.points.draw)}
-              ref={drawRef}
+              defaultValue={step.startValues.draw}
+              ref={step.drawRef}
             />
             <Input
               label="Points (loss)"
               type="number"
-              defaultValue={String(initial.points.loss)}
-              ref={lossRef}
+              defaultValue={step.startValues.loss}
+              ref={step.lossRef}
             />
           </div>
 
           <Switch
             label="Home advantage"
-            defaultChecked={initial.homeAdvantage}
-            ref={homeAdvantageRef}
+            defaultChecked={step.startValues.homeAdvantage}
+            ref={step.homeAdvantageRef}
           />
 
           <div class={styles.footer}>
             {/* Says why Next is off. Same text as the Create guard in
                 `useLeagueSetup`'s `handleCreate`. */}
-            {nameProblem && <span class={styles.hint}>{nameProblem}</span>}
-            <Button onClick={onNext} disabled={nameProblem !== null}>
+            {step.nameProblem && <span class={styles.hint}>{step.nameProblem}</span>}
+            <Button onClick={onNext} disabled={step.nameProblem !== null}>
               Next: Teams →
             </Button>
           </div>

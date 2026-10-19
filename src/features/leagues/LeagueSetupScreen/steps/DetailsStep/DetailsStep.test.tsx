@@ -44,6 +44,23 @@ describe('DetailsStep', () => {
     expect(ref.current?.getValues().homeAdvantage).toBe(true);
   });
 
+  it('getValues reads the edited points fields', async () => {
+    const ref = createRef<DetailsStepHandle>();
+    render(<DetailsStep initial={baseDetails} onNext={vi.fn()} ref={ref} />);
+
+    for (const [label, value] of [
+      ['Points (win)', '2'],
+      ['Points (draw)', '4'],
+      ['Points (loss)', '1'],
+    ]) {
+      const field = screen.getByLabelText(label);
+      await userEvent.clear(field);
+      await userEvent.type(field, value);
+    }
+
+    expect(ref.current?.getValues().points).toEqual({ win: 2, draw: 4, loss: 1 });
+  });
+
   it('getValues falls back to initial for an unparsable points field', async () => {
     const ref = createRef<DetailsStepHandle>();
     render(

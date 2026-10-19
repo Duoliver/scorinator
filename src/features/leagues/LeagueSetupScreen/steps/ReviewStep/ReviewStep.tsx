@@ -1,5 +1,6 @@
 import type { JSX } from 'preact';
 import { Button, Card } from '@/design-system';
+import { TeamSwatch } from '@/features/components';
 import {
   SetupChips,
   settingsChipLabels,
@@ -33,10 +34,7 @@ export function ReviewStep({
         <ul class={styles.teamList}>
           {selectedTeams.map((team) => (
             <li key={team.slug} class={styles.teamRow}>
-              <div
-                class={styles.swatch}
-                style={{ background: team.colour || 'transparent' }}
-              />
+              <TeamSwatch colour={team.colour} />
               <span class={styles.teamName}>{team.name}</span>
               <span class={styles.tier}>{team.tier}</span>
             </li>

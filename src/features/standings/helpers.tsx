@@ -1,5 +1,6 @@
 import type { JSX } from 'preact';
 import type { TableColumn } from '@/design-system';
+import { TeamSwatch } from '@/features/components';
 import type { StandingsViewRow } from './types';
 import styles from './StandingsView.module.css';
 
@@ -23,7 +24,7 @@ export const COLUMNS: TableColumn<StandingsViewRow>[] = [
     header: 'Team',
     render: (row) => (
       <span class={styles.team}>
-        <span class={styles.swatch} style={{ background: row.teamColour }} />
+        <TeamSwatch colour={row.teamColour} size="sm" />
         {row.teamName}
       </span>
     ),

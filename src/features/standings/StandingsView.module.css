@@ -21,13 +21,6 @@
   font-weight: 600;
 }
 
-.swatch {
-  width: 1.125rem;
-  height: 1.125rem;
-  border: var(--border-width) solid var(--color-fg);
-  flex: none;
-}
-
 .mono {
   font-family: var(--font-mono);
 }

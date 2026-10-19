@@ -5,3 +5,5 @@ export type { TeamFormDrawerProps } from './TeamFormDrawer';
 export { useTeamLookup, type TeamDisplay } from './useTeamLookup';
 export { StatusLine } from './StatusLine';
 export type { StatusLineProps, StatusLinePlacement } from './StatusLine';
+export { TeamSwatch } from './TeamSwatch';
+export type { TeamSwatchProps, TeamSwatchSize } from './TeamSwatch';

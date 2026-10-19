@@ -10,7 +10,7 @@ import {
   type TableColumn,
 } from '@/design-system';
 import type { FieldHandle } from '@/design-system/field';
-import { TeamFormDrawer } from '@/features/components';
+import { TeamFormDrawer, TeamSwatch } from '@/features/components';
 import type { TeamRecord } from '@/domain';
 import { addTeam } from '@/app/state/teamsActions';
 import { useTeamsStore } from '@/app/state/teamsStore';
@@ -79,10 +79,7 @@ export function TeamsStep({
               else checkboxHandles.current.delete(team.slug);
             }}
           />
-          <div
-            class={styles.swatch}
-            style={{ background: team.colour || 'transparent' }}
-          />
+          <TeamSwatch colour={team.colour} />
         </div>
       ),
     },

@@ -18,12 +18,6 @@
   gap: var(--space-3);
 }
 
-.swatch {
-  width: 1.375rem;
-  height: 1.375rem;
-  border: var(--border-width) solid var(--color-fg);
-}
-
 .slug {
   font-family: var(--font-mono);
   font-size: var(--font-size-md);

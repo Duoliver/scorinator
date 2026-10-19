@@ -1,7 +1,7 @@
 import { useState } from 'preact/hooks';
 import type { JSX } from 'preact';
 import { Badge, Button, Table, type TableColumn } from '@/design-system';
-import { TeamFormDrawer } from '@/features/components';
+import { TeamFormDrawer, TeamSwatch } from '@/features/components';
 import type { TeamRecord } from '@/domain';
 import { importTeamsFromFile } from '@/app/loadActions';
 import { addTeam, updateTeam } from '@/app/state/teamsActions';
@@ -39,12 +39,7 @@ export function TeamsScreen(): JSX.Element {
       key: 'colour',
       header: '',
       width: '2rem',
-      render: (row) => (
-        <div
-          class={styles.swatch}
-          style={{ background: row.colour || 'transparent' }}
-        />
-      ),
+      render: (row) => <TeamSwatch colour={row.colour} size="lg" />,
     },
     { key: 'name', header: 'Name' },
     {

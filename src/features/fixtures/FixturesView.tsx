@@ -1,5 +1,6 @@
 import type { JSX } from 'preact';
 import { Badge, Button } from '@/design-system';
+import { TeamSwatch } from '@/features/components';
 import type FixturesViewProps from './types';
 import { flashAttr, scoreText } from './helpers';
 import { useFixtures } from './useFixtures';
@@ -131,7 +132,11 @@ export function FixturesView(props: FixturesViewProps): JSX.Element {
           <div class={styles.match} key={row.key}>
             <div class={styles.home}>
               <span class={styles.teamName}>{row.home.name}</span>
-              <span class={styles.swatch} style={{ background: row.home.colour }} />
+              <TeamSwatch
+                colour={row.home.colour}
+                size="sm"
+                class={styles.homeSwatch}
+              />
               <span
                 class={styles.goals}
                 data-goals="home"
@@ -145,7 +150,7 @@ export function FixturesView(props: FixturesViewProps): JSX.Element {
               {scoreText(row.result)}
             </span>
             <div class={styles.away}>
-              <span class={styles.swatch} style={{ background: row.away.colour }} />
+              <TeamSwatch colour={row.away.colour} size="sm" />
               <span class={styles.teamName}>{row.away.name}</span>
               <span
                 class={styles.goals}

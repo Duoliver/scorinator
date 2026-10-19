@@ -58,6 +58,18 @@ describe('TeamsStep', () => {
     expect(screen.getByText('2 teams selected')).toBeInTheDocument();
   });
 
+  it('uses the singular for one selected team', () => {
+    render(<TeamsStep {...baseProps} selectedSlugs={['fc-united']} />);
+    expect(screen.getByText('1 team selected')).toBeInTheDocument();
+  });
+
+  it('ignores letter case in the search', async () => {
+    render(<TeamsStep {...baseProps} />);
+    await userEvent.type(screen.getByLabelText('Search teams'), 'hARBOR');
+    expect(screen.queryByLabelText('FC United')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Harborview SC')).toBeInTheDocument();
+  });
+
   it('creates a team through the inline drawer and reports it via onTeamCreated', async () => {
     const onTeamCreated = vi.fn();
     render(<TeamsStep {...baseProps} onTeamCreated={onTeamCreated} />);

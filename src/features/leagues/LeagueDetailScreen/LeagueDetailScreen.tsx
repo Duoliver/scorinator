@@ -1,41 +1,16 @@
 import type { JSX } from 'preact';
-import { useEffect, useState } from 'preact/hooks';
-import { Badge, Tabs, type TabItem } from '@/design-system';
-import { findLeague, useLeagueStore } from '@/app/state/leagueStore';
-import { setCurrentLeague } from '@/app/state/fileActions';
-import { isLeagueUnsaved, useFileStore } from '@/app/state/fileStore';
+import { Badge, Tabs } from '@/design-system';
 import { ROUTES } from '@/app/routes';
-import { FixturesView } from '@/features/fixtures';
-import { StandingsView } from '@/features/standings';
-import { describeLeague, formatPointsLabel } from '@/features/leagues/leagueSummary';
+import type LeagueDetailScreenProps from './types';
+import { useLeagueDetail } from './useLeagueDetail';
 import styles from './LeagueDetailScreen.module.css';
 
-interface LeagueDetailScreenProps {
-  slug: string;
-}
+export type { LeagueDetailScreenProps };
 
-/** Standings and Fixtures only, matching the design reference exactly —
- * scorination is a button inside Fixtures there, not its own tab. Fixtures
- * (Task 14) renders the matchday browser, and its Scorinate buttons
- * (Task 15) play a match or a whole matchday. Standings (Task 16) renders
- * the live league table from the same `league` record, so a scorinate in
- * Fixtures shows up there on the next tab switch. An `Unsaved` badge
- * (Task 26) sits beside the title while the league has unsaved changes. */
 export function LeagueDetailScreen({ slug }: LeagueDetailScreenProps): JSX.Element {
-  const leagues = useLeagueStore((state) => state.leagues);
-  const savedLeagues = useFileStore((state) => state.savedLeagues);
-  // `Tabs` unmounts the inactive tab, so `FixturesView`'s own matchday state
-  // would reset on every switch. Kept here instead, and fed back in below.
-  const [fixturesMatchday, setFixturesMatchday] = useState(1);
-  const league = findLeague(leagues, slug);
-  const found = league !== undefined;
+  const detail = useLeagueDetail(slug);
 
-  // The league on screen is the one Ctrl+S saves (Task 17).
-  useEffect(() => {
-    if (found) setCurrentLeague(slug);
-  }, [slug, found]);
-
-  if (!league) {
+  if (!detail) {
     return (
       <div class={styles.screen}>
         <a href={ROUTES.leaguesDashboard} class={styles.backLink}>
@@ -46,27 +21,6 @@ export function LeagueDetailScreen({ slug }: LeagueDetailScreenProps): JSX.Eleme
     );
   }
 
-  const meta = `${describeLeague(league)} · ${formatPointsLabel(league.points)}`;
-
-  const tabs: TabItem[] = [
-    {
-      id: 'standings',
-      label: 'Standings',
-      content: <StandingsView league={league} />,
-    },
-    {
-      id: 'fixtures',
-      label: 'Fixtures',
-      content: (
-        <FixturesView
-          league={league}
-          initialMatchday={fixturesMatchday}
-          onMatchdayChange={setFixturesMatchday}
-        />
-      ),
-    },
-  ];
-
   return (
     <div class={styles.screen}>
       <div>
@@ -74,15 +28,13 @@ export function LeagueDetailScreen({ slug }: LeagueDetailScreenProps): JSX.Eleme
           ← Leagues
         </a>
         <div class={styles.titleRow}>
-          <h1 class={styles.title}>{league.name}</h1>
-          {isLeagueUnsaved(league, savedLeagues) && (
-            <Badge tone="warning">Unsaved</Badge>
-          )}
+          <h1 class={styles.title}>{detail.league.name}</h1>
+          {detail.isUnsaved && <Badge tone="warning">Unsaved</Badge>}
         </div>
-        <span class={styles.meta}>{meta}</span>
+        <span class={styles.meta}>{detail.meta}</span>
       </div>
 
-      <Tabs tabs={tabs} defaultTab="standings" />
+      <Tabs tabs={detail.tabs} defaultTab="standings" />
     </div>
   );
 }

@@ -3,6 +3,7 @@ export type { TeamFormProps } from './TeamForm';
 export { TeamFormDrawer } from './TeamFormDrawer';
 export type { TeamFormDrawerProps } from './TeamFormDrawer';
 export { useTeamLookup, type TeamDisplay } from './useTeamLookup';
+export { formatTeamCount } from './formatTeamCount';
 export { StatusLine } from './StatusLine';
 export type { StatusLineProps, StatusLinePlacement } from './StatusLine';
 export { TeamSwatch } from './TeamSwatch';

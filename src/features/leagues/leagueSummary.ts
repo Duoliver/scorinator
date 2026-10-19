@@ -1,5 +1,6 @@
 import type { LeagueRecord } from '@/domain';
 import type { PointsConfig } from '@/engine/standings';
+import { formatTeamCount } from '@/features/components';
 
 /** The short texts that describe a league, in one place, so the dashboard,
  * League Detail, and League Setup say the same thing (Task 59). */
@@ -17,10 +18,6 @@ export function formatPointsLabel(points: PointsConfig): string {
 
 export function formatHomeAdvantageLabel(homeAdvantage: boolean): string {
   return `Home adv. ${homeAdvantage ? 'on' : 'off'}`;
-}
-
-export function formatTeamCount(count: number): string {
-  return `${count} team${count === 1 ? '' : 's'}`;
 }
 
 /** A league name, or a placeholder while League Setup has no name yet. A

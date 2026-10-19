@@ -1,7 +1,7 @@
 import type { JSX } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
 import { Badge, Tabs, type TabItem } from '@/design-system';
-import { useLeagueStore } from '@/app/state/leagueStore';
+import { findLeague, useLeagueStore } from '@/app/state/leagueStore';
 import { setCurrentLeague } from '@/app/state/fileActions';
 import { isLeagueUnsaved, useFileStore } from '@/app/state/fileStore';
 import { ROUTES } from '@/app/routes';
@@ -27,7 +27,7 @@ export function LeagueDetailScreen({ slug }: LeagueDetailScreenProps): JSX.Eleme
   // `Tabs` unmounts the inactive tab, so `FixturesView`'s own matchday state
   // would reset on every switch. Kept here instead, and fed back in below.
   const [fixturesMatchday, setFixturesMatchday] = useState(1);
-  const league = leagues.find((candidate) => candidate.slug === slug);
+  const league = findLeague(leagues, slug);
   const found = league !== undefined;
 
   // The league on screen is the one Ctrl+S saves (Task 17).

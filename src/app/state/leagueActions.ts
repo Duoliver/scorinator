@@ -5,7 +5,7 @@ import { generateRoundRobin, isSameMatch, type Fixture } from '@/engine/fixtures
 import { playMatch } from '@/engine/scorination';
 import type { CreateLeagueInput, LeagueRecord, LeagueResult } from '@/domain';
 import { setCurrentLeague } from './fileActions';
-import { useLeagueStore } from './leagueStore';
+import { findLeague, useLeagueStore } from './leagueStore';
 
 /** A fresh, non-deterministic seed for each call. The engine itself takes a
  * deterministic `Rng` (see `ENGINE.md`), so the randomness lives here. */
@@ -66,7 +66,7 @@ function playFixture(
 export function addLeague(input: CreateLeagueInput): LeagueRecord {
   // Throws before any roll, so a rejected league leaves nothing behind.
   const leagueSlug = slug(input.name);
-  if (useLeagueStore.getState().leagues.some((league) => league.slug === leagueSlug)) {
+  if (findLeague(useLeagueStore.getState().leagues, leagueSlug)) {
     throw new RangeError(`A league with the slug "${leagueSlug}" already exists.`);
   }
   const rng = createSeededRng(freshSeed());
@@ -145,9 +145,7 @@ export function rescorinateFixture(leagueSlug: string, fixture: Fixture<string>)
 /** Plays every unplayed match of one matchday (Task 15). Skips a fixture
  * that already has a result, the same as `scorinateFixture`. */
 export function scorinateMatchday(leagueSlug: string, matchday: number): void {
-  const league = useLeagueStore
-    .getState()
-    .leagues.find((candidate) => candidate.slug === leagueSlug);
+  const league = findLeague(useLeagueStore.getState().leagues, leagueSlug);
   if (!league) return;
   const unplayed = league.fixtures.filter(
     (fixture) =>

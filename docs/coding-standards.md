@@ -225,6 +225,35 @@ import styles from './TeamsScreen.module.css';
 
 A `style` prop is acceptable only for a value your code computes at runtime from data. One example is a team's user-chosen hex colour swatch. Never use it for a static layout or token value.
 
+## Start a function name with a verb in the imperative
+
+Name a function, or a method, for the action it does. Start the name with a verb in the imperative: `getErrorMessage`, `findLeague`, `addTeam`, `saveLeagueBySlug`. A noun name such as `errorMessage` reads like a value, not a call.
+
+- **`get` or `find`:** use `get` when the function always gives a value. Use `find` when it can give `undefined`, as `findLeague` does for an unknown slug.
+- **A function that gives a boolean** starts with `is`, `has`, or `can`: `isLeagueUnsaved`, `isTier`.
+- **A component** keeps its PascalCase noun name (`StandingsView`). **A hook** starts with `use` (`useStandings`).
+
+The rule applies to new functions. An existing name changes only when the user asks for it. The user set the rule at Task 57 (2026-10-19), and `errorMessage` became `getErrorMessage`.
+
+## In a `catch`, read the error with `getErrorMessage`
+
+A caught value has the type `unknown`, and it is not always an `Error`. A Tauri plugin rejects with a plain string. For that string, `(error as Error).message` gives `undefined`, and the status line shows `undefined`. Use `getErrorMessage` from `app/getErrorMessage.ts`. It gives `error.message` for an `Error` and `String(error)` for any other value.
+
+```ts
+// Don't
+} catch (error) {
+  setFileStatus({ tone: 'error', message: (error as Error).message });
+}
+
+// Do
+import { getErrorMessage } from '@/app/getErrorMessage';
+} catch (error) {
+  setFileStatus({ tone: 'error', message: getErrorMessage(error) });
+}
+```
+
+This applies to `app/` and `features/`. `engine/` and `adapters/` must not import `app/`. They have no `catch` that shows a message today.
+
 ## Comments: say why, and search for an old name after a rename
 
 A comment goes stale when the code it names changes. Task 52 fixed 12 stale comments. Each one named a function, a file, or a caller that a rename or a move changed. Two rules keep this from coming back.

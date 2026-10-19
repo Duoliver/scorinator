@@ -1,4 +1,5 @@
 import { saveLeagueFile, saveLeagueFileAs } from '@/app/data/leagueFile';
+import { getErrorMessage } from '@/app/getErrorMessage';
 import {
   markLeagueSaved,
   setCurrentLeague,
@@ -6,7 +7,7 @@ import {
   setLeaguePath,
 } from '@/app/state/fileActions';
 import { useFileStore } from '@/app/state/fileStore';
-import { useLeagueStore } from '@/app/state/leagueStore';
+import { findLeague, useLeagueStore } from '@/app/state/leagueStore';
 import { useTeamsStore } from '@/app/state/teamsStore';
 
 /** The save action Ctrl+S (`AppShell`) and the File screen's Save and Save
@@ -21,9 +22,7 @@ export async function saveLeagueBySlug(
   slug: string,
   options: { saveAs?: boolean } = {}
 ): Promise<boolean> {
-  const league = useLeagueStore
-    .getState()
-    .leagues.find((candidate) => candidate.slug === slug);
+  const league = findLeague(useLeagueStore.getState().leagues, slug);
   if (!league) {
     setFileStatus({
       tone: 'error',
@@ -50,7 +49,7 @@ export async function saveLeagueBySlug(
     setFileStatus({ tone: 'info', message: `Saved ${league.name} to ${path}` });
     return true;
   } catch (error) {
-    setFileStatus({ tone: 'error', message: (error as Error).message });
+    setFileStatus({ tone: 'error', message: getErrorMessage(error) });
     return false;
   }
 }

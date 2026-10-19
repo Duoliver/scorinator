@@ -7,7 +7,7 @@ import {
   scorinateMatchday,
 } from './leagueActions';
 import { markLeagueSaved } from './fileActions';
-import { useLeagueStore } from './leagueStore';
+import { findLeague, useLeagueStore } from './leagueStore';
 import { isLeagueUnsaved, useFileStore } from './fileStore';
 import type { LeagueRecord, TeamRecord } from '@/domain';
 import { TIER_OVR_RANGES } from '@/engine/tier-ovr';
@@ -42,6 +42,19 @@ beforeEach(() => {
     paths: {},
     savedLeagues: {},
     status: null,
+  });
+});
+
+describe('findLeague', () => {
+  it('finds the league with the slug', () => {
+    const other = record({ slug: 'north-cup', name: 'North Cup' });
+    const wanted = record();
+
+    expect(findLeague([other, wanted], 'coastal-premier')).toBe(wanted);
+  });
+
+  it('gives undefined for an unknown slug', () => {
+    expect(findLeague([record()], 'no-such-league')).toBeUndefined();
   });
 });
 

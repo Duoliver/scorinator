@@ -74,6 +74,17 @@ describe('exportTeams', () => {
       message: 'Disk is full.',
     });
   });
+
+  it('reports a thrown string, as the Tauri plugins throw', async () => {
+    vi.spyOn(teamsCsv, 'exportTeamsCsv').mockRejectedValue('Permission denied.');
+
+    await exportTeams();
+
+    expect(useFileStore.getState().status).toEqual({
+      tone: 'error',
+      message: 'Permission denied.',
+    });
+  });
 });
 
 describe('exportResultsBySlug', () => {

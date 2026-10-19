@@ -3,6 +3,7 @@ import { mergeImportedTeams } from '@/app/data/importMerge';
 import { importTeamsCsv } from '@/app/data/teamsCsv';
 import { importTeamsFile } from '@/app/data/teamsFile';
 import { importTeamsJson } from '@/app/data/teamsJson';
+import { getErrorMessage } from '@/app/getErrorMessage';
 import {
   markLeagueSaved,
   setCurrentLeague,
@@ -10,7 +11,7 @@ import {
   setLeaguePath,
 } from '@/app/state/fileActions';
 import { loadLeague } from '@/app/state/leagueActions';
-import { useLeagueStore } from '@/app/state/leagueStore';
+import { findLeague, useLeagueStore } from '@/app/state/leagueStore';
 import { setTeams } from '@/app/state/teamsActions';
 import { useTeamsStore } from '@/app/state/teamsStore';
 import type { TeamRecord } from '@/domain';
@@ -26,13 +27,13 @@ export async function openLeagueFile(): Promise<LoadedLeagueFile | null> {
   try {
     return await loadLeagueFile();
   } catch (error) {
-    setFileStatus({ tone: 'error', message: (error as Error).message });
+    setFileStatus({ tone: 'error', message: getErrorMessage(error) });
     return null;
   }
 }
 
 export function isLeagueOpen(slug: string): boolean {
-  return useLeagueStore.getState().leagues.some((league) => league.slug === slug);
+  return findLeague(useLeagueStore.getState().leagues, slug) !== undefined;
 }
 
 /** Opens a loaded league: it replaces an open league with the same slug,
@@ -80,6 +81,6 @@ async function importTeams(
       message: `Imported ${imported.length} team${imported.length === 1 ? '' : 's'}.`,
     });
   } catch (error) {
-    setFileStatus({ tone: 'error', message: (error as Error).message });
+    setFileStatus({ tone: 'error', message: getErrorMessage(error) });
   }
 }

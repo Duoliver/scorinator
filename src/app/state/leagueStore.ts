@@ -12,3 +12,12 @@ export interface LeagueState {
 export const useLeagueStore = create<LeagueState>()(() => ({
   leagues: [],
 }));
+
+/** The league with this slug, or `undefined`. A slug is unique in the list
+ * (`addLeague` rejects a taken one), so the first match is the only one. */
+export function findLeague(
+  leagues: readonly LeagueRecord[],
+  slug: string
+): LeagueRecord | undefined {
+  return leagues.find((league) => league.slug === slug);
+}

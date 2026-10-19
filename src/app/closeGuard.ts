@@ -1,4 +1,5 @@
 import { tauriWindow, type WindowCloseAdapter } from '@/adapters/tauri-window';
+import { getErrorMessage } from '@/app/getErrorMessage';
 import { saveLeagueBySlug } from '@/app/saveActions';
 import { setFileStatus } from '@/app/state/fileActions';
 import { isLeagueUnsaved, useFileStore } from '@/app/state/fileStore';
@@ -70,7 +71,7 @@ export function installCloseGuard(
     .catch((error: unknown) => {
       setFileStatus({
         tone: 'error',
-        message: `Could not watch for a window close: ${(error as Error).message}`,
+        message: `Could not watch for a window close: ${getErrorMessage(error)}`,
       });
     });
 

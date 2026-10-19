@@ -1,7 +1,8 @@
 import { exportResultsTxt } from '@/app/data/resultsTxt';
 import { exportTeamsCsv } from '@/app/data/teamsCsv';
+import { getErrorMessage } from '@/app/getErrorMessage';
 import { setFileStatus } from '@/app/state/fileActions';
-import { useLeagueStore } from '@/app/state/leagueStore';
+import { findLeague, useLeagueStore } from '@/app/state/leagueStore';
 import { useTeamsStore } from '@/app/state/teamsStore';
 
 /** The export actions of the File screen, the same shape as
@@ -18,15 +19,13 @@ export async function exportTeams(): Promise<void> {
       message: path === null ? 'Export canceled.' : `Saved to ${path}`,
     });
   } catch (error) {
-    setFileStatus({ tone: 'error', message: (error as Error).message });
+    setFileStatus({ tone: 'error', message: getErrorMessage(error) });
   }
 }
 
 /** Writes the plain-text results summary of one league (Task 18). */
 export async function exportResultsBySlug(slug: string): Promise<void> {
-  const league = useLeagueStore
-    .getState()
-    .leagues.find((candidate) => candidate.slug === slug);
+  const league = findLeague(useLeagueStore.getState().leagues, slug);
   if (!league) {
     setFileStatus({
       tone: 'error',
@@ -44,6 +43,6 @@ export async function exportResultsBySlug(slug: string): Promise<void> {
           : `Exported ${league.name} results to ${path}`,
     });
   } catch (error) {
-    setFileStatus({ tone: 'error', message: (error as Error).message });
+    setFileStatus({ tone: 'error', message: getErrorMessage(error) });
   }
 }

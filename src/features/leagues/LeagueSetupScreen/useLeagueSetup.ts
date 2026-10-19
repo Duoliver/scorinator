@@ -2,6 +2,7 @@ import { useRef, useState } from 'preact/hooks';
 import type { RefObject } from 'preact';
 import { route } from 'preact-router';
 import type { FieldHandle } from '@/design-system/field';
+import { getErrorMessage } from '@/app/getErrorMessage';
 import { leagueDetailPath } from '@/app/routes';
 import { addLeague } from '@/app/state/leagueActions';
 import { resetLeagueDraft } from '@/app/state/leagueDraftActions';
@@ -89,7 +90,7 @@ export function useLeagueSetup(): LeagueSetup {
       // The check above covers both errors `addLeague` can throw (a name
       // with no slug, a taken slug). This only keeps the screen up if a
       // store change elsewhere ever adds another.
-      setStatus((error as Error).message);
+      setStatus(getErrorMessage(error));
       return;
     }
 

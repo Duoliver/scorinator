@@ -7,7 +7,7 @@ import { isLeagueUnsaved, useFileStore } from '@/app/state/fileStore';
 import { ROUTES } from '@/app/routes';
 import { FixturesView } from '@/features/fixtures';
 import { StandingsView } from '@/features/standings';
-import { describeLeague } from '@/features/leagues/leagueSummary';
+import { describeLeague, formatPointsLabel } from '@/features/leagues/leagueSummary';
 import styles from './LeagueDetailScreen.module.css';
 
 interface LeagueDetailScreenProps {
@@ -46,8 +46,7 @@ export function LeagueDetailScreen({ slug }: LeagueDetailScreenProps): JSX.Eleme
     );
   }
 
-  const pointsSummary = `${league.points.win}/${league.points.draw}/${league.points.loss} pts`;
-  const meta = `${describeLeague(league)} · ${pointsSummary}`;
+  const meta = `${describeLeague(league)} · ${formatPointsLabel(league.points)}`;
 
   const tabs: TabItem[] = [
     {

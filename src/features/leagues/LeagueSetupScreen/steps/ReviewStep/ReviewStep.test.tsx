@@ -22,7 +22,7 @@ describe('ReviewStep', () => {
     expect(screen.getByText('Coastal Premier')).toBeInTheDocument();
     expect(screen.getByText('Home adv. on')).toBeInTheDocument();
     expect(screen.getByText('3/1/0 pts')).toBeInTheDocument();
-    expect(screen.getByText('1 teams')).toBeInTheDocument();
+    expect(screen.getByText('1 team')).toBeInTheDocument();
     expect(screen.getByText('FC United')).toBeInTheDocument();
   });
 
@@ -55,6 +55,7 @@ describe('ReviewStep', () => {
     );
     expect(screen.getByText('Create league')).toBeDisabled();
   });
+
   it('does not disable Create league for a blank name: the Details step blocks it, and the screen reports a tab jump', () => {
     render(
       <ReviewStep
@@ -67,5 +68,21 @@ describe('ReviewStep', () => {
       />
     );
     expect(screen.getByText('Create league')).toBeEnabled();
+  });
+
+  it('shows a placeholder title for a blank name', () => {
+    render(
+      <ReviewStep
+        name="  "
+        homeAdvantage={false}
+        points={{ win: 3, draw: 1, loss: 0 }}
+        selectedTeams={selectedTeams}
+        onBack={vi.fn()}
+        onCreate={vi.fn()}
+      />
+    );
+    expect(
+      screen.getByRole('heading', { name: 'Untitled league' })
+    ).toBeInTheDocument();
   });
 });

@@ -2,7 +2,7 @@ import type { JSX } from 'preact';
 import { Badge, Button, Card } from '@/design-system';
 import { isLeagueUnsaved, useFileStore } from '@/app/state/fileStore';
 import { leagueDetailPath } from '@/app/routes';
-import { describeLeague } from '@/features/leagues/leagueSummary';
+import { describeLeague, formatPointsLabel } from '@/features/leagues/leagueSummary';
 import type LeagueListProps from './types';
 import styles from './LeagueList.module.css';
 
@@ -25,9 +25,7 @@ export function LeagueList({ leagues }: LeagueListProps): JSX.Element {
               )}
             </div>
             <span class={styles.meta}>{describeLeague(league)}</span>
-            <span class={styles.pointsPill}>
-              {league.points.win}/{league.points.draw}/{league.points.loss} pts
-            </span>
+            <span class={styles.pointsPill}>{formatPointsLabel(league.points)}</span>
             <Button href={leagueDetailPath(league.slug)} variant="outline" size="sm">
               Open standings
             </Button>

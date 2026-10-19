@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { describeLeague } from './leagueSummary';
+import {
+  describeLeague,
+  formatHomeAdvantageLabel,
+  formatLeagueName,
+  formatPointsLabel,
+  formatTeamCount,
+} from './leagueSummary';
 import type { LeagueRecord } from '@/domain';
 
 const league = (overrides: Partial<LeagueRecord> = {}): LeagueRecord => ({
@@ -33,5 +39,37 @@ describe('describeLeague', () => {
 
   it('reflects home advantage being off', () => {
     expect(describeLeague(league({ homeAdvantage: false }))).toContain('Home adv. off');
+  });
+});
+
+describe('formatPointsLabel', () => {
+  it('lists the win, draw, and loss points', () => {
+    expect(formatPointsLabel({ win: 3, draw: 1, loss: 0 })).toBe('3/1/0 pts');
+  });
+});
+
+describe('formatHomeAdvantageLabel', () => {
+  it('says on or off', () => {
+    expect(formatHomeAdvantageLabel(true)).toBe('Home adv. on');
+    expect(formatHomeAdvantageLabel(false)).toBe('Home adv. off');
+  });
+});
+
+describe('formatTeamCount', () => {
+  it('uses the singular for one team and the plural for any other count', () => {
+    expect(formatTeamCount(1)).toBe('1 team');
+    expect(formatTeamCount(0)).toBe('0 teams');
+    expect(formatTeamCount(12)).toBe('12 teams');
+  });
+});
+
+describe('formatLeagueName', () => {
+  it('keeps a real name', () => {
+    expect(formatLeagueName('Coastal Premier')).toBe('Coastal Premier');
+  });
+
+  it('gives a placeholder for a blank or whitespace-only name', () => {
+    expect(formatLeagueName('')).toBe('Untitled league');
+    expect(formatLeagueName('   ')).toBe('Untitled league');
   });
 });

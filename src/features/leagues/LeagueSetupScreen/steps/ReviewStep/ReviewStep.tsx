@@ -5,6 +5,11 @@ import {
   SetupChips,
   settingsChipLabels,
 } from '@/features/leagues/LeagueSetupScreen/steps/SetupChips';
+import {
+  FIXTURE_FORMAT_LABEL,
+  formatLeagueName,
+  formatTeamCount,
+} from '@/features/leagues/leagueSummary';
 import type ReviewStepProps from './types';
 import styles from './ReviewStep.module.css';
 
@@ -21,13 +26,13 @@ export function ReviewStep({
   return (
     <Card padding="lg">
       <div class={styles.step}>
-        <h3>{name || 'Untitled league'}</h3>
+        <h3>{formatLeagueName(name)}</h3>
 
         <SetupChips
           labels={[
-            'Round robin (two-way)',
+            FIXTURE_FORMAT_LABEL,
             ...settingsChipLabels(homeAdvantage, points),
-            `${selectedTeams.length} teams`,
+            formatTeamCount(selectedTeams.length),
           ]}
         />
 

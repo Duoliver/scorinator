@@ -41,7 +41,7 @@ describe('LeagueSetupScreen', () => {
 
     expect(screen.getByText('Coastal Premier')).toBeInTheDocument();
     expect(screen.getByText('Home adv. on')).toBeInTheDocument();
-    expect(screen.getByText('1 teams')).toBeInTheDocument();
+    expect(screen.getByText('1 team')).toBeInTheDocument();
 
     await userEvent.click(screen.getByText('Create league'));
 

@@ -18,6 +18,7 @@ import {
   SetupChips,
   settingsChipLabels,
 } from '@/features/leagues/LeagueSetupScreen/steps/SetupChips';
+import { formatLeagueName } from '@/features/leagues/leagueSummary';
 import type TeamsStepProps from './types';
 import styles from './TeamsStep.module.css';
 
@@ -96,7 +97,7 @@ export function TeamsStep({
     <Card padding="lg">
       <div class={styles.step}>
         <div class={styles.summary}>
-          <p class={styles.leagueName}>{name || 'Untitled league'}</p>
+          <p class={styles.leagueName}>{formatLeagueName(name)}</p>
           <SetupChips labels={settingsChipLabels(homeAdvantage, points)} />
         </div>
 

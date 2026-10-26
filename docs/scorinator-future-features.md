@@ -23,3 +23,24 @@ Post-hoc linking of an already-existing standalone League (created and played ou
 In MVP2, a replay is always played at a neutral venue, with no home advantage. Later, the user picks the venue per replay: neutral, or either team's home. The picker should show which of the two teams had the better campaign so far in that competition, to help the user decide.
 
 * Raised during: MVP1 → MVP2 impact review.
+
+## 5. Fewer extreme scores in big OVR mismatches
+A big OVR gap gives extreme scores too often. The user judged this not a big problem for MVP1, and parked it here on 2026-10-26. Do not change the engine for it without a decision from the user.
+
+**Goal (user stance):** make the common extremes (a margin of 4 to 6 goals) less frequent, but keep a real chance of 11-0 or more for an A or S team against an F team.
+
+**Study (2026-09-25):** the real engine, 300,000 matches per case, home advantage on at 5% (the boost before Task 32). Real-football figures are approximate and from memory.
+- **In aggregate, extreme scores are rare.** A same-tier league (OVR 60-69) gives 2-1 13.8%, 6-0 0.14%, draws 28.1%, and a margin of 4+ goals 3.8%. A league of all tiers S to F gives 2-1 10.9%, 6-0 0.82%, draws 23.4%, a margin of 4+ goals 9.6%, and a team with 6+ goals 2.8%. Real football is about 2-3% for a margin of 4+ goals.
+- **In big mismatches, extreme scores are common.** Favorite at home, gap 25 OVR (80 v 55): 2-1 7.95%, 6-0 0.73%, a margin of 4+ goals 9.7%. Gap 55 (95 v 40): 2-1 3.0%, 6-0 3.7%, a margin of 4+ goals 27.7%. Gap 69 (99 v 30): 2-1 2.7%, 6-0 4.9%, a margin of 4+ goals 34.0%. From a gap of about 55, 6-0 is as common as 2-1.
+- **The favorite with 11+ goals:** 1 in 6,700 matches at 85 v 50, 1 in 910 at 95 v 35, 1 in 520 at 99 v 30.
+
+**Cause:** each OVR point adds 1.5% to expected goals, linearly (`DIFF_WEIGHT`). At a gap of 60, the favorite's factor is about 1.9, and the underdog's hits its floor. The shared elasticity roll (uniform 0.4 to 1.6) then scales both. At the top of the roll, the favorite's expected goals reach about 4.3, and the underdog's stay near 0.2. The same elasticity range also gives low-scoring matches, which is probably why draws are 28% instead of about 25%.
+
+**Design note:** a lower `DIFF_WEIGHT`, a saturated difference factor, or a narrower elasticity range would each cut the rare tail together with the common extremes. To keep a rare tail and cut the common extremes, a separate mechanism for the tail is probably necessary. This is untested.
+
+**Constraints:**
+- The OVR-difference vs absolute-OVR weighting is a `CLAUDE.md` open item. A change to the difference factor touches it, so propose an approach and get a decision first.
+- One OVR point is worth 1.5% of goals today. A change to that scale changes the meaning of the Task 32 home advantage values (+5 OVR and +5%), so retune Task 32 after the change.
+- The study scripts are not in the repo.
+
+*Raised during: MVP1, Task 32 (home advantage tuning).*

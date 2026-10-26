@@ -2,7 +2,7 @@ import type { JSX } from 'preact';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { scorinateFixture } from '@/app/state/leagueActions';
 import { act, render, screen } from '@testing-library/preact';
-import { generateRoundRobin } from '@/engine/fixtures';
+import { generateRoundRobin } from '@/engine/round-robin';
 import { useTeamsStore } from '@/app/state/teamsStore';
 import { useLeagueStore } from '@/app/state/leagueStore';
 import type { LeagueRecord, TeamRecord } from '@/domain';

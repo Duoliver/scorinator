@@ -1,5 +1,5 @@
 import { isTier } from '@/engine/tier-ovr';
-import type { Bye, Fixture } from '@/engine/fixtures';
+import type { Bye, Fixture } from '@/engine/round-robin';
 import {
   SAVE_FORMAT_VERSION,
   type SavedLeague,

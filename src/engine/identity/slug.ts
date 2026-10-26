@@ -6,7 +6,7 @@
  *
  * Throws a `RangeError` if the name has no alphanumeric character to slug
  * (e.g. blank, or symbols-only) — the same degenerate-input pattern
- * `engine/fixtures` and `engine/standings` already use, rather than
+ * `engine/round-robin` and `engine/standings` already use, rather than
  * returning a placeholder that could silently collide across teams.
  *
  * Does not dedupe or check uniqueness across a roster — that is the later

@@ -91,7 +91,7 @@ Everything that reads the flat arrays must become phase-aware: `scorinateFixture
 
 ### 2.6 Result identity
 
-`findResult` and `isSameMatch` (`engine/fixtures/schedule.ts`, Task 54) match a result to a fixture by the `(matchday, home, away)` triple. Since Task 54 they take the fixtures and results of one schedule, not a league, so a caller can pass one group or one phase. In MVP2, matchday numbers restart in each phase, groups share matchday numbers, and two-legged ties and replays repeat the same pairing. Fixtures need stable IDs, or keys that include phase and group. This touches the result lookup, re-scorinate, and the saved result shape. See open decision 3.
+`findResult` and `isSameMatch` (`engine/round-robin/schedule.ts`, Task 54, in `engine/fixtures` before Task 73) match a result to a fixture by the `(matchday, home, away)` triple. Since Task 54 they take the fixtures and results of one schedule, not a league, so a caller can pass one group or one phase. In MVP2, matchday numbers restart in each phase, groups share matchday numbers, and two-legged ties and replays repeat the same pairing. Fixtures need stable IDs, or keys that include phase and group. This touches the result lookup, re-scorinate, and the saved result shape. See open decision 3.
 
 ### 2.7 Engine: fixtures
 

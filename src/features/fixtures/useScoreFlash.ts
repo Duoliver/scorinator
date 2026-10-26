@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState } from 'preact/hooks';
 import type { LeagueResult } from '@/domain';
-import { matchKey, type MatchIdentity } from '@/engine/fixtures';
+import { matchKey, type MatchIdentity } from '@/engine/round-robin';
 import { SCORE_FLASH_MS } from './helpers';
 
 /** Tells which scores flash in the accent colour. A score flashes for

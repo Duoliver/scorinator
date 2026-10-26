@@ -3,7 +3,7 @@ import {
   type MatchResult,
   type PointsConfig,
 } from '@/engine/standings';
-import { matchKey, type Bye, type Fixture } from '@/engine/fixtures';
+import { matchKey, type Bye, type Fixture } from '@/engine/round-robin';
 
 /** What the results summary needs from a league. A `SavedLeague` (see
  * `adapters/json-io`) fits this shape as it is, so a caller can pass the

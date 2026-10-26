@@ -11,7 +11,7 @@ import {
   SAVE_FORMAT_VERSION,
   type SavedLeague,
 } from '@/adapters/json-io';
-import { isSameMatch } from '@/engine/fixtures';
+import { isSameMatch } from '@/engine/round-robin';
 import { slug } from '@/engine/identity';
 import type { FileSystem, SaveFileDialog } from '@/persistence/types';
 import type { LeagueRecord, TeamRecord } from '@/domain';

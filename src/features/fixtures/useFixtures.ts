@@ -1,4 +1,4 @@
-import { findResult, isMatchdayFullyPlayed, matchKey } from '@/engine/fixtures';
+import { findResult, isMatchdayFullyPlayed, matchKey } from '@/engine/round-robin';
 import {
   rescorinateFixture,
   scorinateFixture,

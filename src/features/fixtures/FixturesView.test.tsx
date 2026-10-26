@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { scorinateMatchday } from '@/app/state/leagueActions';
 import { act, render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
-import { generateRoundRobin } from '@/engine/fixtures';
+import { generateRoundRobin } from '@/engine/round-robin';
 import { useTeamsStore } from '@/app/state/teamsStore';
 import { useLeagueStore } from '@/app/state/leagueStore';
 import type { LeagueRecord, TeamRecord } from '@/domain';

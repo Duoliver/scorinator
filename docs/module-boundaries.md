@@ -8,7 +8,8 @@ The module map below is a direct transcription of decisions already made in the 
                       Tauri, or the filesystem. Framework-agnostic and
                       testable with plain vitest, no DOM.
     /tier-ovr
-    /fixtures           (round-robin generation, byes, single-duels balancing)
+    /round-robin        (round-robin generation, byes, single-duels balancing,
+                         schedule lookups)
     /scorination        (match simulation — see §3 on RNG injection)
     /standings
     /bracket            (seeding, byes, re-scorination cascade)

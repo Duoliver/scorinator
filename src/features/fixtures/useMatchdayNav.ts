@@ -1,5 +1,5 @@
 import { useState } from 'preact/hooks';
-import { findCurrentMatchday } from '@/engine/fixtures';
+import { findCurrentMatchday } from '@/engine/round-robin';
 import type FixturesViewProps from './types';
 import type { MatchdayNav } from './types';
 

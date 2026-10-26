@@ -1,7 +1,7 @@
 import { createSeededRng } from '@/engine/rng';
 import { rollOVR } from '@/engine/tier-ovr';
 import { slug } from '@/engine/identity';
-import { generateRoundRobin, isSameMatch, type Fixture } from '@/engine/fixtures';
+import { generateRoundRobin, isSameMatch, type Fixture } from '@/engine/round-robin';
 import { playMatch } from '@/engine/scorination';
 import type { CreateLeagueInput, LeagueRecord, LeagueResult } from '@/domain';
 import { setCurrentLeague } from './fileActions';

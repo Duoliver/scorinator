@@ -1,4 +1,4 @@
-import type { Bye, Fixture } from '@/engine/fixtures';
+import type { Bye, Fixture } from '@/engine/round-robin';
 import type { MatchResult, PointsConfig } from '@/engine/standings';
 import type { Tier } from '@/engine/tier-ovr';
 

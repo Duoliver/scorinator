@@ -6,7 +6,7 @@ import { formatTeamCount } from '@/features/components';
  * League Detail, and League Setup say the same thing (Task 59). */
 
 /** Round-robin (two-way) is hardcoded, not read off `LeagueRecord` — it is
- * the only fixture format `engine/fixtures` generates today (Task 3), and
+ * the only fixture format `engine/round-robin` generates today (Task 3), and
  * no field stores a format name to read instead. */
 export const FIXTURE_FORMAT_LABEL = 'Round robin (two-way)';
 

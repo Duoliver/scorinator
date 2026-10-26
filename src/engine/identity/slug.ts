@@ -1,5 +1,5 @@
 /**
- * Turns a team name into a URL/file-safe slug: strip diacritics, lowercase,
+ * Turns a team or league name into a URL/file-safe slug: strip diacritics, lowercase,
  * collapse any run of non-alphanumeric characters into a single hyphen, and
  * trim leading/trailing hyphens. No doc gives a concrete algorithm — see the
  * Task 11 decision log entry for why this shape was chosen.
@@ -24,7 +24,9 @@ export function slug(name: string): string {
     .replace(/^-+|-+$/g, '');
 
   if (value === '') {
-    throw new RangeError(`Cannot generate a slug for team name "${name}".`);
+    throw new RangeError(
+      `Cannot make a slug from the name "${name}". The name needs at least one letter or number.`
+    );
   }
 
   return value;

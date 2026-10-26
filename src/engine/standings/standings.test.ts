@@ -57,6 +57,19 @@ describe('calculateStandings', () => {
     expect(row('Alpha', table).points).toBe(2);
   });
 
+  it('gives the configured loss points to a home loser and an away loser', () => {
+    const results: MatchResult<string>[] = [
+      { home: 'Alpha', away: 'Bravo', homeGoals: 0, awayGoals: 1 }, // home loss
+      { home: 'Charlie', away: 'Delta', homeGoals: 2, awayGoals: 0 }, // away loss
+      { home: 'Alpha', away: 'Delta', homeGoals: 1, awayGoals: 1 }, // draw
+    ];
+    const table = calculateStandings(TEAMS, results, { win: 5, draw: 2, loss: 1 });
+    expect(row('Alpha', table).points).toBe(3);
+    expect(row('Bravo', table).points).toBe(5);
+    expect(row('Charlie', table).points).toBe(5);
+    expect(row('Delta', table).points).toBe(3);
+  });
+
   it('tracks played, goals for/against, and goal difference across matches', () => {
     const results: MatchResult<string>[] = [
       { home: 'Alpha', away: 'Bravo', homeGoals: 3, awayGoals: 1 },

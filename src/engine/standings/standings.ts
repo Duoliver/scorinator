@@ -66,31 +66,37 @@ function applyResult<TeamId>(
     );
   }
 
-  home.played++;
-  away.played++;
-  home.goalsFor += result.homeGoals;
-  home.goalsAgainst += result.awayGoals;
-  away.goalsFor += result.awayGoals;
-  away.goalsAgainst += result.homeGoals;
-  home.goalDifference = home.goalsFor - home.goalsAgainst;
-  away.goalDifference = away.goalsFor - away.goalsAgainst;
+  addMatch(home, result.homeGoals, result.awayGoals, pointsConfig);
+  addMatch(away, result.awayGoals, result.homeGoals, pointsConfig);
+}
 
-  if (result.homeGoals > result.awayGoals) {
-    home.won++;
-    home.points += pointsConfig.win;
-    away.lost++;
-    away.points += pointsConfig.loss;
-  } else if (result.homeGoals < result.awayGoals) {
-    away.won++;
-    away.points += pointsConfig.win;
-    home.lost++;
-    home.points += pointsConfig.loss;
-  } else {
-    home.drawn++;
-    home.points += pointsConfig.draw;
-    away.drawn++;
-    away.points += pointsConfig.draw;
-  }
+// Adds one match to one team's row, seen from that team's side.
+function addMatch<TeamId>(
+  row: StandingsRow<TeamId>,
+  goalsFor: number,
+  goalsAgainst: number,
+  pointsConfig: PointsConfig
+): void {
+  row.played++;
+  row.goalsFor += goalsFor;
+  row.goalsAgainst += goalsAgainst;
+  row.goalDifference = row.goalsFor - row.goalsAgainst;
+  if (goalsFor > goalsAgainst) row.won++;
+  else if (goalsFor < goalsAgainst) row.lost++;
+  else row.drawn++;
+  row.points += getPoints(goalsFor, goalsAgainst, pointsConfig);
+}
+
+// The points one team gets for one match. The main table and the
+// mini-league both count points with this function.
+function getPoints(
+  goalsFor: number,
+  goalsAgainst: number,
+  pointsConfig: PointsConfig
+): number {
+  if (goalsFor > goalsAgainst) return pointsConfig.win;
+  if (goalsFor < goalsAgainst) return pointsConfig.loss;
+  return pointsConfig.draw;
 }
 
 /**
@@ -153,10 +159,7 @@ function orderAndPosition<TeamId>(
       const miniB = miniLeague.get(b.team);
       if (!miniA || !miniB)
         throw new RangeError('mini-league is missing a group member.');
-      if (miniB.points !== miniA.points) return miniB.points - miniA.points;
-      if (miniB.goalDifference !== miniA.goalDifference)
-        return miniB.goalDifference - miniA.goalDifference;
-      return miniB.goalsFor - miniA.goalsFor;
+      return compareByMainCriteria(miniA, miniB);
     };
 
     for (const subGroup of groupBy(group, compareByMiniLeague, byRoster)) {
@@ -174,11 +177,16 @@ function orderAndPosition<TeamId>(
   return ordered;
 }
 
-// Points desc, then goal difference desc, then goals for desc.
-function compareByMainCriteria<TeamId>(
-  a: StandingsRow<TeamId>,
-  b: StandingsRow<TeamId>
-): number {
+// The numbers both the main table and a mini-league rank by.
+interface RankStats {
+  points: number;
+  goalDifference: number;
+  goalsFor: number;
+}
+
+// Points desc, then goal difference desc, then goals for desc. Takes a
+// standings row or a mini-league entry.
+function compareByMainCriteria(a: RankStats, b: RankStats): number {
   if (b.points !== a.points) return b.points - a.points;
   if (b.goalDifference !== a.goalDifference) return b.goalDifference - a.goalDifference;
   return b.goalsFor - a.goalsFor;
@@ -207,21 +215,15 @@ function groupBy<T>(
   return groups;
 }
 
-interface MiniLeagueStats {
-  points: number;
-  goalDifference: number;
-  goalsFor: number;
-}
-
 // A fresh points/goal-difference/goals-for table, counting only the
 // matches played among `groupTeams` themselves.
 function computeMiniLeague<TeamId>(
   groupTeams: readonly TeamId[],
   results: readonly MatchResult<TeamId>[],
   pointsConfig: PointsConfig
-): Map<TeamId, MiniLeagueStats> {
+): Map<TeamId, RankStats> {
   const members = new Set(groupTeams);
-  const stats = new Map<TeamId, MiniLeagueStats>();
+  const stats = new Map<TeamId, RankStats>();
   for (const team of groupTeams) {
     stats.set(team, { points: 0, goalDifference: 0, goalsFor: 0 });
   }
@@ -234,19 +236,10 @@ function computeMiniLeague<TeamId>(
 
     home.goalsFor += result.homeGoals;
     home.goalDifference += result.homeGoals - result.awayGoals;
+    home.points += getPoints(result.homeGoals, result.awayGoals, pointsConfig);
     away.goalsFor += result.awayGoals;
     away.goalDifference += result.awayGoals - result.homeGoals;
-
-    if (result.homeGoals > result.awayGoals) {
-      home.points += pointsConfig.win;
-      away.points += pointsConfig.loss;
-    } else if (result.homeGoals < result.awayGoals) {
-      away.points += pointsConfig.win;
-      home.points += pointsConfig.loss;
-    } else {
-      home.points += pointsConfig.draw;
-      away.points += pointsConfig.draw;
-    }
+    away.points += getPoints(result.awayGoals, result.homeGoals, pointsConfig);
   }
 
   return stats;

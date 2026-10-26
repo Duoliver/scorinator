@@ -1,6 +1,5 @@
-import { TIER_ORDER } from '@/engine/tier-ovr';
-import type { Tier } from '@/engine/tier-ovr/types';
-import type { Fixture, Bye } from '@/engine/fixtures/types';
+import { isTier } from '@/engine/tier-ovr';
+import type { Bye, Fixture } from '@/engine/round-robin';
 import {
   SAVE_FORMAT_VERSION,
   type SavedLeague,
@@ -27,10 +26,6 @@ function isFiniteNumber(value: unknown): value is number {
 
 function isBoolean(value: unknown): value is boolean {
   return typeof value === 'boolean';
-}
-
-function isTier(value: unknown): value is Tier {
-  return typeof value === 'string' && (TIER_ORDER as readonly string[]).includes(value);
 }
 
 function isPositiveInteger(value: unknown): value is number {

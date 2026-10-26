@@ -1,6 +1,7 @@
 import type { ComponentChildren, TargetedMouseEvent } from 'preact';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'destructive' | 'ghost' | 'outline';
+export type ButtonVariant =
+  'primary' | 'secondary' | 'destructive' | 'ghost' | 'outline';
 export type ButtonSize = 'sm' | 'md' | 'lg';
 
 export default interface ButtonProps {

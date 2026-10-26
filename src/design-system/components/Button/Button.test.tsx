@@ -27,7 +27,7 @@ describe('Button', () => {
     expect(onClick).not.toHaveBeenCalled();
   });
 
-  it("uses aria-label as the accessible name instead of the visible text", () => {
+  it('uses aria-label as the accessible name instead of the visible text', () => {
     render(<Button aria-label="First matchday">«</Button>);
     expect(screen.getByRole('button', { name: 'First matchday' })).toBeTruthy();
   });

@@ -20,7 +20,7 @@ If a type is not available as a top-level export from `preact`, check `node_modu
 
 ## A component's types live in a sibling `types.ts`, Props as its default export
 
-This rule applies to any parametrized, reusable Preact component. Today that means `design-system/` primitives. The same shape will apply later to `features/` screen sections and other complex components. The component file (`{ComponentName}.tsx`) holds only the component function. Every type or interface it needs goes in a sibling file, `{ComponentName}/types.ts`. This includes variant, size, and tone-style unions, and the props interface. The props interface is that file's **default export**:
+This rule applies to any parametrized, reusable Preact component: the `design-system/` primitives, and the views and screens in `features/` (decided 2026-10-06, Task 42). `features/standings/types.ts` is the first `features/` example. A view's `types.ts` also holds the types its `useX` hook returns. The component file (`{ComponentName}.tsx`) holds only the component function. Every type or interface it needs goes in a sibling file, `{ComponentName}/types.ts`. This includes variant, size, and tone-style unions, and the props interface. The props interface is that file's **default export**:
 
 ```ts
 // components/Badge/types.ts
@@ -34,7 +34,13 @@ export default interface BadgeProps {
 }
 ```
 
-The component file imports the default export from `./types`, plus any named types it uses. It re-exports the same names. This keeps the public API unchanged — the API is what a barrel `index.ts` or any other consumer imports:
+The component file imports the default export from `./types`, plus any named types it uses. Three rules decide who imports what:
+
+1. **The component file always re-exports its props type by name**, for example `export type { BadgeProps }`. The folder's `index.ts` barrel exports it from the component file, not from `./types`.
+2. **It re-exports another named type from `types.ts` only when a file outside the folder needs it.** A type that only the folder uses stays unexported from the component file.
+3. **Only the files in the component's own folder import the default export from `./types`.** That includes the component, its hooks, and its helpers. Every other file imports the named type from the component or from its barrel, for example `import type { BadgeProps } from '@/design-system'`.
+
+So the public API of a component is what its component file and its barrel export. `types.ts` is a private detail of the folder:
 
 ```ts
 // components/Badge/Badge.tsx
@@ -49,32 +55,124 @@ export function Badge({ children, tone = 'neutral' }: BadgeProps) {
 }
 ```
 
-A generic component's props interface follows the same pattern: a plain `export default interface Props<Row> { ... }` in `types.ts`. TypeScript allows a generic default export the same way. See `design-system/components/Table/types.ts` for a real example: `TableProps<Row>` is the default export, and `TableColumn<Row>` is a named export it depends on. Types used only inside `types.ts` stay as named exports there. Re-export a type from the component file only when a consumer needs it.
+A generic component's props interface follows the same pattern: a plain `export default interface Props<Row> { ... }` in `types.ts`. TypeScript allows a generic default export the same way. See `design-system/components/Table/types.ts` for a real example: `TableProps<Row>` is the default export, and `TableColumn<Row>` is a named export it depends on. Types used only inside `types.ts` stay as named exports there. Rules 1 to 3 above apply the same way.
+
+## A component has three layers: helpers, a `useX` hook, and the markup
+
+This rule applies to every component in `features/` and `app/` (`app/` added at Task 66, 2026-10-19). Split the code of a component into three layers, each in its own sibling file. The types go in `types.ts`, per the rule above.
+
+1. **A sibling `helpers.tsx` file.** Anything that does not use props, state, or a hook goes here, outside the component file. Examples: static table columns, small render helpers, constants, and pure functions. Use `helpers.ts` when the file holds no JSX. A component with no such code has no helpers file.
+2. **A `useX` hook in a sibling `useX.ts` file.** Store reads, derived data, effects, refs, and event handlers go here. The hook returns data that is ready for the view, for example rows with the team name already joined in.
+3. **The component.** It calls the hook and returns JSX. It holds no logic of its own.
+
+See `features/standings/` for a worked example:
+
+```
+features/standings/
+  StandingsView.tsx         the component only
+  StandingsView.module.css
+  types.ts                  StandingsViewProps (default), StandingsViewRow, Standings
+  useStandings.ts           the hook
+  helpers.tsx               COLUMNS, mono, rowKey
+```
+
+```tsx
+// features/standings/useStandings.ts
+export function useStandings(league: LeagueRecord): Standings {
+  const lookupTeam = useTeamLookup();
+  const rows = useMemo(() => /* calculateStandings + team names */, [league, lookupTeam]);
+  return { rows, hasTeams: league.teams.length > 0, hasResults: league.results.length > 0 };
+}
+
+// features/standings/helpers.tsx
+export const COLUMNS: TableColumn<StandingsViewRow>[] = [/* static */];
+
+// features/standings/StandingsView.tsx
+export function StandingsView({ league }: StandingsViewProps): JSX.Element {
+  const { rows, hasTeams, hasResults } = useStandings(league);
+  if (!hasTeams) return <p class={styles.note}>No teams in this league yet.</p>;
+  return <Table columns={COLUMNS} rows={rows} rowKey={rowKey} />;
+}
+```
+
+A large component can have more than one hook, one for each concern, for example `useScoreFlash` and `useMatchdayNav`. A hook that more than one screen folder needs goes in `features/components/`, for example `useTeamLookup`. See `FEATURES.md`.
+
+**Test a component through its screen, with Testing Library, as `docs/tdd.md` says.** Give a hook its own `useX.test.ts` with `renderHook` only when the hook is shared or holds logic that the screen tests cannot reach easily.
+
+### When to use `useMemo` and `useCallback`
+
+A function or object that a render makes again costs microseconds. It causes extra work only when something compares it by reference. So do not wrap everything by default:
+
+- **`useMemo`:** use it for an expensive derivation, such as an `engine/` call over all results. Also use it when another hook lists the value as a dependency and must not run again on each render. `useTeamLookup` does this, so `useStandings` can list the lookup in its own `useMemo`.
+- **`useCallback`:** use it only when a `memo()` child or an effect lists the function as a dependency. No component in `src/` uses `memo()` today.
+- **Neither:** for a handler passed to a design-system primitive, or for a small value. Move it to `helpers.tsx` if it does not use props or state.
 
 ## A screen that must survive a nav switch keeps its draft in a cold-cache store
 
 `preact-router` fully unmounts a screen on nav-away, and fully remounts it on nav-back. Any plain `useState` inside that screen resets on remount. A wizard, a multi-field form, or any screen holding real in-progress work needs a place to keep its draft between those two events. Without one, the user loses it.
 
-Reach for a small Zustand slice under `app/state/`, next to `teamsStore.ts` and `leagueStore.ts` — see `leagueDraftStore.ts` for a worked example. Keep that store to exactly this shape:
+Reach for a small Zustand slice under `app/state/`, next to `teamsStore.ts` and `leagueStore.ts` — see `leagueDraftStore.ts` and `leagueDraftActions.ts` for a worked example. Keep that store to exactly this shape, with its two actions in a sibling `xDraftActions.ts` (see the store actions rule below):
 
 ```ts
-export interface XDraftState extends XDraft {
-  setDraft: (draft: XDraft) => void;
-  reset: () => void;
-}
+// app/state/xDraftStore.ts
+export type XDraftState = XDraft;
+
+// app/state/xDraftActions.ts
+export function setXDraft(draft: XDraft): void { /* ... */ }
+export function resetXDraft(): void { /* ... */ }
 ```
 
-No per-field action (`setName`, `toggleTeam`, and so on) on the store itself. Those stay local to the screen, exactly as they would with no store at all. The store holds one snapshot, plus two ways to change it. It is not a live API surface that grows with every field the screen ever gains.
+No per-field action (`setName`, `toggleTeam`, and so on). Those stay local to the screen, exactly as they would with no store at all. The store holds one snapshot, plus two ways to change it. It is not a live API surface that grows with every field the screen ever gains.
 
 Read and write that store at exactly three points, never per keystroke or per click:
 
 1. **On mount**, once, through `useLeagueDraftStore.getState()` — not a subscribed selector — to seed local `useState`.
 2. **On a step or tab change**, in a wizard. Read a value before its field unmounts.
-3. **On unmount**, through a `useEffect` cleanup with an empty dependency array, so the draft survives the actual nav-away.
+3. **On unmount**, through a `useEffect` cleanup with an empty dependency array, so the draft survives the actual nav-away. See `features/leagues/LeagueSetupScreen/useLeagueDraftSync.ts` for this effect in its own hook.
 
 For a text or number field edited at typing speed, do not wire its `onChange` to the store. Do not even wire it to the screen's own local reactive state. Make the field fully uncontrolled instead. Hold a `FieldHandle` ref to it — `Input`, `Select`, `Switch`, and `Checkbox` all already expose one. Read `.getValue()` only at one of the three points above. If the field lives inside a child component, wrap that child in a small `forwardRef` plus `useImperativeHandle` — see `DetailsStep`'s `getValues()` handle for a worked example. `TeamsStep`'s own `checkboxHandles` map already does the same thing, for a set of checkboxes. This is not a new pattern for this codebase, only a new place to use it.
 
 The point of the three-point rule: a screen with `N` fields and `M` keystrokes should cost the store one read and a handful of writes, never `M` writes. The same rule, and the same uncontrolled-field technique, apply to any future screen with this draft-loss problem. The League Setup wizard is the first case here, not the only one.
+
+## A store holds state only. Its actions live in a sibling `*Actions.ts` file
+
+This rule applies to every Zustand store under `app/state/`. The store file (`xStore.ts`) holds the state interface, the `create()` call with the initial state, and pure read helpers such as `isLeagueUnsaved`. It holds no action. Each action is a plain exported function in a sibling file, `xActions.ts`. The action changes the store through `useXStore.setState` and reads it through `useXStore.getState`. Zustand calls this the "no store actions" pattern.
+
+```ts
+// app/state/teamsStore.ts
+export interface TeamsState {
+  teams: TeamRecord[];
+}
+
+export const useTeamsStore = create<TeamsState>()(() => ({
+  teams: [],
+}));
+
+// app/state/teamsActions.ts
+export function addTeam(team: TeamRecord): void {
+  useTeamsStore.setState((state) => ({ teams: [...state.teams, team] }));
+}
+```
+
+A component imports the action directly. It uses the store hook only to read state:
+
+```tsx
+// Don't
+const addTeam = useTeamsStore((state) => state.addTeam);
+
+// Do
+import { addTeam } from '@/app/state/teamsActions';
+const teams = useTeamsStore((state) => state.teams);
+```
+
+Rules for the actions file:
+
+- **Name an action for what it does, with the store's subject in the name.** The action is a module-level export, so a name like `setStatus` or `reset` loses its context at the call site. Write `setFileStatus` and `resetLeagueDraft`.
+- **An action may call an action of another store.** Import it from that store's actions file. For example, `addLeague` calls `setCurrentLeague` from `fileActions.ts`. Do not call another store's `setState` directly.
+- **Keep helpers private.** A helper that only actions use, such as `playFixture` in `leagueActions.ts`, stays an unexported function in the actions file.
+- **Tests go in `xActions.test.ts`.** A test resets the store with `useXStore.setState(...)` in `beforeEach`, calls the action, and asserts on `useXStore.getState()`.
+
+An action that uses several stores and an `app/data` function, such as a save or a load, is an app action. It lives one level up, in `app/` (`saveActions.ts`, `loadActions.ts`, `exportActions.ts`). It follows the same plain-function shape.
 
 ## Use absolute imports, not relative
 
@@ -126,3 +224,61 @@ import styles from './TeamsScreen.module.css';
 ```
 
 A `style` prop is acceptable only for a value your code computes at runtime from data. One example is a team's user-chosen hex colour swatch. Never use it for a static layout or token value.
+
+## Start a function name with a verb in the imperative
+
+Name a function, or a method, for the action it does. Start the name with a verb in the imperative: `getErrorMessage`, `findLeague`, `addTeam`, `saveLeagueBySlug`. A noun name such as `errorMessage` reads like a value, not a call.
+
+- **`get` or `find`:** use `get` when the function always gives a value. Use `find` when it can give `undefined`, as `findLeague` does for an unknown slug.
+- **A function that gives a boolean** starts with `is`, `has`, or `can`: `isLeagueUnsaved`, `isTier`.
+- **A component** keeps its PascalCase noun name (`StandingsView`). **A hook** starts with `use` (`useStandings`).
+
+The rule applies to new functions. An existing name changes only when the user asks for it. The user set the rule at Task 57 (2026-10-19), and `errorMessage` became `getErrorMessage`.
+
+## In a `catch`, read the error with `getErrorMessage`
+
+A caught value has the type `unknown`, and it is not always an `Error`. A Tauri plugin rejects with a plain string. For that string, `(error as Error).message` gives `undefined`, and the status line shows `undefined`. Use `getErrorMessage` from `app/getErrorMessage.ts`. It gives `error.message` for an `Error` and `String(error)` for any other value.
+
+```ts
+// Don't
+} catch (error) {
+  setFileStatus({ tone: 'error', message: (error as Error).message });
+}
+
+// Do
+import { getErrorMessage } from '@/app/getErrorMessage';
+} catch (error) {
+  setFileStatus({ tone: 'error', message: getErrorMessage(error) });
+}
+```
+
+This applies to `app/` and `features/`. `engine/` and `adapters/` must not import `app/`. They have no `catch` that shows a message today.
+
+## Comments: say why, and search for an old name after a rename
+
+A comment goes stale when the code it names changes. Task 52 fixed 12 stale comments. Each one named a function, a file, or a caller that a rename or a move changed. Two rules keep this from coming back.
+
+### Write why the code exists, not who calls it
+
+A comment explains a reason, a rule, or a trap that the code cannot show. Do not list the callers of a function, or the screen that uses a file. A search or the editor gives that list, and it is always correct. A caller list in a comment goes stale with the next move.
+
+```ts
+// Don't
+/** `features/file` calls these instead of `adapters/json-io`. */
+
+// Do
+/** The thin `app/` → `adapters/` data layer, so `features/` never imports
+ * `adapters/` directly (`module-boundaries.md`). */
+```
+
+A comment can still name another piece of code when the reason needs it. For example, it can name a rule, a design decision, or the one place that must change together with this code. Existing caller lists change when a task touches their file. No task rewrites them all at once.
+
+### After a rename or a move, search for the old name
+
+When a task renames or moves a function, a hook, a component, a type, or a file, search the whole repo for the old name before the task finishes. Include comments, `.md` docs, and test names. The TypeScript rename in the editor changes the code, but not the comments or the docs.
+
+```bash
+grep -rn "oldName" src docs
+```
+
+Fix each match, or say in the task notes why it stays. The search finds nothing when the task is done.

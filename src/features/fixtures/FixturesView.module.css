@@ -109,13 +109,6 @@
   justify-content: flex-end;
 }
 
-.swatch {
-  width: 1.125rem;
-  height: 1.125rem;
-  border: var(--border-width) solid var(--color-fg);
-  flex: none;
-}
-
 .bye {
   display: flex;
   align-items: center;
@@ -214,7 +207,7 @@
     text-align: left;
   }
 
-  .home > .swatch {
+  .homeSwatch {
     order: -1;
   }
 
@@ -227,6 +220,8 @@
     display: inline;
   }
 
+  /* The same visually hidden rule as `.fullText` above. Each one sits in a
+   * container query with a different width, so the rule is written twice. */
   .score {
     position: absolute;
     width: 1px;

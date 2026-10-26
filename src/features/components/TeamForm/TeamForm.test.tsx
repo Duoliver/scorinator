@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { TeamForm } from './TeamForm';
 import { DEFAULT_TEAM_COLOUR, TEAM_PALETTE } from '@/design-system';
-import type { TeamRecord } from '@/features/components/types';
+import type { TeamRecord } from '@/domain';
 
 describe('TeamForm', () => {
   it('renders the given save label and every field', () => {
@@ -55,6 +55,14 @@ describe('TeamForm', () => {
     expect(screen.getByLabelText('Slug (auto-generated)')).toHaveValue('fc-united');
     expect(screen.getByRole('radio', { name: 'Red' })).toBeChecked();
     expect(screen.getByLabelText('Tier')).toHaveValue('B');
+  });
+
+  it('clears the slug for a name with no letter or number', async () => {
+    render(<TeamForm saveLabel="Create team" onCancel={vi.fn()} onSave={vi.fn()} />);
+    await userEvent.type(screen.getByLabelText('Team name'), 'FC');
+    await userEvent.clear(screen.getByLabelText('Team name'));
+    await userEvent.type(screen.getByLabelText('Team name'), '!!!');
+    expect(screen.getByLabelText('Slug (auto-generated)')).toHaveValue('');
   });
 
   it('calls onSave with the assembled record on Save', async () => {
@@ -138,5 +146,14 @@ describe('TeamForm', () => {
     await userEvent.click(screen.getByText('Create team'));
     expect(onSave).not.toHaveBeenCalled();
     expect(screen.getByText(/enter a team name/i)).toBeInTheDocument();
+  });
+
+  it('removes the validation error after a valid save', async () => {
+    render(<TeamForm saveLabel="Create team" onCancel={vi.fn()} onSave={vi.fn()} />);
+    await userEvent.click(screen.getByText('Create team'));
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    await userEvent.type(screen.getByLabelText('Team name'), 'Harborview SC');
+    await userEvent.click(screen.getByText('Create team'));
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 });

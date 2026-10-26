@@ -54,6 +54,18 @@ describe('importTeamsFile', () => {
     expect(await importTeamsFile(fs, dialog)).toEqual([FC_UNITED]);
   });
 
+  it('fills in a blank slug from the team name', async () => {
+    const fs = fakeFs({
+      readTextFile: vi
+        .fn()
+        .mockResolvedValue('Slug,Name,Colour,Tier\n,FC United,#E53935,B\n'),
+    });
+    const dialog = fakeDialog({
+      pickOpenPath: vi.fn().mockResolvedValue('/teams.csv'),
+    });
+    expect(await importTeamsFile(fs, dialog)).toEqual([FC_UNITED]);
+  });
+
   it('reads a .json file as a team list, whatever the extension case', async () => {
     const fs = fakeFs({
       readTextFile: vi.fn().mockResolvedValue(JSON.stringify([FC_UNITED])),

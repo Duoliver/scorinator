@@ -38,4 +38,10 @@ describe('slug', () => {
   it('throws a RangeError for a symbols-only name', () => {
     expect(() => slug('!!!')).toThrow(RangeError);
   });
+
+  it('gives an error text that fits a team name and a league name', () => {
+    expect(() => slug('!!!')).toThrow(
+      'Cannot make a slug from the name "!!!". The name needs at least one letter or number.'
+    );
+  });
 });

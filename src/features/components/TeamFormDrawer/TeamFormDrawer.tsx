@@ -3,6 +3,8 @@ import { Drawer } from '@/design-system';
 import { TeamForm } from '@/features/components/TeamForm';
 import type TeamFormDrawerProps from './types';
 
+export type { TeamFormDrawerProps };
+
 /** `Drawer` + `TeamForm`, wired for the create/edit title and save-label
  * pair both callers need — so a screen only decides *whether* it is
  * editing, not what that means for copy. */

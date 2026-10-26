@@ -1,0 +1,50 @@
+.step {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  color: var(--color-fg-muted);
+}
+
+.leagueName {
+  margin: 0;
+  font-size: var(--font-size-md);
+}
+
+.toolbar {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-end;
+}
+
+.toolbar > :first-child {
+  flex: 1;
+}
+
+.teamCell {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.selectionRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.count {
+  font-size: var(--font-size-md);
+  color: var(--color-fg-muted);
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+}

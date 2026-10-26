@@ -15,6 +15,7 @@ Use this list for every review in this repo. It comes from `CLAUDE.md`, `docs/co
 - [ ] Confirm `engine/` makes no direct filesystem call.
 - [ ] Confirm `features/` does not import `adapters/` directly. Require it to call `engine/` and a data-access layer built on `persistence/`.
 - [ ] Confirm `persistence/` holds interfaces only. Reject any `fs` or Tauri call inside it.
+- [ ] Confirm `domain/` holds types only and imports only `engine/` types. Confirm `engine/` and `adapters/` never import `domain/`.
 - [ ] Confirm `adapters/` implements a `persistence/` contract, and that `engine/` never imports from `adapters/`.
 - [ ] Confirm only `design-system/` reads the design brief in `docs/design-reference/`. Require `features/` to consume `design-system/` instead.
 - [ ] Reject new empty module scaffolding for work the team has not started yet.
@@ -26,6 +27,8 @@ Use this list for every review in this repo. It comes from `CLAUDE.md`, `docs/co
 - [ ] Confirm the component file re-exports only the names a consumer needs.
 - [ ] Reject `!important` in any stylesheet. Require the author to resolve a specificity conflict through source order or an added selector.
 - [ ] Reject a `style` prop on a component or element, unless the value comes from data at runtime (e.g. a user-chosen colour). Require static layout and token values in a CSS module instead.
+- [ ] Reject a new or changed comment that lists the callers of a function or the users of a file. Require a comment that says why the code exists.
+- [ ] When the change renames or moves a function, hook, component, type, or file, search the repo for the old name. Confirm no comment, doc, or test name still uses it.
 
 ## 4. Tests, by layer
 
@@ -69,4 +72,4 @@ Use this list for every review in this repo. It comes from `CLAUDE.md`, `docs/co
 - [ ] Require a session report file under `/progress-reports/` for a non-trivial task, linked from the status table.
 - [ ] For a blocked or partial task, confirm `PROGRESS.md` states honestly what is done, what is not, and what the next session needs.
 - [ ] Confirm the author recorded a flagged open item (`CLAUDE.md` section 6, or a new one this task raised) in the `PROGRESS.md` open-questions section, not only in chat.
-- [ ] Before merge, confirm `npm run lint`, `npm run type-check`, and `npm test` all pass.
+- [ ] Before merge, confirm `npm run lint`, `npm run format:check`, `npm run type-check`, and `npm test` all pass.

@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { describeLeague } from './leagueSummary';
-import type { LeagueRecord } from './types';
+import {
+  describeLeague,
+  formatHomeAdvantageLabel,
+  formatLeagueName,
+  formatPointsLabel,
+} from './leagueSummary';
+import type { LeagueRecord } from '@/domain';
 
 const league = (overrides: Partial<LeagueRecord> = {}): LeagueRecord => ({
   slug: 'coastal-premier',
@@ -33,5 +38,29 @@ describe('describeLeague', () => {
 
   it('reflects home advantage being off', () => {
     expect(describeLeague(league({ homeAdvantage: false }))).toContain('Home adv. off');
+  });
+});
+
+describe('formatPointsLabel', () => {
+  it('lists the win, draw, and loss points', () => {
+    expect(formatPointsLabel({ win: 3, draw: 1, loss: 0 })).toBe('3/1/0 pts');
+  });
+});
+
+describe('formatHomeAdvantageLabel', () => {
+  it('says on or off', () => {
+    expect(formatHomeAdvantageLabel(true)).toBe('Home adv. on');
+    expect(formatHomeAdvantageLabel(false)).toBe('Home adv. off');
+  });
+});
+
+describe('formatLeagueName', () => {
+  it('keeps a real name', () => {
+    expect(formatLeagueName('Coastal Premier')).toBe('Coastal Premier');
+  });
+
+  it('gives a placeholder for a blank or whitespace-only name', () => {
+    expect(formatLeagueName('')).toBe('Untitled league');
+    expect(formatLeagueName('   ')).toBe('Untitled league');
   });
 });

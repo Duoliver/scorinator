@@ -33,6 +33,12 @@ This rule exists because every current use of a heading element in the app is a 
 
 **Only element selectors with zero per-instance variation belong here.** Heading level follows document structure, not desired style — pick `h1`/`h2`/`h3` by outline position, never by which one happens to look right. A heading that needs a different look overrides with its own class, rather than growing `elements.css` into a pile of per-case exceptions. Do not add a new element selector here for a one-off case — that belongs in the component's own `.module.css` instead.
 
+## A field primitive uses `useFieldHandle`
+
+A primitive that holds a value (`Input`, `Select`, `Checkbox`, `Switch`, `SwatchPicker`, `Tabs`) gives its caller a `FieldHandle<T>` ref: `getValue`, `setValue`, `subscribe`, and `focus`. Do not write this code again in a new primitive. Call `useFieldHandle(ref, { defaultValue, onChange, syncDom, focus })` from `useFieldHandle.ts`, and use the `value` and `commitValue` it returns. `syncDom` writes a value to the DOM at once, because a Preact state update shows only at the next render. `focus` gets the current value.
+
+Inside `design-system/`, import `FieldHandle` from `@/design-system/field`. An import of the barrel from inside the module makes an import cycle. Code outside the module imports it from `@/design-system`.
+
 ## Layout
 
 - Each primitive lives in its own folder: `design-system/components/{ComponentName}/{ComponentName}.tsx`, plus `.module.css`, `.test.tsx`, and `types.ts` (see below). It also has a `package.json` whose `main`/`types` point at `./{ComponentName}.tsx`. This lets `./components/{ComponentName}` resolve as a directory import, with no need to rename the component file to `index.tsx`.

@@ -16,7 +16,7 @@ export interface LeagueDraft {
   step: LeagueSetupStep;
 }
 
-function emptyDraft(): LeagueDraft {
+export function emptyLeagueDraft(): LeagueDraft {
   return {
     details: { name: '', points: DEFAULT_POINTS_CONFIG, homeAdvantage: false },
     selectedSlugs: [],
@@ -32,17 +32,11 @@ function emptyDraft(): LeagueDraft {
  *
  * This store is a cold cache, not a live state manager: `LeagueSetupScreen`
  * reads it once per mount, through `getState()`, and writes to it a handful
- * of times per session, through `setDraft()` — on a step change and on
+ * of times per session, through `setLeagueDraft()` — on a step change and on
  * unmount, never per keystroke. The screen's own fields stay local and
  * uncontrolled between those points; see `DetailsStep`'s `getValues()`
- * handle. `reset()` runs after a successful create. */
-export interface LeagueDraftState extends LeagueDraft {
-  setDraft: (draft: LeagueDraft) => void;
-  reset: () => void;
-}
+ * handle. `resetLeagueDraft()` runs after a successful create. Both actions
+ * live in `leagueDraftActions.ts`. */
+export type LeagueDraftState = LeagueDraft;
 
-export const useLeagueDraftStore = create<LeagueDraftState>()((set) => ({
-  ...emptyDraft(),
-  setDraft: (draft): void => set(draft),
-  reset: (): void => set(emptyDraft()),
-}));
+export const useLeagueDraftStore = create<LeagueDraftState>()(() => emptyLeagueDraft());

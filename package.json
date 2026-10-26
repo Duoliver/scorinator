@@ -13,6 +13,7 @@
     "lint": "eslint src --ext .ts,.tsx",
     "lint:fix": "eslint src --ext .ts,.tsx --fix && prettier --write src",
     "format": "prettier --write src",
+    "format:check": "prettier --check src",
     "type-check": "tsc --noEmit",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",

@@ -4,8 +4,9 @@ import {
   tauriFileSystem,
 } from '@/adapters/tauri-fs';
 import { parseTeamsJson } from '@/adapters/json-io';
-import type { TeamCsvRecord } from '@/adapters/csv';
 import type { FileFilter, FileSystem, SaveFileDialog } from '@/persistence/types';
+import type { TeamRecord } from '@/domain';
+import { teamListRecordToTeamRecord } from './importMerge';
 
 /** The JSON-format sibling of `teamsCsv.ts`'s CSV import — same thin
  * `app/` → `adapters/` data layer, same `fs`/`dialog` override-in-tests
@@ -19,8 +20,8 @@ const TEAM_JSON_FILTERS: readonly FileFilter[] = [
 export async function importTeamsJson(
   fs: FileSystem = tauriFileSystem,
   dialog: SaveFileDialog = tauriDialog
-): Promise<TeamCsvRecord[] | null> {
+): Promise<TeamRecord[] | null> {
   const opened = await openTextFileWithDialog(fs, dialog, TEAM_JSON_FILTERS);
   if (opened === null) return null;
-  return parseTeamsJson(opened.contents);
+  return parseTeamsJson(opened.contents).map(teamListRecordToTeamRecord);
 }

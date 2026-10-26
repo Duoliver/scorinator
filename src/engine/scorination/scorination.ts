@@ -149,3 +149,18 @@ export function scorinateMatch(homeOvr: number, awayOvr: number, rng: Rng): Matc
   );
   return { homeGoals, awayGoals };
 }
+
+/**
+ * Plays one match of a league: applies the home-advantage boost when the
+ * league has it on, then scorinates. Every format plays a match this way.
+ * A format with a tiebreak (MVP2 bracket) builds on the score it returns.
+ */
+export function playMatch(
+  homeOvr: number,
+  awayOvr: number,
+  homeAdvantage: boolean,
+  rng: Rng
+): MatchScore {
+  const boostedHomeOvr = homeAdvantage ? applyHomeAdvantage(homeOvr) : homeOvr;
+  return scorinateMatch(boostedHomeOvr, awayOvr, rng);
+}

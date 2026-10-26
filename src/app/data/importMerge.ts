@@ -1,20 +1,16 @@
 import { slug } from '@/engine/identity';
-import type { TeamCsvRecord } from '@/adapters/csv';
-import type { TeamRecord } from '@/features/components';
+import type { TeamRecord } from '@/domain';
+import type { TeamListRecord } from '@/persistence/types';
 
-/** `parseTeamsCsv` leaves a blank Slug column as `''` — this fills it in
- * from the Name, the wiring Task 11's decision log deferred to this task. */
-export function csvRecordToTeamRecord(record: TeamCsvRecord): TeamRecord {
+/** A team-list parser leaves a blank Slug as `''`, so the app fills it in
+ * from the name here. Every team in the roster then has a slug. */
+export function teamListRecordToTeamRecord(record: TeamListRecord): TeamRecord {
   return {
     slug: record.slug === '' ? slug(record.name) : record.slug,
     name: record.name,
     colour: record.colour,
     tier: record.tier,
   };
-}
-
-export function teamRecordToCsvRecord(record: TeamRecord): TeamCsvRecord {
-  return { ...record };
 }
 
 /** Upserts `imported` into `current` by slug: a matching slug overwrites

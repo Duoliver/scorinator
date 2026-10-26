@@ -5,16 +5,21 @@ import {
   tauriFileSystem,
   writeTextFileAtomic,
 } from '@/adapters/tauri-fs';
-import { parseLeague, serializeLeague, SAVE_FORMAT_VERSION, type SavedLeague } from '@/adapters/json-io';
+import {
+  parseLeague,
+  serializeLeague,
+  SAVE_FORMAT_VERSION,
+  type SavedLeague,
+} from '@/adapters/json-io';
+import { isSameMatch } from '@/engine/round-robin';
 import { slug } from '@/engine/identity';
 import type { FileSystem, SaveFileDialog } from '@/persistence/types';
-import type { TeamRecord } from '@/features/components';
-import type { LeagueRecord } from '@/features/leagues/types';
+import type { LeagueRecord, TeamRecord } from '@/domain';
 
 /** The thin `app/` → `adapters/` data layer for Save/Load (Task 17), the
- * same seam `teamsCsv.ts` is for team CSV. `features/file` calls these
- * instead of `adapters/json-io` or `adapters/tauri-fs`. `fs`/`dialog`
- * default to the real Tauri adapters and are only overridden in tests. */
+ * same seam `teamsCsv.ts` is for team CSV, so `features/` never imports
+ * `adapters/json-io` or `adapters/tauri-fs` directly. `fs`/`dialog` default to
+ * the real Tauri adapters and are only overridden in tests. */
 
 export interface LoadedLeagueFile {
   path: string;
@@ -29,7 +34,10 @@ export interface LoadedLeagueFile {
  * rolled OVR) is joined with its roster entry (name, colour, tier), so only
  * the league's own teams are saved, not the whole roster. Throws if a
  * league team is no longer in the roster. */
-export function leagueToSaved(league: LeagueRecord, roster: readonly TeamRecord[]): SavedLeague {
+export function leagueToSaved(
+  league: LeagueRecord,
+  roster: readonly TeamRecord[]
+): SavedLeague {
   const teams = league.teams.map((leagueTeam) => {
     const record = roster.find((candidate) => candidate.slug === leagueTeam.slug);
     if (!record) {
@@ -68,11 +76,16 @@ export function leagueToSaved(league: LeagueRecord, roster: readonly TeamRecord[
  * `calculateStandings` throw later inside `StandingsView`. Every fixture,
  * bye, and result must name a team in the file, and every result must match
  * a fixture by `(matchday, home, away)`. */
-export function savedToLeague(data: SavedLeague): { league: LeagueRecord; teams: TeamRecord[] } {
+export function savedToLeague(data: SavedLeague): {
+  league: LeagueRecord;
+  teams: TeamRecord[];
+} {
   const known = new Set(data.teams.map((team) => team.slug));
   const requireKnown = (teamSlug: string, where: string): void => {
     if (!known.has(teamSlug)) {
-      throw new Error(`Invalid save file: ${where} names team "${teamSlug}", which is not in the file.`);
+      throw new Error(
+        `Invalid save file: ${where} names team "${teamSlug}", which is not in the file.`
+      );
     }
   };
 
@@ -86,12 +99,7 @@ export function savedToLeague(data: SavedLeague): { league: LeagueRecord; teams:
   for (const result of data.results) {
     requireKnown(result.home, `a result on matchday ${result.matchday}`);
     requireKnown(result.away, `a result on matchday ${result.matchday}`);
-    const hasFixture = data.fixtures.some(
-      (fixture) =>
-        fixture.matchday === result.matchday &&
-        fixture.home === result.home &&
-        fixture.away === result.away
-    );
+    const hasFixture = data.fixtures.some((fixture) => isSameMatch(fixture, result));
     if (!hasFixture) {
       throw new Error(
         `Invalid save file: the result ${result.home} v ${result.away} on matchday ${result.matchday} has no matching fixture.`
@@ -148,7 +156,12 @@ export async function saveLeagueFileAs(
   dialog: SaveFileDialog = tauriDialog
 ): Promise<string | null> {
   const contents = serializeLeague(leagueToSaved(league, roster));
-  return saveTextFileWithDialog(fs, dialog, contents, knownPath ?? `${league.slug}.json`);
+  return saveTextFileWithDialog(
+    fs,
+    dialog,
+    contents,
+    knownPath ?? `${league.slug}.json`
+  );
 }
 
 /** Opens the open dialog, then reads, parses, and cross-checks the chosen

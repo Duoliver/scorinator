@@ -26,7 +26,7 @@ describe('TeamsScreen', () => {
 
     expect(screen.getByText('Salt Marsh United')).toBeInTheDocument();
     expect(screen.getByText('salt-marsh-united')).toBeInTheDocument();
-    expect(screen.getByText('1 teams')).toBeInTheDocument();
+    expect(screen.getByText('1 team')).toBeInTheDocument();
   });
 
   it('closes the drawer without saving on Cancel', async () => {
@@ -51,7 +51,7 @@ describe('TeamsScreen', () => {
     await userEvent.type(nameField, 'Northgate United');
     await userEvent.click(screen.getByText('Save changes'));
 
-    expect(screen.getByText('1 teams')).toBeInTheDocument();
+    expect(screen.getByText('1 team')).toBeInTheDocument();
     expect(screen.getByText('Northgate United')).toBeInTheDocument();
     expect(screen.queryByText('Northgate FC')).not.toBeInTheDocument();
   });

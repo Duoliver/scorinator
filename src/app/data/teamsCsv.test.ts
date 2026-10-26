@@ -1,7 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { importTeamsCsv, exportTeamsCsv } from './teamsCsv';
-import type { FileSystem, SaveFileDialog } from '@/persistence/types';
-import type { TeamCsvRecord } from '@/adapters/csv';
+import type { FileSystem, SaveFileDialog, TeamListRecord } from '@/persistence/types';
 
 function fakeFs(overrides: Partial<FileSystem> = {}): FileSystem {
   return {
@@ -41,6 +40,18 @@ describe('importTeamsCsv', () => {
     ]);
   });
 
+  it('fills in a blank slug from the team name', async () => {
+    const csv = 'Slug,Name,Colour,Tier\n,Harborview SC,,A\n';
+    const fs = fakeFs({ readTextFile: vi.fn().mockResolvedValue(csv) });
+    const dialog = fakeDialog({
+      pickOpenPath: vi.fn().mockResolvedValue('/teams.csv'),
+    });
+    const result = await importTeamsCsv(fs, dialog);
+    expect(result).toEqual([
+      { slug: 'harborview-sc', name: 'Harborview SC', colour: '', tier: 'A' },
+    ]);
+  });
+
   it('opens the dialog filtered to .csv, not .json', async () => {
     const pickOpenPath = vi.fn().mockResolvedValue(null);
     await importTeamsCsv(fakeFs(), fakeDialog({ pickOpenPath }));
@@ -58,7 +69,7 @@ describe('exportTeamsCsv', () => {
   });
 
   it('serializes the given records and writes them to the chosen path', async () => {
-    const records: TeamCsvRecord[] = [
+    const records: TeamListRecord[] = [
       { slug: 'fc-united', name: 'FC United', colour: '#E53935', tier: 'B' },
     ];
     const writeTextFile = vi.fn();

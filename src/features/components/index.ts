@@ -1,5 +1,10 @@
 export { TeamForm } from './TeamForm';
-export type { default as TeamFormProps } from './TeamForm/types';
+export type { TeamFormProps } from './TeamForm';
 export { TeamFormDrawer } from './TeamFormDrawer';
-export type { default as TeamFormDrawerProps } from './TeamFormDrawer/types';
-export type { TeamRecord } from './types';
+export type { TeamFormDrawerProps } from './TeamFormDrawer';
+export { useTeamLookup, type TeamDisplay } from './useTeamLookup';
+export { formatTeamCount } from './formatTeamCount';
+export { StatusLine } from './StatusLine';
+export type { StatusLineProps, StatusLinePlacement } from './StatusLine';
+export { TeamSwatch } from './TeamSwatch';
+export type { TeamSwatchProps, TeamSwatchSize } from './TeamSwatch';

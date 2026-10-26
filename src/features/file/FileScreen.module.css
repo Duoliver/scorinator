@@ -24,16 +24,6 @@
   margin: var(--space-1) 0;
 }
 
-.status {
-  margin: 0;
-  font-size: var(--font-size-lg);
-  color: var(--color-fg-muted);
-}
-
-.statusError {
-  color: var(--color-error);
-}
-
 .hint {
   font-size: var(--font-size-md);
   color: var(--color-fg-muted);

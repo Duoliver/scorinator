@@ -12,6 +12,8 @@ export interface TableColumn<Row> {
 }
 
 export default interface TableProps<Row> {
+  /** The name a screen reader gives the table (`aria-label`). */
+  label: string;
   columns: TableColumn<Row>[];
   rows: Row[];
   rowKey: (row: Row) => string;

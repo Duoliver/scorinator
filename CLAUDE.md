@@ -22,6 +22,7 @@ npm install        # ensures all deps are current
 npm run type-check # catch TS errors before writing tests
 npm test           # run the full test suite; should pass before work begins
 npm run lint       # check for lint violations (warnings only, no blocker)
+npm run format:check # check Prettier formatting (no file changes)
 ```
 
 ### During development
@@ -36,6 +37,7 @@ npm run format                   # format code with Prettier
 When closing out work on a task, run the full suite:
 ```bash
 npm run lint                     # catch style issues
+npm run format:check             # catch unformatted files (npm run format fixes them)
 npm run type-check               # final TypeScript check
 npm test                         # full test suite — confirm no regressions
 npm run test:coverage            # optional: check coverage, flag gaps
@@ -65,6 +67,7 @@ General source specs live in [docs](/docs/):
 
 Module-specific documentation lives at the root of that module.
 - [`ENGINE`](/src/engine/ENGINE.md) — scorinator engine determinism requirements
+- [`DOMAIN`](/src/domain/DOMAIN.md) — the app's record types, shared by `app/` and `features/`, and who may import them
 - [`PERSISTENCE`](/src/persistence/PERSISTENCE.md) — persistence/storage architecture
 - [`DESIGN_SYSTEM`](/src/design-system/DESIGN_SYSTEM.md) — tokens/primitives implementation rules (fonts, units, spacing)
 - [`FEATURES`](/src/features/FEATURES.md) — screen folders vs. the shared `features/components/` folder, and the required import direction between them

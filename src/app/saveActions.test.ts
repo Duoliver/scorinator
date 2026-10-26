@@ -4,7 +4,7 @@ import * as leagueFile from '@/app/data/leagueFile';
 import { isLeagueUnsaved, useFileStore } from '@/app/state/fileStore';
 import { useLeagueStore } from '@/app/state/leagueStore';
 import { useTeamsStore } from '@/app/state/teamsStore';
-import type { LeagueRecord } from '@/features/leagues/types';
+import type { LeagueRecord } from '@/domain';
 
 const league = (overrides: Partial<LeagueRecord> = {}): LeagueRecord => ({
   slug: 'coastal-premier',
@@ -112,7 +112,9 @@ describe('saveLeagueBySlug', () => {
     });
 
     it('is false after a failed save', async () => {
-      vi.spyOn(leagueFile, 'saveLeagueFile').mockRejectedValue(new Error('Disk is full.'));
+      vi.spyOn(leagueFile, 'saveLeagueFile').mockRejectedValue(
+        new Error('Disk is full.')
+      );
       expect(await saveLeagueBySlug('coastal-premier')).toBe(false);
     });
 

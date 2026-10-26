@@ -49,4 +49,16 @@ describe('importTeamsJson', () => {
       { slug: 'fc-united', name: 'FC United', colour: '#E53935', tier: 'B' },
     ]);
   });
+
+  it('fills in a blank slug from the team name', async () => {
+    const json = JSON.stringify([{ name: 'Harborview SC', tier: 'A' }]);
+    const fs = fakeFs({ readTextFile: vi.fn().mockResolvedValue(json) });
+    const dialog = fakeDialog({
+      pickOpenPath: vi.fn().mockResolvedValue('/teams.json'),
+    });
+    const result = await importTeamsJson(fs, dialog);
+    expect(result).toEqual([
+      { slug: 'harborview-sc', name: 'Harborview SC', colour: '', tier: 'A' },
+    ]);
+  });
 });

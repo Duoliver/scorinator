@@ -1,48 +1,27 @@
 import { describe, expect, it } from 'vitest';
-import {
-  csvRecordToTeamRecord,
-  mergeImportedTeams,
-  teamRecordToCsvRecord,
-} from './importMerge';
-import type { TeamRecord } from '@/features/components';
-import type { TeamCsvRecord } from '@/adapters/csv';
+import { mergeImportedTeams, teamListRecordToTeamRecord } from './importMerge';
+import type { TeamRecord } from '@/domain';
+import type { TeamListRecord } from '@/persistence/types';
 
-describe('csvRecordToTeamRecord', () => {
-  it('keeps a non-blank slug from the CSV row as-is', () => {
-    const record: TeamCsvRecord = {
+describe('teamListRecordToTeamRecord', () => {
+  it('keeps a non-blank slug from the file as is', () => {
+    const record: TeamListRecord = {
       slug: 'salt-marsh-utd',
       name: 'Salt Marsh United',
       colour: '#039BE5',
       tier: 'A',
     };
-    expect(csvRecordToTeamRecord(record).slug).toBe('salt-marsh-utd');
+    expect(teamListRecordToTeamRecord(record).slug).toBe('salt-marsh-utd');
   });
 
-  it('generates a slug from the name when the CSV row has a blank slug', () => {
-    const record: TeamCsvRecord = {
+  it('generates a slug from the name when the file leaves the slug blank', () => {
+    const record: TeamListRecord = {
       slug: '',
       name: 'Harborview SC',
       colour: '',
       tier: 'B',
     };
-    expect(csvRecordToTeamRecord(record).slug).toBe('harborview-sc');
-  });
-});
-
-describe('teamRecordToCsvRecord', () => {
-  it('round-trips a team record into the CSV adapter shape', () => {
-    const record: TeamRecord = {
-      slug: 'fc-united',
-      name: 'FC United',
-      colour: '#E53935',
-      tier: 'C',
-    };
-    expect(teamRecordToCsvRecord(record)).toEqual({
-      slug: 'fc-united',
-      name: 'FC United',
-      colour: '#E53935',
-      tier: 'C',
-    });
+    expect(teamListRecordToTeamRecord(record).slug).toBe('harborview-sc');
   });
 });
 

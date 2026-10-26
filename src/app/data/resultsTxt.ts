@@ -5,13 +5,12 @@ import {
 } from '@/adapters/tauri-fs';
 import { serializeResultsTxt } from '@/adapters/txt';
 import type { FileFilter, FileSystem, SaveFileDialog } from '@/persistence/types';
-import type { TeamRecord } from '@/features/components';
-import type { LeagueRecord } from '@/features/leagues/types';
+import type { LeagueRecord, TeamRecord } from '@/domain';
 import { leagueToSaved } from './leagueFile';
 
 /** The thin `app/` → `adapters/` data layer for the results export (Task
- * 18), the same seam `teamsCsv.ts` is for team CSV. `features/file` calls
- * this instead of `adapters/txt` or `adapters/tauri-fs`. `fs`/`dialog`
+ * 18), the same seam `teamsCsv.ts` is for team CSV, so `features/` never
+ * imports `adapters/txt` or `adapters/tauri-fs` directly. `fs`/`dialog`
  * default to the real Tauri adapters and are only overridden in tests. */
 
 /** Restricts the save dialog to `.txt` files, for the same reason

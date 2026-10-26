@@ -1,7 +1,6 @@
-import { TIER_ORDER } from '@/engine/tier-ovr';
-import type { Tier } from '@/engine/tier-ovr/types';
+import { isTier } from '@/engine/tier-ovr';
 import { parseCsv, stringifyCsv } from './csv';
-import type { TeamCsvRecord } from './types';
+import type { TeamListRecord } from '@/persistence/types';
 
 const COLUMN_KEYS = ['slug', 'name', 'colour', 'tier'] as const;
 type ColumnKey = (typeof COLUMN_KEYS)[number];
@@ -14,10 +13,6 @@ const HEADER_LABELS: Record<ColumnKey, string> = {
 };
 
 const REQUIRED_COLUMNS: readonly ColumnKey[] = ['name', 'tier'];
-
-function isTier(value: string): value is Tier {
-  return (TIER_ORDER as readonly string[]).includes(value);
-}
 
 function findColumnIndexes(
   headerRow: readonly string[]
@@ -33,7 +28,7 @@ function findColumnIndexes(
   return indexes;
 }
 
-export function parseTeamsCsv(text: string): TeamCsvRecord[] {
+export function parseTeamsCsv(text: string): TeamListRecord[] {
   const rows = parseCsv(text).filter((row) => row.some((cell) => cell.trim() !== ''));
   if (rows.length === 0) {
     return [];
@@ -79,7 +74,7 @@ export function parseTeamsCsv(text: string): TeamCsvRecord[] {
   });
 }
 
-export function serializeTeamsCsv(records: readonly TeamCsvRecord[]): string {
+export function serializeTeamsCsv(records: readonly TeamListRecord[]): string {
   const headerRow = COLUMN_KEYS.map((key) => HEADER_LABELS[key]);
   const dataRows = records.map((record) => COLUMN_KEYS.map((key) => record[key]));
   return stringifyCsv([headerRow, ...dataRows]);

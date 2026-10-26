@@ -1,4 +1,4 @@
-import type { TeamRecord } from '@/features/components/types';
+import type { TeamRecord } from '@/domain';
 
 export default interface TeamFormDrawerProps {
   isEdit?: boolean;

@@ -1,2 +1,2 @@
 export { TeamFormDrawer } from './TeamFormDrawer';
-export type { default as TeamFormDrawerProps } from './types';
+export type { TeamFormDrawerProps } from './TeamFormDrawer';

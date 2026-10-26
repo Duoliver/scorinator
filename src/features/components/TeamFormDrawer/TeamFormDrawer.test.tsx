@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { TeamFormDrawer } from './TeamFormDrawer';
-import type { TeamRecord } from '@/features/components/types';
+import type { TeamRecord } from '@/domain';
 
 describe('TeamFormDrawer', () => {
   it('titles and labels itself for creating a team by default', () => {

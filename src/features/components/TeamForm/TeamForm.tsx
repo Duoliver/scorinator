@@ -1,24 +1,11 @@
-import { useRef, useState } from 'preact/hooks';
 import type { JSX } from 'preact';
-import {
-  Button,
-  DEFAULT_TEAM_COLOUR,
-  Input,
-  Select,
-  SwatchPicker,
-  TEAM_PALETTE,
-} from '@/design-system';
-import type { FieldHandle } from '@/design-system/field';
-import { slug } from '@/engine/identity';
-import { TIER_ORDER, type Tier } from '@/engine/tier-ovr';
+import { Button, Input, Select, SwatchPicker } from '@/design-system';
 import type TeamFormProps from './types';
+import { COLOUR_OPTIONS, TIER_OPTIONS } from './helpers';
+import { useTeamForm } from './useTeamForm';
 import styles from './TeamForm.module.css';
 
-const TIER_OPTIONS = TIER_ORDER.map((tier) => ({ label: tier, value: tier }));
-const COLOUR_OPTIONS = TEAM_PALETTE.map(({ name, hex }) => ({
-  label: name,
-  value: hex,
-}));
+export type { TeamFormProps };
 
 export function TeamForm({
   saveLabel,
@@ -26,43 +13,22 @@ export function TeamForm({
   onCancel,
   onSave,
 }: TeamFormProps): JSX.Element {
-  const nameRef = useRef<FieldHandle<string>>(null);
-  const slugRef = useRef<FieldHandle<string>>(null);
-  const colourRef = useRef<FieldHandle<string>>(null);
-  const tierRef = useRef<FieldHandle<string>>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleNameChange = (name: string): void => {
-    try {
-      slugRef.current?.setValue(slug(name));
-    } catch {
-      slugRef.current?.setValue('');
-    }
-  };
-
-  const handleSave = (): void => {
-    const name = nameRef.current?.getValue() ?? '';
-    let generatedSlug: string;
-    try {
-      generatedSlug = slug(name);
-    } catch {
-      setError('Enter a team name with at least one letter or number.');
-      return;
-    }
-    setError(null);
-    onSave({
-      slug: generatedSlug,
-      name: name.trim(),
-      colour: colourRef.current?.getValue() ?? '',
-      tier: (tierRef.current?.getValue() as Tier) || 'C',
-    });
-  };
+  const {
+    nameRef,
+    slugRef,
+    colourRef,
+    tierRef,
+    startValues,
+    error,
+    handleNameChange,
+    handleSave,
+  } = useTeamForm({ initial, onSave });
 
   return (
     <div class={styles.form}>
       <Input
         label="Team name"
-        defaultValue={initial?.name}
+        defaultValue={startValues.name}
         placeholder="e.g. Salt Marsh United"
         onChange={handleNameChange}
         ref={nameRef}
@@ -75,7 +41,7 @@ export function TeamForm({
 
       <Input
         label="Slug (auto-generated)"
-        defaultValue={initial?.slug}
+        defaultValue={startValues.slug}
         readOnly
         ref={slugRef}
       />
@@ -83,13 +49,13 @@ export function TeamForm({
       <SwatchPicker
         label="Colour"
         options={COLOUR_OPTIONS}
-        defaultValue={initial ? initial.colour : DEFAULT_TEAM_COLOUR}
+        defaultValue={startValues.colour}
         ref={colourRef}
       />
 
       <Select
         label="Tier"
-        defaultValue={initial?.tier ?? 'C'}
+        defaultValue={startValues.tier}
         options={TIER_OPTIONS}
         ref={tierRef}
       />

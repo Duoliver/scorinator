@@ -1,12 +1,12 @@
 import type { JSX } from 'preact';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { scorinateMatchday } from '@/app/state/leagueActions';
 import { act, render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
-import { generateRoundRobin } from '@/engine/fixtures';
+import { generateRoundRobin } from '@/engine/round-robin';
 import { useTeamsStore } from '@/app/state/teamsStore';
 import { useLeagueStore } from '@/app/state/leagueStore';
-import type { TeamRecord } from '@/features/components';
-import type { LeagueRecord } from '@/features/leagues/types';
+import type { LeagueRecord, TeamRecord } from '@/domain';
 import { FixturesView } from './FixturesView';
 
 const team = (overrides: Partial<TeamRecord> = {}): TeamRecord => ({
@@ -402,7 +402,7 @@ describe('FixturesView', () => {
       render(<FixturesViewFromStore slug="coastal-premier" />);
       act(() => {
         for (let matchday = 1; matchday <= lastMatchday; matchday += 1) {
-          useLeagueStore.getState().scorinateMatchday('coastal-premier', matchday);
+          scorinateMatchday('coastal-premier', matchday);
         }
       });
 
@@ -418,7 +418,7 @@ describe('FixturesView', () => {
       render(<FixturesViewFromStore slug="coastal-premier" />);
       act(() => {
         for (let matchday = 1; matchday <= lastMatchday; matchday += 1) {
-          useLeagueStore.getState().scorinateMatchday('coastal-premier', matchday);
+          scorinateMatchday('coastal-premier', matchday);
         }
       });
 

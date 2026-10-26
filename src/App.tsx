@@ -1,5 +1,5 @@
 import type { JSX } from 'preact';
-import { AppShell } from './app/AppShell';
+import { AppShell } from '@/app/AppShell';
 import appStyles from './App.module.css';
 
 function App(): JSX.Element {

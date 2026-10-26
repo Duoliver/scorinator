@@ -10,8 +10,7 @@ import * as resultsTxtIO from '@/app/data/resultsTxt';
 import { useFileStore } from '@/app/state/fileStore';
 import { useLeagueStore } from '@/app/state/leagueStore';
 import { useTeamsStore } from '@/app/state/teamsStore';
-import type { TeamRecord } from '@/features/components';
-import type { LeagueRecord } from '@/features/leagues/types';
+import type { LeagueRecord, TeamRecord } from '@/domain';
 
 const league = (overrides: Partial<LeagueRecord> = {}): LeagueRecord => ({
   slug: 'coastal-premier',
@@ -37,7 +36,12 @@ beforeEach(() => {
   vi.restoreAllMocks();
   useTeamsStore.setState({ teams: [] });
   useLeagueStore.setState({ leagues: [] });
-  useFileStore.setState({ currentLeagueSlug: null, paths: {}, savedLeagues: {}, status: null });
+  useFileStore.setState({
+    currentLeagueSlug: null,
+    paths: {},
+    savedLeagues: {},
+    status: null,
+  });
 });
 
 describe('FileScreen', () => {
@@ -235,7 +239,7 @@ describe('FileScreen', () => {
   describe('Import and export teams', () => {
     it('imports teams from CSV and merges them into the roster', async () => {
       vi.spyOn(csvIO, 'importTeamsCsv').mockResolvedValue([
-        { slug: '', name: 'FC United', colour: '#E53935', tier: 'B' },
+        { slug: 'fc-united', name: 'FC United', colour: '#E53935', tier: 'B' },
       ]);
       render(<FileScreen />);
 
@@ -261,7 +265,7 @@ describe('FileScreen', () => {
 
     it('imports teams from JSON and merges them into the roster', async () => {
       vi.spyOn(jsonIO, 'importTeamsJson').mockResolvedValue([
-        { slug: '', name: 'FC United', colour: '#E53935', tier: 'B' },
+        { slug: 'fc-united', name: 'FC United', colour: '#E53935', tier: 'B' },
       ]);
       render(<FileScreen />);
 

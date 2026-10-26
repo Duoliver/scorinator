@@ -4,12 +4,14 @@ import {
   tauriDialog,
   tauriFileSystem,
 } from '@/adapters/tauri-fs';
-import { parseTeamsCsv, serializeTeamsCsv, type TeamCsvRecord } from '@/adapters/csv';
+import { parseTeamsCsv, serializeTeamsCsv } from '@/adapters/csv';
 import type { FileFilter, FileSystem, SaveFileDialog } from '@/persistence/types';
+import type { TeamRecord } from '@/domain';
+import { teamListRecordToTeamRecord } from './importMerge';
 
 /** The thin `app/` → `adapters/` data layer `module-boundaries.md`
- * requires. `features/teams` calls these functions instead of importing
- * `adapters/csv` or `adapters/tauri-fs` directly. `fs`/`dialog` default to
+ * requires, so `features/` never imports `adapters/csv` or
+ * `adapters/tauri-fs` directly. `fs`/`dialog` default to
  * the real Tauri adapters and are only overridden in tests. */
 
 /** Restricts the open/save dialog to `.csv` files. Without this, both calls
@@ -22,17 +24,17 @@ const CSV_FILTERS: readonly FileFilter[] = [{ name: 'Team CSV', extensions: ['cs
 export async function importTeamsCsv(
   fs: FileSystem = tauriFileSystem,
   dialog: SaveFileDialog = tauriDialog
-): Promise<TeamCsvRecord[] | null> {
+): Promise<TeamRecord[] | null> {
   const opened = await openTextFileWithDialog(fs, dialog, CSV_FILTERS);
   if (opened === null) return null;
-  return parseTeamsCsv(opened.contents);
+  return parseTeamsCsv(opened.contents).map(teamListRecordToTeamRecord);
 }
 
 export async function exportTeamsCsv(
-  records: readonly TeamCsvRecord[],
+  teams: readonly TeamRecord[],
   fs: FileSystem = tauriFileSystem,
   dialog: SaveFileDialog = tauriDialog
 ): Promise<string | null> {
-  const contents = serializeTeamsCsv(records);
+  const contents = serializeTeamsCsv(teams);
   return saveTextFileWithDialog(fs, dialog, contents, 'teams.csv', CSV_FILTERS);
 }

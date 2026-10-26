@@ -1,6 +1,6 @@
 # Task 98: clearer wording on the decision rows
 
-**Status:** Review
+**Status:** Done (2026-10-26)
 
 ## Goal
 

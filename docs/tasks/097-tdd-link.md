@@ -1,6 +1,6 @@
 # Task 97: fix the `docs/tdd` link in `CLAUDE.md`
 
-**Status:** Not started. The acceptance criteria wait for the user's OK.
+**Status:** Done (2026-10-26)
 
 ## Goal
 
@@ -8,14 +8,18 @@
 
 ## Acceptance criteria
 
-- [ ] The `TDD` link in the `CLAUDE.md` Documentation list points to `/docs/tdd.md`.
-- [ ] No other text in `CLAUDE.md` changes.
-- [ ] A scan of every Markdown link in the repo, outside `node_modules/`, finds no broken link.
+- [x] The `TDD` link in the `CLAUDE.md` Documentation list points to `/docs/tdd.md`.
+- [x] No other text in `CLAUDE.md` changes.
+- [x] A scan of every Markdown link in the repo, outside `node_modules/`, finds no broken link.
 
 ## Notes
 
 - **2026-10-26:** Found at the end of Task 85. A scan of the Markdown links outside `docs/archive/` found only this broken link. An earlier scan of `docs/archive/` found none.
+- **2026-10-26:** The user agreed the criteria and started the task.
 
 ## Report
 
-Write this before the task goes to Review.
+- **What was built:** the `TDD` link in `CLAUDE.md` line 64 now points to `/docs/tdd.md`. The diff is that one line.
+- **Test approach:** docs only, no test. A scan of every Markdown link in the repo, `docs/archive/` included, found no broken link.
+- **Decisions made:** none. The user agreed the criteria on 2026-10-26.
+- **What is left, what is next:** nothing.

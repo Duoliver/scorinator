@@ -47,8 +47,8 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 94 | Refine epic 09, Teams Module (Blueprints): refined stories in `docs/user-stories/mvp2/09-teams-module.md` | `docs/user-stories` | ⬜ Not started |  |  |  | Sprint 0. Related decisions: 1 and 7 (Tasks 75, 81). |
 | 95 | Refine epic 10, File Module: refined stories in `docs/user-stories/mvp2/10-file-module.md` | `docs/user-stories` | ⬜ Not started |  |  |  | Sprint 0. Related decisions: 1 and 2 (Tasks 75, 76). |
 | 96 | Refine epic 11, Identity & Provenance: refined stories in `docs/user-stories/mvp2/11-identity-provenance.md` | `docs/user-stories` | ⬜ Not started |  |  |  | Sprint 0. Related decision: 1 (Task 75). |
-| 97 | Fix the `docs/tdd` link in `CLAUDE.md`, and check the other repo links | `CLAUDE.md`, `docs/` | ⬜ Not started |  |  | [097](/docs/tasks/097-tdd-link.md) | Task created by User - 2026-10-26. Criteria wait for the user's OK. |
-| 98 | Reword the decision rows: "Can close inside Task X" becomes "Related epics: … One of them can settle this decision." | `PROGRESS.md` | 🟩 Review | 2026-10-26 |  | [098](/docs/tasks/098-decision-row-wording.md) | Task created by User - 2026-10-26. |
+| 97 | Fix the `docs/tdd` link in `CLAUDE.md`, and check the other repo links | `CLAUDE.md`, `docs/` | ✅ Done | 2026-10-26 | 2026-10-26 | [097](/docs/tasks/097-tdd-link.md) | Task created by User - 2026-10-26. |
+| 98 | Reword the decision rows: "Can close inside Task X" becomes "Related epics: … One of them can settle this decision." | `PROGRESS.md` | ✅ Done | 2026-10-26 | 2026-10-26 | [098](/docs/tasks/098-decision-row-wording.md) | Task created by User - 2026-10-26. |
 
 **Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input, see Open Questions) · 🟩 Review · ✅ Done · ❌ Cancelled (the reason is in the Notes column)
 

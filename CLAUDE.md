@@ -61,7 +61,7 @@ General source specs live in [docs](/docs/):
   - [`MVP4`](/docs/scorinator-mvp4.md)
 - [`Module boundaries`](/docs/module-boundaries.md) — project structure. Do not restructure without discussion
 - [`Design reference`](/docs/design-reference/) — The Claude Design handoff bundle (rendered prototype screens) for each MVP. [See its own readme](/docs/design-reference/README.md) for how these are used, and how they are not
-- [`TDD`](/docs/tdd) — Workflow and strategies by layer. Mandatory adherence
+- [`TDD`](/docs/tdd.md) — Workflow and strategies by layer. Mandatory adherence
 - [`Future features`](/docs/scorinator-future-features.md) — explicitly out of scope, do not implement
 - [`Coding standards`](/docs/coding-standards.md) — general implementation rules that apply across modules (not module-specific — those live with their module below)
 

@@ -41,10 +41,13 @@ These combine into 4 possible resolution paths:
 
 Note: the Replay itself is a one-shot fallback — if the replay also ends in a draw, it goes straight to Coin Toss (no repeated replay loop).
 
+- **Coin toss:** a pure 50/50. Team strength plays no part. **Penalties** stay weighted by team strength.
+
 ### Bracket Specifics
 - Ties can be configured as **single match** or **two-legged (aggregate score, home/away)** — set per bracket phase.
 - Bracket seeding is determined by **final standing** from the previous phase (1st seed vs. last qualifier, 2nd vs. second-last, etc. — standard seeding).
 - **Away-goals rule** for two-legged ties is a **configurable toggle per bracket phase** (off = go straight to AET/tiebreak if level on aggregate; on = away goals break the aggregate tie first).
+- **Venue:** a single-match tie, its extra time, and a replay are played at a **neutral venue**. No team gets home advantage. A tie still stores a venue value, always neutral in MVP2, so a later venue choice (`scorinator-future-features.md` §4) needs no data change. The league's home-advantage toggle applies only to round-robin phases and two-legged ties.
 
 ### Bracket Sizing & Byes
 - Bracket phases need a **power-of-2** number of participating teams for a clean single-elimination structure. When the qualifier count isn't a power of 2, the system **auto-assigns byes by default** (filling up to the next power of 2), but the user can **manually reassign who gets a bye**.
@@ -61,16 +64,16 @@ Scoped to **league setup, before the league is started** (fixtures generated) �
   - **Load them all** adds every eligible Blueprint at once, skipping the dialog. "Eligible" means: filtered by this league's location eligibility (per MVP3's location-filtering rule) if the league has a location scope; otherwise all Blueprints.
   - If **no Blueprints exist yet at all**, this empty state instead prompts the user to create their first team, rather than presenting two options that would both be no-ops.
 - Once teams are added, each row in the league's team list has three distinct actions:
-  - **Edit** opens the same aside modal used at team creation, but here it edits the team's **Instance** for this Season (current OVR override, current Tier) — the underlying Blueprint (Name/Colours/base Tier/City/Crest) is never touched from this screen.
+  - **Edit** opens the same aside modal used at team creation, but here it edits the team's **Instance** in this league's Instance Wrapper (current OVR override, current Tier) — the underlying Blueprint (Name/Colours/base Tier) is never touched from this screen.
   - **Switch** reopens the same bulk-selection dialog in **single-select mode**, pre-excluding teams already in this league, and replaces this row's team with the new selection.
   - **Remove** takes the team out of the league's roster. If removal would drop the roster below the format's minimum team count, it's still allowed but shows a **soft warning** that the league can't start yet.
-- Adding a Blueprint to a league reuses its existing Instance for that Season if one already exists there, or creates a fresh one (OVR rolled from Tier) if not.
+- Adding a Blueprint to a league creates a fresh Instance in that league's Instance Wrapper (OVR rolled from Tier). In MVP2, each league is its own wrapper, so two leagues never share an Instance. From MVP3, the leagues of one Season share a wrapper, and the add reuses the Instance that is already there.
 
 ### Teams Module (Blueprints) — supersedes MVP1's flat Team model
 - Teams are split into two layers:
-  - **Team Blueprint** — the reusable template, living in the global "Teams" module: Name, Colours, base Tier, City, Crest. Not tied to any specific league.
-  - **Team Instance** — the live/mutable state a blueprint gets once it's actually put into play: current OVR, current Tier, current league membership(s). See MVP3 for how Instance scope is formalized around the new **Season** concept — within one Season, a blueprint has exactly one shared Instance across every league it's concurrently a member of (matches real football: a club has one strength, not one per competition).
-- The MVP1 CSV import/export (`ID/slug, Name, Colours, Tier, City`) is retained as-is for quick bulk list editing — it operates on Blueprints and carries no provenance metadata.
+  - **Team Blueprint** — the reusable template, living in the global "Teams" module: Name, Colours, base Tier. Not tied to any specific league. MVP3 adds City and Crest.
+  - **Team Instance** — the live/mutable state a blueprint gets once it's actually put into play: current OVR, current Tier, current league membership(s). In MVP2, each league is its own Instance Wrapper, with its own Instances. See MVP3 for how Instance scope is formalized around the new **Season** concept — within one Season, a blueprint has exactly one shared Instance across every league it's concurrently a member of (matches real football: a club has one strength, not one per competition).
+- The MVP1 CSV import/export (`ID/slug, Name, Colours, Tier`) is retained as-is for quick bulk list editing — it operates on Blueprints and carries no provenance metadata. MVP3 adds `City`.
 
 ### File Module (generalized)
 MVP1's single "Save/Load league" pair is replaced with scoped export/import actions:
@@ -113,7 +116,7 @@ MVP1's single "Save/Load league" pair is replaced with scoped export/import acti
 ### Epic: Tiebreak Configuration
 - As a user, I want to toggle "Plays AET?" per phase, so that I control whether extra time is simulated on a draw.
 - As a user, I want to choose between "Penalties" and "Replay → Coin Toss" as the phase's tiebreak method, so that decisive results are resolved the way I intend.
-- As a user, I want the system to simulate penalties (or a coin toss) as a weighted-but-still-uncertain outcome, so that upsets remain possible even in tiebreaks.
+- As a user, I want the system to simulate penalties as a weighted-but-still-uncertain outcome, and a coin toss as a pure 50/50, so that upsets remain possible even in tiebreaks.
 
 ### Epic: Bracket Phase
 - As a user, I want to configure a bracket tie as single-match or two-legged aggregate, so that I can model cup-style or two-leg knockout competitions.
@@ -142,13 +145,13 @@ MVP1's single "Save/Load league" pair is replaced with scoped export/import acti
 - As a user, I want to bulk-select teams for a new league from a searchable checklist (colour, name, tier shown per row), so that I can build a roster quickly.
 - As a user, I want a "Load them all" shortcut that adds every eligible team at once, so that I don't have to check boxes one by one when I want everyone.
 - As a user, when I have no teams created yet, I want to be prompted to create one instead of seeing options that would do nothing, so that the empty state actually helps me.
-- As a user, I want to Edit a team's Instance for this Season (not its global Blueprint) directly from the league's team list, so that per-season tweaks don't leak into every other league that team plays in.
+- As a user, I want to Edit a team's Instance in this league (not its global Blueprint) directly from the league's team list, so that per-league tweaks do not change the Blueprint or any other league.
 - As a user, I want to Switch a team for a different one via the same picker, pre-filtered to exclude teams already in the league, so that swapping is quick and duplicate-safe.
 - As a user, I want to Remove a team from the roster, with a warning (not a hard block) if that drops below the format's minimum, so that I know the league isn't ready to start without being stopped outright.
 
 ### Epic: Teams Module (Blueprints)
 - As a user, I want a global "Teams" list of reusable Blueprints, separate from any one league, so that I can build a roster once and use it across multiple competitions.
-- As a user, I want a Blueprint's live state (OVR, current Tier) to be shared across every league it's concurrently a member of, so that a team's strength stays consistent everywhere it plays at once.
+- As a user, I want each league to keep its own live state for a team (OVR, current Tier), apart from the Blueprint, so that a change in one league does not change the Blueprint. *(From MVP3, the leagues of one Season share one live state.)*
 
 ### Epic: File Module (generalized export/import)
 - As a user, I want an export button on each League's Detail screen that produces a self-contained file (teams included), so that I can share or back up that one league without extra steps.

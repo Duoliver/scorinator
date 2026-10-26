@@ -20,7 +20,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 
 | # | Task | Module | Status | Started | Completed | Report | Notes |
 |---|------|--------|--------|---------|-----------|--------|-------|
-| 74 | Spec and doc edits: apply the 8 edits listed in `docs/mvp1-to-mvp2-impact-review.md` §3 | `docs/` | ⬜ Not started |  |  |  | Sprint 0. The user owns the spec docs, so each edit needs the user's approval. The edit to the MVP1 Task 32 row no longer applies: the MVP1 log is archived and read only. |
+| 74 | Spec and doc edits: apply the 8 edits listed in `docs/mvp1-to-mvp2-impact-review.md` §3 | `docs/` | 🟩 Review | 2026-10-26 |  | [074](/progress-reports/074-spec-edits.md) | Sprint 0. The user owns the spec docs, so each edit needs the user's approval. The edit to the MVP1 Task 32 row no longer applies: the MVP1 log is archived and read only. **Proposal (2026-10-26):** the draft text for each edit is in report 074. It waits for the user's approval. No spec file is changed yet. **Applied (2026-10-26):** the user approved all edits. Edits 1 to 6 are in `docs/scorinator-mvp2.md`, and edit 8 is in `docs/module-boundaries.md`. Edit 7 is dropped. The impact review §3 now says that its list is applied. Docs only, so no test changed. |
 | 75 | Settle open decision 1: CSV import matching | `adapters/csv`, `app/data` | ⬜ Not started |  |  |  | Sprint 0. See Open questions. |
 | 76 | Settle open decision 2: the database | `persistence/`, `adapters/` | ⬜ Not started |  |  |  | Sprint 0. See Open questions. Five parts. It shapes the MVP1 Tasks 26 and 28 (the unsaved badge and the close prompt). |
 | 77 | Settle open decision 3: stable fixture IDs | `engine/round-robin`, `domain/` | ⬜ Not started |  |  |  | Sprint 0. See Open questions. Touches the result lookups, re-scorinate, and the saved result shape. |
@@ -80,5 +80,7 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-10-26 (Task 74 — spec edits):** The user approved all 8 edits as written in [`progress-reports/074-spec-edits.md`](/progress-reports/074-spec-edits.md). Key results for MVP2 work: single-match ties, their extra time, and replays are at a neutral venue, but a tie still stores a venue value. The coin toss is a pure 50/50. An MVP2 Blueprint has no City and no Crest. Each MVP2 league is its own Instance Wrapper, so two leagues never share an Instance or a live state.
 
 - **2026-10-26 (Sprint 0 — the MVP2 log):** The user chose to archive all MVP1 history in `docs/archive/mvp1/`: the MVP1 `PROGRESS.md`, `progress-reports/`, `decisions-log/`, and `mvp1-first-tasks.md`. The links inside the archive now point to the new paths. MVP2 starts with empty `progress-reports/` and `decisions-log/` folders at the root. MVP2 task numbers continue from 74, so each task number stays unique in code comments. The Open questions hold the 8 open decisions of the impact review §4 and the one open MVP1 question. Claude drafted the sprint 0 rows (Tasks 74 to 84).

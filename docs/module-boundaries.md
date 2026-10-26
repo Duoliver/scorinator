@@ -30,6 +30,8 @@ The module map below is a direct transcription of decisions already made in the 
     /tauri-fs           real filesystem adapter, implements /persistence
     /csv                team CSV import/export
     /json-io            manifest + wrapper JSON serialization
+    /txt                results .txt export (read only)
+    /tauri-window       window close event, unsaved-changes dialog
 
   /design-system       tokens (CSS variables) + primitives (Button, Card,
                        Badge, Table, Tabs, Input, etc.) extracted from the

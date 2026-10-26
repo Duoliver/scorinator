@@ -15,10 +15,14 @@ export function Table<Row>({ columns, rows, rowKey }: TableProps<Row>): JSX.Elem
   const gridTemplateColumns = columns.map((c) => c.width ?? '1fr').join(' ');
 
   return (
-    <div class={styles.table}>
+    <div class={styles.table} role="table">
       <div class={styles.headerRow} style={{ gridTemplateColumns }} role="row">
         {columns.map((column) => (
-          <span key={column.key} class={alignClass[column.align ?? 'left']}>
+          <span
+            key={column.key}
+            class={alignClass[column.align ?? 'left']}
+            role="columnheader"
+          >
             {column.header}
           </span>
         ))}
@@ -31,7 +35,11 @@ export function Table<Row>({ columns, rows, rowKey }: TableProps<Row>): JSX.Elem
           role="row"
         >
           {columns.map((column) => (
-            <span key={column.key} class={alignClass[column.align ?? 'left']}>
+            <span
+              key={column.key}
+              class={alignClass[column.align ?? 'left']}
+              role="cell"
+            >
               {column.render
                 ? column.render(row)
                 : String((row as Record<string, unknown>)[column.key])}

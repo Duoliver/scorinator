@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { render, screen } from '@testing-library/preact';
+import { render, screen, within } from '@testing-library/preact';
 import { Table, type TableColumn } from './Table';
 
 interface StandingsRow {
@@ -39,6 +39,24 @@ describe('Table', () => {
     render(<Table columns={columns} rows={[]} rowKey={(r) => r.id} />);
     expect(screen.getByText('Team')).toBeInTheDocument();
     expect(screen.getAllByRole('row')).toHaveLength(1);
+  });
+
+  it('gives screen readers a table, with a column header for each column', () => {
+    render(<Table columns={columns} rows={rows} rowKey={(r) => r.id} />);
+    const table = screen.getByRole('table');
+    const headers = within(table).getAllByRole('columnheader');
+    expect(headers.map((header) => header.textContent)).toEqual(['#', 'Team', 'Pts']);
+  });
+
+  it('gives each data row one cell for each column, and no column header', () => {
+    render(<Table columns={columns} rows={rows} rowKey={(r) => r.id} />);
+    const [, first] = screen.getAllByRole('row');
+    expect(
+      within(first)
+        .getAllByRole('cell')
+        .map((cell) => cell.textContent)
+    ).toEqual(['1', 'Salt Marsh United', '19']);
+    expect(within(first).queryByRole('columnheader')).not.toBeInTheDocument();
   });
 
   it("uses a column's custom render function instead of the raw value", () => {

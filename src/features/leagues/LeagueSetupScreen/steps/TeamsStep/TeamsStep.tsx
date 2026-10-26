@@ -31,7 +31,12 @@ export function TeamsStep({ onBack, onNext, ...props }: TeamsStepProps): JSX.Ele
           </Button>
         </div>
 
-        <Table columns={step.columns} rows={step.rows} rowKey={getRowKey} />
+        <Table
+          label="Teams"
+          columns={step.columns}
+          rows={step.rows}
+          rowKey={getRowKey}
+        />
 
         <div class={styles.selectionRow}>
           <span class={styles.count}>{step.selectedCountText}</span>

@@ -20,7 +20,7 @@ export function StandingsView({ league }: StandingsViewProps): JSX.Element {
     <div class={styles.view}>
       <div class={styles.scroller}>
         <div class={styles.sheet}>
-          <Table columns={COLUMNS} rows={rows} rowKey={rowKey} />
+          <Table label="Standings" columns={COLUMNS} rows={rows} rowKey={rowKey} />
         </div>
       </div>
       {!hasResults && <p class={styles.note}>No matches played yet.</p>}

@@ -30,7 +30,7 @@ export function TeamsScreen(): JSX.Element {
         </div>
       </div>
 
-      <Table columns={columns} rows={rows} rowKey={getRowKey} />
+      <Table label="Teams" columns={columns} rows={rows} rowKey={getRowKey} />
 
       <span class={styles.count}>{countText}</span>
 

@@ -11,11 +11,16 @@ const alignClass: Record<TableAlign, string> = {
   right: styles.alignRight,
 };
 
-export function Table<Row>({ columns, rows, rowKey }: TableProps<Row>): JSX.Element {
+export function Table<Row>({
+  label,
+  columns,
+  rows,
+  rowKey,
+}: TableProps<Row>): JSX.Element {
   const gridTemplateColumns = columns.map((c) => c.width ?? '1fr').join(' ');
 
   return (
-    <div class={styles.table} role="table">
+    <div class={styles.table} role="table" aria-label={label}>
       <div class={styles.headerRow} style={{ gridTemplateColumns }} role="row">
         {columns.map((column) => (
           <span

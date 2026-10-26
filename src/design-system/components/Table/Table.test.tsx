@@ -22,34 +22,51 @@ const rows: StandingsRow[] = [
 
 describe('Table', () => {
   it('renders a header cell per column', () => {
-    render(<Table columns={columns} rows={rows} rowKey={(r) => r.id} />);
+    render(
+      <Table label="Standings" columns={columns} rows={rows} rowKey={(r) => r.id} />
+    );
     expect(screen.getByText('#')).toBeInTheDocument();
     expect(screen.getByText('Team')).toBeInTheDocument();
     expect(screen.getByText('Pts')).toBeInTheDocument();
   });
 
   it('renders one row per data entry, cell values stringified from the row', () => {
-    render(<Table columns={columns} rows={rows} rowKey={(r) => r.id} />);
+    render(
+      <Table label="Standings" columns={columns} rows={rows} rowKey={(r) => r.id} />
+    );
     expect(screen.getByText('Salt Marsh United')).toBeInTheDocument();
     expect(screen.getByText('Harborview SC')).toBeInTheDocument();
     expect(screen.getByText('19')).toBeInTheDocument();
   });
 
   it('renders no data rows, only the header row, when given an empty list', () => {
-    render(<Table columns={columns} rows={[]} rowKey={(r) => r.id} />);
+    render(
+      <Table label="Standings" columns={columns} rows={[]} rowKey={(r) => r.id} />
+    );
     expect(screen.getByText('Team')).toBeInTheDocument();
     expect(screen.getAllByRole('row')).toHaveLength(1);
   });
 
   it('gives screen readers a table, with a column header for each column', () => {
-    render(<Table columns={columns} rows={rows} rowKey={(r) => r.id} />);
+    render(
+      <Table label="Standings" columns={columns} rows={rows} rowKey={(r) => r.id} />
+    );
     const table = screen.getByRole('table');
     const headers = within(table).getAllByRole('columnheader');
     expect(headers.map((header) => header.textContent)).toEqual(['#', 'Team', 'Pts']);
   });
 
+  it('names the table with its label, for screen readers', () => {
+    render(
+      <Table label="Standings" columns={columns} rows={rows} rowKey={(r) => r.id} />
+    );
+    expect(screen.getByRole('table', { name: 'Standings' })).toBeInTheDocument();
+  });
+
   it('gives each data row one cell for each column, and no column header', () => {
-    render(<Table columns={columns} rows={rows} rowKey={(r) => r.id} />);
+    render(
+      <Table label="Standings" columns={columns} rows={rows} rowKey={(r) => r.id} />
+    );
     const [, first] = screen.getAllByRole('row');
     expect(
       within(first)
@@ -68,7 +85,14 @@ describe('Table', () => {
         render: (row) => `${row.pts} pts`,
       },
     ];
-    render(<Table columns={customColumns} rows={rows} rowKey={(r) => r.id} />);
+    render(
+      <Table
+        label="Standings"
+        columns={customColumns}
+        rows={rows}
+        rowKey={(r) => r.id}
+      />
+    );
     expect(screen.getByText('19 pts')).toBeInTheDocument();
   });
 });

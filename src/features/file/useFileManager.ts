@@ -1,5 +1,5 @@
 import { useRef } from 'preact/hooks';
-import type { FieldHandle } from '@/design-system/field';
+import type { FieldHandle } from '@/design-system';
 import { exportResultsBySlug, exportTeams } from '@/app/exportActions';
 import { importTeamsFromCsv, importTeamsFromJson } from '@/app/loadActions';
 import { saveLeagueBySlug } from '@/app/saveActions';

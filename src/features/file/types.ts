@@ -1,6 +1,5 @@
 import type { RefObject } from 'preact';
-import type { SelectOption } from '@/design-system';
-import type { FieldHandle } from '@/design-system/field';
+import type { FieldHandle, SelectOption } from '@/design-system';
 
 /** What `useLeagueLoad` gives: the load, and the confirm step it shows when
  * a league with the same slug is already open. */

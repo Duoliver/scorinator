@@ -1,5 +1,5 @@
 import type { RefObject } from 'preact';
-import type { FieldHandle } from '@/design-system/field';
+import type { FieldHandle } from '@/design-system';
 import type { LeagueDraftDetails, LeagueSetupStep } from '@/app/state/leagueDraftStore';
 import type { TeamRecord } from '@/domain';
 import type { DetailsStepHandle } from '@/features/leagues/LeagueSetupScreen/steps/DetailsStep';

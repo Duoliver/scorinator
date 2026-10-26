@@ -1,6 +1,6 @@
 import type { ForwardedRef } from 'preact/compat';
 import { useImperativeHandle, useRef, useState } from 'preact/hooks';
-import type { FieldHandle } from '@/design-system/field';
+import type { FieldHandle } from '@/design-system';
 import type { LeagueDraftDetails } from '@/app/state/leagueDraftStore';
 import { leagueNameProblem } from '@/features/leagues/LeagueSetupScreen/leagueName';
 import type DetailsStepProps from './types';

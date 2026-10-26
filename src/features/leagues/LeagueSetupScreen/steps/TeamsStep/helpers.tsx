@@ -1,5 +1,4 @@
-import { Badge, Checkbox, type TableColumn } from '@/design-system';
-import type { FieldHandle } from '@/design-system/field';
+import { Badge, Checkbox, type FieldHandle, type TableColumn } from '@/design-system';
 import type { TeamRecord } from '@/domain';
 import { TeamSwatch } from '@/features/components';
 import styles from './TeamsStep.module.css';

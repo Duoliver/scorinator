@@ -1,14 +1,9 @@
 import { forwardRef } from 'preact/compat';
-import {
-  useCallback,
-  useImperativeHandle,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from 'preact/hooks';
+import { useLayoutEffect, useRef } from 'preact/hooks';
 import type TabsProps from './types';
 import type { TabItem } from './types';
 import type { FieldHandle } from '@/design-system/field';
+import { useFieldHandle } from '@/design-system/useFieldHandle';
 import styles from './Tabs.module.css';
 
 export type { TabsProps, TabItem };
@@ -19,33 +14,12 @@ export type { TabsProps, TabItem };
  * without lifting the active-tab state up into its own parent. */
 export const Tabs = forwardRef<FieldHandle<string>, TabsProps>(
   ({ tabs, defaultTab, onChange, fullWidth, scrollToTopOnChange }, ref) => {
-    const [activeId, setActiveId] = useState(defaultTab);
-    const activeIdRef = useRef(activeId);
-    const listenersRef = useRef(new Set<(value: string) => void>());
     const tabButtonsRef = useRef(new Map<string, HTMLButtonElement>());
-    const onChangeRef = useRef(onChange);
-    onChangeRef.current = onChange;
-
-    const commitValue = useCallback((next: string, fromUser: boolean): void => {
-      activeIdRef.current = next;
-      setActiveId(next);
-      listenersRef.current.forEach((listener) => listener(next));
-      if (fromUser) onChangeRef.current?.(next);
-    }, []);
-
-    useImperativeHandle(
-      ref,
-      () => ({
-        getValue: (): string => activeIdRef.current,
-        setValue: (next: string): void => commitValue(next, false),
-        subscribe: (listener: (value: string) => void): (() => void) => {
-          listenersRef.current.add(listener);
-          return () => listenersRef.current.delete(listener);
-        },
-        focus: (): void => tabButtonsRef.current.get(activeIdRef.current)?.focus(),
-      }),
-      [commitValue]
-    );
+    const { value: activeId, commitValue } = useFieldHandle(ref, {
+      defaultValue: defaultTab,
+      onChange,
+      focus: (current) => tabButtonsRef.current.get(current)?.focus(),
+    });
 
     // Starts at `defaultTab`, so the mount itself never counts as a change.
     // A layout effect, so the scroll happens before the paint, and the new

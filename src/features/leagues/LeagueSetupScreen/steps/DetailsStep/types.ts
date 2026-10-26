@@ -1,5 +1,5 @@
 import type { RefObject } from 'preact';
-import type { FieldHandle } from '@/design-system/field';
+import type { FieldHandle } from '@/design-system';
 import type { LeagueDraftDetails } from '@/app/state/leagueDraftStore';
 
 /** `LeagueSetupScreen` reads the current field values through this handle,

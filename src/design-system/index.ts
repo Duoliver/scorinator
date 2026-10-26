@@ -1,3 +1,5 @@
+export type { FieldHandle } from './field';
+
 export { Button } from './components/Button';
 export type { ButtonProps, ButtonVariant, ButtonSize } from './components/Button';
 

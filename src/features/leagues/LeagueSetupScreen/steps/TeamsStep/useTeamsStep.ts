@@ -1,5 +1,5 @@
 import { useRef, useState } from 'preact/hooks';
-import type { FieldHandle } from '@/design-system/field';
+import type { FieldHandle } from '@/design-system';
 import type { TeamRecord } from '@/domain';
 import { formatTeamCount } from '@/features/components';
 import { settingsChipLabels } from '@/features/leagues/LeagueSetupScreen/steps/SetupChips';

@@ -1,6 +1,5 @@
 import { useRef, useState } from 'preact/hooks';
-import { DEFAULT_TEAM_COLOUR } from '@/design-system';
-import type { FieldHandle } from '@/design-system/field';
+import { DEFAULT_TEAM_COLOUR, type FieldHandle } from '@/design-system';
 import { slug } from '@/engine/identity';
 import { isTier } from '@/engine/tier-ovr';
 import type TeamFormProps from './types';

@@ -1,14 +1,9 @@
 import { forwardRef } from 'preact/compat';
-import {
-  useCallback,
-  useId,
-  useImperativeHandle,
-  useRef,
-  useState,
-} from 'preact/hooks';
+import { useId, useRef } from 'preact/hooks';
 import type { TargetedEvent } from 'preact';
 import type InputProps from './types';
 import type { FieldHandle } from '@/design-system/field';
+import { useFieldHandle } from '@/design-system/useFieldHandle';
 import styles from './Input.module.css';
 
 export type { InputProps };
@@ -32,35 +27,14 @@ export const Input = forwardRef<FieldHandle<string>, InputProps>(
     const generatedId = useId();
     const inputId = id ?? generatedId;
     const inputEl = useRef<HTMLInputElement>(null);
-    const [value, setInternalValue] = useState(defaultValue);
-    const valueRef = useRef(value);
-    const listenersRef = useRef(new Set<(value: string) => void>());
-    const onChangeRef = useRef(onChange);
-    onChangeRef.current = onChange;
-
-    const commitValue = useCallback((next: string, fromUser: boolean): void => {
-      valueRef.current = next;
-      // Preact's setState is batched/async — write the DOM synchronously too so
-      // setValue() is immediately reflected, not just on the next render flush.
-      if (inputEl.current) inputEl.current.value = next;
-      setInternalValue(next);
-      listenersRef.current.forEach((listener) => listener(next));
-      if (fromUser) onChangeRef.current?.(next);
-    }, []);
-
-    useImperativeHandle(
-      ref,
-      () => ({
-        getValue: (): string => valueRef.current,
-        setValue: (next: string): void => commitValue(next, false),
-        subscribe: (listener: (value: string) => void): (() => void) => {
-          listenersRef.current.add(listener);
-          return () => listenersRef.current.delete(listener);
-        },
-        focus: (): void => inputEl.current?.focus(),
-      }),
-      [commitValue]
-    );
+    const { value, commitValue } = useFieldHandle(ref, {
+      defaultValue,
+      onChange,
+      syncDom: (next) => {
+        if (inputEl.current) inputEl.current.value = next;
+      },
+      focus: () => inputEl.current?.focus(),
+    });
 
     return (
       <div class={styles.field}>

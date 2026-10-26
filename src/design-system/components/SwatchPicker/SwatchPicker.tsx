@@ -1,14 +1,9 @@
 import { forwardRef } from 'preact/compat';
-import {
-  useCallback,
-  useId,
-  useImperativeHandle,
-  useRef,
-  useState,
-} from 'preact/hooks';
+import { useId, useRef } from 'preact/hooks';
 import type SwatchPickerProps from './types';
 import type { SwatchOption } from './types';
 import type { FieldHandle } from '@/design-system/field';
+import { useFieldHandle } from '@/design-system/useFieldHandle';
 import styles from './SwatchPicker.module.css';
 
 export type { SwatchPickerProps, SwatchOption };
@@ -32,39 +27,21 @@ export const SwatchPicker = forwardRef<FieldHandle<string>, SwatchPickerProps>(
     const groupName = id ?? generatedId;
     const labelId = `${groupName}-label`;
     const groupEl = useRef<HTMLDivElement>(null);
-    const [value, setInternalValue] = useState(defaultValue);
-    const valueRef = useRef(value);
-    const listenersRef = useRef(new Set<(value: string) => void>());
-    const onChangeRef = useRef(onChange);
-    onChangeRef.current = onChange;
 
     const radios = (): HTMLInputElement[] =>
       Array.from(groupEl.current?.querySelectorAll('input') ?? []);
 
-    const commitValue = useCallback((next: string, fromUser: boolean): void => {
-      valueRef.current = next;
-      for (const radio of radios()) radio.checked = sameColour(radio.value, next);
-      setInternalValue(next);
-      listenersRef.current.forEach((listener) => listener(next));
-      if (fromUser) onChangeRef.current?.(next);
-    }, []);
-
-    useImperativeHandle(
-      ref,
-      () => ({
-        getValue: (): string => valueRef.current,
-        setValue: (next: string): void => commitValue(next, false),
-        subscribe: (listener: (value: string) => void): (() => void) => {
-          listenersRef.current.add(listener);
-          return () => listenersRef.current.delete(listener);
-        },
-        focus: (): void => {
-          const all = radios();
-          (all.find((radio) => radio.checked) ?? all[0])?.focus();
-        },
-      }),
-      [commitValue]
-    );
+    const { value, commitValue } = useFieldHandle(ref, {
+      defaultValue,
+      onChange,
+      syncDom: (next) => {
+        for (const radio of radios()) radio.checked = sameColour(radio.value, next);
+      },
+      focus: () => {
+        const all = radios();
+        (all.find((radio) => radio.checked) ?? all[0])?.focus();
+      },
+    });
 
     return (
       <div

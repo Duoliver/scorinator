@@ -1,5 +1,5 @@
 import type { RefObject } from 'preact';
-import type { FieldHandle } from '@/design-system/field';
+import type { FieldHandle } from '@/design-system';
 import type { TeamRecord } from '@/domain';
 import type { Tier } from '@/engine/tier-ovr';
 

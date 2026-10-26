@@ -1,7 +1,7 @@
 import { useRef, useState } from 'preact/hooks';
 import type { RefObject } from 'preact';
 import { route } from 'preact-router';
-import type { FieldHandle } from '@/design-system/field';
+import type { FieldHandle } from '@/design-system';
 import { getErrorMessage } from '@/app/getErrorMessage';
 import { leagueDetailPath } from '@/app/routes';
 import { addLeague } from '@/app/state/leagueActions';

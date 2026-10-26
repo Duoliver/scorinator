@@ -1,15 +1,10 @@
 import { forwardRef } from 'preact/compat';
-import {
-  useCallback,
-  useId,
-  useImperativeHandle,
-  useRef,
-  useState,
-} from 'preact/hooks';
+import { useId, useRef } from 'preact/hooks';
 import type { TargetedEvent } from 'preact';
 import type SelectProps from './types';
 import type { SelectOption } from './types';
 import type { FieldHandle } from '@/design-system/field';
+import { useFieldHandle } from '@/design-system/useFieldHandle';
 import styles from './Select.module.css';
 
 export type { SelectProps, SelectOption };
@@ -19,33 +14,14 @@ export const Select = forwardRef<FieldHandle<string>, SelectProps>(
     const generatedId = useId();
     const selectId = id ?? generatedId;
     const selectEl = useRef<HTMLSelectElement>(null);
-    const [value, setInternalValue] = useState(defaultValue);
-    const valueRef = useRef(value);
-    const listenersRef = useRef(new Set<(value: string) => void>());
-    const onChangeRef = useRef(onChange);
-    onChangeRef.current = onChange;
-
-    const commitValue = useCallback((next: string, fromUser: boolean): void => {
-      valueRef.current = next;
-      if (selectEl.current) selectEl.current.value = next;
-      setInternalValue(next);
-      listenersRef.current.forEach((listener) => listener(next));
-      if (fromUser) onChangeRef.current?.(next);
-    }, []);
-
-    useImperativeHandle(
-      ref,
-      () => ({
-        getValue: (): string => valueRef.current,
-        setValue: (next: string): void => commitValue(next, false),
-        subscribe: (listener: (value: string) => void): (() => void) => {
-          listenersRef.current.add(listener);
-          return () => listenersRef.current.delete(listener);
-        },
-        focus: (): void => selectEl.current?.focus(),
-      }),
-      [commitValue]
-    );
+    const { value, commitValue } = useFieldHandle(ref, {
+      defaultValue,
+      onChange,
+      syncDom: (next) => {
+        if (selectEl.current) selectEl.current.value = next;
+      },
+      focus: () => selectEl.current?.focus(),
+    });
 
     return (
       <div class={styles.field}>

@@ -1,4 +1,5 @@
 .shell {
+  --nav-width: 13.75rem;
   min-height: 100vh;
 }
 
@@ -6,7 +7,7 @@
   position: fixed;
   top: 0;
   left: 0;
-  width: 220px;
+  width: var(--nav-width);
   height: 100vh;
   background: var(--color-surface);
   border-right: var(--border-width) solid var(--color-fg);
@@ -19,10 +20,10 @@
 .brand {
   font-family: var(--font-condensed);
   font-weight: 700;
-  font-size: 1.25rem;
+  font-size: var(--font-size-2xl);
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  padding: 0 var(--space-5) 1.75rem;
+  padding: 0 var(--space-5) var(--space-8);
 }
 
 .navItem {
@@ -42,5 +43,5 @@
 }
 
 .content {
-  margin-left: 220px;
+  margin-left: var(--nav-width);
 }

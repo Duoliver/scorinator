@@ -33,7 +33,7 @@
 }
 
 .panel {
-  width: 420px;
+  width: 26.25rem;
   max-width: 100%;
   height: 100%;
   background: var(--color-surface);
@@ -42,7 +42,7 @@
   padding: var(--space-8);
   display: flex;
   flex-direction: column;
-  gap: 1.375rem;
+  gap: var(--space-6);
   overflow-y: auto;
 }
 
@@ -64,7 +64,7 @@
   flex: none;
   width: 2rem;
   height: 2rem;
-  font-size: 1rem;
+  font-size: var(--font-size-xl);
   border: var(--border-width) solid var(--color-fg);
   border-radius: var(--radius);
   background: var(--color-surface);

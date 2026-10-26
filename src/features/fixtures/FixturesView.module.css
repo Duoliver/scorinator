@@ -220,6 +220,8 @@
     display: inline;
   }
 
+  /* The same visually hidden rule as `.fullText` above. Each one sits in a
+   * container query with a different width, so the rule is written twice. */
   .score {
     position: absolute;
     width: 1px;

@@ -174,7 +174,7 @@ MVP2 needs new primitives: a searchable picker dialog, a confirm modal, tie card
 
 ## 3. Spec and doc edits to make
 
-The user owns the spec docs. **Applied on 2026-10-26, in Task 74,** except the `PROGRESS.md` item, which the archive of the MVP1 log made obsolete. See [`progress-reports/074-spec-edits.md`](/progress-reports/074-spec-edits.md) for the text of each edit.
+The user owns the spec docs. **Applied on 2026-10-26, in Task 74,** except the `PROGRESS.md` item, which the archive of the MVP1 log made obsolete. See [`docs/tasks/074-spec-edits.md`](/docs/tasks/074-spec-edits.md) for the text of each edit.
 
 - **MVP2, Bracket Specifics:** single-match ties and replays are played at a neutral venue (section 1).
 - **MVP2, Tiebreak user story:** the story lists penalties and the coin toss together as "weighted-but-still-uncertain". Reword it so the coin toss is a pure 50/50.

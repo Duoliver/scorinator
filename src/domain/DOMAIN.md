@@ -4,7 +4,7 @@
 
 ## Rules
 
-- **Types only, for now.** A function on these records stays out of `domain/` until the user agrees. See Task 54 in `PROGRESS.md`.
+- **Types only, for now.** A function on these records stays out of `domain/` until the user agrees. See Task 54 in the MVP1 log, `docs/archive/mvp1/PROGRESS.md`.
 - **Imports:** `domain/` imports only `engine/` types. It never imports `app/`, `features/`, `adapters/`, `persistence/`, `design-system/`, Preact, or Tauri.
 - **Who imports it:** `app/` and `features/`.
 - **`engine/` never imports it.** The engine stays generic over its `TeamId`.

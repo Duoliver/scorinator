@@ -59,7 +59,7 @@ A generic component's props interface follows the same pattern: a plain `export 
 
 ## A component has three layers: helpers, a `useX` hook, and the markup
 
-This rule applies to every component in `features/`. Split the code of a component into three layers, each in its own sibling file. The types go in `types.ts`, per the rule above.
+This rule applies to every component in `features/` and `app/` (`app/` added at Task 66, 2026-10-19). Split the code of a component into three layers, each in its own sibling file. The types go in `types.ts`, per the rule above.
 
 1. **A sibling `helpers.tsx` file.** Anything that does not use props, state, or a hook goes here, outside the component file. Examples: static table columns, small render helpers, constants, and pure functions. Use `helpers.ts` when the file holds no JSX. A component with no such code has no helpers file.
 2. **A `useX` hook in a sibling `useX.ts` file.** Store reads, derived data, effects, refs, and event handlers go here. The hook returns data that is ready for the view, for example rows with the team name already joined in.

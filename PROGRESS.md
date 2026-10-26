@@ -25,14 +25,14 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | # | Task | Module | Status | Started | Completed | Task file | Notes |
 |---|------|--------|--------|---------|-----------|-----------|-------|
 | 74 | Spec and doc edits: apply the 8 edits listed in `docs/mvp1-to-mvp2-impact-review.md` §3 | `docs/` | ✅ Done | 2026-10-26 | 2026-10-26 | [074](/docs/tasks/074-spec-edits.md) | Sprint 0. Edits 1 to 6 and 8 applied. Edit 7 dropped. |
-| 75 | Settle open decision 1: CSV import matching | `adapters/csv`, `app/data` | ⬜ Not started |  |  |  | Sprint 0. See Open questions. Can close inside Task 94, 95, or 96. |
-| 76 | Settle open decision 2: the database | `persistence/`, `adapters/` | ⬜ Not started |  |  |  | Sprint 0. See Open questions. Can close inside Task 95. |
-| 77 | Settle open decision 3: stable fixture IDs | `engine/round-robin`, `domain/` | ⬜ Not started |  |  |  | Sprint 0. See Open questions. Can close inside Task 86 or 89. |
-| 78 | Settle open decision 4: qualification | `engine/standings` | ⬜ Not started |  |  |  | Sprint 0. See Open questions. Can close inside Task 86, 87, or 92. |
-| 79 | Settle open decision 5: who hosts the second leg of a two-legged tie | `engine/bracket` | ⬜ Not started |  |  |  | Sprint 0. See Open questions. Deferred by the user. Can close inside Task 89. |
-| 80 | Settle open decision 6: the AET and penalty models | `engine/scorination`, `engine/tiebreak` | ⬜ Not started |  |  |  | Sprint 0. See Open questions. Needs test bands (`ENGINE.md`). Can close inside Task 88. |
-| 81 | Settle open decision 7: when OVR is rolled | `engine/tier-ovr`, `app/state` | ⬜ Not started |  |  |  | Sprint 0. See Open questions. Can close inside Task 93 or 94. |
-| 82 | Settle open decision 8: the single duels generator | `engine/round-robin` | ⬜ Not started |  |  |  | Sprint 0. See Open questions. Can close inside Task 91. |
+| 75 | Settle open decision 1: CSV import matching | `adapters/csv`, `app/data` | ⬜ Not started |  |  |  | Sprint 0. See Open questions. Related epics: Tasks 94, 95, 96. One of them can settle this decision. |
+| 76 | Settle open decision 2: the database | `persistence/`, `adapters/` | ⬜ Not started |  |  |  | Sprint 0. See Open questions. Related epic: Task 95. It can settle this decision. |
+| 77 | Settle open decision 3: stable fixture IDs | `engine/round-robin`, `domain/` | ⬜ Not started |  |  |  | Sprint 0. See Open questions. Related epics: Tasks 86, 89. One of them can settle this decision. |
+| 78 | Settle open decision 4: qualification | `engine/standings` | ⬜ Not started |  |  |  | Sprint 0. See Open questions. Related epics: Tasks 86, 87, 92. One of them can settle this decision. |
+| 79 | Settle open decision 5: who hosts the second leg of a two-legged tie | `engine/bracket` | ⬜ Not started |  |  |  | Sprint 0. See Open questions. Deferred by the user. Related epic: Task 89. It can settle this decision. |
+| 80 | Settle open decision 6: the AET and penalty models | `engine/scorination`, `engine/tiebreak` | ⬜ Not started |  |  |  | Sprint 0. See Open questions. Needs test bands (`ENGINE.md`). Related epic: Task 88. It can settle this decision. |
+| 81 | Settle open decision 7: when OVR is rolled | `engine/tier-ovr`, `app/state` | ⬜ Not started |  |  |  | Sprint 0. See Open questions. Related epics: Tasks 93, 94. One of them can settle this decision. |
+| 82 | Settle open decision 8: the single duels generator | `engine/round-robin` | ⬜ Not started |  |  |  | Sprint 0. See Open questions. Related epic: Task 91. It can settle this decision. |
 | 83 | MVP2 design reference: add the Claude Design handoff bundle for MVP2 at `docs/design-reference/MVP2/`, or decide to build the MVP2 screens without one | `docs/design-reference` | ⬜ Not started |  |  |  | Sprint 0. Only `docs/design-reference/MVP1/` exists. |
 | 84 | Split the MVP2 epics into build task rows, in build order | `PROGRESS.md` | ⬜ Not started |  |  |  | Sprint 0. Do it last, after the refinement Tasks 86 to 96. |
 | 85 | MVP2 workflow directives: refined user stories in their own files, short status board notes with detail in a task file, and one task for every activity | `PROGRESS.md`, `docs/` | ✅ Done | 2026-10-26 | 2026-10-26 | [085](/docs/tasks/085-workflow-directives.md) | Task created by User - 2026-10-26. |
@@ -48,12 +48,13 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 95 | Refine epic 10, File Module: refined stories in `docs/user-stories/mvp2/10-file-module.md` | `docs/user-stories` | ⬜ Not started |  |  |  | Sprint 0. Related decisions: 1 and 2 (Tasks 75, 76). |
 | 96 | Refine epic 11, Identity & Provenance: refined stories in `docs/user-stories/mvp2/11-identity-provenance.md` | `docs/user-stories` | ⬜ Not started |  |  |  | Sprint 0. Related decision: 1 (Task 75). |
 | 97 | Fix the `docs/tdd` link in `CLAUDE.md`, and check the other repo links | `CLAUDE.md`, `docs/` | ⬜ Not started |  |  | [097](/docs/tasks/097-tdd-link.md) | Task created by User - 2026-10-26. Criteria wait for the user's OK. |
+| 98 | Reword the decision rows: "Can close inside Task X" becomes "Related epics: … One of them can settle this decision." | `PROGRESS.md` | 🟩 Review | 2026-10-26 |  | [098](/docs/tasks/098-decision-row-wording.md) | Task created by User - 2026-10-26. |
 
 **Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input, see Open Questions) · 🟩 Review · ✅ Done · ❌ Cancelled (the reason is in the Notes column)
 
 **Note on numbering:** MVP2 task numbers continue from the MVP1 log, which ends at Task 73. Code comments and docs name tasks by number, for example "(Task 30)", so each number must stay unique across both logs. A task number below 74 is an MVP1 task. Find it in the archive.
 
-**Note on sprint 0:** Tasks 74 to 96 are sprint 0. They settle the specs, the open decisions, the refined stories, and the design reference before MVP2 code starts. A decision task (75 to 82) can close inside the refinement task of a related epic. Task 84 comes last, because the build tasks come from the refined stories. The user can edit, reorder, or cancel any of these tasks.
+**Note on sprint 0:** Tasks 74 to 96 are sprint 0. They settle the specs, the open decisions, the refined stories, and the design reference before MVP2 code starts. A refinement task can settle a decision of its epic (Tasks 75 to 82). The decision task is then Done, and its notes link to the refinement task. Task 84 comes last, because the build tasks come from the refined stories. The user can edit, reorder, or cancel any of these tasks.
 
 Do not reorder or renumber completed rows. Add a new task at the bottom of the table as soon as you identify it. The MVP2 task list in the table above is a starting point, not a full list. A session should add a row for anything it finds it needs, for example a primitive that turns out to be required earlier than planned.
 

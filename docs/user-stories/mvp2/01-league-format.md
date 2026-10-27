@@ -44,19 +44,28 @@ As a user, I want to assign a distinct format to each phase (round robin, groups
 
 **Acceptance criteria:**
 
-- [ ] Each phase has a format field with five choices: Round robin (two-way), Round robin (single duels), Groups (two-way), Groups (single duels), and Bracket.
+- [ ] Each phase has a format field with five choices. The field shows the full labels: "Round robin (two-way)", "Round robin (single duels)", "Groups round robin (two-way)", "Groups round robin (single duels)", and "Bracket".
 - [ ] A change of format keeps the phase in its place in the list.
-- [ ] Each format has one label. The labels are: "Round robin (two-way)", "Round robin (single duels)", "Groups (two-way)", "Groups (single duels)", "Bracket (single match)", and "Bracket (two-legged)". The bracket label follows the tie setting of epic 04.
-- [ ] A phase has no custom name. The format label names it everywhere.
-- [ ] The dashboard card joins the phase labels with " → ", for example "Groups (two-way) → Bracket (single match)". A one-phase league shows one label.
-- [ ] The card progress text names the phase number, the phase label, and the matchday. For example: "Phase 2 of 3 · Groups (two-way) · Matchday 3 of 6". The exact text for a bracket round is in epic 04 and epic 07.
+- [ ] The phase step and the Review step show the full label. The Review step adds the phase detail, for example "2 groups · Top 2 advance". For a bracket, the detail shows the tie setting, for example "Two-legged · AET on · Penalties".
+- [ ] Each format family also has a fixed short name: "Round robin", "Group Stage", or "Bracket". A phase has no custom name.
+- [ ] The dashboard card of a one-phase league shows the full label, for example "Round robin (two-way) · 8 teams · Home adv. on", as in MVP1.
+- [ ] The dashboard card of a league with several phases joins the short names with " → ", for example "Group Stage → Bracket · 8 teams · Home adv. on".
+- [ ] Every dashboard card keeps the points pill, for example "3/1/0 pts".
+- [ ] The League Detail header uses the same text as the card, plus the points, for example "Group Stage → Bracket · 16 teams · Home adv. on · 3/1/0 pts".
+- [ ] League Detail of a league with several phases has one tab for each phase, with its number and short name, for example "1 · Group Stage" and "2 · Bracket".
+- [ ] The card shows a progress badge:
+  - "Setup" before the league starts.
+  - "MD 7/16" during a round-robin or group phase: the current matchday and the matchday count of that phase.
+  - The round name during a bracket phase, for example "Quarter-finals".
+  - "Complete" when every phase is finished.
+- [ ] The League Detail header shows the progress with the short name, for example "Group Stage · MD 6/6".
 - [ ] The manifest summary row holds the phase labels and the progress (Task 76).
 - [ ] The phase step shows a note: the league's home-advantage toggle applies to round-robin and group phases, and to two-legged ties only.
 - [ ] One points system (win/draw/loss) applies to every round-robin and group phase of the league, as in MVP1. A bracket uses no points.
 
-**Out of scope:** the settings of each format. Group count and group assignment are in epic 02. AET and the tiebreak method are in epic 03. Tie settings, byes, and the power-of-2 warning are in epic 04. Custom phase names are parked in `scorinator-future-features.md` §7.
+**Out of scope:** the settings of each format. Group count and group assignment are in epic 02. AET and the tiebreak method are in epic 03. Tie settings, byes, and the power-of-2 warning are in epic 04. Custom phase names are parked in `scorinator-future-features.md` §7. The bracket round names are in epic 04 (Task 89).
 
-**Notes:** the user chose format labels only, and one points system for the league, on 2026-10-27 (Task 86 notes). The labels use the spec term "single duels". The card text and progress text come from Task 76 (d).
+**Notes:** the user chose no custom names, and one points system for the league, on 2026-10-27 (Task 86 notes). On 2026-10-27 the user chose the MVP2 handoff for the labels, the short names, and the progress text, and kept the points pill (Task 83, D1 to D4). The card text and progress text come from Task 76 (d).
 
 ---
 

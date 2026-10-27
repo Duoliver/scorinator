@@ -24,6 +24,8 @@ Turn the five spec stories of epic 01 into refined stories, with acceptance crit
 - **2026-10-27:** Claude wrote US-01.1 to US-01.5 from the spec, and US-01.6 for the best M of the next place (gap 3). All six have the status Refined. US-01.6 needs a spec line, with the user's OK.
 - **2026-10-27:** The user agreed all six stories, with the five choices Claude made (labels, fit rules, import check, warning text, home-advantage note). Status: Agreed. The user approved a spec line for US-01.6, and asked how the value M is picked.
 - **2026-10-27:** The user chose "typed, with a suggestion" for M: the user types M, and when the next phase is a Bracket, the phase step suggests the smallest M that gives a power of 2. US-01.6 has two new criteria for it. Claude added the US-01.6 line to `docs/scorinator-mvp2.md` §1 Phase Chaining, with the user's OK.
+- **2026-10-27 (after Done):** The user asked to review the Task 86 stories again after the MVP2 design files arrive (Task 83). The stories stay Agreed until then.
+- **2026-10-27 (after Done):** Task 83 reviewed the stories against the MVP2 handoff. US-01.2 changed: full labels in setup, fixed short names on the card and in League Detail, and the handoff progress badge. The other stories did not change. All six stay Agreed.
 
 ## Report
 

@@ -49,3 +49,8 @@ A big OVR gap gives extreme scores too often. The user judged this not a big pro
 In MVP2, the higher seed always hosts the second leg of a two-legged tie (Task 79). Later, a bracket phase gets a toggle to change this, for example so that the lower seed hosts the second leg.
 
 *Raised during: MVP2 sprint 0, Task 79 (second-leg host), 2026-10-27.*
+
+## 7. Custom phase names
+In MVP2, a phase has no name of its own. Its format label names it, for example "Groups (two-way)" (Task 86, US-01.2). Later, the user can give each phase a name, for example "Group stage", with the format label as the default.
+
+*Raised during: MVP2 sprint 0, Task 86 (League Format refinement), 2026-10-27.*

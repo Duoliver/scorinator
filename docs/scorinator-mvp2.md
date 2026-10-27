@@ -13,6 +13,7 @@ Builds on MVP 1 (single round-robin league). MVP 2 introduces **mixed-format lea
 ### Phase Chaining
 - A league is a sequence of **phases**. Each phase has its own format.
 - Each phase defines **advancement requisites**: how many teams qualify from each group/table into the next phase.
+- A Groups phase can also send the **best M teams of the next place**, for example the 4 best third-placed teams. The user types M. When the next phase is a Bracket, setup suggests the M that makes the qualifier count a power of 2. The best M are ordered across groups by the standings rules, per match played if group sizes differ. *(Added on 2026-10-27, MVP2 Task 86.)*
 - **Points/stats reset to zero between phases** — each phase is scored independently (a team's Group Stage record does not carry into the Bracket phase, etc.).
 - **Groups Round Robin can be the final phase** of a league (only Bracket has the "final phase only" restriction). This produces **N winners instead of one** — one per group, with no further consolidation into a single champion. The league creation wizard shows a **non-blocking warning** if the last configured phase is Groups, so the user is aware before finishing setup. Anything downstream that expects "the league winner" or "top N finishers" (the Prize event, promotion, Cup feeder counts) treats **each group winner independently** — e.g. all N teams receive the Prize event, and all N count toward "top N" slots individually.
 

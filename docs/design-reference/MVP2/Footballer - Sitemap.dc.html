@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Barlow+Semi+Condensed:wght@700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet">
+  <style>
+    html, body { margin: 0; overflow: auto; }
+    a { color: var(--color-accent, #17551C); }
+    a:hover { color: var(--color-fg, #1A1A1A); }
+  </style>
+</helmet>
+<div style="--color-bg:#F2F2F0; --color-surface:#FFFFFF; --color-fg:#1A1A1A; --color-fg-muted:#5C5C5C; --color-accent:#17551C; --color-accent-fg:#FFFFFF; --color-line:#B9B9B4; --font-heading:'Barlow',sans-serif; --font-condensed:'Barlow Semi Condensed',sans-serif; --font-body:'Barlow',sans-serif; --font-mono:'JetBrains Mono',monospace; background:var(--color-bg); color:var(--color-fg); font-family:var(--font-body); min-height:100vh; width:100%; padding:36px; box-sizing:border-box; overflow-x:auto;">
+
+  <div style="margin-bottom:36px;">
+    <div style="font-family:var(--font-condensed); font-weight:700; font-size:13px; letter-spacing:0.1em; text-transform:uppercase; color:var(--color-accent);">Footballer</div>
+    <h1 style="margin:6px 0 0; font-family:var(--font-heading); font-weight:700; font-size:32px;">Sitemap</h1>
+    <p style="margin:8px 0 0; color:var(--color-fg-muted); font-size:14px; max-width:640px;">Current screens and navigation as of Aug 19, 2026. Dashed boxes are states/sub-views reached by props or toggles, not separate files.</p>
+  </div>
+
+  <!-- Row 1: App shell / sidebar destinations -->
+  <div style="display:flex; align-items:flex-start; gap:0;">
+    <div style="display:flex; flex-direction:column; align-items:center;">
+      <div style="font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--color-fg-muted); margin-bottom:8px;">Persistent sidebar</div>
+      <div style="border:2px solid var(--color-fg); background:var(--color-fg); color:var(--color-surface); padding:14px 22px; font-family:var(--font-heading); font-weight:700; font-size:15px;">Footballer</div>
+    </div>
+  </div>
+
+  <div style="display:flex; gap:32px; margin-top:18px; flex-wrap:wrap;">
+
+    <!-- Leagues branch -->
+    <div style="display:flex; flex-direction:column; align-items:center; gap:0;">
+      <div style="width:2px; height:24px; background:var(--color-line);"></div>
+      <a href="Footballer - Leagues Dashboard.dc.html" style="text-decoration:none; border:2px solid var(--color-fg); background:var(--color-surface); box-shadow:4px 4px 0 var(--color-fg); padding:16px 20px; min-width:170px; text-align:center; font-family:var(--font-heading); font-weight:700; font-size:15px; color:var(--color-fg);">Leagues Dashboard</a>
+      <div style="font-size:11px; color:var(--color-fg-muted); margin-top:6px; max-width:220px; text-align:center;">League cards, "+ New League"</div>
+
+      <div style="width:2px; height:28px; background:var(--color-line);"></div>
+      <div style="display:flex; gap:18px; flex-wrap:wrap; max-width:680px;">
+
+        <div style="display:flex; flex-direction:column; align-items:center;">
+          <a href="Footballer - League Setup Wizard.dc.html" style="text-decoration:none; border:2px solid var(--color-fg); background:var(--color-surface); box-shadow:3px 3px 0 var(--color-fg); padding:12px 16px; width:170px; text-align:center; font-family:var(--font-heading); font-weight:700; font-size:13px; color:var(--color-fg);">League Setup Wizard</a>
+          <div style="font-size:10px; color:var(--color-fg-muted); margin-top:6px; text-align:center;">4-step stepper</div>
+          <div style="width:2px; height:16px; background:var(--color-line);"></div>
+          <div style="display:flex; gap:6px;">
+            <div style="border:1.5px dashed var(--color-line); background:var(--color-bg); padding:6px 9px; font-family:var(--font-mono); font-size:10px; color:var(--color-fg-muted);">1 Details</div>
+            <div style="border:1.5px dashed var(--color-line); background:var(--color-bg); padding:6px 9px; font-family:var(--font-mono); font-size:10px; color:var(--color-fg-muted);">2 Phases</div>
+            <div style="border:1.5px dashed var(--color-line); background:var(--color-bg); padding:6px 9px; font-family:var(--font-mono); font-size:10px; color:var(--color-fg-muted);">3 Teams</div>
+            <div style="border:1.5px dashed var(--color-line); background:var(--color-bg); padding:6px 9px; font-family:var(--font-mono); font-size:10px; color:var(--color-fg-muted);">4 Review</div>
+          </div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; align-items:center;">
+          <a href="Footballer - League Detail.dc.html" style="text-decoration:none; border:2px solid var(--color-fg); background:var(--color-surface); box-shadow:3px 3px 0 var(--color-fg); padding:12px 16px; width:170px; text-align:center; font-family:var(--font-heading); font-weight:700; font-size:13px; color:var(--color-fg);">League Detail — Round Robin</a>
+          <div style="font-size:10px; color:var(--color-fg-muted); margin-top:6px; text-align:center;">Single-phase league</div>
+          <div style="width:2px; height:16px; background:var(--color-line);"></div>
+          <div style="display:flex; gap:6px;">
+            <div style="border:1.5px dashed var(--color-line); background:var(--color-bg); padding:6px 9px; font-family:var(--font-mono); font-size:10px; color:var(--color-fg-muted);">Standings</div>
+            <div style="border:1.5px dashed var(--color-line); background:var(--color-bg); padding:6px 9px; font-family:var(--font-mono); font-size:10px; color:var(--color-fg-muted);">Fixtures</div>
+          </div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; align-items:center;">
+          <a href="Footballer - League Detail - Mixed.dc.html" style="text-decoration:none; border:2px solid var(--color-fg); background:var(--color-surface); box-shadow:3px 3px 0 var(--color-fg); padding:12px 16px; width:200px; text-align:center; font-family:var(--font-heading); font-weight:700; font-size:13px; color:var(--color-fg);">League Detail — Mixed</a>
+          <div style="font-size:10px; color:var(--color-fg-muted); margin-top:6px; text-align:center;">Group phase → Bracket phase</div>
+          <div style="width:2px; height:16px; background:var(--color-line);"></div>
+
+          <div style="display:flex; gap:14px; flex-wrap:wrap; justify-content:center;">
+            <div style="display:flex; flex-direction:column; align-items:center;">
+              <div style="border:2px solid var(--color-fg); background:var(--color-bg); padding:8px 12px; font-family:var(--font-condensed); font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:0.03em;">Group phase</div>
+              <div style="width:2px; height:12px; background:var(--color-line);"></div>
+              <div style="display:flex; gap:6px;">
+                <div style="border:1.5px dashed var(--color-line); background:var(--color-surface); padding:6px 9px; font-family:var(--font-mono); font-size:10px; color:var(--color-fg-muted);">Standings</div>
+                <div style="border:1.5px dashed var(--color-line); background:var(--color-surface); padding:6px 9px; font-family:var(--font-mono); font-size:10px; color:var(--color-fg-muted);">Fixtures</div>
+              </div>
+            </div>
+            <div style="display:flex; flex-direction:column; align-items:center;">
+              <div style="border:2px solid var(--color-fg); background:var(--color-bg); padding:8px 12px; font-family:var(--font-condensed); font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:0.03em;">Bracket phase</div>
+              <div style="width:2px; height:12px; background:var(--color-line);"></div>
+              <div style="display:flex; gap:6px;">
+                <div style="border:1.5px dashed var(--color-line); background:var(--color-surface); padding:6px 9px; font-family:var(--font-mono); font-size:10px; color:var(--color-fg-muted);">Seed List</div>
+                <div style="border:1.5px dashed var(--color-line); background:var(--color-surface); padding:6px 9px; font-family:var(--font-mono); font-size:10px; color:var(--color-fg-muted);">Bracket (QF→SF→F)</div>
+              </div>
+              <div style="font-size:9.5px; color:var(--color-fg-muted); margin-top:5px; text-align:center; max-width:200px;">demoUnevenQualifiers prop: 6-qualifier / 2-bye state</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Teams branch -->
+    <div style="display:flex; flex-direction:column; align-items:center;">
+      <div style="width:2px; height:24px; background:var(--color-line);"></div>
+      <a href="Footballer - Teams.dc.html" style="text-decoration:none; border:2px solid var(--color-fg); background:var(--color-surface); box-shadow:4px 4px 0 var(--color-fg); padding:16px 20px; min-width:150px; text-align:center; font-family:var(--font-heading); font-weight:700; font-size:15px; color:var(--color-fg);">Teams</a>
+      <div style="font-size:11px; color:var(--color-fg-muted); margin-top:6px; max-width:200px; text-align:center;">Roster list, search, create/edit team</div>
+    </div>
+
+    <!-- File Manager branch -->
+    <div style="display:flex; flex-direction:column; align-items:center;">
+      <div style="width:2px; height:24px; background:var(--color-line);"></div>
+      <a href="Footballer - File Manager.dc.html" style="text-decoration:none; border:2px solid var(--color-fg); background:var(--color-surface); box-shadow:4px 4px 0 var(--color-fg); padding:16px 20px; min-width:150px; text-align:center; font-family:var(--font-heading); font-weight:700; font-size:15px; color:var(--color-fg);">File Manager</a>
+      <div style="font-size:11px; color:var(--color-fg-muted); margin-top:6px; max-width:220px; text-align:center;">Export/import leagues, teams, database</div>
+    </div>
+
+  </div>
+
+  <div style="margin-top:44px; display:flex; gap:20px; font-size:11px; color:var(--color-fg-muted); align-items:center;">
+    <div style="display:flex; align-items:center; gap:6px;"><div style="width:14px; height:14px; border:2px solid var(--color-fg); background:var(--color-surface);"></div>Screen (file)</div>
+    <div style="display:flex; align-items:center; gap:6px;"><div style="width:14px; height:14px; border:1.5px dashed var(--color-line); background:var(--color-bg);"></div>Sub-view / state within a screen</div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

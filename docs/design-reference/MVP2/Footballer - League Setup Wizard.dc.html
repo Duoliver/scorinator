@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Semi+Condensed:wght@700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; }
+    a { color: var(--color-accent, #17551C); }
+    a:hover { color: var(--color-fg, #1A1A1A); }
+  </style>
+</helmet>
+<div style="--color-bg:#F2F2F0; --color-surface:#FFFFFF; --color-fg:#1A1A1A; --color-fg-muted:#5C5C5C; --color-accent:#17551C; --color-accent-fg:#FFFFFF; --color-error:#8C1414; --color-error-fg:#FFFFFF; --color-warning:#D9A900; --color-warning-fg:#1A1A1A; --font-heading:'Barlow',sans-serif; --font-condensed:'Barlow Semi Condensed',sans-serif; --font-body:'Barlow',sans-serif; --font-mono:'JetBrains Mono',monospace; background:var(--color-bg); color:var(--color-fg); font-family:var(--font-body); min-height:100vh; display:flex;">
+
+  <nav style="width:220px; flex:none; background:var(--color-surface); border-right:2px solid var(--color-fg); display:flex; flex-direction:column; padding:24px 0;">
+    <div style="font-family:var(--font-condensed); font-weight:700; font-size:20px; letter-spacing:0.06em; text-transform:uppercase; padding:0 20px 28px;">Footballer</div>
+    <a href="Footballer - Leagues Dashboard.dc.html" style="display:flex; align-items:center; gap:10px; padding:12px 20px; font-family:var(--font-heading); font-weight:600; font-size:15px; text-decoration:none; color:var(--color-fg);">Leagues</a>
+    <a href="Footballer - Teams.dc.html" style="display:flex; align-items:center; gap:10px; padding:12px 20px; font-family:var(--font-heading); font-weight:600; font-size:15px; text-decoration:none; color:var(--color-fg);">Teams</a>
+    <a href="Footballer - File Manager.dc.html" style="display:flex; align-items:center; gap:10px; padding:12px 20px; font-family:var(--font-heading); font-weight:600; font-size:15px; text-decoration:none; color:var(--color-fg);">File</a>
+  </nav>
+
+  <div style="flex:1; padding:40px 48px; display:flex; flex-direction:column; gap:32px; max-width:920px;">
+    <div>
+      <a href="Footballer - Leagues Dashboard.dc.html" style="font-size:13px; text-decoration:none;">← Leagues</a>
+      <h1 style="margin:8px 0 0; font-family:var(--font-heading); font-weight:700; font-size:32px;">New league</h1>
+    </div>
+
+    <!-- STEPPER -->
+    <div style="display:flex; border:2px solid var(--color-fg);">
+      <button onClick="{{ goStep1 }}" style="flex:1; padding:14px; font-family:var(--font-condensed); font-weight:700; font-size:13px; text-transform:uppercase; letter-spacing:0.04em; border:none; border-right:2px solid var(--color-fg); cursor:pointer; background:{{ step1Bg }}; color:{{ step1Fg }};">1 · Details</button>
+      <button onClick="{{ goStep2 }}" style="flex:1; padding:14px; font-family:var(--font-condensed); font-weight:700; font-size:13px; text-transform:uppercase; letter-spacing:0.04em; border:none; border-right:2px solid var(--color-fg); cursor:pointer; background:{{ step2Bg }}; color:{{ step2Fg }};">2 · Phases</button>
+      <button onClick="{{ goStep3 }}" style="flex:1; padding:14px; font-family:var(--font-condensed); font-weight:700; font-size:13px; text-transform:uppercase; letter-spacing:0.04em; border:none; border-right:2px solid var(--color-fg); cursor:pointer; background:{{ step3Bg }}; color:{{ step3Fg }};">3 · Teams</button>
+      <button onClick="{{ goStep4 }}" style="flex:1; padding:14px; font-family:var(--font-condensed); font-weight:700; font-size:13px; text-transform:uppercase; letter-spacing:0.04em; border:none; cursor:pointer; background:{{ step4Bg }}; color:{{ step4Fg }};">4 · Review</button>
+    </div>
+
+    <!-- STEP 1: DETAILS -->
+    <sc-if value="{{ isStep1 }}" hint-placeholder-val="{{ true }}">
+      <div style="background:var(--color-surface); border:2px solid var(--color-fg); box-shadow:4px 4px 0 var(--color-fg); padding:28px; display:flex; flex-direction:column; gap:22px;">
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <label style="font-family:var(--font-condensed); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">League name</label>
+          <input value="{{ leagueName }}" onChange="{{ setLeagueName }}" placeholder="e.g. Coastal Premier" style="font-family:var(--font-body); font-size:16px; padding:12px 14px; border:2px solid var(--color-fg); background:var(--color-surface); color:var(--color-fg);" />
+        </div>
+        <div style="display:flex; align-items:center; gap:14px;">
+          <button onClick="{{ toggleHomeAdv }}" style="width:52px; height:26px; border:2px solid var(--color-fg); background:{{ homeAdvTrackBg }}; position:relative; cursor:pointer; padding:0;">
+            <div style="position:absolute; top:2px; {{ homeAdvKnobSide }}: 2px; width:18px; height:18px; background:{{ homeAdvKnobBg }}; border:2px solid var(--color-fg);"></div>
+          </button>
+          <span style="font-size:15px; font-weight:600;">Home advantage {{ homeAdvLabel }}</span>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <label style="font-family:var(--font-condensed); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Points — Win / Draw / Loss</label>
+          <div style="display:flex; gap:8px; max-width:220px;">
+            <input value="3" style="width:100%; font-family:var(--font-mono); font-size:16px; padding:11px 8px; text-align:center; border:2px solid var(--color-fg); background:var(--color-surface); color:var(--color-fg);" />
+            <input value="1" style="width:100%; font-family:var(--font-mono); font-size:16px; padding:11px 8px; text-align:center; border:2px solid var(--color-fg); background:var(--color-surface); color:var(--color-fg);" />
+            <input value="0" style="width:100%; font-family:var(--font-mono); font-size:16px; padding:11px 8px; text-align:center; border:2px solid var(--color-fg); background:var(--color-surface); color:var(--color-fg);" />
+          </div>
+        </div>
+        <button onClick="{{ goStep2 }}" style="align-self:flex-end; font-family:var(--font-heading); font-weight:700; font-size:15px; text-transform:uppercase; letter-spacing:0.03em; padding:13px 24px; border:2px solid var(--color-fg); background:var(--color-accent); color:var(--color-accent-fg); box-shadow:4px 4px 0 var(--color-fg); cursor:pointer;" style-hover="transform:translate(-2px,-2px); box-shadow:6px 6px 0 var(--color-fg);">Next: Phases →</button>
+      </div>
+    </sc-if>
+
+    <!-- STEP 2: PHASES -->
+    <sc-if value="{{ isStep2 }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; flex-direction:column; gap:16px;">
+        <p style="margin:0; font-size:13px; color:var(--color-fg-muted);">A league runs as a sequence of phases. Stats reset to zero between phases. Bracket may only be the final phase.</p>
+
+        <sc-for list="{{ phases }}" as="ph" hint-placeholder-count="2">
+          <div style="background:var(--color-surface); border:2px solid var(--color-fg); box-shadow:4px 4px 0 var(--color-fg); padding:22px; display:flex; flex-direction:column; gap:16px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <span style="font-family:var(--font-mono); font-weight:700; font-size:12px; padding:4px 9px; border:2px solid var(--color-fg); background:var(--color-fg); color:var(--color-surface);">{{ ph.orderLabel }}</span>
+                <span style="font-family:var(--font-heading); font-weight:700; font-size:17px;">{{ ph.name }}</span>
+              </div>
+              <div style="display:flex; gap:6px;">
+                <button onClick="{{ ph.onMoveUp }}" disabled="{{ ph.isFirst }}" style="width:30px; height:30px; border:2px solid var(--color-fg); background:var(--color-surface); cursor:pointer; opacity:{{ ph.moveUpOpacity }};" style-hover="background:var(--color-fg); color:var(--color-surface);">↑</button>
+                <button onClick="{{ ph.onMoveDown }}" disabled="{{ ph.isLast }}" style="width:30px; height:30px; border:2px solid var(--color-fg); background:var(--color-surface); cursor:pointer; opacity:{{ ph.moveDownOpacity }};" style-hover="background:var(--color-fg); color:var(--color-surface);">↓</button>
+                <button onClick="{{ ph.onDelete }}" disabled="{{ ph.onlyOne }}" style="width:30px; height:30px; border:2px solid var(--color-fg); background:var(--color-surface); cursor:pointer; opacity:{{ ph.deleteOpacity }};" style-hover="background:var(--color-error); color:var(--color-error-fg);">✕</button>
+              </div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:6px; max-width:340px;">
+              <label style="font-family:var(--font-condensed); font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:0.05em;">Format</label>
+              <div style="position:relative;">
+                <select onChange="{{ ph.onFormatChange }}" style="width:100%; font-family:var(--font-body); font-size:14px; padding:10px 12px; border:2px solid var(--color-fg); background:var(--color-surface); color:var(--color-fg); appearance:none;">
+                  <option value="rr2" selected="{{ ph.isRr2 }}">Round robin (two-way)</option>
+                  <option value="rr1" selected="{{ ph.isRr1 }}">Round robin (single duels)</option>
+                  <option value="grp2" selected="{{ ph.isGrp2 }}">Groups round robin (two-way)</option>
+                  <option value="grp1" selected="{{ ph.isGrp1 }}">Groups round robin (single duels)</option>
+                  <option value="bracket" selected="{{ ph.isBracket }}">Bracket</option>
+                </select>
+                <span style="position:absolute; right:12px; top:10px; pointer-events:none;">▾</span>
+              </div>
+              <sc-if value="{{ ph.bracketWarning }}" hint-placeholder-val="{{ false }}">
+                <div style="font-size:12px; color:var(--color-error); font-weight:600;">Bracket can only be the last phase — move this phase down or delete phases after it.</div>
+              </sc-if>
+            </div>
+
+            <sc-if value="{{ ph.isGroups }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; flex-direction:column; gap:6px; max-width:200px;">
+                <label style="font-family:var(--font-condensed); font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:0.05em;">Number of groups</label>
+                <input value="{{ ph.groupCount }}" onChange="{{ ph.onGroupCountChange }}" style="font-family:var(--font-mono); font-size:15px; padding:10px 8px; text-align:center; border:2px solid var(--color-fg); background:var(--color-surface); color:var(--color-fg);" />
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ ph.showAdvancement }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <label style="font-family:var(--font-condensed); font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:0.05em; white-space:nowrap;">Top</label>
+                <input value="{{ ph.advanceCount }}" onChange="{{ ph.onAdvanceChange }}" style="width:56px; font-family:var(--font-mono); font-size:15px; padding:8px; text-align:center; border:2px solid var(--color-fg); background:var(--color-surface); color:var(--color-fg);" />
+                <span style="font-size:13px;">advance{{ ph.groupSuffix }} to the next phase</span>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ ph.isBracket }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; flex-direction:column; gap:14px; border-top:2px solid var(--color-fg); padding-top:14px;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                  <button onClick="{{ ph.onToggleAet }}" style="width:52px; height:26px; border:2px solid var(--color-fg); background:{{ ph.aetTrackBg }}; position:relative; cursor:pointer; padding:0;">
+                    <div style="position:absolute; top:2px; {{ ph.aetKnobSide }}: 2px; width:18px; height:18px; background:{{ ph.aetKnobBg }}; border:2px solid var(--color-fg);"></div>
+                  </button>
+                  <span style="font-size:14px; font-weight:600;">Plays AET {{ ph.aetLabel }}</span>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:6px; max-width:280px;">
+                  <label style="font-family:var(--font-condensed); font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:0.05em;">Tiebreak method</label>
+                  <div style="display:flex; border:2px solid var(--color-fg); width:fit-content;">
+                    <button onClick="{{ ph.onPickPenalties }}" style="padding:8px 14px; font-family:var(--font-condensed); font-weight:700; font-size:12px; text-transform:uppercase; border:none; border-right:2px solid var(--color-fg); cursor:pointer; background:{{ ph.penaltiesBg }}; color:{{ ph.penaltiesFg }};">Penalties</button>
+                    <button onClick="{{ ph.onPickReplay }}" style="padding:8px 14px; font-family:var(--font-condensed); font-weight:700; font-size:12px; text-transform:uppercase; border:none; cursor:pointer; background:{{ ph.replayBg }}; color:{{ ph.replayFg }};">Replay → Coin toss</button>
+                  </div>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:6px; max-width:280px;">
+                  <label style="font-family:var(--font-condensed); font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:0.05em;">Tie format</label>
+                  <div style="display:flex; border:2px solid var(--color-fg); width:fit-content;">
+                    <button onClick="{{ ph.onPickSingleLeg }}" style="padding:8px 14px; font-family:var(--font-condensed); font-weight:700; font-size:12px; text-transform:uppercase; border:none; border-right:2px solid var(--color-fg); cursor:pointer; background:{{ ph.singleLegBg }}; color:{{ ph.singleLegFg }};">Single match</button>
+                    <button onClick="{{ ph.onPickTwoLeg }}" style="padding:8px 14px; font-family:var(--font-condensed); font-weight:700; font-size:12px; text-transform:uppercase; border:none; cursor:pointer; background:{{ ph.twoLegBg }}; color:{{ ph.twoLegFg }};">Two-legged</button>
+                  </div>
+                </div>
+                <sc-if value="{{ ph.isTwoLeg }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex; align-items:center; gap:12px;">
+                    <button onClick="{{ ph.onToggleAwayGoals }}" style="width:52px; height:26px; border:2px solid var(--color-fg); background:{{ ph.awayGoalsTrackBg }}; position:relative; cursor:pointer; padding:0;">
+                      <div style="position:absolute; top:2px; {{ ph.awayGoalsKnobSide }}: 2px; width:18px; height:18px; background:{{ ph.awayGoalsKnobBg }}; border:2px solid var(--color-fg);"></div>
+                    </button>
+                    <span style="font-size:14px; font-weight:600;">Away goals rule {{ ph.awayGoalsLabel }}</span>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-if>
+          </div>
+        </sc-for>
+
+        <button onClick="{{ addPhase }}" style="align-self:flex-start; font-family:var(--font-heading); font-weight:700; font-size:13px; text-transform:uppercase; letter-spacing:0.02em; padding:11px 18px; border:2px solid var(--color-fg); background:var(--color-surface); color:var(--color-fg); box-shadow:3px 3px 0 var(--color-fg); cursor:pointer;" style-hover="transform:translate(-1px,-1px); box-shadow:4px 4px 0 var(--color-fg);">+ Add phase</button>
+
+        <div style="display:flex; justify-content:space-between;">
+          <button onClick="{{ goStep1 }}" style="font-family:var(--font-heading); font-weight:700; font-size:15px; text-transform:uppercase; letter-spacing:0.03em; padding:13px 24px; border:2px solid var(--color-fg); background:transparent; color:var(--color-fg); cursor:pointer;" style-hover="background:var(--color-fg); color:var(--color-surface);">← Back</button>
+          <button onClick="{{ goStep3 }}" style="font-family:var(--font-heading); font-weight:700; font-size:15px; text-transform:uppercase; letter-spacing:0.03em; padding:13px 24px; border:2px solid var(--color-fg); background:var(--color-accent); color:var(--color-accent-fg); box-shadow:4px 4px 0 var(--color-fg); cursor:pointer;" style-hover="transform:translate(-2px,-2px); box-shadow:6px 6px 0 var(--color-fg);">Next: Teams →</button>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- STEP 3: TEAMS -->
+    <sc-if value="{{ isStep3 }}" hint-placeholder-val="{{ false }}">
+      <div style="background:var(--color-surface); border:2px solid var(--color-fg); box-shadow:4px 4px 0 var(--color-fg); padding:28px; display:flex; flex-direction:column; gap:20px;">
+
+        <!-- EMPTY STATE -->
+        <sc-if value="{{ rosterEmpty }}" hint-placeholder-val="{{ false }}">
+          <div style="border:2px dashed var(--color-fg); padding:56px 24px; display:flex; flex-direction:column; align-items:center; gap:14px; text-align:center;">
+            <h3 style="margin:0; font-family:var(--font-heading); font-weight:700; font-size:19px;">No teams added yet</h3>
+            <p style="margin:0; font-size:14px; color:var(--color-fg-muted); max-width:360px;">Add teams from your saved blueprints, or create new ones on the fly.</p>
+            <button onClick="{{ openBulkAdd }}" style="font-family:var(--font-heading); font-weight:700; font-size:14px; text-transform:uppercase; letter-spacing:0.02em; padding:13px 22px; border:2px solid var(--color-fg); background:var(--color-accent); color:var(--color-accent-fg); box-shadow:4px 4px 0 var(--color-fg); cursor:pointer;" style-hover="transform:translate(-2px,-2px); box-shadow:6px 6px 0 var(--color-fg);">+ Add teams</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ rosterNotEmpty }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap;">
+            <input placeholder="Search teams…" value="{{ rosterSearch }}" onChange="{{ setRosterSearch }}" style="flex:1; min-width:180px; font-family:var(--font-body); font-size:15px; padding:11px 12px; border:2px solid var(--color-fg); background:var(--color-surface); color:var(--color-fg);" />
+            <sc-if value="{{ hasGroups }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ shuffleGroups }}" style="font-family:var(--font-heading); font-weight:700; font-size:13px; text-transform:uppercase; letter-spacing:0.02em; padding:11px 16px; border:2px solid var(--color-fg); background:var(--color-surface); color:var(--color-fg); box-shadow:3px 3px 0 var(--color-fg); cursor:pointer; white-space:nowrap;" style-hover="transform:translate(-1px,-1px); box-shadow:4px 4px 0 var(--color-fg);">⟲ Shuffle groups</button>
+            </sc-if>
+            <button onClick="{{ openBulkAdd }}" style="font-family:var(--font-heading); font-weight:700; font-size:13px; text-transform:uppercase; letter-spacing:0.02em; padding:11px 16px; border:2px solid var(--color-fg); background:var(--color-surface); color:var(--color-fg); box-shadow:3px 3px 0 var(--color-fg); cursor:pointer; white-space:nowrap;" style-hover="transform:translate(-1px,-1px); box-shadow:4px 4px 0 var(--color-fg);">+ Add teams</button>
+          </div>
+
+          <!-- FLAT LIST (no groups) -->
+          <sc-if value="{{ noGroups }}" hint-placeholder-val="{{ true }}">
+            <div style="border:2px solid var(--color-fg); display:flex; flex-direction:column;">
+              <sc-for list="{{ teams }}" as="t" hint-placeholder-count="5">
+                <div style="display:flex; align-items:center; gap:14px; padding:12px 16px; border-bottom:2px solid var(--color-fg);">
+                  <div style="width:16px; height:16px; border:2px solid var(--color-fg); flex:none; background:{{ t.colour }};"></div>
+                  <div style="flex:1; font-weight:600; font-size:15px;">{{ t.name }}</div>
+                  <span style="font-family:var(--font-mono); font-weight:700; font-size:12px; padding:3px 8px; border:2px solid var(--color-fg); background:var(--color-fg); color:var(--color-surface);">{{ t.tier }}</span>
+                  <button onClick="{{ t.onEdit }}" title="Edit team" style="width:28px; height:28px; border:2px solid var(--color-fg); background:var(--color-surface); font-size:12px; cursor:pointer; flex:none;" style-hover="background:var(--color-fg); color:var(--color-surface);">✎</button>
+                  <button onClick="{{ t.onSwitch }}" title="Switch team" style="width:28px; height:28px; border:2px solid var(--color-fg); background:var(--color-surface); font-size:12px; cursor:pointer; flex:none;" style-hover="background:var(--color-fg); color:var(--color-surface);">⇄</button>
+                  <button onClick="{{ t.onRemove }}" title="Remove team" style="width:28px; height:28px; border:2px solid var(--color-fg); background:var(--color-surface); font-size:12px; cursor:pointer; flex:none;" style-hover="background:var(--color-error); color:var(--color-error-fg);">✕</button>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <!-- GROUP COLUMNS -->
+          <sc-if value="{{ hasGroups }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; flex-wrap:wrap; gap:16px; padding-bottom:6px;">
+              <sc-for list="{{ groupColumns }}" as="g" hint-placeholder-count="2">
+                <div onDragOver="{{ g.onDragOver }}" onDrop="{{ g.onDrop }}" style="flex:none; width:230px; border:2px solid {{ g.borderColour }}; display:flex; flex-direction:column; transition:border-color 0.1s;">
+                  <div style="padding:10px 14px; border-bottom:2px solid var(--color-fg); background:var(--color-fg); color:var(--color-surface); font-family:var(--font-condensed); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">{{ g.label }}</div>
+                  <sc-for list="{{ g.teams }}" as="t" hint-placeholder-count="4">
+                    <div draggable="{{ dragDropMode }}" onDragStart="{{ t.onDragStart }}" style="display:flex; align-items:center; gap:8px; padding:10px 12px; border-bottom:2px solid var(--color-fg); font-size:13px; cursor:{{ dragCursor }};">
+                      <sc-if value="{{ dragDropMode }}" hint-placeholder-val="{{ true }}">
+                        <span style="color:var(--color-fg-muted); font-size:13px; flex:none;">⠿</span>
+                      </sc-if>
+                      <div style="width:12px; height:12px; border:2px solid var(--color-fg); flex:none; background:{{ t.colour }};"></div>
+                      <span style="flex:1; font-weight:600;">{{ t.name }}</span>
+                      <div style="position:relative; flex:none;">
+                        <button onClick="{{ t.onToggleMenu }}" title="Team options" style="width:22px; height:22px; border:2px solid var(--color-fg); background:var(--color-surface); font-size:13px; cursor:pointer; flex:none;" style-hover="background:var(--color-fg); color:var(--color-surface);">⋮</button>
+                        <sc-if value="{{ t.menuOpen }}" hint-placeholder-val="{{ false }}">
+                          <div style="position:absolute; top:26px; right:0; z-index:15; background:var(--color-surface); border:2px solid var(--color-fg); box-shadow:3px 3px 0 var(--color-fg); display:flex; flex-direction:column; min-width:150px;">
+                            <button onClick="{{ t.onEdit }}" style="display:flex; align-items:center; gap:10px; padding:9px 12px; border:none; border-bottom:1px solid var(--color-divider); background:var(--color-surface); color:var(--color-fg); font-family:var(--font-body); font-size:13px; font-weight:600; cursor:pointer; text-align:left;" style-hover="background:var(--color-bg);"><span style="width:16px; text-align:center;">✎</span>Edit</button>
+                            <button onClick="{{ t.onSwitch }}" style="display:flex; align-items:center; gap:10px; padding:9px 12px; border:none; border-bottom:1px solid var(--color-divider); background:var(--color-surface); color:var(--color-fg); font-family:var(--font-body); font-size:13px; font-weight:600; cursor:pointer; text-align:left;" style-hover="background:var(--color-bg);"><span style="width:16px; text-align:center;">⇄</span>Switch</button>
+                            <button onClick="{{ t.onRemove }}" style="display:flex; align-items:center; gap:10px; padding:9px 12px; border:none; background:var(--color-surface); color:var(--color-error); font-family:var(--font-body); font-size:13px; font-weight:600; cursor:pointer; text-align:left;" style-hover="background:var(--color-error); color:var(--color-error-fg);"><span style="width:16px; text-align:center;">✕</span>Remove</button>
+                          </div>
+                        </sc-if>
+                      </div>
+                      <sc-if value="{{ buttonMode }}" hint-placeholder-val="{{ false }}">
+                        <button onClick="{{ t.onMoveNext }}" title="Move to next group" style="width:24px; height:24px; border:2px solid var(--color-fg); background:var(--color-surface); font-size:12px; cursor:pointer; flex:none;" style-hover="background:var(--color-fg); color:var(--color-surface);">→</button>
+                      </sc-if>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <div style="font-size:13px; color:var(--color-fg-muted);">{{ teamCountLabel }}</div>
+        </sc-if>
+
+        <div style="display:flex; justify-content:space-between;">
+          <button onClick="{{ goStep2 }}" style="font-family:var(--font-heading); font-weight:700; font-size:15px; text-transform:uppercase; letter-spacing:0.03em; padding:13px 24px; border:2px solid var(--color-fg); background:transparent; color:var(--color-fg); cursor:pointer;" style-hover="background:var(--color-fg); color:var(--color-surface);">← Back</button>
+          <button onClick="{{ goStep4 }}" disabled="{{ rosterEmpty }}" style="font-family:var(--font-heading); font-weight:700; font-size:15px; text-transform:uppercase; letter-spacing:0.03em; padding:13px 24px; border:2px solid var(--color-fg); background:{{ nextReviewBg }}; color:{{ nextReviewFg }}; box-shadow:{{ nextReviewShadow }}; opacity:{{ nextReviewOpacity }}; cursor:{{ nextReviewCursor }};" style-hover="{{ nextReviewHover }}">Next: Review →</button>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- STEP 4: REVIEW -->
+    <sc-if value="{{ isStep4 }}" hint-placeholder-val="{{ false }}">
+      <div style="background:var(--color-surface); border:2px solid var(--color-fg); box-shadow:4px 4px 0 var(--color-fg); padding:28px; display:flex; flex-direction:column; gap:22px;">
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <h3 style="margin:0; font-family:var(--font-heading); font-weight:700; font-size:20px;">{{ leagueName }}</h3>
+          <div style="display:flex; gap:8px; font-family:var(--font-mono); font-size:12px; flex-wrap:wrap;">
+            <span style="border:2px solid var(--color-fg); padding:3px 8px;">Home adv. {{ homeAdvLabel }}</span>
+            <span style="border:2px solid var(--color-fg); padding:3px 8px;">3/1/0 pts</span>
+            <span style="border:2px solid var(--color-fg); padding:3px 8px;">{{ teamCountLabel }}</span>
+          </div>
+        </div>
+        <div style="border-top:2px solid var(--color-fg); padding-top:16px; display:flex; flex-direction:column; gap:8px;">
+          <label style="font-family:var(--font-condensed); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:0.05em; color:var(--color-fg-muted); margin-bottom:8px;">Phases</label>
+          <sc-for list="{{ reviewPhases }}" as="ph" hint-placeholder-count="2">
+            <div style="display:flex; align-items:center; gap:10px; font-size:14px;">
+              <span style="font-family:var(--font-mono); font-weight:700; font-size:11px; padding:3px 8px; border:2px solid var(--color-fg); background:var(--color-fg); color:var(--color-surface);">{{ ph.orderLabel }}</span>
+              <span style="flex:1; font-weight:600;">{{ ph.formatLabel }}</span>
+              <span style="font-size:12px; color:var(--color-fg-muted);">{{ ph.detail }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="border-top:2px solid var(--color-fg); padding-top:16px; display:flex; flex-direction:column; gap:8px;">
+          <label style="font-family:var(--font-condensed); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:0.05em; color:var(--color-fg-muted); margin-bottom:8px;">Teams</label>
+          <sc-for list="{{ selectedTeams }}" as="t" hint-placeholder-count="4">
+            <div style="display:flex; align-items:center; gap:12px; font-size:14px;">
+              <div style="width:14px; height:14px; border:2px solid var(--color-fg); background:{{ t.colour }};"></div>
+              <span style="flex:1;">{{ t.name }}</span>
+              <span style="font-family:var(--font-mono); font-size:12px; color:var(--color-fg-muted);">{{ t.tier }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:flex; justify-content:space-between;">
+          <button onClick="{{ goStep3 }}" style="font-family:var(--font-heading); font-weight:700; font-size:15px; text-transform:uppercase; letter-spacing:0.03em; padding:13px 24px; border:2px solid var(--color-fg); background:transparent; color:var(--color-fg); cursor:pointer;" style-hover="background:var(--color-fg); color:var(--color-surface);">← Back</button>
+          <button style="font-family:var(--font-heading); font-weight:700; font-size:15px; text-transform:uppercase; letter-spacing:0.03em; padding:13px 24px; border:2px solid var(--color-fg); background:var(--color-accent); color:var(--color-accent-fg); box-shadow:4px 4px 0 var(--color-fg); cursor:pointer;" style-hover="transform:translate(-2px,-2px); box-shadow:6px 6px 0 var(--color-fg);">Create league</button>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+
+  <!-- CREATE TEAM DRAWER -->
+  <sc-if value="{{ drawerOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeDrawer }}" style="position:fixed; inset:0; background:rgba(26,26,26,0.35); z-index:29;"></div>
+    <div style="position:fixed; top:0; right:0; bottom:0; width:420px; background:var(--color-surface); border-left:3px solid var(--color-fg); box-shadow:-6px 0 0 rgba(26,26,26,0.08); z-index:30; padding:32px; display:flex; flex-direction:column; gap:22px; overflow-y:auto;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+        <h2 style="margin:0; font-family:var(--font-heading); font-weight:700; font-size:24px;">{{ drawerTitle }}</h2>
+        <button onClick="{{ closeDrawer }}" style="border:2px solid var(--color-fg); background:var(--color-surface); width:32px; height:32px; font-size:16px; cursor:pointer;" style-hover="background:var(--color-fg); color:var(--color-surface);">✕</button>
+      </div>
+
+      <sc-if value="{{ isEditingTeam }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <label style="font-family:var(--font-condensed); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Original state</label>
+          <div style="display:grid; grid-template-columns:32px 1fr auto; grid-template-rows:auto auto; column-gap:12px; row-gap:0px; padding:14px; border:2px solid var(--color-fg); background:var(--color-bg);">
+            <div style="grid-column:1; grid-row:1/3; width:32px; height:32px; border:2px solid var(--color-fg); background:{{ originalTeam.colour }};"></div>
+            <span style="grid-column:2; grid-row:1; font-weight:700; font-size:15px; align-self:start;">{{ originalTeam.name }}</span>
+            <span style="grid-column:3; grid-row:1; font-family:var(--font-mono); font-weight:700; font-size:11px; padding:3px 8px; border:2px solid var(--color-fg); background:var(--color-fg); color:var(--color-surface); justify-self:end;">{{ originalTeam.tier }}</span>
+          <span style="grid-column:2; grid-row:2; font-family:var(--font-mono); font-size:12px; color:var(--color-fg-muted); align-self:start; margin-top:-4px;">{{ originalTeam.slug }}</span>
+          </div>
+        </div>
+      </sc-if>
+
+      <div style="display:flex; flex-direction:column; gap:6px;">
+        <label style="font-family:var(--font-condensed); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Team name</label>
+        <input value="{{ newTeam.name }}" onChange="{{ setNewTeamName }}" placeholder="e.g. Salt Marsh United" style="font-family:var(--font-body); font-size:16px; padding:12px 14px; border:2px solid var(--color-fg); background:var(--color-surface); color:var(--color-fg);" style-focus="outline:none; border-color:var(--color-accent); box-shadow:3px 3px 0 var(--color-accent);" />
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:6px;">
+        <label style="font-family:var(--font-condensed); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Slug (auto-generated)</label>
+        <input value="{{ newTeam.slug }}" disabled="" style="font-family:var(--font-mono); font-size:14px; padding:12px 14px; border:2px solid var(--color-fg); background:var(--color-bg); color:var(--color-fg-muted);" />
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <label style="font-family:var(--font-condensed); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Colour</label>
+        <div style="display:grid; grid-template-columns:repeat(8,1fr); gap:8px;">
+          <sc-for list="{{ palette }}" as="c" hint-placeholder-count="16">
+            <button onClick="{{ c.onPick }}" style="width:100%; aspect-ratio:1; background:{{ c.hex }}; border:{{ c.border }}; cursor:pointer; padding:0;"></button>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <label style="font-family:var(--font-condensed); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Tier</label>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <sc-for list="{{ tiers }}" as="tr" hint-placeholder-count="7">
+            <button onClick="{{ tr.onPick }}" style="font-family:var(--font-mono); font-weight:700; font-size:14px; padding:9px 14px; border:2px solid var(--color-fg); background:{{ tr.bg }}; color:{{ tr.fg }}; cursor:pointer;">{{ tr.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="margin-top:auto; display:flex; gap:12px; padding-top:12px; border-top:2px solid var(--color-fg);">
+        <button onClick="{{ closeDrawer }}" style="flex:1; font-family:var(--font-heading); font-weight:700; font-size:14px; text-transform:uppercase; letter-spacing:0.03em; padding:13px; border:2px solid var(--color-fg); background:transparent; color:var(--color-fg); cursor:pointer;" style-hover="background:var(--color-fg); color:var(--color-surface);">Cancel</button>
+        <button onClick="{{ saveNewTeam }}" style="flex:1; font-family:var(--font-heading); font-weight:700; font-size:14px; text-transform:uppercase; letter-spacing:0.03em; padding:13px; border:2px solid var(--color-fg); background:var(--color-accent); color:var(--color-accent-fg); box-shadow:4px 4px 0 var(--color-fg); cursor:pointer;" style-hover="transform:translate(-2px,-2px); box-shadow:6px 6px 0 var(--color-fg);">{{ saveLabel }}</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- BULK SELECT DIALOG -->
+  <sc-if value="{{ bulkOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed; inset:0; background:rgba(26,26,26,0.55); display:flex; align-items:center; justify-content:center; z-index:20;">
+      <div style="background:var(--color-surface); border:2px solid var(--color-fg); box-shadow:6px 6px 0 var(--color-fg); padding:28px; width:92%; max-width:760px; height:80vh; display:flex; flex-direction:column; gap:18px;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+          <div>
+            <h3 style="margin:0 0 4px; font-family:var(--font-heading); font-weight:700; font-size:20px;">{{ bulkTitle }}</h3>
+            <p style="margin:0; font-size:13px; color:var(--color-fg-muted);">{{ bulkSubtitle }}</p>
+          </div>
+          <button onClick="{{ closeBulk }}" style="border:2px solid var(--color-fg); background:var(--color-surface); width:32px; height:32px; font-size:16px; cursor:pointer; flex:none;" style-hover="background:var(--color-fg); color:var(--color-surface);">✕</button>
+        </div>
+
+        <input placeholder="Search by name…" value="{{ bulkSearch }}" onChange="{{ setBulkSearch }}" style="font-family:var(--font-body); font-size:14px; padding:10px 12px; border:2px solid var(--color-fg); background:var(--color-surface); color:var(--color-fg);" />
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; flex:1; min-height:0;">
+          <div style="border:2px solid var(--color-fg); display:flex; flex-direction:column; overflow:hidden;">
+            <div style="padding:8px 12px; border-bottom:2px solid var(--color-fg); background:var(--color-fg); color:var(--color-surface); font-family:var(--font-condensed); font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:0.05em; flex:none;">Available</div>
+            <div style="overflow-y:auto; flex:1;">
+              <sc-for list="{{ bulkAvailable }}" as="b" hint-placeholder-count="4">
+                <button onClick="{{ b.onPick }}" style="width:100%; display:flex; align-items:center; gap:10px; padding:10px 12px; border:none; border-bottom:1px solid var(--color-divider); background:var(--color-surface); cursor:pointer; text-align:left;" style-hover="background:var(--color-bg);">
+                  <div style="width:12px; height:12px; border:2px solid var(--color-fg); flex:none; background:{{ b.colour }};"></div>
+                  <span style="flex:1; font-weight:600; font-size:13px;">{{ b.name }}</span>
+                </button>
+              </sc-for>
+            </div>
+            <button onClick="{{ openInlineCreate }}" style="font-family:var(--font-heading); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:0.02em; padding:10px 12px; border:none; border-top:2px solid var(--color-fg); background:var(--color-surface); color:var(--color-fg); cursor:pointer; flex:none;" style-hover="background:var(--color-fg); color:var(--color-surface);">+ Create new team</button>
+          </div>
+          <div style="border:2px solid var(--color-fg); display:flex; flex-direction:column; overflow:hidden;">
+            <div style="padding:8px 12px; border-bottom:2px solid var(--color-fg); background:var(--color-fg); color:var(--color-surface); font-family:var(--font-condensed); font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:0.05em; flex:none;">{{ bulkSelectedLabel }}</div>
+            <div style="overflow-y:auto; flex:1;">
+              <sc-for list="{{ bulkSelected }}" as="s" hint-placeholder-count="2">
+                <div style="display:flex; align-items:center; gap:10px; padding:10px 12px; border-bottom:1px solid var(--color-divider);" style-hover="background:var(--color-bg);">
+                  <div style="width:12px; height:12px; border:2px solid var(--color-fg); flex:none; background:{{ s.colour }};"></div>
+                  <span style="flex:1; font-weight:600; font-size:13px;">{{ s.name }}</span>
+                  <sc-if value="{{ s.removable }}" hint-placeholder-val="{{ true }}">
+                    <button onClick="{{ s.onRemove }}" title="Remove" style="width:22px; height:22px; border:2px solid var(--color-fg); background:var(--color-surface); font-size:11px; cursor:pointer; flex:none;" style-hover="background:var(--color-error); color:var(--color-error-fg);">✕</button>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+
+        <sc-if value="{{ bulkIsAdd }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex; justify-content:flex-end; gap:10px;">
+            <button onClick="{{ closeBulk }}" style="font-family:var(--font-heading); font-weight:700; font-size:14px; text-transform:uppercase; letter-spacing:0.02em; padding:11px 18px; border:2px solid var(--color-fg); background:var(--color-surface); color:var(--color-fg); cursor:pointer;">Cancel</button>
+            <button onClick="{{ confirmBulk }}" style="font-family:var(--font-heading); font-weight:700; font-size:14px; text-transform:uppercase; letter-spacing:0.02em; padding:11px 18px; border:2px solid var(--color-fg); background:var(--color-accent); color:var(--color-accent-fg); cursor:pointer;">{{ bulkConfirmLabel }}</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{ bulkIsSwitch }}" hint-placeholder-val="{{ false }}">
+          <p style="margin:0; font-size:12px; color:var(--color-fg-muted);">Pick a replacement from Available — this closes the dialog right away.</p>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;teamAssignMode&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;options&quot;: [&quot;dragDrop&quot;, &quot;button&quot;], &quot;default&quot;: &quot;dragDrop&quot;, &quot;tsType&quot;: &quot;'dragDrop' | 'button'&quot;, &quot;section&quot;: &quot;Teams step&quot;}}">
+const PALETTE = ['#E53935','#7B1E1E','#FB8C00','#F9A825','#FDD835','#827717','#2E7D32','#00897B','#039BE5','#1A237E','#1E88E5','#6A1B9A','#D81B60','#212121','#9E9E9E','#FAFAFA'];
+const TIERS = ['S','A','B','C','D','E','F'];
+const FORMAT_LABELS = { rr2: 'Round robin (two-way)', rr1: 'Round robin (single duels)', grp2: 'Groups round robin (two-way)', grp1: 'Groups round robin (single duels)', bracket: 'Bracket' };
+const BLUEPRINT_POOL = [
+  { id: 'bp1', name: 'Salt Marsh United', colour: '#039BE5', tier: 'A' },
+  { id: 'bp2', name: 'Redbrick Athletic', colour: '#E53935', tier: 'B' },
+  { id: 'bp3', name: 'Northgate FC', colour: '#212121', tier: 'B' },
+  { id: 'bp4', name: 'Pinecrest Rovers', colour: '#2E7D32', tier: 'C' },
+  { id: 'bp5', name: 'Harborview SC', colour: '#F9A825', tier: 'A' },
+  { id: 'bp6', name: 'Ashfield Town', colour: '#6A1B9A', tier: 'C' },
+  { id: 'bp7', name: 'Millbrook Wanderers', colour: '#00897B', tier: 'D' },
+  { id: 'bp8', name: 'Ironclad FC', colour: '#7B1E1E', tier: 'A' },
+  { id: 'bp9', name: 'Blue Harbor United', colour: '#1E88E5', tier: 'B' },
+  { id: 'bp10', name: 'Steel Valley Athletic', colour: '#827717', tier: 'C' },
+  { id: 'bp11', name: 'Riverside Youth', colour: '#D81B60', tier: 'D' },
+  { id: 'bp12', name: 'Southgate Lions', colour: '#FB8C00', tier: 'B' },
+];
+
+class Component extends DCLogic {
+  state = {
+    step: 1,
+    leagueName: 'Coastal Premier',
+    homeAdv: true,
+    phases: [
+      { id: 1, format: 'grp2', groupCount: 2, advanceCount: 2, aet: true, tiebreak: 'penalties', legType: 'single', awayGoals: false },
+      { id: 2, format: 'bracket', groupCount: 2, advanceCount: 2, aet: true, tiebreak: 'penalties', legType: 'two', awayGoals: true },
+    ],
+    nextPhaseId: 3,
+    teams: [],
+    rosterSearch: '',
+    drawerOpen: false,
+    editIndex: null,
+    drawerContext: 'roster',
+    newTeam: { name: '', slug: '', colour: PALETTE[0], tier: 'C' },
+    bulk: null,
+    openRowMenu: null,
+  };
+
+  slugify(name) {
+    return name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'new-team';
+  }
+
+  openCreate() { this.setState({ drawerOpen: true, editIndex: null, drawerContext: 'roster', newTeam: { name: '', slug: '', colour: PALETTE[0], tier: 'C' } }); }
+  openEdit(idx) {
+    const t = this.state.teams[idx];
+    this.setState({ drawerOpen: true, editIndex: idx, drawerContext: 'roster', newTeam: { name: t.name, slug: this.slugify(t.name), colour: t.colour, tier: t.tier } });
+  }
+  closeDrawer() { this.setState({ drawerOpen: false }); }
+  setLeagueName(e) { this.setState({ leagueName: e.target.value }); }
+  setRosterSearch(e) { this.setState({ rosterSearch: e.target.value }); }
+
+  setNewTeamName(e) {
+    const name = e.target.value;
+    this.setState((s) => ({ newTeam: { ...s.newTeam, name, slug: this.slugify(name) } }));
+  }
+
+  saveNewTeam() {
+    const nt = this.state.newTeam;
+    if (!nt.name.trim()) return this.closeDrawer();
+    if (this.state.drawerContext === 'bulk') {
+      const created = { id: `new-${Date.now()}`, name: nt.name, colour: nt.colour, tier: nt.tier };
+      this.setState((s) => ({ drawerOpen: false, bulk: { ...s.bulk, selected: [...s.bulk.selected, created] } }));
+      return;
+    }
+    this.setState((s) => {
+      if (s.editIndex !== null) {
+        const teams = s.teams.map((t, i) => i === s.editIndex ? { ...t, name: nt.name, colour: nt.colour, tier: nt.tier } : t);
+        return { teams, drawerOpen: false };
+      }
+      return { teams: [...s.teams, { name: nt.name, colour: nt.colour, tier: nt.tier, group: 0 }], drawerOpen: false };
+    });
+  }
+
+  // Bulk-select dialog
+  openBulkAdd() {
+    this.setState({ bulk: { mode: 'add', switchIdx: null, search: '', selected: [] } });
+  }
+
+  openSwitch(idx) {
+    this.setState({ bulk: { mode: 'switch', switchIdx: idx, search: '', selected: [] } });
+  }
+
+  closeBulk() { this.setState({ bulk: null }); }
+  setBulkSearch(e) { this.setState((s) => ({ bulk: { ...s.bulk, search: e.target.value } })); }
+
+  openInlineCreate() {
+    this.setState({ drawerOpen: true, editIndex: null, drawerContext: 'bulk', newTeam: { name: '', slug: '', colour: PALETTE[0], tier: 'C' } });
+  }
+
+  pickBulkTeam(team) {
+    const b = this.state.bulk;
+    if (b.mode === 'switch') {
+      this.setState((s) => ({
+        teams: s.teams.map((t, i) => i === b.switchIdx ? { name: team.name, colour: team.colour, tier: team.tier, group: t.group } : t),
+        bulk: null,
+      }));
+      return;
+    }
+    this.setState((s) => ({ bulk: { ...s.bulk, selected: [...s.bulk.selected, team] } }));
+  }
+
+  removeBulkSelected(id) {
+    this.setState((s) => ({ bulk: { ...s.bulk, selected: s.bulk.selected.filter((t) => t.id !== id) } }));
+  }
+
+  confirmBulk() {
+    const { selected } = this.state.bulk;
+    this.setState((s) => ({
+      teams: [...s.teams, ...selected.map((t) => ({ name: t.name, colour: t.colour, tier: t.tier, group: 0 }))],
+      bulk: null,
+    }));
+  }
+
+  removeRosterTeam(idx) {
+    this.setState((s) => ({ teams: s.teams.filter((_, i) => i !== idx) }));
+  }
+
+  toggleRowMenu(idx) {
+    this.setState((s) => ({ openRowMenu: s.openRowMenu === idx ? null : idx }));
+  }
+
+  updatePhase(id, patch) {
+    this.setState((s) => ({ phases: s.phases.map((p) => p.id === id ? { ...p, ...patch } : p) }));
+  }
+
+  movePhase(id, dir) {
+    this.setState((s) => {
+      const i = s.phases.findIndex((p) => p.id === id);
+      const j = i + dir;
+      if (j < 0 || j >= s.phases.length) return {};
+      const phases = [...s.phases];
+      [phases[i], phases[j]] = [phases[j], phases[i]];
+      return { phases };
+    });
+  }
+
+  deletePhase(id) {
+    this.setState((s) => s.phases.length > 1 ? { phases: s.phases.filter((p) => p.id !== id) } : {});
+  }
+
+  addPhase() {
+    this.setState((s) => ({ phases: [...s.phases, { id: s.nextPhaseId, format: 'rr2', groupCount: 2, advanceCount: 2, aet: true, tiebreak: 'penalties', legType: 'single', awayGoals: false }], nextPhaseId: s.nextPhaseId + 1 }));
+  }
+
+  shuffleGroups() {
+    const groupCount = this.groupCountFromPhases();
+    this.setState((s) => {
+      const order = s.teams.map((t, i) => i);
+      for (let i = order.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [order[i], order[j]] = [order[j], order[i]];
+      }
+      const groupOf = new Map(order.map((idx, pos) => [idx, pos % groupCount]));
+      return { teams: s.teams.map((t, i) => groupOf.has(i) ? { ...t, group: groupOf.get(i) } : t) };
+    });
+  }
+
+  moveTeamNextGroup(idx) {
+    const groupCount = this.groupCountFromPhases();
+    this.setState((s) => ({ teams: s.teams.map((t, i) => i === idx ? { ...t, group: (t.group + 1) % groupCount } : t) }));
+  }
+
+  setTeamGroup(idx, groupIdx) {
+    this.setState((s) => ({ teams: s.teams.map((t, i) => i === idx ? { ...t, group: groupIdx } : t) }));
+  }
+
+  groupCountFromPhases() {
+    const gp = this.state.phases.find((p) => p.format === 'grp1' || p.format === 'grp2');
+    return gp ? Math.max(2, parseInt(gp.groupCount) || 2) : 2;
+  }
+
+  renderVals() {
+    const accent = 'var(--color-accent)', surface = 'var(--color-surface)', fg = 'var(--color-fg)', accentFg = 'var(--color-accent-fg)';
+    const tabBg = (n) => (this.state.step === n ? accent : surface);
+    const tabFg = (n) => (this.state.step === n ? accentFg : fg);
+    const phasesArr = this.state.phases;
+    const lastIdx = phasesArr.length - 1;
+
+    const phases = phasesArr.map((p, i) => {
+      const isGroups = p.format === 'grp1' || p.format === 'grp2';
+      const isBracket = p.format === 'bracket';
+      return {
+        id: p.id,
+        orderLabel: `Phase ${i + 1}`,
+        name: FORMAT_LABELS[p.format],
+        format: p.format,
+        isFirst: i === 0, isLast: i === lastIdx, onlyOne: phasesArr.length === 1,
+        moveUpOpacity: i === 0 ? 0.4 : 1, moveDownOpacity: i === lastIdx ? 0.4 : 1, deleteOpacity: phasesArr.length === 1 ? 0.4 : 1,
+        onMoveUp: () => this.movePhase(p.id, -1),
+        onMoveDown: () => this.movePhase(p.id, 1),
+        onDelete: () => this.deletePhase(p.id),
+        onFormatChange: (e) => this.updatePhase(p.id, { format: e.target.value }),
+        bracketWarning: isBracket && i !== lastIdx,
+        isGroups, isBracket,
+        isRr2: p.format === 'rr2', isRr1: p.format === 'rr1', isGrp2: p.format === 'grp2', isGrp1: p.format === 'grp1',
+        groupCount: p.groupCount,
+        onGroupCountChange: (e) => this.updatePhase(p.id, { groupCount: e.target.value }),
+        groupSuffix: isGroups ? ' per group' : '',
+        showAdvancement: i !== lastIdx,
+        advanceCount: p.advanceCount,
+        onAdvanceChange: (e) => this.updatePhase(p.id, { advanceCount: e.target.value }),
+        aetLabel: p.aet ? '— on' : '— off',
+        aetTrackBg: p.aet ? accent : surface,
+        aetKnobBg: p.aet ? surface : fg,
+        aetKnobSide: p.aet ? 'right' : 'left',
+        onToggleAet: () => this.updatePhase(p.id, { aet: !p.aet }),
+        penaltiesBg: p.tiebreak === 'penalties' ? accent : surface, penaltiesFg: p.tiebreak === 'penalties' ? accentFg : fg,
+        replayBg: p.tiebreak === 'replay' ? accent : surface, replayFg: p.tiebreak === 'replay' ? accentFg : fg,
+        onPickPenalties: () => this.updatePhase(p.id, { tiebreak: 'penalties' }),
+        onPickReplay: () => this.updatePhase(p.id, { tiebreak: 'replay' }),
+        singleLegBg: p.legType === 'single' ? accent : surface, singleLegFg: p.legType === 'single' ? accentFg : fg,
+        twoLegBg: p.legType === 'two' ? accent : surface, twoLegFg: p.legType === 'two' ? accentFg : fg,
+        onPickSingleLeg: () => this.updatePhase(p.id, { legType: 'single' }),
+        onPickTwoLeg: () => this.updatePhase(p.id, { legType: 'two' }),
+        isTwoLeg: p.legType === 'two',
+        awayGoalsLabel: p.awayGoals ? '— on' : '— off',
+        awayGoalsTrackBg: p.awayGoals ? accent : surface,
+        awayGoalsKnobBg: p.awayGoals ? surface : fg,
+        awayGoalsKnobSide: p.awayGoals ? 'right' : 'left',
+        onToggleAwayGoals: () => this.updatePhase(p.id, { awayGoals: !p.awayGoals }),
+      };
+    });
+
+    const reviewPhases = phasesArr.map((p, i) => {
+      const isGroups = p.format === 'grp1' || p.format === 'grp2';
+      let detail = i !== lastIdx ? `Top ${p.advanceCount} advance` : '';
+      if (isGroups) detail = `${p.groupCount} groups · ${detail}`;
+      if (p.format === 'bracket') detail = `${p.legType === 'two' ? 'Two-legged' : 'Single match'} · AET ${p.aet ? 'on' : 'off'} · ${p.tiebreak === 'penalties' ? 'Penalties' : 'Replay→Coin toss'}`;
+      return { orderLabel: `Phase ${i + 1}`, formatLabel: FORMAT_LABELS[p.format], detail };
+    });
+
+    const hasGroups = phasesArr.some((p) => p.format === 'grp1' || p.format === 'grp2');
+    const groupCount = this.groupCountFromPhases();
+    const rosterSearch = (this.state.rosterSearch || '').toLowerCase();
+    const visibleTeams = this.state.teams.filter((t) => t.name.toLowerCase().includes(rosterSearch));
+    const dragDropMode = (this.props.teamAssignMode ?? 'dragDrop') === 'dragDrop';
+    const groupColumns = hasGroups ? Array.from({ length: groupCount }, (_, gi) => ({
+      label: `Group ${String.fromCharCode(65 + gi)}`,
+      borderColour: fg,
+      onDragOver: (e) => e.preventDefault(),
+      onDrop: (e) => { e.preventDefault(); const idx = parseInt(e.dataTransfer.getData('text/plain'), 10); if (!isNaN(idx)) this.setTeamGroup(idx, gi); },
+      teams: this.state.teams.map((t, idx) => ({ ...t, idx })).filter((t) => t.group % groupCount === gi && t.name.toLowerCase().includes(rosterSearch)).map((t) => ({
+        ...t,
+        onMoveNext: () => this.moveTeamNextGroup(t.idx),
+        onDragStart: (e) => e.dataTransfer.setData('text/plain', String(t.idx)),
+        menuOpen: this.state.openRowMenu === t.idx,
+        onToggleMenu: () => this.toggleRowMenu(t.idx),
+        onEdit: () => { this.setState({ openRowMenu: null }); this.openEdit(t.idx); },
+        onSwitch: () => { this.setState({ openRowMenu: null }); this.openSwitch(t.idx); },
+        onRemove: () => { this.setState({ openRowMenu: null }); this.removeRosterTeam(t.idx); },
+      })),
+    })) : [];
+
+    const bulk = this.state.bulk;
+    let bulkAvailable = [];
+    if (bulk) {
+      const usedNames = new Set(this.state.teams.map((t) => t.name).concat(bulk.selected.map((t) => t.name)));
+      const search = (bulk.search || '').toLowerCase();
+      bulkAvailable = BLUEPRINT_POOL
+        .filter((b) => !usedNames.has(b.name))
+        .filter((b) => b.name.toLowerCase().includes(search))
+        .map((b) => ({ ...b, onPick: () => this.pickBulkTeam(b) }));
+    }
+
+    return {
+      isStep1: this.state.step === 1, isStep2: this.state.step === 2, isStep3: this.state.step === 3, isStep4: this.state.step === 4,
+      step1Bg: tabBg(1), step1Fg: tabFg(1), step2Bg: tabBg(2), step2Fg: tabFg(2), step3Bg: tabBg(3), step3Fg: tabFg(3), step4Bg: tabBg(4), step4Fg: tabFg(4),
+      goStep1: () => this.setState({ step: 1 }), goStep2: () => this.setState({ step: 2 }), goStep3: () => this.setState({ step: 3 }), goStep4: () => this.setState({ step: 4 }),
+      leagueName: this.state.leagueName,
+      setLeagueName: (e) => this.setLeagueName(e),
+      toggleHomeAdv: () => this.setState((s) => ({ homeAdv: !s.homeAdv })),
+      homeAdvLabel: this.state.homeAdv ? '— on' : '— off',
+      homeAdvTrackBg: this.state.homeAdv ? accent : surface,
+      homeAdvKnobBg: this.state.homeAdv ? surface : fg,
+      homeAdvKnobSide: this.state.homeAdv ? 'right' : 'left',
+      phases, reviewPhases, addPhase: () => this.addPhase(),
+      teams: visibleTeams.map((t) => {
+        const idx = this.state.teams.indexOf(t);
+        return { ...t, onEdit: () => this.openEdit(idx), onSwitch: () => this.openSwitch(idx), onRemove: () => this.removeRosterTeam(idx) };
+      }),
+      selectedTeams: this.state.teams,
+      teamCountLabel: `${this.state.teams.length} teams selected`,
+      rosterEmpty: this.state.teams.length === 0,
+      nextReviewBg: this.state.teams.length === 0 ? surface : accent,
+      nextReviewFg: this.state.teams.length === 0 ? 'var(--color-fg-muted)' : accentFg,
+      nextReviewShadow: this.state.teams.length === 0 ? 'none' : '4px 4px 0 var(--color-fg)',
+      nextReviewOpacity: this.state.teams.length === 0 ? 0.5 : 1,
+      nextReviewCursor: this.state.teams.length === 0 ? 'not-allowed' : 'pointer',
+      nextReviewHover: this.state.teams.length === 0 ? '' : 'transform:translate(-2px,-2px); box-shadow:6px 6px 0 var(--color-fg);',
+      rosterNotEmpty: this.state.teams.length > 0,
+      rosterSearch: this.state.rosterSearch,
+      setRosterSearch: (e) => this.setRosterSearch(e),
+      hasGroups, noGroups: !hasGroups,
+      groupColumns,
+      dragDropMode, buttonMode: !dragDropMode,
+      dragCursor: dragDropMode ? 'grab' : 'default',
+      shuffleGroups: () => this.shuffleGroups(),
+      drawerOpen: this.state.drawerOpen,
+      drawerTitle: this.state.editIndex === null ? 'New team' : 'Edit team',
+      isEditingTeam: this.state.editIndex !== null,
+      originalTeam: this.state.editIndex !== null ? (() => { const t = this.state.teams[this.state.editIndex]; return { ...t, slug: this.slugify(t.name) }; })() : { name: '', slug: '', colour: '#FFFFFF', tier: '' },
+      saveLabel: this.state.editIndex === null ? 'Create team' : 'Save changes',
+      newTeam: this.state.newTeam,
+      openCreate: () => this.openCreate(),
+      closeDrawer: () => this.closeDrawer(),
+      setNewTeamName: (e) => this.setNewTeamName(e),
+      saveNewTeam: () => this.saveNewTeam(),
+      openBulkAdd: () => this.openBulkAdd(),
+      closeBulk: () => this.closeBulk(),
+      bulkOpen: !!bulk,
+      bulkIsAdd: bulk ? bulk.mode === 'add' : true,
+      bulkIsSwitch: bulk ? bulk.mode === 'switch' : false,
+      bulkTitle: bulk ? (bulk.mode === 'add' ? 'Add teams' : 'Switch team') : '',
+      bulkSubtitle: bulk ? (bulk.mode === 'add' ? 'Pick from your saved blueprints, or create new ones.' : 'Pick a replacement for this slot.') : '',
+      bulkSearch: bulk ? bulk.search : '',
+      setBulkSearch: (e) => this.setBulkSearch(e),
+      bulkAvailable,
+      bulkSelected: bulk ? (bulk.mode === 'switch'
+        ? (this.state.teams[bulk.switchIdx] ? [{ ...this.state.teams[bulk.switchIdx], removable: false }] : [])
+        : bulk.selected.map((t) => ({ ...t, removable: true, onRemove: () => this.removeBulkSelected(t.id) }))) : [],
+      bulkSelectedLabel: bulk && bulk.mode === 'switch' ? 'Currently in slot' : `Selected (${bulk ? bulk.selected.length : 0})`,
+      bulkConfirmLabel: `Add ${bulk ? bulk.selected.length : 0} team${bulk && bulk.selected.length === 1 ? '' : 's'}`,
+      confirmBulk: () => this.confirmBulk(),
+      openInlineCreate: () => this.openInlineCreate(),
+      palette: PALETTE.map((hex) => ({
+        hex,
+        border: this.state.newTeam.colour === hex ? `3px solid var(--color-accent)` : `2px solid ${fg}`,
+        onPick: () => this.setState((s) => ({ newTeam: { ...s.newTeam, colour: hex } })),
+      })),
+      tiers: TIERS.map((label) => ({
+        label,
+        bg: this.state.newTeam.tier === label ? accent : surface,
+        fg: this.state.newTeam.tier === label ? accentFg : fg,
+        onPick: () => this.setState((s) => ({ newTeam: { ...s.newTeam, tier: label } })),
+      })),
+    };
+  }
+}
+
+</script>
+</body>
+</html>

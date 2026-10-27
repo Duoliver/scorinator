@@ -44,3 +44,8 @@ A big OVR gap gives extreme scores too often. The user judged this not a big pro
 - The study scripts are not in the repo.
 
 *Raised during: MVP1, Task 32 (home advantage tuning).*
+
+## 6. Second-leg host toggle
+In MVP2, the higher seed always hosts the second leg of a two-legged tie (Task 79). Later, a bracket phase gets a toggle to change this, for example so that the lower seed hosts the second leg.
+
+*Raised during: MVP2 sprint 0, Task 79 (second-leg host), 2026-10-27.*

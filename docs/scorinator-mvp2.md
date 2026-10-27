@@ -47,6 +47,8 @@ Note: the Replay itself is a one-shot fallback — if the replay also ends in a 
 - Ties can be configured as **single match** or **two-legged (aggregate score, home/away)** — set per bracket phase.
 - Bracket seeding is determined by **final standing** from the previous phase (1st seed vs. last qualifier, 2nd vs. second-last, etc. — standard seeding).
 - **Away-goals rule** for two-legged ties is a **configurable toggle per bracket phase** (off = go straight to AET/tiebreak if level on aggregate; on = away goals break the aggregate tie first).
+- **Third-place match** is a **configurable toggle per bracket phase**, off by default. When on, the two semi-final losers play a tie for third place, before the final. *(Added on 2026-10-27, MVP2 Task 77.)*
+- **Single-match final** is a **configurable toggle per two-legged bracket phase**. When on, the final is one match at a neutral venue. The third-place tie plays the same way. When off, both have two legs, like the other ties of the phase. *(Added on 2026-10-27, MVP2 Task 79.)*
 - **Venue:** a single-match tie, its extra time, and a replay are played at a **neutral venue**. No team gets home advantage. A tie still stores a venue value, always neutral in MVP2, so a later venue choice (`scorinator-future-features.md` §4) needs no data change. The league's home-advantage toggle applies only to round-robin phases and two-legged ties.
 
 ### Bracket Sizing & Byes

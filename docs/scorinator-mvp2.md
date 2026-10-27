@@ -19,6 +19,8 @@ Builds on MVP 1 (single round-robin league). MVP 2 introduces **mixed-format lea
 
 ### Groups Assignment
 - Groups round robin: teams are assigned to groups **randomly** by default.
+- **Group count or group size**: the user sets one of the two, group size by default. In size mode the size is a maximum: groups = teams ÷ size, rounded up. Sizes differ by 1 at most. *(Added on 2026-10-27, MVP2 Task 87.)*
+- **Shuffle and manual moves**: after the draw, the user can draw again ("Shuffle groups") or move a team to another group. Phase 1 allows this until the league starts. A later Groups phase allows it until its first match has a result. *(Added on 2026-10-27, MVP2 Task 87.)*
 - At the national level (once Regions exist, MVP3+), grouping instead uses **geographic clustering**: teams are grouped by region/adjacent-region proximity first — same-region teams cluster together, adjacent regions cluster next to each other — and only the placement *within* or *between* those adjacent clusters is randomized. This replaces pure randomness for national-scope tournaments specifically; city/regional-scope tournaments still use plain random assignment.
 - **Region adjacency**: each Region stores a manually-linked list of adjacent Regions, set by the user when creating/editing a Region. This is a Location-model addition that lands whenever Regions are introduced (MVP3), but is decided now since it affects that model's shape.
 - **Layout**: group cards **wrap to the next line** when there are many groups, rather than horizontally scrolling.

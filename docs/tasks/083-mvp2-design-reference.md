@@ -1,6 +1,6 @@
 # Task 083: MVP2 design reference, and a review of the stories against it
 
-**Status:** Review
+**Status:** Done (2026-10-27)
 
 ## Goal
 

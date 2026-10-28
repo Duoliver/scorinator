@@ -39,10 +39,12 @@ These combine into 4 possible resolution paths:
 |---|---|---|
 | Yes | Penalties | AET → Penalties |
 | No | Penalties | Penalties |
-| Yes | Replay → Coin Toss | AET → Replay → (if replay also drawn) Coin Toss |
+| Yes | Replay → Coin Toss | AET → Replay → (if the replay is drawn) replay AET → (if still drawn) Coin Toss |
 | No | Replay → Coin Toss | Replay → (if replay also drawn) Coin Toss |
 
 Note: the Replay itself is a one-shot fallback — if the replay also ends in a draw, it goes straight to Coin Toss (no repeated replay loop).
+- **Replay AET:** when the phase plays AET, a drawn replay plays AET too. If it is still drawn, the coin toss decides. *(Added on 2026-10-27, MVP2 Task 88.)*
+- **Away goals and AET:** away goals apply once, after 180 minutes. Goals in AET never count as away goals. *(Added on 2026-10-27, MVP2 Task 88.)*
 
 - **Coin toss:** a pure 50/50. Team strength plays no part. **Penalties** stay weighted by team strength.
 

@@ -34,7 +34,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 81 | Settle open decision 7: when OVR is rolled | `engine/tier-ovr`, `app/state` | ✅ Done | 2026-10-27 | 2026-10-27 | [081](/docs/tasks/081-ovr-roll-timing.md) | Sprint 0. Decided: roll at add-to-league, override inside the Tier range, roll again on a Tier change. |
 | 82 | Settle open decision 8: the single duels generator | `engine/round-robin` | ✅ Done | 2026-10-27 | 2026-10-27 | [082](/docs/tasks/082-single-duels-generator.md) | Sprint 0. Decided: new `generateSingleDuels(teams, rng)`, shared pairing, spec balance rule. |
 | 83 | MVP2 design reference: add the Claude Design handoff bundle for MVP2 at `docs/design-reference/MVP2/`, or decide to build the MVP2 screens without one | `docs/design-reference` | ✅ Done | 2026-10-27 | 2026-10-27 | [083](/docs/tasks/083-mvp2-design-reference.md) | Sprint 0. Handoff added. Review against Tasks 86 and 87 done: D1 to D9 decided. |
-| 84 | Split the MVP2 epics into build task rows, in build order | `PROGRESS.md` | ⬜ Not started |  |  |  | Sprint 0. Do it last, after the refinement Tasks 86 to 96, and Tasks 100 to 102. |
+| 84 | Split the MVP2 epics into build task rows, in build order | `PROGRESS.md` | ✅ Done | 2026-10-28 | 2026-10-28 | [084](/docs/tasks/084-mvp2-build-tasks.md) | Sprint 0. 56 build tasks (103 to 158) in six milestones. Map in the task file. |
 | 85 | MVP2 workflow directives: refined user stories in their own files, short status board notes with detail in a task file, and one task for every activity | `PROGRESS.md`, `docs/` | ✅ Done | 2026-10-26 | 2026-10-26 | [085](/docs/tasks/085-workflow-directives.md) | Task created by User - 2026-10-26. |
 | 86 | Refine epic 01, League Format Configuration: refined stories in `docs/user-stories/mvp2/01-league-format.md` | `docs/user-stories` | ✅ Done | 2026-10-27 | 2026-10-27 | [086](/docs/tasks/086-refine-league-format.md) | Sprint 0. Six stories Agreed (US-01.1 to US-01.6). One spec line added. |
 | 87 | Refine epic 02, Groups: refined stories in `docs/user-stories/mvp2/02-groups.md` | `docs/user-stories` | ✅ Done | 2026-10-27 | 2026-10-27 | [087](/docs/tasks/087-refine-groups.md) | Sprint 0. Four stories Agreed, US-02.3 Dropped (MVP3). Two spec lines added. |
@@ -53,10 +53,68 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 100 | Team trigrams: story US-09.6, a three-letter code with alternatives by Tier | `docs/user-stories` | ✅ Done | 2026-10-28 | 2026-10-28 | [100](/docs/tasks/100-team-trigrams.md) | Task created by User - 2026-10-28. US-09.6 Agreed. Three spec edits. |
 | 101 | Team palette: more colours, two blues easier to tell apart | `docs/`, `design-system/` | ✅ Done | 2026-10-28 | 2026-10-28 | [101](/docs/tasks/101-team-palette.md) | Task created by User - 2026-10-28. US-09.7 Agreed: 24 colours. ΔE test parked (§13). |
 | 102 | Refine new epic 12, Standings display: last 5, GF and GA hover, header hints, chart, zones | `docs/user-stories` | ✅ Done | 2026-10-28 | 2026-10-28 | [102](/docs/tasks/102-standings-display.md) | Task created by User - 2026-10-28. New epic 12, five stories Agreed. Two items parked (§14, §15). |
+| 103 | UUID v4 with an injected source. The unique slug function (`-2` rule) | `engine/identity` | ⬜ Not started |  |  |  | M1. US-11.1, US-09.5 (rule), Task 75. |
+| 104 | Record types v2: Blueprint, Instance, League with phases, provenance. Persistence contracts for the manifest and the wrappers | `domain/`, `persistence/` | ⬜ Not started |  |  |  | M1. US-09.2, US-11.1. After 103. |
+| 105 | Fixture ids, and the result lookup by id | `engine/round-robin` | ⬜ Not started |  |  |  | M1. Task 77, US-02.2 (ids). After 104. |
+| 106 | JSON v2: manifest and wrapper files with a format version. The MVP1 file check | `adapters/json-io` | ⬜ Not started |  |  |  | M1. Task 76, US-10.3 (MVP1 message). After 104. |
+| 107 | The database folder, the installation UUID, wrappers then manifest | `adapters/tauri-fs` | ⬜ Not started |  |  |  | M1. Task 76 (a, b), US-11.1. After 106. |
+| 108 | Stores on the database: open at start, Save and Ctrl+S, unsaved snapshots, the summary row, routes by UUID | `app/` | ⬜ Not started |  |  |  | M1. Task 76 (b, c, d), US-11.1. After 105, 107. |
+| 109 | The MVP1 screens on the v2 model: Teams, the wizard, League Detail, the dashboard | `features/` | ⬜ Not started |  |  |  | M1. US-09.1, US-09.2. After 108. |
+| 110 | M1 smoke check | all | ⬜ Not started |  |  |  | M1. After 109. |
+| 111 | Tooltip, and the icon-only Button variant | `design-system/` | ⬜ Not started |  |  |  | M2. US-09.3, US-09.5, US-12.1 to 12.3. After 110. |
+| 112 | Modal, with a focus trap, and the confirm pattern | `design-system/` | ⬜ Not started |  |  |  | M2. US-04.6, 07.3, 09.4, 09.5, 10.2. After 110. |
+| 113 | Picker dialog: search, multi-select and single-select | `design-system/` | ⬜ Not started |  |  |  | M2. US-08.1, 08.5, 10.3. After 112. |
+| 114 | The 24-colour palette, and 3 rows in the swatch picker | `design-system/` | ⬜ Not started |  |  |  | M2. US-09.7. After 110. |
+| 115 | Trigrams: the auto trigram, the format check, the league pick | `engine/identity` | ⬜ Not started |  |  |  | M2. US-09.6. After 110. |
+| 116 | The OVR override range check, and the roll on a Tier change | `engine/tier-ovr` | ⬜ Not started |  |  |  | M2. US-08.4, Task 81. After 110. |
+| 117 | CSV v2: the Location and Trigrams columns, the counts for the confirm | `adapters/csv` | ⬜ Not started |  |  |  | M2. US-09.3, 09.6, 10.2, Task 75. After 110. |
+| 118 | The slug list parse | `adapters/txt` | ⬜ Not started |  |  |  | M2. US-08.7. After 110. |
+| 119 | Teams screen: the columns, the drawer fields, slug regenerate, Delete, the CSV confirm | `features/teams` | ⬜ Not started |  |  |  | M2. US-09.1, 09.3 to 09.7, 10.2 (CSV). After 111, 112, 114, 115, 117. |
+| 120 | Wizard Teams step, part 1: the add dialog, Load them all, empty states, Import slug list | `features/leagues` | ⬜ Not started |  |  |  | M2. US-08.1, 08.2, 08.3, 08.7. After 113, 118, 119. |
+| 121 | Wizard Teams step, part 2: Edit for this league, Switch, Remove, the live trigram pick, "Create league" | `features/leagues` | ⬜ Not started |  |  |  | M2. US-08.4 to 08.6, 08.8, 09.6 (league). After 116, 120. |
+| 122 | M2 smoke check | all | ⬜ Not started |  |  |  | M2. After 121. |
+| 123 | `generateSingleDuels`, the shared pairing, the doc comment fix | `engine/round-robin` | ⬜ Not started |  |  |  | M3. US-06.1. After 122. |
+| 124 | Standings v2: fixed lots, the recursive mini-league, the cross-group order, best M | `engine/standings` | ⬜ Not started |  |  |  | M3. US-01.4, 01.6, 02.2, Task 78. After 122. |
+| 125 | The group draw: size or count, add to the smallest group, moves | `engine/round-robin` | ⬜ Not started |  |  |  | M3. US-02.1, 02.5. After 122. |
+| 126 | Phase chain rules: bracket last, fit checks, qualifier counts, build and start a phase, the lock | `engine/phases` | ⬜ Not started |  |  |  | M3. US-01.3, 01.4, 01.6, 07.1, 07.3. After 123, 124, 125. |
+| 127 | Dropdown menu | `design-system/` | ⬜ Not started |  |  |  | M3. US-02.5 (Move to group), US-10.1. After 122. |
+| 128 | League state with phases: scorinate in a phase, start the next phase, the progress text | `app/` | ⬜ Not started |  |  |  | M3. US-01.2, 07.1, 07.3. After 126. |
+| 129 | Wizard Phases step: phases, formats, advancement, best M, warnings | `features/leagues` | ⬜ Not started |  |  |  | M3. US-01.1 to 01.6. After 128. |
+| 130 | Wizard Teams step with groups: group columns, Shuffle, drag, Move to group | `features/leagues` | ⬜ Not started |  |  |  | M3. US-02.1, 02.4, 02.5. After 127, 129. |
+| 131 | League Detail with phases: tabs, header, badge, group cards, group fixtures, dashboard card text | `features/leagues`, `features/standings` | ⬜ Not started |  |  |  | M3. US-01.2, 02.2, 02.4. After 128. |
+| 132 | Phase transition: "Start phase N", the confirm, the lock, the empty tab, the qualifier highlight | `features/leagues` | ⬜ Not started |  |  |  | M3. US-07.1 to 07.3. After 131. |
+| 133 | M3 smoke check | all | ⬜ Not started |  |  |  | M3. After 130, 132. |
+| 134 | AET: a time share of the match, with the bands | `engine/scorination` | ⬜ Not started |  |  |  | M4. US-03.1. After 133. |
+| 135 | Penalties, the coin toss, the four sequences, away goals | `engine/tiebreak` | ⬜ Not started |  |  |  | M4. US-03.2, 03.3, 04.4. After 134. |
+| 136 | Bracket tree: seeds, the standard placement, byes and the bye change, round names, tie ids | `engine/bracket` | ⬜ Not started |  |  |  | M4. US-04.2, 04.10, 04.11, 04.14. After 133. |
+| 137 | Bracket play: playable ties, one round, the dependent clear, third place, single-match final | `engine/bracket` | ⬜ Not started |  |  |  | M4. US-04.1, 04.5, 04.7, 04.12, 04.13. After 135, 136. |
+| 138 | Segmented control | `design-system/` | ⬜ Not started |  |  |  | M4. US-03.2, 04.1, 11.2. After 133. |
+| 139 | Bracket state: phase start for a bracket, the first-phase draw, tie actions, the bye change | `app/` | ⬜ Not started |  |  |  | M4. US-04.2, 04.5, 04.6, 04.10. After 137. |
+| 140 | Wizard bracket settings: tie format, away goals, AET, method, third place, single-match final, the power-of-2 warning | `features/leagues` | ⬜ Not started |  |  |  | M4. US-03.1, 03.2, 04.1, 04.3, 04.9, 04.12, 04.13. After 138, 139. |
+| 141 | League Detail bracket: the tree, tie cards, Scorinate, the re-scorinate confirm, TBD, BYE, the winner line | `features/leagues` | ⬜ Not started |  |  |  | M4. US-04.5 to 04.8, 04.11, 04.14. After 139. |
+| 142 | Seed List: seeds, tags, the bye stars, the bye change confirm | `features/leagues` | ⬜ Not started |  |  |  | M4. US-04.2, 04.10, 07.2. After 141. |
+| 143 | M4 smoke check | all | ⬜ Not started |  |  |  | M4. After 140, 142. |
+| 144 | Import decisions: unknown, same content, conflict, Skip, Import as new, the embedded Blueprint rule | `persistence/` | ⬜ Not started |  |  |  | M5. US-11.2, 10.3. After 143. |
+| 145 | League and Blueprint files: one or many, format versions, wrong-file errors | `adapters/json-io` | ⬜ Not started |  |  |  | M5. US-10.1 to 10.3. After 144. |
+| 146 | The database `.zip` export and import | `adapters/json-io` | ⬜ Not started |  |  |  | M5. US-10.4. After 145. |
+| 147 | The final ranking across phases | `engine/phases` | ⬜ Not started |  |  |  | M5. US-10.5. After 143. |
+| 148 | Text v2: results with phases, groups, and ties, and the slug list writer | `adapters/txt` | ⬜ Not started |  |  |  | M5. US-10.5, 10.6. After 147. |
+| 149 | File screen: the three sections, the picker, the conflict dialog, messages, dashboard "Import league" | `features/file` | ⬜ Not started |  |  |  | M5. US-10.2 to 10.4, 11.2. After 145, 146. |
+| 150 | League Detail export menu: league `.json`, results `.txt`, slug list `.txt` | `features/leagues` | ⬜ Not started |  |  |  | M5. US-10.1, 10.5, 10.6. After 148. |
+| 151 | M5 smoke check | all | ⬜ Not started |  |  |  | M5. After 149, 150. |
+| 152 | Zone tokens, Form dot tokens, and their contrast test | `design-system/` | ⬜ Not started |  |  |  | M6. US-12.1, 12.5. After 151. |
+| 153 | The last N results, and the places by matchday | `engine/standings` | ⬜ Not started |  |  |  | M6. US-12.1, 12.4. After 151. |
+| 154 | Standings table: Form with hints, GF and GA in the GD hint, header hints | `features/standings` | ⬜ Not started |  |  |  | M6. US-12.1 to 12.3. After 152, 153. |
+| 155 | Zones: the wizard section, "Edit zones", tint, stripe, legend, in place of the highlight | `features/` | ⬜ Not started |  |  |  | M6. US-12.5, 02.2, 07.2. After 152. |
+| 156 | The position chart: the "Chart" sub-tab, SVG, the group selector | `features/standings` | ⬜ Not started |  |  |  | M6. US-12.4. After 153. |
+| 157 | Trigrams and Location on league screens: narrow tables, fixtures, the Location hint | `features/` | ⬜ Not started |  |  |  | M6. US-09.3, 09.6. After 154. |
+| 158 | M6 smoke check: MVP2 complete | all | ⬜ Not started |  |  |  | M6. After 155, 156, 157. |
 
 **Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input, see Open Questions) · 🟩 Review · ✅ Done · ❌ Cancelled (the reason is in the Notes column)
 
 **Note on numbering:** MVP2 task numbers continue from the MVP1 log, which ends at Task 73. Code comments and docs name tasks by number, for example "(Task 30)", so each number must stay unique across both logs. A task number below 74 is an MVP1 task. Find it in the archive.
+
+**Note on the build milestones:** Tasks 103 to 158 build MVP2 in six milestones, M1 to M6. The map in [`docs/tasks/084-mvp2-build-tasks.md`](/docs/tasks/084-mvp2-build-tasks.md) gives each task its stories, layer, and dependencies. A task starts only when the tasks it depends on are Done. The last task of each milestone is a smoke check: the user tries the app before the next milestone starts. Each build task creates its task file when it starts.
 
 **Note on sprint 0:** Tasks 74 to 96 are sprint 0. They settle the specs, the open decisions, the refined stories, and the design reference before MVP2 code starts. A refinement task can settle a decision of its epic (Tasks 75 to 82). The decision task is then Done, and its notes link to the refinement task. Task 84 comes last, because the build tasks come from the refined stories. The user can edit, reorder, or cancel any of these tasks.
 
@@ -96,6 +154,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-10-28 (Task 84 — MVP2 build tasks):** The user agreed the build map: 56 tasks (103 to 158) in six milestones (M1 identity and database, M2 Teams and selection, M3 phases and groups, M4 bracket, M5 files, M6 standings display), each with a smoke check and a review stop. New folder `engine/phases` for the phase chain rules and the final ranking. The database `.zip` goes in `adapters/json-io`. Sprint 0 is complete. Detail in [`docs/tasks/084-mvp2-build-tasks.md`](/docs/tasks/084-mvp2-build-tasks.md).
 
 - **2026-10-28 (Task 102 — Standings display):** The user agreed US-12.1 to US-12.5, a new epic 12. Form column ("Form" kept) with 5 lettered dots and a hint for each dot, round-robin table only. GF and GA move into a GD hint. Hints on short headers. A position chart in a "Chart" sub-tab, SVG, no library. Up to four zones replace the qualifier highlight, set in the wizard and League Detail. Parked: Form in group cards (§14), chart points mode (§15). Detail in [`docs/tasks/102-standings-display.md`](/docs/tasks/102-standings-display.md).
 

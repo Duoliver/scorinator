@@ -14,6 +14,9 @@ The module map below is a direct transcription of decisions already made in the 
     /standings
     /bracket            (seeding, byes, re-scorination cascade)
     /tiebreak           (AET / penalties / replay / coin-toss)
+    /phases             (phase chain rules: bracket last, fit checks,
+                         qualifier counts, phase start and lock, final
+                         ranking. Added 2026-10-28, MVP2 Task 84)
     /locations
     /story-mode         (season pipeline, team events, mergers)
     /identity           (UUID generation, skip/fork conflict resolution)
@@ -29,7 +32,8 @@ The module map below is a direct transcription of decisions already made in the 
   /adapters
     /tauri-fs           real filesystem adapter, implements /persistence
     /csv                team CSV import/export
-    /json-io            manifest + wrapper JSON serialization
+    /json-io            manifest + wrapper JSON serialization, and the
+                        entire-database .zip bundle (MVP2 Task 84)
     /txt                results .txt export (read only)
     /tauri-window       window close event, unsaved-changes dialog
 

@@ -4,7 +4,7 @@
 
 **Scope:** how the decisions and builds made during MVP1 development affect MVP2. This is a review only. No code changed. MVP2 is still not approved for implementation, and this document does not change that. `PROGRESS.md` stays the single source of truth for scope.
 
-**Sources read:** `PROGRESS.md` (status board, open questions, decisions log), the `decisions-log/` files (000, 013, 023, 024, 025, `inline-style-cleanup`, `teamform-drawer`), the progress reports (002 to 019, 021, 029), `PERSISTENCE.md`, `ENGINE.md`, the four MVP specs, `scorinator-future-features.md`, `module-boundaries.md`, `tdd.md`, `coding-standards.md`, and `docs/design-reference/README.md`. Not read: `progress-reports/000`, `FEATURES.md`, `DESIGN_SYSTEM.md`. None of these was needed for this review.
+**Sources read** (since 2026-10-26, the MVP1 log and its report folders are in `docs/archive/mvp1/`): `PROGRESS.md` (status board, open questions, decisions log), the `decisions-log/` files (000, 013, 023, 024, 025, `inline-style-cleanup`, `teamform-drawer`), the progress reports (002 to 019, 021, 029), `PERSISTENCE.md`, `ENGINE.md`, the four MVP specs, `scorinator-future-features.md`, `module-boundaries.md`, `tdd.md`, `coding-standards.md`, and `docs/design-reference/README.md`. Not read: `progress-reports/000`, `FEATURES.md`, `DESIGN_SYSTEM.md`. None of these was needed for this review.
 
 ---
 
@@ -174,7 +174,7 @@ MVP2 needs new primitives: a searchable picker dialog, a confirm modal, tie card
 
 ## 3. Spec and doc edits to make
 
-The user owns the spec docs. None of these is applied yet.
+The user owns the spec docs. **Applied on 2026-10-26, in Task 74,** except the `PROGRESS.md` item, which the archive of the MVP1 log made obsolete. See [`docs/tasks/074-spec-edits.md`](/docs/tasks/074-spec-edits.md) for the text of each edit.
 
 - **MVP2, Bracket Specifics:** single-match ties and replays are played at a neutral venue (section 1).
 - **MVP2, Tiebreak user story:** the story lists penalties and the coin toss together as "weighted-but-still-uncertain". Reword it so the coin toss is a pure 50/50.
@@ -182,7 +182,7 @@ The user owns the spec docs. None of these is applied yet.
 - **MVP2, Teams Module:** the Blueprint field list includes City and Crest, both MVP3 scope. Do not add either in MVP2.
 - **MVP2, Team Selection:** "Instance for this Season" refers to Season, an MVP3 concept. Read it as Instance Wrapper, per the caveats correction in `CLAUDE.md`.
 - **MVP2, Teams Module user story:** "a Blueprint's live state is shared across every league it's concurrently a member of" cannot happen in MVP2. Instances belong to a wrapper, and with no Season until MVP3, every MVP2 league is a standalone wrapper with its own Instances. Sharing arrives with Season in MVP3.
-- **`PROGRESS.md`, Task 32 row and open question:** the note says MVP2 §2 uses the words "percentage boost". The MVP2 text only says "same OVR boost rule as two-way", so only MVP1's wording needs an update.
+- **`docs/archive/mvp1/PROGRESS.md`, Task 32 row and open question:** the note says MVP2 §2 uses the words "percentage boost". The MVP2 text only says "same OVR boost rule as two-way", so only MVP1's wording needs an update.
 - **`module-boundaries.md`:** add `adapters/txt` (Task 10). MVP2 adds `engine/bracket` and `engine/tiebreak`. `engine/identity` was opened early, in Task 11.
 
 ---
@@ -205,7 +205,7 @@ Each needs a user decision before the related MVP2 task starts. The numbering is
 7. **When OVR is rolled.** At add-to-league, so the Instance Edit can override it before the league starts.
 8. **Single duels generator.** A new generator, or an extension of `generateRoundRobin`. Shape Task 30's `Rng` parameter to fit.
 
-Related open questions already in `PROGRESS.md`, and still open: the extreme-score study and the Task 32 home-advantage values. Both carry into MVP2. Single duels use the same boost rule, and mixed-tier cups and brackets produce more big mismatches.
+Related: the extreme-score study is parked in `scorinator-future-features.md` §5 (2026-10-26). The Task 32 home-advantage values have a decision (2026-10-05, see the MVP1 log). Both still matter in MVP2: single duels use the same boost rule, and mixed-tier cups and brackets give more big mismatches.
 
 ---
 

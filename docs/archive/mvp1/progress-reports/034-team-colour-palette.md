@@ -25,7 +25,7 @@ The team form now has a 16-swatch colour picker in place of the hex text field. 
 
 ## Decisions made
 
-See [`decisions-log/034-team-colour-palette.md`](/decisions-log/034-team-colour-palette.md).
+See [`decisions-log/034-team-colour-palette.md`](/docs/archive/mvp1/decisions-log/034-team-colour-palette.md).
 
 ## Review fixes (2026-10-05)
 

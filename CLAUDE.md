@@ -61,7 +61,7 @@ General source specs live in [docs](/docs/):
   - [`MVP4`](/docs/scorinator-mvp4.md)
 - [`Module boundaries`](/docs/module-boundaries.md) — project structure. Do not restructure without discussion
 - [`Design reference`](/docs/design-reference/) — The Claude Design handoff bundle (rendered prototype screens) for each MVP. [See its own readme](/docs/design-reference/README.md) for how these are used, and how they are not
-- [`TDD`](/docs/tdd) — Workflow and strategies by layer. Mandatory adherence
+- [`TDD`](/docs/tdd.md) — Workflow and strategies by layer. Mandatory adherence
 - [`Future features`](/docs/scorinator-future-features.md) — explicitly out of scope, do not implement
 - [`Coding standards`](/docs/coding-standards.md) — general implementation rules that apply across modules (not module-specific — those live with their module below)
 
@@ -99,6 +99,7 @@ These are known-unresolved in the specs. If work touches them, stop and propose 
 
 `PROGRESS.md` is the handoff mechanism between sessions — see that file for its structure. Every session is responsible for:
 - Reading it first (per the top of this file).
+- Treating every activity as a task. When the user asks for work that no task covers, add a status board row and a task file in `docs/tasks/` first, and agree its criteria before the work starts.
 - Marking a task **in progress** (with a start timestamp) when picked up.
 - Marking it **done** (with a completion timestamp) and writing the session report before ending. Do not defer this to "next session" — there may not be context left later to write an accurate one.
 - If a task stops partway — blocked, out of scope, or needing a decision from the user — record that honestly. Use an **in-progress / blocked** entry. State what is done, what is not, and what the next session needs to know. Do not leave it silently incomplete, and do not mark it done when it is not.

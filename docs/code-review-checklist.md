@@ -69,7 +69,7 @@ Use this list for every review in this repo. It comes from `CLAUDE.md`, `docs/co
 ## 8. Process and handoff
 
 - [ ] Confirm `PROGRESS.md`'s status table reflects this task: in progress with a start date, or done with a completion date.
-- [ ] Require a session report file under `/progress-reports/` for a non-trivial task, linked from the status table.
+- [ ] Require a task file under `docs/tasks/`, with its goal, acceptance criteria, and report, linked from the status table.
 - [ ] For a blocked or partial task, confirm `PROGRESS.md` states honestly what is done, what is not, and what the next session needs.
 - [ ] Confirm the author recorded a flagged open item (`CLAUDE.md` section 6, or a new one this task raised) in the `PROGRESS.md` open-questions section, not only in chat.
 - [ ] Before merge, confirm `npm run lint`, `npm run format:check`, `npm run type-check`, and `npm test` all pass.

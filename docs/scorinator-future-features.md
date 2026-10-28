@@ -44,3 +44,53 @@ A big OVR gap gives extreme scores too often. The user judged this not a big pro
 - The study scripts are not in the repo.
 
 *Raised during: MVP1, Task 32 (home advantage tuning).*
+
+## 6. Second-leg host toggle
+In MVP2, the higher seed always hosts the second leg of a two-legged tie (Task 79). Later, a bracket phase gets a toggle to change this, for example so that the lower seed hosts the second leg.
+
+*Raised during: MVP2 sprint 0, Task 79 (second-leg host), 2026-10-27.*
+
+## 7. Custom phase names
+In MVP2, a phase has no name of its own. Its format label names it, for example "Groups (two-way)" (Task 86, US-01.2). Later, the user can give each phase a name, for example "Group stage", with the format label as the default.
+
+*Raised during: MVP2 sprint 0, Task 86 (League Format refinement), 2026-10-27.*
+
+## 8. Debug mode
+The user drafts a debug mode: extra data on the screens that helps to check the engine. One item for it: in a single-duels phase, show each team's home and away match count, for example "H 4 · A 3", in the standings table or the group card. In MVP2, the balance rule lives in the engine tests only (US-06.1).
+
+*Raised during: MVP2 sprint 0, Task 91 (Single Duels refinement), 2026-10-28.*
+
+## 9. Re-scorinate a locked phase
+In MVP2, a phase locks when the next phase starts, and its results can no longer change (US-07.3). Later, the user can re-scorinate a match of a locked phase, after a confirm. The confirm clears every later phase: its draw, its fixtures, and its results. The next phase must then start again. An undo of a phase start fits the same feature.
+
+*Raised during: MVP2 sprint 0, Task 78 (qualification), settled for MVP2 in Task 92 (Phase Transition), 2026-10-28.*
+
+## 10. Qualifiers list for a round-robin or Groups phase
+In MVP2, only a Bracket phase lists its qualifiers, in its Seed List (US-04.2). For a round-robin or Groups phase, the highlight on the earlier phase shows who qualified (US-07.2). Later, every phase after the first gets a "Qualifiers" list: seed, team, and origin tag, for example "A1" or "3rd".
+
+*Raised during: MVP2 sprint 0, Task 92 (Phase Transition), 2026-10-28.*
+
+## 11. Restore a team Blueprint from a league
+In MVP2, the user can delete a Blueprint at any time. A league keeps its Instances, with their own name, colour, Tier, and OVR (US-08.4), but the team loses its Location (US-09.3). Later, League Detail can restore a deleted Blueprint from an Instance: a new Blueprint with the Instance name, colour, and Tier.
+
+*Raised during: MVP2 sprint 0, Task 94 (Teams Module refinement), 2026-10-28.*
+
+## 12. Import MVP1 files
+In MVP2, an MVP1 JSON file (a league save file or a teams JSON) does not import. The user moves teams with the CSV (US-10.3). Later, a converter reads MVP1 files: it gives each team and league a new UUID, and makes one "Round robin (two-way)" phase for each league.
+
+*Raised during: MVP2 sprint 0, Task 95 (File Module refinement), 2026-10-28.*
+
+## 13. Colour distance test for the team palette
+In MVP2, the palette tests check the count, the hex format, and unique names and values (US-09.7). Later, a test checks that every pair of palette colours has a CIEDE2000 distance (ΔE) of 12 or more, so that a palette change cannot bring two close colours back. The MVP2 palette of 24 colours passes it: its smallest ΔE is 12.5.
+
+*Raised during: MVP2, Task 101 (team palette), 2026-10-28.*
+
+## 14. Last 5 matches in the group cards
+In MVP2, only the round-robin table shows the last 5 matches (US-12.1). The group cards are narrow. Later, a Groups phase can show a full table for each group, with the "Form" column.
+
+*Raised during: MVP2, Task 102 (Standings display), 2026-10-28.*
+
+## 15. Points mode for the standings chart
+In MVP2, the standings chart shows each team's place after each matchday (US-12.4). Later, a switch shows the points after each matchday instead.
+
+*Raised during: MVP2, Task 102 (Standings display), 2026-10-28.*

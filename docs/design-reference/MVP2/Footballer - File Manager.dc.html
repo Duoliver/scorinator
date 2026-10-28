@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Barlow+Semi+Condensed:wght@700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; }
+    a { color: var(--color-accent, #17551C); }
+    a:hover { color: var(--color-fg, #1A1A1A); }
+  </style>
+</helmet>
+<div style="--color-bg:#F2F2F0; --color-surface:#FFFFFF; --color-fg:#1A1A1A; --color-fg-muted:#5C5C5C; --color-accent:#17551C; --color-accent-fg:#FFFFFF; --color-error:#8C1414; --color-error-fg:#FFFFFF; --color-warning:#D9A900; --color-warning-fg:#1A1A1A; --color-divider:#D8D6D1; --font-heading:'Barlow',sans-serif; --font-condensed:'Barlow Semi Condensed',sans-serif; --font-body:'Barlow',sans-serif; --font-mono:'JetBrains Mono',monospace; background:var(--color-bg); color:var(--color-fg); font-family:var(--font-body); min-height:100vh; display:flex;">
+
+  <nav style="width:220px; flex:none; background:var(--color-surface); border-right:2px solid var(--color-fg); display:flex; flex-direction:column; padding:24px 0;">
+    <div style="font-family:var(--font-condensed); font-weight:700; font-size:20px; letter-spacing:0.06em; text-transform:uppercase; padding:0 20px 28px;">Footballer</div>
+    <a href="Footballer - Leagues Dashboard.dc.html" style="display:flex; align-items:center; gap:10px; padding:12px 20px; font-family:var(--font-heading); font-weight:600; font-size:15px; text-decoration:none; color:var(--color-fg);">Leagues</a>
+    <a href="Footballer - Teams.dc.html" style="display:flex; align-items:center; gap:10px; padding:12px 20px; font-family:var(--font-heading); font-weight:600; font-size:15px; text-decoration:none; color:var(--color-fg);">Teams</a>
+    <a href="Footballer - File Manager.dc.html" style="display:flex; align-items:center; gap:10px; padding:12px 20px; font-family:var(--font-heading); font-weight:600; font-size:15px; text-decoration:none; background:var(--color-fg); color:var(--color-surface);">File</a>
+  </nav>
+
+  <div style="flex:1; padding:40px 48px 64px; display:flex; flex-direction:column; gap:32px; max-width:900px;">
+    <div>
+      <h1 style="margin:0 0 6px; font-family:var(--font-heading); font-weight:700; font-size:32px;">File</h1>
+      <p style="margin:0; color:var(--color-fg-muted); font-size:15px; max-width:620px;">Bulk export/import for leagues, team blueprints, and the whole database. Exporting or importing a single league is on that league's Detail screen.</p>
+    </div>
+
+    <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+      <div style="background:var(--color-surface); border:2px solid var(--color-fg); box-shadow:4px 4px 0 var(--color-fg); padding:16px 20px; display:flex; align-items:center; justify-content:space-between; gap:16px;">
+        <p style="margin:0; font-size:14px; font-weight:600;">{{ toast }}</p>
+        <button onClick="{{ dismissToast }}" style="background:none; border:none; font-family:var(--font-heading); font-weight:700; font-size:13px; text-transform:uppercase; letter-spacing:0.02em; color:var(--color-fg-muted); cursor:pointer; padding:4px;" style-hover="color:var(--color-fg);">Dismiss</button>
+      </div>
+    </sc-if>
+
+    <div style="display:flex; flex-direction:column; gap:20px;">
+      <h2 style="margin:0; font-family:var(--font-heading); font-weight:700; font-size:15px; text-transform:uppercase; letter-spacing:0.05em; color:var(--color-fg-muted);">Leagues</h2>
+
+      <div style="background:var(--color-surface); border:2px solid var(--color-fg); box-shadow:4px 4px 0 var(--color-fg); padding:24px; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap;">
+        <div>
+          <h3 style="margin:0 0 4px; font-family:var(--font-heading); font-weight:700; font-size:18px;">Export all leagues</h3>
+          <p style="margin:0; font-size:13px; color:var(--color-fg-muted);">Every league in one JSON file, teams included.</p>
+        </div>
+        <button onClick="{{ exportAllLeagues }}" style="font-family:var(--font-heading); font-weight:700; font-size:14px; text-transform:uppercase; letter-spacing:0.02em; padding:12px 20px; border:2px solid var(--color-fg); background:var(--color-accent); color:var(--color-accent-fg); box-shadow:3px 3px 0 var(--color-fg); cursor:pointer; white-space:nowrap;" style-hover="transform:translate(-1px,-1px); box-shadow:4px 4px 0 var(--color-fg);">Export .json</button>
+      </div>
+
+      <div style="background:var(--color-surface); border:2px solid var(--color-fg); box-shadow:4px 4px 0 var(--color-fg); padding:24px; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap;">
+        <div>
+          <h3 style="margin:0 0 4px; font-family:var(--font-heading); font-weight:700; font-size:18px;">Import leagues</h3>
+          <p style="margin:0; font-size:13px; color:var(--color-fg-muted);">Pick which leagues from the file to bring in.</p>
+        </div>
+        <button onClick="{{ openLeaguePicker }}" style="font-family:var(--font-heading); font-weight:700; font-size:14px; text-transform:uppercase; letter-spacing:0.02em; padding:12px 20px; border:2px solid var(--color-fg); background:var(--color-surface); color:var(--color-fg); box-shadow:3px 3px 0 var(--color-fg); cursor:pointer; white-space:nowrap;" style-hover="transform:translate(-1px,-1px); box-shadow:4px 4px 0 var(--color-fg);">Import .json…</button>
+      </div>
+
+      <h2 style="margin:16px 0 0; font-family:var(--font-heading); font-weight:700; font-size:15px; text-transform:uppercase; letter-spacing:0.05em; color:var(--color-fg-muted);">Team Blueprints</h2>
+
+      <div style="background:var(--color-surface); border:2px solid var(--color-fg); box-shadow:4px 4px 0 var(--color-fg); padding:24px; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap;">
+        <div>
+          <h3 style="margin:0 0 4px; font-family:var(--font-heading); font-weight:700; font-size:18px;">Export all team blueprints</h3>
+          <p style="margin:0; font-size:13px; color:var(--color-fg-muted);">Full fidelity JSON, incl. UUID and provenance — not tied to any league.</p>
+        </div>
+        <button onClick="{{ exportAllTeams }}" style="font-family:var(--font-heading); font-weight:700; font-size:14px; text-transform:uppercase; letter-spacing:0.02em; padding:12px 20px; border:2px solid var(--color-fg); background:var(--color-accent); color:var(--color-accent-fg); box-shadow:3px 3px 0 var(--color-fg); cursor:pointer; white-space:nowrap;" style-hover="transform:translate(-1px,-1px); box-shadow:4px 4px 0 var(--color-fg);">Export .json</button>
+      </div>
+
+      <div style="background:var(--color-surface); border:2px solid var(--color-fg); box-shadow:4px 4px 0 var(--color-fg); padding:24px; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap;">
+        <div>
+          <h3 style="margin:0 0 4px; font-family:var(--font-heading); font-weight:700; font-size:18px;">Import teams</h3>
+          <p style="margin:0; font-size:13px; color:var(--color-fg-muted);">Pick which blueprints from the file to bring in.</p>
+        </div>
+        <button onClick="{{ openTeamPicker }}" style="font-family:var(--font-heading); font-weight:700; font-size:14px; text-transform:uppercase; letter-spacing:0.02em; padding:12px 20px; border:2px solid var(--color-fg); background:var(--color-surface); color:var(--color-fg); box-shadow:3px 3px 0 var(--color-fg); cursor:pointer; white-space:nowrap;" style-hover="transform:translate(-1px,-1px); box-shadow:4px 4px 0 var(--color-fg);">Import .json…</button>
+      </div>
+
+      <div style="height:2px; background:var(--color-divider); margin:0;"></div>
+
+      <div style="background:var(--color-surface); border:2px solid var(--color-fg); box-shadow:4px 4px 0 var(--color-fg); padding:24px; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:nowrap;">
+        <div style="min-width:0;">
+          <h3 style="margin:0 0 4px; font-family:var(--font-heading); font-weight:700; font-size:18px;">Quick team list (CSV)</h3>
+          <p style="margin:0; font-size:13px; color:var(--color-fg-muted);">ID/slug, Name, Colours, Tier, City. No provenance — for fast bulk edits, not identity-tracked sharing.</p>
+        </div>
+        <div style="display:flex; gap:10px; flex-wrap:nowrap; flex:none; margin-left:auto;">
+          <button onClick="{{ importCsv }}" style="font-family:var(--font-heading); font-weight:700; font-size:14px; text-transform:uppercase; letter-spacing:0.02em; padding:12px 20px; border:2px solid var(--color-fg); background:var(--color-surface); color:var(--color-fg); box-shadow:3px 3px 0 var(--color-fg); cursor:pointer; white-space:nowrap;" style-hover="transform:translate(-1px,-1px); box-shadow:4px 4px 0 var(--color-fg);">Import .csv…</button>
+          <button onClick="{{ exportCsv }}" style="font-family:var(--font-heading); font-weight:700; font-size:14px; text-transform:uppercase; letter-spacing:0.02em; padding:12px 20px; border:2px solid var(--color-fg); background:var(--color-surface); color:var(--color-fg); box-shadow:3px 3px 0 var(--color-fg); cursor:pointer; white-space:nowrap;" style-hover="transform:translate(-1px,-1px); box-shadow:4px 4px 0 var(--color-fg);">Export .csv</button>
+        </div>
+      </div>
+
+      <h2 style="margin:16px 0 0; font-family:var(--font-heading); font-weight:700; font-size:15px; text-transform:uppercase; letter-spacing:0.05em; color:var(--color-fg-muted);">Database</h2>
+
+      <div style="background:var(--color-surface); border:2px solid var(--color-fg); box-shadow:4px 4px 0 var(--color-fg); padding:24px; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap;">
+        <div>
+          <h3 style="margin:0 0 4px; font-family:var(--font-heading); font-weight:700; font-size:18px;">Export entire database</h3>
+          <p style="margin:0; font-size:13px; color:var(--color-fg-muted);">Everything — blueprints, instances, leagues, seasons, locations, story state.</p>
+        </div>
+        <button onClick="{{ exportDatabase }}" style="font-family:var(--font-heading); font-weight:700; font-size:14px; text-transform:uppercase; letter-spacing:0.02em; padding:12px 20px; border:2px solid var(--color-fg); background:var(--color-accent); color:var(--color-accent-fg); box-shadow:3px 3px 0 var(--color-fg); cursor:pointer; white-space:nowrap;" style-hover="transform:translate(-1px,-1px); box-shadow:4px 4px 0 var(--color-fg);">Export .json</button>
+      </div>
+
+      <div style="background:var(--color-surface); border:2px solid var(--color-fg); box-shadow:4px 4px 0 var(--color-fg); padding:24px; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap;">
+        <div>
+          <h3 style="margin:0 0 4px; font-family:var(--font-heading); font-weight:700; font-size:18px;">Import entire database</h3>
+          <p style="margin:0; font-size:13px; color:var(--color-fg-muted);">Merges into your local database — never a wholesale replace.</p>
+        </div>
+        <button onClick="{{ openDatabaseImport }}" style="font-family:var(--font-heading); font-weight:700; font-size:14px; text-transform:uppercase; letter-spacing:0.02em; padding:12px 20px; border:2px solid var(--color-fg); background:var(--color-surface); color:var(--color-fg); box-shadow:3px 3px 0 var(--color-fg); cursor:pointer; white-space:nowrap;" style-hover="transform:translate(-1px,-1px); box-shadow:4px 4px 0 var(--color-fg);">Import .json…</button>
+      </div>
+
+    </div>
+  </div>
+
+  <sc-if value="{{ pickerOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed; inset:0; background:rgba(26,26,26,0.55); display:flex; align-items:center; justify-content:center; z-index:100;">
+      <div style="background:var(--color-surface); border:2px solid var(--color-fg); box-shadow:6px 6px 0 var(--color-fg); padding:28px; width:90%; max-width:480px; max-height:80vh; display:flex; flex-direction:column; gap:16px;">
+        <div>
+          <h3 style="margin:0 0 4px; font-family:var(--font-heading); font-weight:700; font-size:19px;">{{ pickerTitle }}</h3>
+          <p style="margin:0; font-size:13px; color:var(--color-fg-muted);">Found {{ pickerCount }} in the file. Choose which to import.</p>
+        </div>
+        <div style="overflow-y:auto; display:flex; flex-direction:column;">
+          <sc-for list="{{ pickerItems }}" as="item" hint-placeholder-count="3">
+            <label style="display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--color-divider); cursor:pointer;">
+              <input type="checkbox" checked="{{ item.selected }}" onChange="{{ item.toggle }}" style="width:18px; height:18px; accent-color:var(--color-accent); flex:none;"/>
+              <div style="flex:1;">
+                <div style="font-family:var(--font-heading); font-weight:600; font-size:14px;">{{ item.name }}</div>
+                <div style="font-family:var(--font-mono); font-size:11px; color:var(--color-fg-muted);">{{ item.uuid }}</div>
+              </div>
+              <sc-if value="{{ item.conflict }}" hint-placeholder-val="{{ false }}">
+                <span style="font-family:var(--font-heading); font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:0.03em; color:var(--color-warning-fg); background:var(--color-warning); border:2px solid var(--color-fg); padding:3px 8px; white-space:nowrap;">Conflict</span>
+              </sc-if>
+            </label>
+          </sc-for>
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:4px;">
+          <button onClick="{{ closeModal }}" style="font-family:var(--font-heading); font-weight:700; font-size:14px; text-transform:uppercase; letter-spacing:0.02em; padding:11px 18px; border:2px solid var(--color-fg); background:var(--color-surface); color:var(--color-fg); cursor:pointer;">Cancel</button>
+          <button onClick="{{ confirmPicker }}" style="font-family:var(--font-heading); font-weight:700; font-size:14px; text-transform:uppercase; letter-spacing:0.02em; padding:11px 18px; border:2px solid var(--color-fg); background:var(--color-accent); color:var(--color-accent-fg); cursor:pointer;">Import selected</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ conflictsOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed; inset:0; background:rgba(26,26,26,0.55); display:flex; align-items:center; justify-content:center; z-index:100;">
+      <div style="background:var(--color-surface); border:2px solid var(--color-fg); box-shadow:6px 6px 0 var(--color-fg); padding:28px; width:90%; max-width:520px; max-height:80vh; display:flex; flex-direction:column; gap:16px;">
+        <div>
+          <h3 style="margin:0 0 4px; font-family:var(--font-heading); font-weight:700; font-size:19px;">Resolve conflicts</h3>
+          <p style="margin:0; font-size:13px; color:var(--color-fg-muted);">These already exist locally by UUID. Skip keeps your local version untouched; Import as new forks the incoming one with a fresh UUID.</p>
+        </div>
+        <div style="overflow-y:auto; display:flex; flex-direction:column; gap:2px;">
+          <sc-for list="{{ conflictItems }}" as="item" hint-placeholder-count="2">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 0; border-bottom:1px solid var(--color-divider);">
+              <div>
+                <div style="font-family:var(--font-heading); font-weight:600; font-size:14px;">{{ item.name }}</div>
+                <div style="font-family:var(--font-mono); font-size:11px; color:var(--color-fg-muted);">{{ item.uuid }}</div>
+              </div>
+              <div style="display:flex; gap:6px; flex:none;">
+                <button onClick="{{ item.chooseSkip }}" style="font-family:var(--font-heading); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:0.02em; padding:8px 12px; border:2px solid var(--color-fg); cursor:pointer; background:{{ item.skipBg }}; color:{{ item.skipFg }};">Skip</button>
+                <button onClick="{{ item.chooseFork }}" style="font-family:var(--font-heading); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:0.02em; padding:8px 12px; border:2px solid var(--color-fg); cursor:pointer; background:{{ item.forkBg }}; color:{{ item.forkFg }};">Import as new</button>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:4px;">
+          <button onClick="{{ closeModal }}" style="font-family:var(--font-heading); font-weight:700; font-size:14px; text-transform:uppercase; letter-spacing:0.02em; padding:11px 18px; border:2px solid var(--color-fg); background:var(--color-surface); color:var(--color-fg); cursor:pointer;">Cancel</button>
+          <button onClick="{{ confirmConflicts }}" style="font-family:var(--font-heading); font-weight:700; font-size:14px; text-transform:uppercase; letter-spacing:0.02em; padding:11px 18px; border:2px solid var(--color-fg); background:var(--color-accent); color:var(--color-accent-fg); cursor:pointer;">Confirm</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    modal: null,       // { kind: 'leagues'|'teams'|'database', items: [{id,name,uuid,conflict,selected}] }
+    conflict: null,    // { kind, items: [{id,name,uuid,resolution}], cleanCount }
+    toast: null,
+  };
+
+  mockItems(kind) {
+    if (kind === 'leagues') {
+      return [
+        { id: 'l1', name: 'Bay Area Champions League', uuid: 'a3f1-9c02-...-league', conflict: false },
+        { id: 'l2', name: 'Downtown 5-a-side Cup', uuid: '7e40-11ab-...-league', conflict: true },
+        { id: 'l3', name: 'Riverside Youth League', uuid: 'c920-4d5e-...-league', conflict: false },
+      ];
+    }
+    return [
+      { id: 't1', name: 'Ironclad FC', uuid: 'b81c-2f30-...-team', conflict: true },
+      { id: 't2', name: 'Blue Harbor United', uuid: '05e6-88aa-...-team', conflict: false },
+      { id: 't3', name: 'Steel Valley Athletic', uuid: '9f14-c003-...-team', conflict: false },
+      { id: 't4', name: 'Northgate Rovers', uuid: '441b-77de-...-team', conflict: true },
+    ];
+  }
+
+  openPicker(kind) {
+    this.setState({ modal: { kind, items: this.mockItems(kind).map(i => ({ ...i, selected: true })) } });
+  }
+
+  toggleItem(id) {
+    this.setState(s => ({ modal: { ...s.modal, items: s.modal.items.map(i => i.id === id ? { ...i, selected: !i.selected } : i) } }));
+  }
+
+  closeModal() { this.setState({ modal: null, conflict: null }); }
+
+  confirmPicker() {
+    const { kind, items } = this.state.modal;
+    const chosen = items.filter(i => i.selected);
+    const conflicts = chosen.filter(i => i.conflict);
+    const clean = chosen.length - conflicts.length;
+    this.setState({ modal: null });
+    if (conflicts.length) {
+      this.setState({ conflict: { kind, cleanCount: clean, items: conflicts.map(i => ({ ...i, resolution: 'skip' })) } });
+    } else {
+      this.setState({ toast: `Imported ${clean} ${kind === 'leagues' ? 'league(s)' : 'team blueprint(s)'}.` });
+    }
+  }
+
+  openDatabaseImport() {
+    const items = [
+      { id: 'd1', name: 'Coastal Premier League', uuid: '2b6a-e011-...-league', conflict: true },
+      { id: 'd2', name: 'Ironclad FC', uuid: 'b81c-2f30-...-team', conflict: true },
+      { id: 'd3', name: 'Northgate Rovers', uuid: '441b-77de-...-team', conflict: true },
+    ];
+    this.setState({ conflict: { kind: 'database', cleanCount: 12, items: items.map(i => ({ ...i, resolution: 'skip' })) } });
+  }
+
+  setResolution(id, resolution) {
+    this.setState(s => ({ conflict: { ...s.conflict, items: s.conflict.items.map(i => i.id === id ? { ...i, resolution } : i) } }));
+  }
+
+  confirmConflicts() {
+    const { kind, items, cleanCount } = this.state.conflict;
+    const skipped = items.filter(i => i.resolution === 'skip').length;
+    const forked = items.filter(i => i.resolution === 'fork').length;
+    const label = kind === 'leagues' ? 'league(s)' : kind === 'teams' ? 'team blueprint(s)' : 'entities';
+    this.setState({ conflict: null, toast: `Imported ${cleanCount} ${label}, ${skipped} skipped, ${forked} forked.` });
+  }
+
+  dismissToast() { this.setState({ toast: null }); }
+
+  action(label) { this.setState({ toast: label }); }
+
+  renderVals() {
+    const modal = this.state.modal;
+    const conflict = this.state.conflict;
+    return {
+      toast: this.state.toast,
+      dismissToast: () => this.dismissToast(),
+      exportAllLeagues: () => this.action('Exported all leagues to leagues-export.json.'),
+      exportAllTeams: () => this.action('Exported all team blueprints to teams-export.json.'),
+      importCsv: () => this.action('Imported teams from CSV.'),
+      exportCsv: () => this.action('Exported team list to teams.csv.'),
+      exportDatabase: () => this.action('Exported entire database to database-export.json.'),
+      openLeaguePicker: () => this.openPicker('leagues'),
+      openTeamPicker: () => this.openPicker('teams'),
+      openDatabaseImport: () => this.openDatabaseImport(),
+      closeModal: () => this.closeModal(),
+      pickerOpen: !!modal,
+      pickerTitle: modal ? (modal.kind === 'leagues' ? 'Import leagues' : 'Import team blueprints') : '',
+      pickerCount: modal ? `${modal.items.length} ${modal.kind === 'leagues' ? 'league(s)' : 'blueprint(s)'}` : '',
+      pickerItems: modal ? modal.items.map(i => ({ ...i, toggle: () => this.toggleItem(i.id) })) : [],
+      confirmPicker: () => this.confirmPicker(),
+      conflictsOpen: !!conflict,
+      conflictItems: conflict ? conflict.items.map(i => ({
+        ...i,
+        chooseSkip: () => this.setResolution(i.id, 'skip'),
+        chooseFork: () => this.setResolution(i.id, 'fork'),
+        skipBg: i.resolution === 'skip' ? 'var(--color-fg)' : 'var(--color-surface)',
+        skipFg: i.resolution === 'skip' ? 'var(--color-surface)' : 'var(--color-fg)',
+        forkBg: i.resolution === 'fork' ? 'var(--color-accent)' : 'var(--color-surface)',
+        forkFg: i.resolution === 'fork' ? 'var(--color-accent-fg)' : 'var(--color-fg)',
+      })) : [],
+      confirmConflicts: () => this.confirmConflicts(),
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -13,11 +13,15 @@ Builds on MVP 1 (single round-robin league). MVP 2 introduces **mixed-format lea
 ### Phase Chaining
 - A league is a sequence of **phases**. Each phase has its own format.
 - Each phase defines **advancement requisites**: how many teams qualify from each group/table into the next phase.
+- A Groups phase can also send the **best M teams of the next place**, for example the 4 best third-placed teams. The user types M. When the next phase is a Bracket, setup suggests the M that makes the qualifier count a power of 2. The best M are ordered across groups by the standings rules, per match played if group sizes differ. *(Added on 2026-10-27, MVP2 Task 86.)*
 - **Points/stats reset to zero between phases** — each phase is scored independently (a team's Group Stage record does not carry into the Bracket phase, etc.).
+- **Phase start and lock**: the next phase starts with a user click when a phase is complete. The earlier phase then locks: its results can no longer change. *(Added on 2026-10-28, MVP2 Task 92.)*
 - **Groups Round Robin can be the final phase** of a league (only Bracket has the "final phase only" restriction). This produces **N winners instead of one** — one per group, with no further consolidation into a single champion. The league creation wizard shows a **non-blocking warning** if the last configured phase is Groups, so the user is aware before finishing setup. Anything downstream that expects "the league winner" or "top N finishers" (the Prize event, promotion, Cup feeder counts) treats **each group winner independently** — e.g. all N teams receive the Prize event, and all N count toward "top N" slots individually.
 
 ### Groups Assignment
 - Groups round robin: teams are assigned to groups **randomly** by default.
+- **Group count or group size**: the user sets one of the two, group size by default. In size mode the size is a maximum: groups = teams ÷ size, rounded up. Sizes differ by 1 at most. *(Added on 2026-10-27, MVP2 Task 87.)*
+- **Shuffle and manual moves**: after the draw, the user can draw again ("Shuffle groups") or move a team to another group. Phase 1 allows this until the league starts. A later Groups phase allows it until its first match has a result. *(Added on 2026-10-27, MVP2 Task 87.)*
 - At the national level (once Regions exist, MVP3+), grouping instead uses **geographic clustering**: teams are grouped by region/adjacent-region proximity first — same-region teams cluster together, adjacent regions cluster next to each other — and only the placement *within* or *between* those adjacent clusters is randomized. This replaces pure randomness for national-scope tournaments specifically; city/regional-scope tournaments still use plain random assignment.
 - **Region adjacency**: each Region stores a manually-linked list of adjacent Regions, set by the user when creating/editing a Region. This is a Location-model addition that lands whenever Regions are introduced (MVP3), but is decided now since it affects that model's shape.
 - **Layout**: group cards **wrap to the next line** when there are many groups, rather than horizontally scrolling.
@@ -36,19 +40,28 @@ These combine into 4 possible resolution paths:
 |---|---|---|
 | Yes | Penalties | AET → Penalties |
 | No | Penalties | Penalties |
-| Yes | Replay → Coin Toss | AET → Replay → (if replay also drawn) Coin Toss |
+| Yes | Replay → Coin Toss | AET → Replay → (if the replay is drawn) replay AET → (if still drawn) Coin Toss |
 | No | Replay → Coin Toss | Replay → (if replay also drawn) Coin Toss |
 
 Note: the Replay itself is a one-shot fallback — if the replay also ends in a draw, it goes straight to Coin Toss (no repeated replay loop).
+- **Replay AET:** when the phase plays AET, a drawn replay plays AET too. If it is still drawn, the coin toss decides. *(Added on 2026-10-27, MVP2 Task 88.)*
+- **Away goals and AET:** away goals apply once, after 180 minutes. Goals in AET never count as away goals. *(Added on 2026-10-27, MVP2 Task 88.)*
+
+- **Coin toss:** a pure 50/50. Team strength plays no part. **Penalties** stay weighted by team strength.
 
 ### Bracket Specifics
 - Ties can be configured as **single match** or **two-legged (aggregate score, home/away)** — set per bracket phase.
 - Bracket seeding is determined by **final standing** from the previous phase (1st seed vs. last qualifier, 2nd vs. second-last, etc. — standard seeding).
+- **A bracket as the first phase** (for example a pure cup) has no previous standings. An injected `Rng` draws its seeds when the league starts, and the draw is stored. *(Added on 2026-10-28, MVP2 Task 89.)*
 - **Away-goals rule** for two-legged ties is a **configurable toggle per bracket phase** (off = go straight to AET/tiebreak if level on aggregate; on = away goals break the aggregate tie first).
+- **Third-place match** is a **configurable toggle per bracket phase**, off by default. When on, the two semi-final losers play a tie for third place, before the final. *(Added on 2026-10-27, MVP2 Task 77.)*
+- **Single-match final** is a **configurable toggle per two-legged bracket phase**. When on, the final is one match at a neutral venue. The third-place tie plays the same way. When off, both have two legs, like the other ties of the phase. *(Added on 2026-10-27, MVP2 Task 79.)*
+- **Venue:** a single-match tie, its extra time, and a replay are played at a **neutral venue**. No team gets home advantage. A tie still stores a venue value, always neutral in MVP2, so a later venue choice (`scorinator-future-features.md` §4) needs no data change. The league's home-advantage toggle applies only to round-robin phases and two-legged ties.
 
 ### Bracket Sizing & Byes
 - Bracket phases need a **power-of-2** number of participating teams for a clean single-elimination structure. When the qualifier count isn't a power of 2, the system **auto-assigns byes by default** (filling up to the next power of 2), but the user can **manually reassign who gets a bye**.
-- **Bye assignment**: the highest seeds get the byes through the first round. Beyond that, bracket slotting is simple seed order — not the full anti-clash placement algorithm that keeps top seeds apart for as long as possible.
+- **Bye assignment**: the highest seeds get the byes through the first round. Bracket slotting uses the **standard bracket placement**: seeds 1 and 2 can meet only in the final, seeds 1 to 4 only from the semi-finals on, and so on. For 8 slots, the first round is 1 v 8, 4 v 5, 2 v 7, 3 v 6, and the winners of adjacent ties meet. *(Changed on 2026-10-28, MVP2 Task 89. It was simple seed order, without the anti-clash placement.)*
+- **Bye change**: the user can change who gets a bye at any time. After the first bracket result, a change asks for a confirm, then clears every result of the bracket phase. *(Added on 2026-10-28, MVP2 Task 89.)*
 - **Early warning in the league creation wizard**, before it becomes a problem:
   - For a league that's a **single Bracket phase** (e.g. a pure Cup), the warning appears at the **team-selection step**, since the qualifier count is determined directly there.
   - For a **mixed-format league** where a Bracket phase follows another phase, the warning appears at the **phase-configuration step**, based on how many teams the advancement requisites say will qualify into the bracket.
@@ -56,42 +69,59 @@ Note: the Replay itself is a one-shot fallback — if the replay also ends in a 
 
 ### Team Selection in League Setup
 Scoped to **league setup, before the league is started** (fixtures generated) — ongoing/mid-league roster editing after that point hasn't been designed yet (see Open Items).
-- The setup screen starts from an **empty state** with two actions: **Select teams** or **Load them all**.
-  - **Select teams** opens a searchable bulk-selection dialog listing eligible Team Blueprints — each row shows a checkbox, colour swatch, Name, and Tier. Multi-select, confirm to add.
+- **Setup is only the wizard.** No league exists before the last wizard click. **"Create league"** makes the league and starts it: it builds phase 1. A count that does not fit disables it. *(Added on 2026-10-28, MVP2 Task 93.)*
+- The setup screen starts from an **empty state** with three actions: **+ Add teams**, **Load them all**, or **Import slug list**. *(Changed on 2026-10-28, MVP2 Task 93.)*
+  - **+ Add teams** (the spec's "Select teams") opens a searchable bulk-selection dialog listing eligible Team Blueprints — each row shows a checkbox, colour swatch, Name, and Tier. Multi-select, confirm to add.
   - **Load them all** adds every eligible Blueprint at once, skipping the dialog. "Eligible" means: filtered by this league's location eligibility (per MVP3's location-filtering rule) if the league has a location scope; otherwise all Blueprints.
   - If **no Blueprints exist yet at all**, this empty state instead prompts the user to create their first team, rather than presenting two options that would both be no-ops.
+  - **Import slug list** reads a plain text file with one Blueprint slug on each line, and adds the teams it finds. An alert lists the slugs it does not find. *(Added on 2026-10-28, MVP2 Task 93.)*
 - Once teams are added, each row in the league's team list has three distinct actions:
-  - **Edit** opens the same aside modal used at team creation, but here it edits the team's **Instance** for this Season (current OVR override, current Tier) — the underlying Blueprint (Name/Colours/base Tier/City/Crest) is never touched from this screen.
+  - **Edit** opens the same aside modal used at team creation, but here it edits the team's **Instance** in this league's Instance Wrapper (name, colour, current Tier, current OVR override) — the underlying Blueprint (Name/Colours/base Tier) is never touched from this screen. The slug stays the Blueprint slug. *(Changed on 2026-10-28, MVP2 Task 93.)*
   - **Switch** reopens the same bulk-selection dialog in **single-select mode**, pre-excluding teams already in this league, and replaces this row's team with the new selection.
   - **Remove** takes the team out of the league's roster. If removal would drop the roster below the format's minimum team count, it's still allowed but shows a **soft warning** that the league can't start yet.
-- Adding a Blueprint to a league reuses its existing Instance for that Season if one already exists there, or creates a fresh one (OVR rolled from Tier) if not.
+- Adding a Blueprint to a league creates a fresh Instance in that league's Instance Wrapper (OVR rolled from Tier). In MVP2, each league is its own wrapper, so two leagues never share an Instance. From MVP3, the leagues of one Season share a wrapper, and the add reuses the Instance that is already there.
 
 ### Teams Module (Blueprints) — supersedes MVP1's flat Team model
 - Teams are split into two layers:
-  - **Team Blueprint** — the reusable template, living in the global "Teams" module: Name, Colours, base Tier, City, Crest. Not tied to any specific league.
-  - **Team Instance** — the live/mutable state a blueprint gets once it's actually put into play: current OVR, current Tier, current league membership(s). See MVP3 for how Instance scope is formalized around the new **Season** concept — within one Season, a blueprint has exactly one shared Instance across every league it's concurrently a member of (matches real football: a club has one strength, not one per competition).
-- The MVP1 CSV import/export (`ID/slug, Name, Colours, Tier, City`) is retained as-is for quick bulk list editing — it operates on Blueprints and carries no provenance metadata.
+  - **Team Blueprint** — the reusable template, living in the global "Teams" module: Name, Colours, base Tier, and an optional Location label (free text, not a City). Not tied to any specific league. MVP3 adds City and Crest. *(Added on 2026-10-28, MVP2 Task 99.)*
+  - **Team Instance** — the live/mutable state a blueprint gets once it's actually put into play: name, colour, slug, current OVR, current Tier, current league membership(s). In MVP2, each league is its own Instance Wrapper, with its own Instances. See MVP3 for how Instance scope is formalized around the new **Season** concept — within one Season, a blueprint has exactly one shared Instance across every league it's concurrently a member of (matches real football: a club has one strength, not one per competition). *(Changed on 2026-10-28, MVP2 Tasks 93 and 94.)*
+- **Slug**: a Blueprint slug comes from the name at create, unique with a `-2`, `-3` suffix. A rename keeps it. An icon button beside the slug field makes a new slug from the name, after a confirm. An Instance keeps the slug it copied at add. *(Added on 2026-10-28, MVP2 Task 94.)*
+- **Trigrams**: a Blueprint has an ordered list of up to 5 trigrams (3 characters, A to Z or 0 to 9). An empty list uses one made from the name. A league picks one unique trigram for each team: higher Tier first, then higher OVR, then the fixed lots. A team with no free trigram gets a digit in the last place. "Create league" stores the pick on the Instance. Trigrams always show in the mono font. *(Added on 2026-10-28, MVP2 Task 100.)*
+- **Delete**: the user can delete a Blueprint at any time, after a confirm. Each league keeps its Instances, which lose only the Location. A restore is parked (`scorinator-future-features.md` §11). *(Added on 2026-10-28, MVP2 Task 94.)*
+- The MVP1 CSV import/export (`ID/slug, Name, Colours, Tier`, plus optional `Location` and `Trigrams` columns) is retained for quick bulk list editing — it operates on Blueprints and carries no provenance metadata. A file with no `Location` or `Trigrams` column still imports. The `Trigrams` column is *(added on 2026-10-28, MVP2 Task 100)*. MVP3 adds `City`. *(Added on 2026-10-28, MVP2 Task 99.)*
 
 ### File Module (generalized)
 MVP1's single "Save/Load league" pair is replaced with scoped export/import actions:
-- **Per-league export/import** — moved to a button on the **League Detail screen** (no longer a global File-module action). Self-contained JSON: embeds full Blueprint + Instance snapshots of the league's member teams, plus fixtures/results/config.
+- **Per-league export** — moved to an export menu on the **League Detail screen** (no longer a global File-module action). A single league imports through **Import leagues** in the File module, or through an **Import league** button on the Leagues dashboard. *(Changed on 2026-10-28, MVP2 Task 95.)* Self-contained JSON: embeds full Blueprint + Instance snapshots of the league's member teams, plus fixtures/results/config.
 - **Export all leagues** (bulk, JSON, File module) / **Import leagues** — an import file may contain one or many leagues; if multiple, the user gets a picker to select which specific ones to bring in.
 - **Export all team blueprints** (bulk, JSON, File module, full fidelity incl. UUID/provenance) / **Import teams** — same selective-picker pattern as leagues.
-- **Export entire database** / **Import entire database** — everything: all Blueprints + Instances, all Leagues, all Seasons (MVP3+), Locations (MVP3+), and Story Mode state (MVP4+) in one file. Import merges into the current database using the same conflict rules as any other import (see below) — it never destructively replaces the local database wholesale.
+- **Export entire database** / **Import entire database** — everything: all Blueprints + Instances, all Leagues, all Seasons (MVP3+), Locations (MVP3+), and Story Mode state (MVP4+) in one file. In MVP2 the file is one `.zip` with the manifest, the league wrappers, and the Blueprints (Task 76). *(Changed on 2026-10-28, MVP2 Task 95.)* Import merges into the current database using the same conflict rules as any other import (see below) — it never destructively replaces the local database wholesale.
 - **Export results** (plain `.txt`, read-only) stays scoped per-league, moved alongside the league's export button on its Detail screen.
+- **Export slug list** (plain `.txt`, one team slug on each line) is per-league, in the League Detail export menu. The order is the final ranking: teams that reached a later phase first, then the order inside each phase. "Import slug list" in league setup reads the same format. *(Added on 2026-10-28, MVP2 Task 95.)*
+- **MVP1 files**: MVP2 does not import MVP1 league or team JSON files. Teams move over by CSV. A converter is parked (`scorinator-future-features.md` §12). *(Added on 2026-10-28, MVP2 Task 95.)*
 
 ### Identity & Provenance System
 - Every exportable entity (Team Blueprint, League, Season, Location, ...) gets a **permanent UUID v4, assigned once at creation and never reassigned or overwritten.**
 - Each program installation has its own **installation UUID**, used only for provenance metadata (`created_by_installation`, `last_modified_by_installation`) — never used to derive or override an entity's identity.
 - **Import conflict rule**: if an incoming entity's UUID doesn't already exist locally, it's created as-is. If it **does** exist locally, the local version is **never silently overwritten** — the user is prompted per conflict with two choices: **Skip** (discard incoming, keep local) or **Import as new** (the incoming entity is assigned a **fresh UUID**, forking it into a separate entity; the local original is untouched).
+- **Same content**: an incoming entity with a known UUID and the same content as the local one (all fields except provenance) imports nothing, with no prompt. The import message counts it. *(Added on 2026-10-28, MVP2 Task 96.)*
+- **Blueprints inside a league file**: a league import keeps a local Blueprint that has the same UUID, with no prompt, and adds an unknown one. Only the league itself can be a conflict. The league never needs the local Blueprint, because its Instances hold their own data. *(Added on 2026-10-28, MVP2 Task 96.)*
 - Because UUIDs never change once assigned, an entity keeps its identity across any number of export/import hops — there's no need to track "who exported it last"; only an explicit fork ever creates a new identity.
 
 ### Bracket Scorination Workflow
-- Each tie can be scorinated individually via a **per-tie "Scorinate" button**, or the whole bracket can be resolved at once via a **"Scorinate bracket" button** that scorinates every currently-playable tie in one action.
+- Each tie can be scorinated individually via a **per-tie "Scorinate" button**, or the bracket can move forward via a **"Scorinate bracket" button** that scorinates every currently-playable tie in one action. A playable tie has both teams known and no result. "Scorinate bracket" never plays a tie that has a result, so a user who plays round by round plays one round for each click. *(Changed on 2026-10-28, MVP2 Task 89.)*
 - **Re-scorinating an earlier tie is destructive downstream**: it recalculates who advances from that tie and **clears/disables every tie in later rounds that depended on it** (they revert to an unplayed state).
 - **Confirmation required**: re-scorinating a tie that has already-scored downstream rounds triggers a confirm modal — *"This will clear results for later rounds. Continue?"* Confirming clears the affected later-round ties (e.g. SF/Final/Third-place) back to unplayed: their "Scorinate" buttons re-enable, and any team slot not yet determined shows a **"TBD"** placeholder.
-- The bulk **"Scorinate bracket"** action shows the same confirmation modal, for consistency, whenever downstream results already exist.
+- ~~The bulk **"Scorinate bracket"** action shows the same confirmation modal, for consistency, whenever downstream results already exist.~~ *(Removed on 2026-10-28, MVP2 Task 89: "Scorinate bracket" plays only ties with no result, so it never clears a result.)*
 - **Tie cards** display a footer containing: the **aggregate score** (for two-legged ties), the **penalty shootout result** (if the tie was decided by penalties), and the tie's **"Scorinate" button**.
+
+### Standings display
+*(Added on 2026-10-28, MVP2 Task 102.)*
+- **Form**: the round-robin table has a "Form" column with the team's last 5 results in the phase, oldest on the left. Each dot has a letter (W, D, L), a colour, and its own hint with the opponent trigram, H or A, the score, and the matchday.
+- **Goals**: the round-robin table has no GF and GA columns. The GD cell shows them in a hint. The table order still uses goals for.
+- **Header hints**: each short header (#, P, W, D, L, GD, Pts, Form, and "Agg" on tie cards) has a hint with its full name, a dotted underline, and the help cursor.
+- **Position chart**: a "Chart" sub-tab in each round-robin or Groups phase shows each team's place after each matchday, one line for each team in its colour, ended by its trigram. A Groups phase has one chart for each group. A points mode is parked (`scorinator-future-features.md` §15).
+- **Zones**: up to four place zones (green, blue, yellow, red) for each round-robin or Groups phase, each with an optional label, a row tint, a left stripe, and a legend. Zones replace the qualifier highlight: in a phase that is not the last, green is the top N and yellow the best-M place, both from the advancement. The user sets zones in the wizard and in League Detail, at any time.
 
 ---
 
@@ -113,7 +143,7 @@ MVP1's single "Save/Load league" pair is replaced with scoped export/import acti
 ### Epic: Tiebreak Configuration
 - As a user, I want to toggle "Plays AET?" per phase, so that I control whether extra time is simulated on a draw.
 - As a user, I want to choose between "Penalties" and "Replay → Coin Toss" as the phase's tiebreak method, so that decisive results are resolved the way I intend.
-- As a user, I want the system to simulate penalties (or a coin toss) as a weighted-but-still-uncertain outcome, so that upsets remain possible even in tiebreaks.
+- As a user, I want the system to simulate penalties as a weighted-but-still-uncertain outcome, and a coin toss as a pure 50/50, so that upsets remain possible even in tiebreaks.
 
 ### Epic: Bracket Phase
 - As a user, I want to configure a bracket tie as single-match or two-legged aggregate, so that I can model cup-style or two-leg knockout competitions.
@@ -129,6 +159,7 @@ MVP1's single "Save/Load league" pair is replaced with scoped export/import acti
 - As a user, I want a bye to auto-advance its team with a "BYE" placeholder and a disabled "Scorinate" button, so that it's visually consistent with every other tie even though there's nothing to simulate.
 
 ### Epic: Region Adjacency (Location model groundwork)
+*Not built in MVP2: Regions arrive in MVP3. See MVP3 Epic: Location Management. (Added on 2026-10-28, MVP2 Task 90.)*
 - As a user, I want to manually link two Regions as adjacent when creating or editing them, so that future grouping logic (MVP3) can favor geographically close teams.
 
 ### Epic: Single Duels Home/Away Balancing
@@ -142,23 +173,37 @@ MVP1's single "Save/Load league" pair is replaced with scoped export/import acti
 - As a user, I want to bulk-select teams for a new league from a searchable checklist (colour, name, tier shown per row), so that I can build a roster quickly.
 - As a user, I want a "Load them all" shortcut that adds every eligible team at once, so that I don't have to check boxes one by one when I want everyone.
 - As a user, when I have no teams created yet, I want to be prompted to create one instead of seeing options that would do nothing, so that the empty state actually helps me.
-- As a user, I want to Edit a team's Instance for this Season (not its global Blueprint) directly from the league's team list, so that per-season tweaks don't leak into every other league that team plays in.
+- As a user, I want to Edit a team's Instance in this league (not its global Blueprint) directly from the league's team list, so that per-league tweaks do not change the Blueprint or any other league.
 - As a user, I want to Switch a team for a different one via the same picker, pre-filtered to exclude teams already in the league, so that swapping is quick and duplicate-safe.
+- As a user, I want to load a plain text file of team slugs into the league setup, with an alert for the slugs not found, so that I can set up a known roster fast. *(Added on 2026-10-28, MVP2 Task 93.)*
 - As a user, I want to Remove a team from the roster, with a warning (not a hard block) if that drops below the format's minimum, so that I know the league isn't ready to start without being stopped outright.
 
 ### Epic: Teams Module (Blueprints)
 - As a user, I want a global "Teams" list of reusable Blueprints, separate from any one league, so that I can build a roster once and use it across multiple competitions.
-- As a user, I want a Blueprint's live state (OVR, current Tier) to be shared across every league it's concurrently a member of, so that a team's strength stays consistent everywhere it plays at once.
+- As a user, I want each league to keep its own live state for a team (OVR, current Tier), apart from the Blueprint, so that a change in one league does not change the Blueprint. *(From MVP3, the leagues of one Season share one live state.)*
+- As a user, I want to give each team a free-text location, so that I can see where a team comes from when I pick teams and read results. *(Added on 2026-10-28, MVP2 Task 99.)*
+- As a user, I want to delete a team Blueprint I no longer need, so that the Teams list stays short. Leagues keep their own copy of the team. *(Added on 2026-10-28, MVP2 Task 94.)*
+- As a user, I want a team slug to stay the same when I rename the team, unless I ask for a new one, so that my CSV files and slug lists keep working. *(Added on 2026-10-28, MVP2 Task 94.)*
+- As a user, I want each team to have a short three-letter code, with alternatives, so that I can tell teams apart where a full name does not fit. *(Added on 2026-10-28, MVP2 Task 100.)*
 
 ### Epic: File Module (generalized export/import)
 - As a user, I want an export button on each League's Detail screen that produces a self-contained file (teams included), so that I can share or back up that one league without extra steps.
 - As a user, I want to export all my leagues or all my team blueprints in bulk, so that I can back up everything at once.
 - As a user, when I import a file with multiple leagues or teams, I want to pick which specific ones to bring in, so that I'm not forced to import everything in the file.
 - As a user, I want to export or import my entire database (teams, leagues, locations, story state) as one file, so that I can fully back up or transfer my whole setup.
+- As a user, I want to export a league's team slugs in ranking order, so that I can reuse the list in a new league. *(Added on 2026-10-28, MVP2 Task 95.)*
 
 ### Epic: Identity & Provenance
 - As a user, I want every team/league/location to keep the same permanent identity no matter how many times it's exported and re-imported, so that re-sharing data doesn't create confusing duplicates.
 - As a user, when an import conflicts with something I already have, I want to be asked whether to skip it or bring it in as a new separate copy, so that my existing data is never silently overwritten.
+
+### Epic: Standings display
+*(Added on 2026-10-28, MVP2 Task 102.)*
+- As a user, I want to see the last 5 results of each team in the table, so that I can see which teams are in form.
+- As a user, I want a shorter table that still gives me the goals scored and conceded, so that the table stays easy to read.
+- As a user, I want each short table header to tell me its full name, so that I know what each column means.
+- As a user, I want a chart of each team's place after each matchday, so that I can see how the table changed over the phase.
+- As a user, I want to colour place ranges in a table, so that I can see what each place means.
 
 ---
 

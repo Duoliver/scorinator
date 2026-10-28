@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Semi+Condensed:wght@700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; }
+    a { color: var(--color-accent, #17551C); }
+    a:hover { color: var(--color-fg, #1A1A1A); }
+  </style>
+</helmet>
+<div style="--color-bg:#F2F2F0; --color-surface:#FFFFFF; --color-fg:#1A1A1A; --color-fg-muted:#5C5C5C; --color-accent:#17551C; --color-accent-fg:#FFFFFF; --color-error:#8C1414; --color-error-fg:#FFFFFF; --color-warning:#D9A900; --color-warning-fg:#1A1A1A; --font-heading:'Barlow',sans-serif; --font-condensed:'Barlow Semi Condensed',sans-serif; --font-body:'Barlow',sans-serif; --font-mono:'JetBrains Mono',monospace; background:var(--color-bg); color:var(--color-fg); font-family:var(--font-body); min-height:100vh; display:flex;">
+
+  <nav style="width:220px; flex:none; background:var(--color-surface); border-right:2px solid var(--color-fg); display:flex; flex-direction:column; padding:24px 0;">
+    <div style="font-family:var(--font-condensed); font-weight:700; font-size:20px; letter-spacing:0.06em; text-transform:uppercase; padding:0 20px 28px;">Footballer</div>
+    <a href="Footballer - Leagues Dashboard.dc.html" style="display:flex; align-items:center; gap:10px; padding:12px 20px; font-family:var(--font-heading); font-weight:600; font-size:15px; text-decoration:none; background:var(--color-fg); color:var(--color-surface);">Leagues</a>
+    <a href="Footballer - Teams.dc.html" style="display:flex; align-items:center; gap:10px; padding:12px 20px; font-family:var(--font-heading); font-weight:600; font-size:15px; text-decoration:none; color:var(--color-fg);">Teams</a>
+    <a href="Footballer - File Manager.dc.html" style="display:flex; align-items:center; gap:10px; padding:12px 20px; font-family:var(--font-heading); font-weight:600; font-size:15px; text-decoration:none; color:var(--color-fg);">File</a>
+  </nav>
+
+  <div style="flex:1; min-width:0; padding:40px 48px; display:flex; flex-direction:column; gap:24px; max-width:1280px;">
+    <div>
+      <a href="Footballer - Leagues Dashboard.dc.html" style="font-size:13px; text-decoration:none;">← Leagues</a>
+      <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-top:8px;">
+        <div>
+          <h1 style="margin:0 0 6px; font-family:var(--font-heading); font-weight:700; font-size:34px;">Continental Shield</h1>
+          <div style="font-size:13px; color:var(--color-fg-muted);">Group Stage → Bracket · 16 teams · Home adv. on · 3/1/0 pts</div>
+        </div>
+        <span style="font-family:var(--font-mono); font-weight:700; font-size:12px; padding:5px 10px; border:2px solid var(--color-fg); background:var(--color-fg); color:var(--color-surface); white-space:nowrap;">{{ phaseProgressLabel }}</span>
+      </div>
+    </div>
+
+    <!-- PHASE TABS -->
+    <div style="display:flex; border:2px solid var(--color-fg); width:fit-content;">
+      <button onClick="{{ showGroupPhase }}" style="padding:12px 26px; font-family:var(--font-condensed); font-weight:700; font-size:13px; text-transform:uppercase; letter-spacing:0.04em; border:none; border-right:2px solid var(--color-fg); cursor:pointer; background:{{ groupPhaseBg }}; color:{{ groupPhaseFg }};">1 · Group Stage</button>
+      <button onClick="{{ showBracketPhase }}" style="padding:12px 26px; font-family:var(--font-condensed); font-weight:700; font-size:13px; text-transform:uppercase; letter-spacing:0.04em; border:none; cursor:pointer; background:{{ bracketPhaseBg }}; color:{{ bracketPhaseFg }};">2 · Bracket</button>
+    </div>
+
+    <!-- GROUP STAGE -->
+    <sc-if value="{{ isGroupPhase }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex; flex-direction:column; gap:18px;">
+        <div style="display:flex; border:2px solid var(--color-fg); width:fit-content;">
+          <button onClick="{{ showGroupStandings }}" style="padding:10px 20px; font-family:var(--font-condensed); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:0.04em; border:none; border-right:2px solid var(--color-fg); cursor:pointer; background:{{ groupStandingsBg }}; color:{{ groupStandingsFg }};">Standings</button>
+          <button onClick="{{ showGroupFixtures }}" style="padding:10px 20px; font-family:var(--font-condensed); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:0.04em; border:none; cursor:pointer; background:{{ groupFixturesBg }}; color:{{ groupFixturesFg }};">Fixtures</button>
+        </div>
+
+        <!-- GROUP STANDINGS -->
+        <sc-if value="{{ isGroupStandings }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex; gap:16px; overflow-x:auto; padding-bottom:6px;">
+            <sc-for list="{{ groupTables }}" as="g" hint-placeholder-count="4">
+              <div style="flex:none; width:280px; border:2px solid var(--color-fg); background:var(--color-surface); display:flex; flex-direction:column;">
+                <div style="display:grid; grid-template-columns:24px 1fr 26px 26px 26px 34px; gap:6px; align-items:end; padding:9px 12px; border-bottom:2px solid var(--color-fg); background:var(--color-fg); color:var(--color-surface); font-family:var(--font-condensed); font-weight:700; font-size:10px; text-transform:uppercase; letter-spacing:0.03em;">
+                  <span style="grid-column:1 / 3; font-size:15px; letter-spacing:0.04em;">{{ g.label }}</span><span>W</span><span>D</span><span>L</span><span>Pts</span>
+                </div>
+                <sc-for list="{{ g.rows }}" as="s" hint-placeholder-count="4">
+                  <div style="display:grid; grid-template-columns:24px 1fr 26px 26px 26px 34px; gap:6px; align-items:center; padding:8px 12px; border-bottom:2px solid var(--color-fg); font-size:12px; background:{{ s.rowBg }};">
+                    <span style="font-family:var(--font-mono); font-weight:700;">{{ s.pos }}</span>
+                    <div style="display:flex; align-items:center; gap:6px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                      <div style="width:10px; height:10px; border:2px solid var(--color-fg); background:{{ s.colour }}; flex:none;"></div>
+                      {{ s.name }}
+                    </div>
+                    <span>{{ s.w }}</span><span>{{ s.d }}</span><span>{{ s.l }}</span>
+                    <span style="font-family:var(--font-mono); font-weight:700;">{{ s.pts }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-for>
+          </div>
+          <div style="font-size:12px; color:var(--color-fg-muted);">Top 2 of each group advance to the Bracket.</div>
+        </sc-if>
+
+        <!-- GROUP FIXTURES -->
+        <sc-if value="{{ isGroupFixtures }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:18px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <button onClick="{{ prevMd }}" style="width:36px; height:36px; border:2px solid var(--color-fg); background:var(--color-surface); font-size:15px; cursor:pointer;" style-hover="background:var(--color-fg); color:var(--color-surface);">←</button>
+                <div style="font-family:var(--font-heading); font-weight:700; font-size:18px; min-width:130px; text-align:center;">Matchday {{ md }}</div>
+                <button onClick="{{ nextMd }}" style="width:36px; height:36px; border:2px solid var(--color-fg); background:var(--color-surface); font-size:15px; cursor:pointer;" style-hover="background:var(--color-fg); color:var(--color-surface);">→</button>
+              </div>
+              <button onClick="{{ scorinateAll }}" style="font-family:var(--font-heading); font-weight:700; font-size:14px; text-transform:uppercase; letter-spacing:0.03em; padding:12px 20px; border:2px solid var(--color-fg); background:var(--color-accent); color:var(--color-accent-fg); box-shadow:4px 4px 0 var(--color-fg); cursor:pointer;" style-hover="transform:translate(-2px,-2px); box-shadow:6px 6px 0 var(--color-fg);">⚽ Scorinate matchday</button>
+            </div>
+            <div style="border:2px solid var(--color-fg); background:var(--color-surface); display:flex; flex-direction:column;">
+              <sc-for list="{{ groupMatches }}" as="m" hint-placeholder-count="8">
+                <div style="display:grid; grid-template-columns:50px 1fr auto 1fr 130px; align-items:center; gap:12px; padding:14px 20px; border-bottom:2px solid var(--color-fg);">
+                  <span style="font-family:var(--font-mono); font-weight:700; font-size:11px; padding:3px 6px; border:2px solid var(--color-fg); background:var(--color-warning); color:var(--color-warning-fg); text-align:center;">{{ m.group }}</span>
+                  <div style="display:flex; align-items:center; gap:8px; justify-content:flex-end; font-weight:600; font-size:14px; text-align:right;">
+                    {{ m.home.name }}
+                    <div style="width:12px; height:12px; border:2px solid var(--color-fg); background:{{ m.home.colour }}; flex:none;"></div>
+                  </div>
+                  <div style="font-family:var(--font-mono); font-weight:700; font-size:17px; min-width:60px; text-align:center;">{{ m.scoreLabel }}</div>
+                  <div style="display:flex; align-items:center; gap:8px; font-weight:600; font-size:14px;">
+                    <div style="width:12px; height:12px; border:2px solid var(--color-fg); background:{{ m.away.colour }}; flex:none;"></div>
+                    {{ m.away.name }}
+                  </div>
+                  <button onClick="{{ m.onScorinate }}" style="font-family:var(--font-heading); font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:0.02em; padding:8px 12px; border:2px solid var(--color-fg); background:{{ m.actionBg }}; color:{{ m.actionFg }}; cursor:pointer; white-space:nowrap;" style-hover="transform:translate(-1px,-1px); box-shadow:3px 3px 0 var(--color-fg);">{{ m.actionLabel }}</button>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <!-- BRACKET PHASE -->
+    <sc-if value="{{ isBracketPhase }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; flex-direction:column; gap:20px; min-width:0;">
+        <div style="display:flex; border:2px solid var(--color-fg); width:fit-content;">
+          <button onClick="{{ showSeedList }}" style="padding:10px 20px; font-family:var(--font-condensed); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:0.04em; border:none; border-right:2px solid var(--color-fg); cursor:pointer; background:{{ seedListBg }}; color:{{ seedListFg }};">Seed List</button>
+          <button onClick="{{ showBracketTree }}" style="padding:10px 20px; font-family:var(--font-condensed); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:0.04em; border:none; cursor:pointer; background:{{ bracketTreeBg }}; color:{{ bracketTreeFg }};">Bracket</button>
+        </div>
+
+        <!-- SEED LIST -->
+        <sc-if value="{{ isSeedList }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:14px; max-width:520px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+              <div style="font-size:12px; color:var(--color-fg-muted); max-width:360px;">{{ byeHelperText }}</div>
+              <span style="font-family:var(--font-mono); font-weight:700; font-size:12px; padding:5px 10px; border:2px solid var(--color-fg); background:var(--color-surface); white-space:nowrap;">{{ byeCount }} / {{ byesRequired }} byes assigned</span>
+            </div>
+            <div style="border:2px solid var(--color-fg); background:var(--color-surface); display:flex; flex-direction:column;">
+              <sc-for list="{{ seedRows }}" as="r" hint-placeholder-count="8">
+                <div style="display:grid; grid-template-columns:34px 1fr 60px 40px; align-items:center; gap:10px; padding:10px 14px; border-bottom:2px solid var(--color-fg); font-size:13px;">
+                  <span style="font-family:var(--font-mono); font-weight:700; color:var(--color-fg-muted);">{{ r.seed }}</span>
+                  <div style="display:flex; align-items:center; gap:8px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                    <div style="width:10px; height:10px; border:2px solid var(--color-fg); background:{{ r.team.colour }}; flex:none;"></div>
+                    {{ r.team.name }}
+                  </div>
+                  <span style="font-family:var(--font-mono); font-size:11px; color:var(--color-fg-muted);">{{ r.tag }}</span>
+                  <button onClick="{{ r.onToggle }}" disabled="{{ r.starDisabled }}" title="Toggle bye" style="width:32px; height:32px; border:none; background:none; font-size:18px; line-height:1; cursor:pointer; color:{{ r.starColor }};">{{ r.starChar }}</button>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- BRACKET TREE -->
+        <sc-if value="{{ isBracketTree }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex; flex-direction:column; gap:16px; min-width:0;">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+          <div style="font-size:12px; color:var(--color-fg-muted); max-width:640px;">Seeded by Group Stage final standing · All ties two-legged (aggregate, home &amp; away), away goals off · AET → Penalties · * leg score includes AET</div>
+          <button onClick="{{ scorinateBracket }}" style="font-family:var(--font-heading); font-weight:700; font-size:14px; text-transform:uppercase; letter-spacing:0.03em; padding:12px 20px; border:2px solid var(--color-fg); background:var(--color-accent); color:var(--color-accent-fg); box-shadow:4px 4px 0 var(--color-fg); cursor:pointer; white-space:nowrap;" style-hover="transform:translate(-2px,-2px); box-shadow:6px 6px 0 var(--color-fg);">⚽ Scorinate bracket</button>
+        </div>
+
+        <div style="display:flex; gap:0; min-width:0; overflow-x:auto; padding:8px 4px 20px;">
+          <!-- QUARTERFINALS -->
+          <div style="flex:none; width:220px;">
+            <div style="font-family:var(--font-condensed); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:0.05em; color:var(--color-fg-muted); margin-bottom:10px; text-align:center;">Quarterfinals</div>
+            <div style="position:relative; width:220px; height:424px;">
+              <sc-for list="{{ qfMatches }}" as="m" hint-placeholder-count="4">
+                <div style="position:absolute; left:0; right:0; top:{{ m.top }}px; height:88px; display:flex; align-items:center;">
+                <sc-if value="{{ m.isBye }}" hint-placeholder-val="{{ false }}">
+                  <div style="width:100%; border:2px dashed var(--color-fg); background:var(--color-surface); display:flex; flex-direction:column; font-size:11px;">
+                    <div style="display:flex; align-items:center; gap:5px; padding:8px 8px; background:#EAF3EA;">
+                      <div style="width:9px; height:9px; border:2px solid var(--color-fg); background:{{ m.home.colour }}; flex:none;"></div>
+                      <span style="font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ m.home.name }}</span>
+                    </div>
+                    <div style="padding:6px 8px; font-size:10px; color:var(--color-fg-muted); text-transform:uppercase; letter-spacing:0.04em;">BYE — advances automatically</div>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ m.notBye }}" hint-placeholder-val="{{ true }}">
+                <div style="width:100%; border:2px solid var(--color-fg); background:var(--color-surface); box-shadow:3px 3px 0 var(--color-fg); display:flex; flex-direction:column; font-size:11px;">
+                  <div style="display:grid; grid-template-columns:1fr 22px 22px; border-bottom:2px solid var(--color-fg); background:{{ m.homeWinBg }};">
+                    <div style="display:flex; align-items:center; gap:5px; padding:4px 6px; overflow:hidden;">
+                      <div style="width:9px; height:9px; border:2px solid var(--color-fg); background:{{ m.home.colour }}; flex:none;"></div>
+                      <span style="font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ m.home.name }}</span>
+                    </div>
+                    <div style="display:flex; align-items:center; justify-content:center; border-left:2px solid var(--color-fg); font-family:var(--font-mono); font-weight:700;">{{ m.homeLeg1 }}</div>
+                    <div style="display:flex; align-items:center; justify-content:center; border-left:2px solid var(--color-fg); font-family:var(--font-mono); font-weight:700;">{{ m.homeLeg2 }}</div>
+                  </div>
+                  <div style="display:grid; grid-template-columns:1fr 22px 22px; background:{{ m.awayWinBg }};">
+                    <div style="display:flex; align-items:center; gap:5px; padding:4px 6px; overflow:hidden;">
+                      <div style="width:9px; height:9px; border:2px solid var(--color-fg); background:{{ m.away.colour }}; flex:none;"></div>
+                      <span style="font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ m.away.name }}</span>
+                    </div>
+                    <div style="display:flex; align-items:center; justify-content:center; border-left:2px solid var(--color-fg); font-family:var(--font-mono); font-weight:700;">{{ m.awayLeg1 }}</div>
+                    <div style="display:flex; align-items:center; justify-content:center; border-left:2px solid var(--color-fg); font-family:var(--font-mono); font-weight:700;">{{ m.awayLeg2 }}</div>
+                  </div>
+                  <sc-if value="{{ showAggregateFooter }}" hint-placeholder-val="{{ true }}">
+                    <div style="display:flex; align-items:stretch; gap:0; border-top:2px solid var(--color-fg); font-family:var(--font-mono); font-size:10px; color:var(--color-fg-muted);">
+                      <span style="flex:1; display:flex; align-items:center; padding:3px 4px 3px 6px;"><sc-if value="{{ m.hasAggregate }}" hint-placeholder-val="{{ true }}"><span style="margin-right:4px;">Agg</span></sc-if><span>{{ m.aggregate }}</span><span>{{ m.pensSuffix }}</span></span>
+                      <button onClick="{{ m.onScorinate }}" title="Scorinate this tie" style="width:20px; height:auto; border:2px solid var(--color-fg); border-top:none; border-right:none; border-bottom:none; background:var(--color-accent); color:var(--color-accent-fg); font-size:10px; line-height:1; cursor:pointer; flex:none; padding:0;" style-hover="filter:brightness(1.1);">⚽</button>
+                    </div>
+                  </sc-if>
+                </div>
+                </sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <!-- CONNECTOR QF->SF -->
+          <div style="flex:none; width:40px; position:relative; height:424px; margin-top:34px;">
+            <div style="position:absolute; left:0; top:52px; width:16px; height:2px; background:var(--color-fg);"></div>
+            <div style="position:absolute; left:0; top:158px; width:16px; height:2px; background:var(--color-fg);"></div>
+            <div style="position:absolute; left:16px; top:52px; width:2px; height:107px; background:var(--color-fg);"></div>
+            <div style="position:absolute; left:16px; top:105px; width:24px; height:2px; background:var(--color-fg);"></div>
+            <div style="position:absolute; left:0; top:264px; width:16px; height:2px; background:var(--color-fg);"></div>
+            <div style="position:absolute; left:0; top:370px; width:16px; height:2px; background:var(--color-fg);"></div>
+            <div style="position:absolute; left:16px; top:264px; width:2px; height:107px; background:var(--color-fg);"></div>
+            <div style="position:absolute; left:16px; top:317px; width:24px; height:2px; background:var(--color-fg);"></div>
+          </div>
+
+          <!-- SEMIFINALS -->
+          <div style="flex:none; width:220px; margin-top:34px;">
+            <div style="font-family:var(--font-condensed); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:0.05em; color:var(--color-fg-muted); margin-bottom:10px; text-align:center;">Semifinals</div>
+            <div style="position:relative; width:220px; height:424px;">
+              <sc-for list="{{ sfMatches }}" as="m" hint-placeholder-count="2">
+                <div style="position:absolute; left:0; right:0; top:{{ m.top }}px; height:88px; display:flex; align-items:center;">
+                <div style="width:100%; border:2px solid var(--color-fg); background:var(--color-surface); box-shadow:3px 3px 0 var(--color-fg); display:flex; flex-direction:column; font-size:11px;">
+                  <div style="display:grid; grid-template-columns:1fr 22px 22px; border-bottom:2px solid var(--color-fg); background:{{ m.homeWinBg }};">
+                    <div style="display:flex; align-items:center; gap:5px; padding:4px 6px; overflow:hidden;">
+                      <div style="width:9px; height:9px; border:2px solid var(--color-fg); background:{{ m.home.colour }}; flex:none;"></div>
+                      <span style="font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ m.home.name }}</span>
+                    </div>
+                    <div style="display:flex; align-items:center; justify-content:center; border-left:2px solid var(--color-fg); font-family:var(--font-mono); font-weight:700;">{{ m.homeLeg1 }}</div>
+                    <div style="display:flex; align-items:center; justify-content:center; border-left:2px solid var(--color-fg); font-family:var(--font-mono); font-weight:700;">{{ m.homeLeg2 }}</div>
+                  </div>
+                  <div style="display:grid; grid-template-columns:1fr 22px 22px; background:{{ m.awayWinBg }};">
+                    <div style="display:flex; align-items:center; gap:5px; padding:4px 6px; overflow:hidden;">
+                      <div style="width:9px; height:9px; border:2px solid var(--color-fg); background:{{ m.away.colour }}; flex:none;"></div>
+                      <span style="font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ m.away.name }}</span>
+                    </div>
+                    <div style="display:flex; align-items:center; justify-content:center; border-left:2px solid var(--color-fg); font-family:var(--font-mono); font-weight:700;">{{ m.awayLeg1 }}</div>
+                    <div style="display:flex; align-items:center; justify-content:center; border-left:2px solid var(--color-fg); font-family:var(--font-mono); font-weight:700;">{{ m.awayLeg2 }}</div>
+                  </div>
+                  <sc-if value="{{ showAggregateFooter }}" hint-placeholder-val="{{ true }}">
+                    <div style="display:flex; align-items:stretch; gap:0; border-top:2px solid var(--color-fg); font-family:var(--font-mono); font-size:10px; color:var(--color-fg-muted);">
+                      <span style="flex:1; display:flex; align-items:center; padding:3px 4px 3px 6px;"><sc-if value="{{ m.hasAggregate }}" hint-placeholder-val="{{ true }}"><span style="margin-right:4px;">Agg</span></sc-if><span>{{ m.aggregate }}</span><span>{{ m.pensSuffix }}</span></span>
+                      <button onClick="{{ m.onScorinate }}" title="Scorinate this tie" style="width:20px; height:auto; border:2px solid var(--color-fg); border-top:none; border-right:none; border-bottom:none; background:var(--color-accent); color:var(--color-accent-fg); font-size:10px; line-height:1; opacity:{{ m.btnOpacity }}; cursor:{{ m.btnCursor }}; flex:none; padding:0;" style-hover="filter:brightness(1.1);">⚽</button>
+                    </div>
+                  </sc-if>
+                </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <!-- CONNECTOR SF->F -->
+          <div style="flex:none; width:40px; position:relative; height:424px; margin-top:34px;">
+            <div style="position:absolute; left:0; top:105px; width:16px; height:2px; background:var(--color-fg);"></div>
+            <div style="position:absolute; left:0; top:317px; width:16px; height:2px; background:var(--color-fg);"></div>
+            <div style="position:absolute; left:16px; top:105px; width:2px; height:213px; background:var(--color-fg);"></div>
+            <div style="position:absolute; left:16px; top:211px; width:24px; height:2px; background:var(--color-fg);"></div>
+          </div>
+
+          <!-- FINAL -->
+          <div style="flex:none; width:240px; margin-top:34px; display:flex; flex-direction:column; gap:40px;">
+            <div>
+              <div style="font-family:var(--font-condensed); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:0.05em; color:var(--color-fg-muted); margin-bottom:10px; text-align:center;">Final</div>
+              <div style="position:relative; width:240px; height:424px;">
+                <div style="position:absolute; left:0; right:0; top:168px; height:88px; display:flex; align-items:center;">
+                <div style="width:100%; border:2px solid var(--color-fg); background:var(--color-surface); box-shadow:4px 4px 0 var(--color-fg); display:flex; flex-direction:column; font-size:13px;">
+                  <div style="display:grid; grid-template-columns:1fr 30px 30px; border-bottom:2px solid var(--color-fg); background:{{ final.homeWinBg }};">
+                    <div style="display:flex; align-items:center; gap:8px; padding:9px 10px; overflow:hidden;">
+                      <div style="width:12px; height:12px; border:2px solid var(--color-fg); background:{{ final.home.colour }}; flex:none;"></div>
+                      <span style="font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ final.home.name }}</span>
+                    </div>
+                    <div style="display:flex; align-items:center; justify-content:center; border-left:2px solid var(--color-fg); font-family:var(--font-mono); font-weight:700;">{{ final.homeLeg1 }}</div>
+                    <div style="display:flex; align-items:center; justify-content:center; border-left:2px solid var(--color-fg); font-family:var(--font-mono); font-weight:700;">{{ final.homeLeg2 }}</div>
+                  </div>
+                  <div style="display:grid; grid-template-columns:1fr 30px 30px; background:{{ final.awayWinBg }};">
+                    <div style="display:flex; align-items:center; gap:8px; padding:9px 10px; overflow:hidden;">
+                      <div style="width:12px; height:12px; border:2px solid var(--color-fg); background:{{ final.away.colour }}; flex:none;"></div>
+                      <span style="font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ final.away.name }}</span>
+                    </div>
+                    <div style="display:flex; align-items:center; justify-content:center; border-left:2px solid var(--color-fg); font-family:var(--font-mono); font-weight:700;">{{ final.awayLeg1 }}</div>
+                    <div style="display:flex; align-items:center; justify-content:center; border-left:2px solid var(--color-fg); font-family:var(--font-mono); font-weight:700;">{{ final.awayLeg2 }}</div>
+                  </div>
+                  <sc-if value="{{ showAggregateFooter }}" hint-placeholder-val="{{ true }}">
+                    <div style="display:flex; align-items:stretch; gap:0; border-top:2px solid var(--color-fg); font-family:var(--font-mono); font-size:11px; color:var(--color-fg-muted);">
+                      <span style="flex:1; display:flex; align-items:center; padding:6px 6px 6px 10px;"><sc-if value="{{ final.hasAggregate }}" hint-placeholder-val="{{ true }}"><span style="margin-right:4px;">Agg</span></sc-if><span>{{ final.aggregate }}</span><span>{{ final.pensSuffix }}</span></span>
+                      <button onClick="{{ final.onScorinate }}" title="Scorinate this tie" style="width:24px; height:auto; border:2px solid var(--color-fg); border-top:none; border-right:none; border-bottom:none; background:var(--color-accent); color:var(--color-accent-fg); font-size:12px; line-height:1; opacity:{{ final.btnOpacity }}; cursor:{{ final.btnCursor }}; flex:none; padding:0;" style-hover="filter:brightness(1.1);">⚽</button>
+                    </div>
+                  </sc-if>
+                </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        </div>
+
+        <!-- THIRD PLACE -->
+        <div style="border-top:2px solid var(--color-fg); padding-top:20px; display:flex; flex-direction:column; gap:10px; max-width:280px;">
+          <div style="font-family:var(--font-condensed); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:0.05em; color:var(--color-fg-muted);">Third-place playoff</div>
+          <div style="border:2px solid var(--color-fg); background:var(--color-surface); box-shadow:3px 3px 0 var(--color-fg); display:flex; flex-direction:column; font-size:13px;">
+            <div style="display:grid; grid-template-columns:1fr 30px 30px; border-bottom:2px solid var(--color-fg); background:{{ thirdPlace.homeWinBg }};">
+              <div style="display:flex; align-items:center; gap:8px; padding:9px 10px; overflow:hidden;">
+                <div style="width:12px; height:12px; border:2px solid var(--color-fg); background:{{ thirdPlace.home.colour }}; flex:none;"></div>
+                <span style="font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ thirdPlace.home.name }}</span>
+              </div>
+              <div style="display:flex; align-items:center; justify-content:center; border-left:2px solid var(--color-fg); font-family:var(--font-mono); font-weight:700;">{{ thirdPlace.homeLeg1 }}</div>
+              <div style="display:flex; align-items:center; justify-content:center; border-left:2px solid var(--color-fg); font-family:var(--font-mono); font-weight:700;">{{ thirdPlace.homeLeg2 }}</div>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 30px 30px; background:{{ thirdPlace.awayWinBg }};">
+              <div style="display:flex; align-items:center; gap:8px; padding:9px 10px; overflow:hidden;">
+                <div style="width:12px; height:12px; border:2px solid var(--color-fg); background:{{ thirdPlace.away.colour }}; flex:none;"></div>
+                <span style="font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ thirdPlace.away.name }}</span>
+              </div>
+              <div style="display:flex; align-items:center; justify-content:center; border-left:2px solid var(--color-fg); font-family:var(--font-mono); font-weight:700;">{{ thirdPlace.awayLeg1 }}</div>
+              <div style="display:flex; align-items:center; justify-content:center; border-left:2px solid var(--color-fg); font-family:var(--font-mono); font-weight:700;">{{ thirdPlace.awayLeg2 }}</div>
+            </div>
+            <sc-if value="{{ showAggregateFooter }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex; align-items:stretch; gap:0; border-top:2px solid var(--color-fg); font-family:var(--font-mono); font-size:11px; color:var(--color-fg-muted);">
+                <span style="flex:1; display:flex; align-items:center; padding:6px 6px 6px 10px;"><sc-if value="{{ thirdPlace.hasAggregate }}" hint-placeholder-val="{{ true }}"><span style="margin-right:4px;">Agg</span></sc-if><span>{{ thirdPlace.aggregate }}</span><span>{{ thirdPlace.pensSuffix }}</span></span>
+                <button onClick="{{ thirdPlace.onScorinate }}" title="Scorinate this tie" style="width:24px; height:auto; border:2px solid var(--color-fg); border-top:none; border-right:none; border-bottom:none; background:var(--color-accent); color:var(--color-accent-fg); font-size:12px; line-height:1; opacity:{{ thirdPlace.btnOpacity }}; cursor:{{ thirdPlace.btnCursor }}; flex:none; padding:0;" style-hover="filter:brightness(1.1);">⚽</button>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+        </sc-if>
+      </div>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{ confirmOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed; inset:0; background:rgba(26,26,26,0.5); display:flex; align-items:center; justify-content:center; z-index:100;">
+      <div style="width:380px; background:var(--color-surface); border:2px solid var(--color-fg); box-shadow:6px 6px 0 var(--color-fg); padding:24px;">
+        <div style="font-family:var(--font-condensed); font-weight:700; font-size:16px; text-transform:uppercase; letter-spacing:0.03em; margin-bottom:10px;">Clear later rounds?</div>
+        <div style="font-size:14px; line-height:1.5; color:var(--color-fg-muted); margin-bottom:20px;">This will clear results for later rounds. Continue?</div>
+        <div style="display:flex; justify-content:flex-end; gap:10px;">
+          <button onClick="{{ onConfirmCancel }}" style="font-family:var(--font-heading); font-weight:600; font-size:14px; padding:10px 18px; border:2px solid var(--color-fg); background:var(--color-surface); color:var(--color-fg); cursor:pointer;" style-hover="background:var(--color-bg);">Cancel</button>
+          <button onClick="{{ onConfirmYes }}" style="font-family:var(--font-heading); font-weight:600; font-size:14px; padding:10px 18px; border:2px solid var(--color-fg); background:var(--color-error); color:var(--color-error-fg); cursor:pointer;" style-hover="filter:brightness(1.1);">Clear &amp; scorinate</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showAggregateFooter&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Bracket&quot;, &quot;description&quot;: &quot;Show the aggregate row under two-legged ties (the Final)&quot;}, &quot;demoUnevenQualifiers&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: false, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Bracket&quot;, &quot;description&quot;: &quot;Show a 12-qualifier example (byes) instead of the default 16-team bracket&quot;}}">
+const T = [
+  { name: 'Salt Marsh Utd', colour: '#039BE5' }, { name: 'Redbrick Ath.', colour: '#E53935' },
+  { name: 'Northgate FC', colour: '#212121' }, { name: 'Pinecrest Rov.', colour: '#2E7D32' },
+  { name: 'Harborview SC', colour: '#F9A825' }, { name: 'Ashfield Town', colour: '#6A1B9A' },
+  { name: 'Millbrook Wand.', colour: '#00897B' }, { name: 'Kingsford Rgrs', colour: '#D81B60' },
+  { name: 'Oldgate United', colour: '#FB8C00' }, { name: 'Stonebridge FC', colour: '#1A237E' },
+  { name: 'Fernhill Athl.', colour: '#7B1E1E' }, { name: 'Cliffside SC', colour: '#827717' },
+  { name: 'Elmwood Rangers', colour: '#1E88E5' }, { name: 'Brackenfell Utd', colour: '#FDD835' },
+  { name: 'Thorncliffe FC', colour: '#9E9E9E' }, { name: 'Westford Town', colour: '#D81B60' },
+];
+
+const GROUPS = [
+  { label: 'Group A', rows: [T[0], T[1], T[2], T[3]].map((t, i) => ({ ...t, w: 4 - i, d: 1, l: i, pts: (4 - i) * 3 + 1 })) },
+  { label: 'Group B', rows: [T[4], T[5], T[6], T[7]].map((t, i) => ({ ...t, w: 4 - i, d: 1, l: i, pts: (4 - i) * 3 + 1 })) },
+  { label: 'Group C', rows: [T[8], T[9], T[10], T[11]].map((t, i) => ({ ...t, w: 4 - i, d: 1, l: i, pts: (4 - i) * 3 + 1 })) },
+  { label: 'Group D', rows: [T[12], T[13], T[14], T[15]].map((t, i) => ({ ...t, w: 4 - i, d: 1, l: i, pts: (4 - i) * 3 + 1 })) },
+];
+
+const GROUP_FIXTURES = {
+  1: [
+    { group: 'A', home: T[0], away: T[1], score: [3, 0] }, { group: 'A', home: T[2], away: T[3], score: [1, 1] },
+    { group: 'B', home: T[4], away: T[5], score: [2, 1] }, { group: 'B', home: T[6], away: T[7], score: [0, 2] },
+    { group: 'C', home: T[8], away: T[9], score: [1, 0] }, { group: 'C', home: T[10], away: T[11], score: [2, 2] },
+    { group: 'D', home: T[12], away: T[13], score: [0, 0] }, { group: 'D', home: T[14], away: T[15], score: [3, 1] },
+  ],
+  6: [
+    { group: 'A', home: T[3], away: T[0], score: null }, { group: 'A', home: T[1], away: T[2], score: null },
+    { group: 'B', home: T[7], away: T[4], score: null }, { group: 'B', home: T[5], away: T[6], score: null },
+    { group: 'C', home: T[11], away: T[8], score: null }, { group: 'C', home: T[9], away: T[10], score: null },
+    { group: 'D', home: T[15], away: T[12], score: null }, { group: 'D', home: T[13], away: T[14], score: null },
+  ],
+};
+
+// QF seeded: A1 v D2, C1 v B2, B1 v C2, D1 v A2 — bracket phase configured two-legged, so every tie plays home & away
+// Level-on-aggregate ties play AET in leg 2 (if toggled), then penalties if still level
+const QF = [
+  { home: T[0], away: T[13], legs: [[2, 1], [1, 0]], penalties: [5, 4] },
+  { home: T[8], away: T[5], legs: [[1, 2], [0, 1]], penalties: [3, 4] },
+  { home: T[4], away: T[9], legs: [[2, 0], [1, 0]] },
+  { home: T[12], away: T[1], legs: [[0, 1], [0, 0]] },
+];
+const SF = [
+  { legs: [[1, 1], [2, 1]] },
+  { legs: [[2, 2], [0, 1]] },
+];
+const FINAL = { legs: [[2, 1], [0, 1]] };
+const THIRD = { legs: [[1, 0], [1, 2]] };
+const TBD = { name: 'TBD', colour: '#B0B0B0' };
+const BYE = { name: 'BYE', colour: '#B0B0B0' };
+
+// Seed lists (for the Bracket phase "Seed List" sub-tab). Default is 8 qualifiers (power of 2, no byes needed).
+const DEFAULT_QUALIFIERS = [
+  { seed: 1, team: T[0], tag: 'A1' }, { seed: 2, team: T[4], tag: 'B1' }, { seed: 3, team: T[8], tag: 'C1' }, { seed: 4, team: T[12], tag: 'D1' },
+  { seed: 5, team: T[1], tag: 'A2' }, { seed: 6, team: T[5], tag: 'B2' }, { seed: 7, team: T[9], tag: 'C2' }, { seed: 8, team: T[13], tag: 'D2' },
+];
+// Demo: 6 qualifiers into an 8-slot bracket -> 2 byes required.
+const UNEVEN_QUALIFIERS = [
+  { seed: 1, team: T[0], tag: 'A1' }, { seed: 2, team: T[4], tag: 'B1' }, { seed: 3, team: T[8], tag: 'C1' },
+  { seed: 4, team: T[1], tag: 'A2' }, { seed: 5, team: T[5], tag: 'B2' }, { seed: 6, team: T[9], tag: 'C2' },
+];
+const BYES_REQUIRED_UNEVEN = 2;
+
+function buildUnevenQfBase(byeSeeds) {
+  const byeQ = UNEVEN_QUALIFIERS.filter((q) => byeSeeds.includes(q.seed));
+  const rest = UNEVEN_QUALIFIERS.filter((q) => !byeSeeds.includes(q.seed)).sort((a, b) => a.seed - b.seed);
+  const pairs = [];
+  let lo = 0, hi = rest.length - 1;
+  while (lo < hi) { pairs.push({ home: rest[lo].team, away: rest[hi].team, isBye: false }); lo++; hi--; }
+  const byeMatches = byeQ.map((q) => ({ home: q.team, away: null, isBye: true }));
+  const all = [];
+  let bi = 0, pi = 0;
+  for (let i = 0; i < byeMatches.length + pairs.length; i++) {
+    if (i % 2 === 0 && bi < byeMatches.length) all.push(byeMatches[bi++]);
+    else if (pi < pairs.length) all.push(pairs[pi++]);
+    else all.push(byeMatches[bi++]);
+  }
+  return all;
+}
+function tieResult(tie) {
+  if (tie && tie.isBye) return { winner: tie.home, loser: null };
+  if (!tie || !tie.legs || !tie.home || !tie.away) return null;
+  const homeAgg = tie.legs[0][0] + tie.legs[1][1], awayAgg = tie.legs[0][1] + tie.legs[1][0];
+  if (homeAgg !== awayAgg) return homeAgg > awayAgg ? { winner: tie.home, loser: tie.away } : { winner: tie.away, loser: tie.home };
+  if (tie.penalties) return tie.penalties[0] > tie.penalties[1] ? { winner: tie.home, loser: tie.away } : { winner: tie.away, loser: tie.home };
+  return null;
+}
+
+function randomLegs() {
+  const rand = () => Math.floor(Math.random() * 4);
+  return [[rand(), rand()], [rand(), rand()]];
+}
+
+class Component extends DCLogic {
+  state = { phase: 'group', groupTab: 'standings', bracketTab: 'bracket', md: 6, fixtures: GROUP_FIXTURES, qf: QF.map((m) => ({ ...m })), sf: SF.map((m) => ({ ...m })), final: { ...FINAL }, third: { ...THIRD }, confirm: null,
+    uneven: { byeSeeds: [1, 2], qf: [null, null, null, null], sf: [null, null], final: null, third: null } };
+
+  maybeConfirm(downstreamHasScore, action) {
+    if (downstreamHasScore) this.setState({ confirm: { onConfirm: () => { action(); this.setState({ confirm: null }); } } });
+    else action();
+  }
+  cancelConfirm() { this.setState({ confirm: null }); }
+
+  scorinateMatch(md, i) {
+    this.setState((s) => ({ fixtures: { ...s.fixtures, [md]: s.fixtures[md].map((m, idx) => idx === i ? { ...m, score: [Math.floor(Math.random() * 4), Math.floor(Math.random() * 4)] } : m) } }));
+  }
+  scorinateAll() {
+    this.setState((s) => ({ fixtures: { ...s.fixtures, [s.md]: (s.fixtures[s.md] || []).map((m) => ({ ...m, score: [Math.floor(Math.random() * 4), Math.floor(Math.random() * 4)] })) } }));
+  }
+
+  regenTieWithPens(tie) {
+    const legs = randomLegs();
+    const homeAgg = legs[0][0] + legs[1][1], awayAgg = legs[0][1] + legs[1][0];
+    const penalties = homeAgg === awayAgg ? (Math.random() < 0.5 ? [5, 4] : [4, 5]) : undefined;
+    return { ...tie, legs, penalties };
+  }
+  scorinateQf(i) {
+    const downstreamHasScore = this.state.sf.some((m) => m.legs) || !!this.state.final.legs || !!this.state.third.legs;
+    this.maybeConfirm(downstreamHasScore, () => this.setState((s) => ({
+      qf: s.qf.map((m, idx) => idx === i ? this.regenTieWithPens(m) : m),
+      sf: s.sf.map((m) => ({ ...m, legs: undefined, penalties: undefined })),
+      final: { ...s.final, legs: undefined, penalties: undefined },
+      third: { ...s.third, legs: undefined, penalties: undefined },
+    })));
+  }
+  scorinateSf(i) {
+    const downstreamHasScore = !!this.state.final.legs || !!this.state.third.legs;
+    this.maybeConfirm(downstreamHasScore, () => this.setState((s) => ({
+      sf: s.sf.map((m, idx) => idx === i ? this.regenTieWithPens(m) : m),
+      final: { ...s.final, legs: undefined, penalties: undefined },
+      third: { ...s.third, legs: undefined, penalties: undefined },
+    })));
+  }
+  scorinateFinal() { this.setState((s) => ({ final: this.regenTieWithPens(s.final) })); }
+  scorinateThird() { this.setState((s) => ({ third: this.regenTieWithPens(s.third) })); }
+
+  toggleBye(seed) {
+    const seeds = this.state.uneven.byeSeeds;
+    const has = seeds.includes(seed);
+    if (!has && seeds.length >= BYES_REQUIRED_UNEVEN) return;
+    const u = this.state.uneven;
+    const downstreamHasScore = u.qf.some((x) => x) || u.sf.some((x) => x) || !!u.final || !!u.third;
+    const apply = () => this.setState((s) => ({ uneven: { byeSeeds: has ? seeds.filter((x) => x !== seed) : [...seeds, seed], qf: [null, null, null, null], sf: [null, null], final: null, third: null } }));
+    this.maybeConfirm(downstreamHasScore, apply);
+  }
+  scorinateUnevenQf(i) {
+    const base = buildUnevenQfBase(this.state.uneven.byeSeeds);
+    if (base[i].isBye) return;
+    const u = this.state.uneven;
+    const downstreamHasScore = u.sf.some((x) => x) || !!u.final || !!u.third;
+    this.maybeConfirm(downstreamHasScore, () => this.setState((s) => ({
+      uneven: { ...s.uneven, qf: s.uneven.qf.map((x, idx) => idx === i ? this.regenTieWithPens({}) : x), sf: [null, null], final: null, third: null },
+    })));
+  }
+  scorinateUnevenSf(i) {
+    const u = this.state.uneven;
+    const downstreamHasScore = !!u.final || !!u.third;
+    this.maybeConfirm(downstreamHasScore, () => this.setState((s) => ({
+      uneven: { ...s.uneven, sf: s.uneven.sf.map((x, idx) => idx === i ? this.regenTieWithPens({}) : x), final: null, third: null },
+    })));
+  }
+  scorinateUnevenFinal() { this.setState((s) => ({ uneven: { ...s.uneven, final: this.regenTieWithPens({}) } })); }
+  scorinateUnevenThird() { this.setState((s) => ({ uneven: { ...s.uneven, third: this.regenTieWithPens({}) } })); }
+  scorinateBracket() {
+    const anyScore = this.state.qf.some((m) => m.legs) || this.state.sf.some((m) => m.legs) || !!this.state.final.legs || !!this.state.third.legs;
+    this.maybeConfirm(anyScore, () => this.setState((s) => ({
+      qf: s.qf.map((m) => this.regenTieWithPens(m)),
+      sf: s.sf.map((m) => this.regenTieWithPens(m)),
+      final: this.regenTieWithPens(s.final),
+      third: this.regenTieWithPens(s.third),
+    })));
+  }
+
+  renderVals() {
+    const accent = 'var(--color-accent)', surface = 'var(--color-surface)', fg = 'var(--color-fg)', accentFg = 'var(--color-accent-fg)';
+    const groupTables = GROUPS.map((g) => ({ label: g.label, rows: g.rows.map((r, i) => ({ ...r, pos: i + 1, rowBg: i < 2 ? '#EAF3EA' : 'var(--color-surface)' })) }));
+    const list = this.state.fixtures[this.state.md] || [];
+    const groupMatches = list.map((m, i) => {
+      const done = !!m.score;
+      return {
+        group: m.group, home: m.home, away: m.away,
+        scoreLabel: done ? `${m.score[0]} – ${m.score[1]}` : 'vs',
+        actionLabel: done ? 'Re-scorinate' : 'Scorinate',
+        actionBg: done ? surface : accent, actionFg: done ? fg : accentFg,
+        onScorinate: () => this.scorinateMatch(this.state.md, i),
+      };
+    });
+
+    const showAggregateFooter = this.props.showAggregateFooter ?? true;
+    const qfCenters = [53, 159, 265, 371];
+    const sfCenters = [106, 318];
+    const winBg = '#EAF3EA';
+    const TWO_LEG_HALF = 44;
+    const tieCard = (m) => {
+      if (m.isBye) {
+        return { home: m.home, away: BYE, isBye: true, homeWinBg: winBg, awayWinBg: surface };
+      }
+      if (!m.legs) {
+        return {
+          home: m.home, away: m.away, homeLeg1: '–', awayLeg1: '–', homeLeg2: '–', awayLeg2: '–',
+          aggregate: 'Not yet played', isDraw: false, pensSuffix: '', hasAggregate: false, homeWinBg: surface, awayWinBg: surface,
+        };
+      }
+      const homeLeg1 = m.legs[0][0], awayLeg1 = m.legs[0][1];
+      const awayLeg2 = m.legs[1][0], homeLeg2 = m.legs[1][1];
+      const homeAgg = homeLeg1 + homeLeg2, awayAgg = awayLeg1 + awayLeg2;
+      const isDraw = homeAgg === awayAgg;
+      return {
+        home: m.home, away: m.away,
+        homeLeg1, awayLeg1,
+        homeLeg2: isDraw ? `${homeLeg2}*` : homeLeg2,
+        awayLeg2: isDraw ? `${awayLeg2}*` : awayLeg2,
+        aggregate: `${homeAgg}-${awayAgg}`, hasAggregate: true,
+        isDraw, pensSuffix: m.penalties ? `\u00A0· Pens ${m.penalties[0]}-${m.penalties[1]}` : '',
+        homeWinBg: !isDraw && homeAgg > awayAgg ? winBg : (isDraw && m.penalties && m.penalties[0] > m.penalties[1] ? winBg : surface),
+        awayWinBg: !isDraw && awayAgg > homeAgg ? winBg : (isDraw && m.penalties && m.penalties[1] > m.penalties[0] ? winBg : surface),
+      };
+    };
+    const isUneven = !!this.props.demoUnevenQualifiers;
+    let qfMatches, sfMatches, final, thirdPlace;
+    if (isUneven) {
+      const u = this.state.uneven;
+      const qfBase = buildUnevenQfBase(u.byeSeeds);
+      const qfFull = qfBase.map((m, i) => m.isBye ? m : { ...m, ...(u.qf[i] || {}) });
+      const qfResults = qfFull.map(tieResult);
+      const sfSlots = [[qfResults[0] && qfResults[0].winner, qfResults[1] && qfResults[1].winner], [qfResults[2] && qfResults[2].winner, qfResults[3] && qfResults[3].winner]];
+      const sfWithTeams = [0, 1].map((i) => ({ ...(u.sf[i] || {}), home: sfSlots[i][0] || TBD, away: sfSlots[i][1] || TBD }));
+      const sfResults = sfWithTeams.map(tieResult);
+      const finalWithTeams = { ...(u.final || {}), home: (sfResults[0] && sfResults[0].winner) || TBD, away: (sfResults[1] && sfResults[1].winner) || TBD };
+      const thirdWithTeams = { ...(u.third || {}), home: (sfResults[0] && sfResults[0].loser) || TBD, away: (sfResults[1] && sfResults[1].loser) || TBD };
+      qfMatches = qfFull.map((m, i) => ({ ...tieCard(m), notBye: !m.isBye, top: qfCenters[i] - TWO_LEG_HALF, onScorinate: () => this.scorinateUnevenQf(i) }));
+      sfMatches = sfWithTeams.map((m, i) => {
+        const playable = m.home !== TBD && m.away !== TBD;
+        return { ...tieCard(m), top: sfCenters[i] - TWO_LEG_HALF, btnOpacity: playable ? 1 : 0.35, btnCursor: playable ? 'pointer' : 'not-allowed', onScorinate: () => { if (playable) this.scorinateUnevenSf(i); } };
+      });
+      const finalPlayable = finalWithTeams.home !== TBD && finalWithTeams.away !== TBD;
+      final = { ...tieCard(finalWithTeams), btnOpacity: finalPlayable ? 1 : 0.35, btnCursor: finalPlayable ? 'pointer' : 'not-allowed', onScorinate: () => { if (finalPlayable) this.scorinateUnevenFinal(); } };
+      const thirdPlayable = thirdWithTeams.home !== TBD && thirdWithTeams.away !== TBD;
+      thirdPlace = { ...tieCard(thirdWithTeams), btnOpacity: thirdPlayable ? 1 : 0.35, btnCursor: thirdPlayable ? 'pointer' : 'not-allowed', onScorinate: () => { if (thirdPlayable) this.scorinateUnevenThird(); } };
+    } else {
+      const qfResults = this.state.qf.map(tieResult);
+      const sfSlots = [[qfResults[0] && qfResults[0].winner, qfResults[1] && qfResults[1].winner], [qfResults[2] && qfResults[2].winner, qfResults[3] && qfResults[3].winner]];
+      const sfWithTeams = this.state.sf.map((m, i) => ({ ...m, home: sfSlots[i][0] || TBD, away: sfSlots[i][1] || TBD }));
+      const sfResults = sfWithTeams.map(tieResult);
+      const finalWithTeams = { ...this.state.final, home: (sfResults[0] && sfResults[0].winner) || TBD, away: (sfResults[1] && sfResults[1].winner) || TBD };
+      const thirdWithTeams = { ...this.state.third, home: (sfResults[0] && sfResults[0].loser) || TBD, away: (sfResults[1] && sfResults[1].loser) || TBD };
+
+      qfMatches = this.state.qf.map((m, i) => ({ ...tieCard(m), notBye: true, top: qfCenters[i] - TWO_LEG_HALF, onScorinate: () => this.scorinateQf(i) }));
+      sfMatches = sfWithTeams.map((m, i) => {
+        const playable = m.home !== TBD && m.away !== TBD;
+        return { ...tieCard(m), top: sfCenters[i] - TWO_LEG_HALF, btnOpacity: playable ? 1 : 0.35, btnCursor: playable ? 'pointer' : 'not-allowed', onScorinate: () => { if (playable) this.scorinateSf(i); } };
+      });
+      const finalPlayable = finalWithTeams.home !== TBD && finalWithTeams.away !== TBD;
+      final = { ...tieCard(finalWithTeams), btnOpacity: finalPlayable ? 1 : 0.35, btnCursor: finalPlayable ? 'pointer' : 'not-allowed', onScorinate: () => { if (finalPlayable) this.scorinateFinal(); } };
+      const thirdPlayable = thirdWithTeams.home !== TBD && thirdWithTeams.away !== TBD;
+      thirdPlace = { ...tieCard(thirdWithTeams), btnOpacity: thirdPlayable ? 1 : 0.35, btnCursor: thirdPlayable ? 'pointer' : 'not-allowed', onScorinate: () => { if (thirdPlayable) this.scorinateThird(); } };
+    }
+
+    const qualifiers = isUneven ? UNEVEN_QUALIFIERS : DEFAULT_QUALIFIERS;
+    const byesRequired = isUneven ? BYES_REQUIRED_UNEVEN : 0;
+    const byeSeeds = isUneven ? this.state.uneven.byeSeeds : [];
+    const seedRows = qualifiers.map((q) => {
+      const isBye = byeSeeds.includes(q.seed);
+      const atQuota = byeSeeds.length >= byesRequired && !isBye;
+      return { seed: q.seed, team: q.team, tag: q.tag, starChar: isBye ? '★' : '☆', starDisabled: byesRequired === 0 || atQuota,
+        starColor: isBye ? 'var(--color-warning)' : (byesRequired === 0 || atQuota ? '#C4C4C4' : 'var(--color-fg-muted)'),
+        onToggle: () => this.toggleBye(q.seed) };
+    });
+
+    return {
+      isGroupPhase: this.state.phase === 'group', isBracketPhase: this.state.phase === 'bracket',
+      groupPhaseBg: this.state.phase === 'group' ? accent : surface, groupPhaseFg: this.state.phase === 'group' ? accentFg : fg,
+      bracketPhaseBg: this.state.phase === 'bracket' ? accent : surface, bracketPhaseFg: this.state.phase === 'bracket' ? accentFg : fg,
+      showGroupPhase: () => this.setState({ phase: 'group' }), showBracketPhase: () => this.setState({ phase: 'bracket' }),
+      phaseProgressLabel: this.state.phase === 'group' ? `Group Stage · MD ${this.state.md}/6` : 'Quarterfinals',
+      isGroupStandings: this.state.groupTab === 'standings', isGroupFixtures: this.state.groupTab === 'fixtures',
+      groupStandingsBg: this.state.groupTab === 'standings' ? accent : surface, groupStandingsFg: this.state.groupTab === 'standings' ? accentFg : fg,
+      groupFixturesBg: this.state.groupTab === 'fixtures' ? accent : surface, groupFixturesFg: this.state.groupTab === 'fixtures' ? accentFg : fg,
+      showGroupStandings: () => this.setState({ groupTab: 'standings' }), showGroupFixtures: () => this.setState({ groupTab: 'fixtures' }),
+      groupTables, groupMatches, md: this.state.md,
+      prevMd: () => this.setState((s) => ({ md: Math.max(1, s.md - 1) })),
+      nextMd: () => this.setState((s) => ({ md: Math.min(6, s.md + 1) })),
+      scorinateAll: () => this.scorinateAll(),
+      qfMatches, sfMatches, final, showAggregateFooter, thirdPlace,
+      isSeedList: this.state.bracketTab === 'seedlist', isBracketTree: this.state.bracketTab === 'bracket',
+      seedListBg: this.state.bracketTab === 'seedlist' ? accent : surface, seedListFg: this.state.bracketTab === 'seedlist' ? accentFg : fg,
+      bracketTreeBg: this.state.bracketTab === 'bracket' ? accent : surface, bracketTreeFg: this.state.bracketTab === 'bracket' ? accentFg : fg,
+      showSeedList: () => this.setState({ bracketTab: 'seedlist' }), showBracketTree: () => this.setState({ bracketTab: 'bracket' }),
+      seedRows, byeCount: byeSeeds.length, byesRequired,
+      byeHelperText: byesRequired === 0 ? `${qualifiers.length} qualifiers fill the bracket exactly — no byes needed.` : `Top seeds get a bye by default. Star any seed to grant it a bye instead — first-round only.`,
+      scorinateBracket: () => this.scorinateBracket(),
+      confirmOpen: !!this.state.confirm,
+      onConfirmYes: this.state.confirm ? this.state.confirm.onConfirm : () => {},
+      onConfirmCancel: () => this.cancelConfirm(),
+    };
+  }
+}
+
+</script>
+</body>
+</html>

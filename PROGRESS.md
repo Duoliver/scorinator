@@ -42,7 +42,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 89 | Refine epic 04, Bracket Phase: refined stories in `docs/user-stories/mvp2/04-bracket-phase.md` | `docs/user-stories` | ✅ Done | 2026-10-28 | 2026-10-28 | [089](/docs/tasks/089-refine-bracket-phase.md) | Sprint 0. 14 stories Agreed (US-04.1 to US-04.14), three new. Four spec edits. |
 | 90 | Refine epic 05, Region Adjacency: refined stories in `docs/user-stories/mvp2/05-region-adjacency.md` | `docs/user-stories` | ✅ Done | 2026-10-28 | 2026-10-28 | [090](/docs/tasks/090-refine-region-adjacency.md) | Sprint 0. US-05.1 Dropped: Regions are MVP3. One spec note added. |
 | 91 | Refine epic 06, Single Duels Home/Away Balancing: refined stories in `docs/user-stories/mvp2/06-single-duels-balancing.md` | `docs/user-stories` | ✅ Done | 2026-10-28 | 2026-10-28 | [091](/docs/tasks/091-refine-single-duels-balancing.md) | Sprint 0. US-06.1 Agreed. Count display parked (future features §8). |
-| 92 | Refine epic 07, Phase Transition: refined stories in `docs/user-stories/mvp2/07-phase-transition.md` | `docs/user-stories` | ⬜ Not started |  |  |  | Sprint 0. Related decision: 4 (Task 78). Also the card progress text (Task 76). |
+| 92 | Refine epic 07, Phase Transition: refined stories in `docs/user-stories/mvp2/07-phase-transition.md` | `docs/user-stories` | ✅ Done | 2026-10-28 | 2026-10-28 | [092](/docs/tasks/092-refine-phase-transition.md) | Sprint 0. Three stories Agreed, US-07.3 new. Phases lock at next start. One spec line. |
 | 93 | Refine epic 08, Team Selection in League Setup: refined stories in `docs/user-stories/mvp2/08-team-selection.md` | `docs/user-stories` | ⬜ Not started |  |  |  | Sprint 0. Related decision: 7 (Task 81). |
 | 94 | Refine epic 09, Teams Module (Blueprints): refined stories in `docs/user-stories/mvp2/09-teams-module.md` | `docs/user-stories` | ⬜ Not started |  |  |  | Sprint 0. Related decisions: 1 and 7 (Tasks 75, 81). |
 | 95 | Refine epic 10, File Module: refined stories in `docs/user-stories/mvp2/10-file-module.md` | `docs/user-stories` | ⬜ Not started |  |  |  | Sprint 0. Related decisions: 1 and 2 (Tasks 75, 76). |
@@ -82,7 +82,6 @@ A running list of items flagged under the `CLAUDE.md` open items section. Each i
 The 8 MVP2 decisions below come from `docs/mvp1-to-mvp2-impact-review.md` §4, which has the full reasoning. Each one needs a decision before the related MVP2 task starts. The numbers are the ones the review uses.
 
 - **2026-10-28 (Task 99, for MVP3 — the team Location label):** MVP2 adds a free-text Location label to each Blueprint (US-09.3). MVP3 adds a City entity. What does MVP3 do with the label: keep it as a separate label, turn it into a City, or remove it? Settle it when MVP3 is refined.
-- **2026-10-27 (Task 78, for Task 92 — re-scorinate after the next phase starts):** Can the user re-scorinate a match of a finished phase after the next phase starts? If so, the qualifiers and seeds can change. One option: an earlier phase locks when the next phase starts. Settle it in Task 92.
 - **2026-10-19 (MVP1 Task 72 — the plural in `Imported 1 team.`):** `app/loadActions.ts` writes its own team plural. `formatTeamCount` lives in `features/components/`. Only `AppShell` in `app/` imports `features/` today, for the routes. Options: an app action imports `formatTeamCount` from `features/`, or the function moves to a lower layer, or the copy stays. Not a blocker. The copy stays until the user decides. Carried over from the MVP1 log.
 
 ---
@@ -94,6 +93,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-10-28 (Task 92 — Phase Transition refinement):** The user agreed US-07.1 to US-07.3. Key choices: each phase computes its table from its own results. A "Start phase N" click, with a confirm, starts the next phase when a phase is complete. The earlier phase then locks. This settles the Task 78 open question. Qualifiers show as a highlight on the earlier phase, and a Bracket has its Seed List. Parked: a re-scorinate of a locked phase (§9), and a Qualifiers list for other formats (§10). Detail in [`docs/tasks/092-refine-phase-transition.md`](/docs/tasks/092-refine-phase-transition.md).
 
 - **2026-10-28 (Task 91 — Single Duels refinement):** The user agreed US-06.1. The schedule comes from `generateSingleDuels(teams, rng)`, made and stored at phase start. Pairings follow the team order. Only home and away are random, inside the Task 82 balance rule. Test band: each team home in 40% to 60% of 2,000 seeds for each pairing. The screen shows no home and away count: parked as a debug mode item, `scorinator-future-features.md` §8. Detail in [`docs/tasks/091-refine-single-duels-balancing.md`](/docs/tasks/091-refine-single-duels-balancing.md).
 

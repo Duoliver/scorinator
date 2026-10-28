@@ -59,3 +59,13 @@ In MVP2, a phase has no name of its own. Its format label names it, for example 
 The user drafts a debug mode: extra data on the screens that helps to check the engine. One item for it: in a single-duels phase, show each team's home and away match count, for example "H 4 · A 3", in the standings table or the group card. In MVP2, the balance rule lives in the engine tests only (US-06.1).
 
 *Raised during: MVP2 sprint 0, Task 91 (Single Duels refinement), 2026-10-28.*
+
+## 9. Re-scorinate a locked phase
+In MVP2, a phase locks when the next phase starts, and its results can no longer change (US-07.3). Later, the user can re-scorinate a match of a locked phase, after a confirm. The confirm clears every later phase: its draw, its fixtures, and its results. The next phase must then start again. An undo of a phase start fits the same feature.
+
+*Raised during: MVP2 sprint 0, Task 78 (qualification), settled for MVP2 in Task 92 (Phase Transition), 2026-10-28.*
+
+## 10. Qualifiers list for a round-robin or Groups phase
+In MVP2, only a Bracket phase lists its qualifiers, in its Seed List (US-04.2). For a round-robin or Groups phase, the highlight on the earlier phase shows who qualified (US-07.2). Later, every phase after the first gets a "Qualifiers" list: seed, team, and origin tag, for example "A1" or "3rd".
+
+*Raised during: MVP2 sprint 0, Task 92 (Phase Transition), 2026-10-28.*

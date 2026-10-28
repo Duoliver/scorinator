@@ -159,7 +159,7 @@ As a user, when I re-scorinate an earlier tie whose result already fed into late
 - [ ] Only the dependent ties clear. For example, a re-scorinate of the first quarter-final clears its semi-final, the final, and the third-place tie, not the other semi-final.
 - [ ] The dependent ties clear even when the same team wins again.
 
-**Out of scope:** a re-scorinate of a match in an earlier phase after the bracket starts (Open question, Task 92).
+**Out of scope:** a re-scorinate of a match in an earlier phase after the bracket starts. The earlier phase locks (US-07.3).
 
 **Notes:** the user chose "dependent ties only" on 2026-10-28 (Task 89 gap 5). This is the spec rule. The handoff clears every later tie.
 

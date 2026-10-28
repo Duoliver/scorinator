@@ -103,6 +103,8 @@ MVP1's single "Save/Load league" pair is replaced with scoped export/import acti
 - Every exportable entity (Team Blueprint, League, Season, Location, ...) gets a **permanent UUID v4, assigned once at creation and never reassigned or overwritten.**
 - Each program installation has its own **installation UUID**, used only for provenance metadata (`created_by_installation`, `last_modified_by_installation`) — never used to derive or override an entity's identity.
 - **Import conflict rule**: if an incoming entity's UUID doesn't already exist locally, it's created as-is. If it **does** exist locally, the local version is **never silently overwritten** — the user is prompted per conflict with two choices: **Skip** (discard incoming, keep local) or **Import as new** (the incoming entity is assigned a **fresh UUID**, forking it into a separate entity; the local original is untouched).
+- **Same content**: an incoming entity with a known UUID and the same content as the local one (all fields except provenance) imports nothing, with no prompt. The import message counts it. *(Added on 2026-10-28, MVP2 Task 96.)*
+- **Blueprints inside a league file**: a league import keeps a local Blueprint that has the same UUID, with no prompt, and adds an unknown one. Only the league itself can be a conflict. The league never needs the local Blueprint, because its Instances hold their own data. *(Added on 2026-10-28, MVP2 Task 96.)*
 - Because UUIDs never change once assigned, an entity keeps its identity across any number of export/import hops — there's no need to track "who exported it last"; only an explicit fork ever creates a new identity.
 
 ### Bracket Scorination Workflow

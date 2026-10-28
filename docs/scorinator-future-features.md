@@ -54,3 +54,8 @@ In MVP2, the higher seed always hosts the second leg of a two-legged tie (Task 7
 In MVP2, a phase has no name of its own. Its format label names it, for example "Groups (two-way)" (Task 86, US-01.2). Later, the user can give each phase a name, for example "Group stage", with the format label as the default.
 
 *Raised during: MVP2 sprint 0, Task 86 (League Format refinement), 2026-10-27.*
+
+## 8. Debug mode
+The user drafts a debug mode: extra data on the screens that helps to check the engine. One item for it: in a single-duels phase, show each team's home and away match count, for example "H 4 · A 3", in the standings table or the group card. In MVP2, the balance rule lives in the engine tests only (US-06.1).
+
+*Raised during: MVP2 sprint 0, Task 91 (Single Duels refinement), 2026-10-28.*

@@ -54,7 +54,6 @@ As a user, I want to assign a distinct format to each phase (round robin, groups
 - [ ] The League Detail header uses the same text as the card, plus the points, for example "Group Stage → Bracket · 16 teams · Home adv. on · 3/1/0 pts".
 - [ ] League Detail of a league with several phases has one tab for each phase, with its number and short name, for example "1 · Group Stage" and "2 · Bracket".
 - [ ] The card shows a progress badge:
-  - "Setup" before the league starts.
   - "MD 7/16" during a round-robin or group phase: the current matchday and the matchday count of that phase.
   - The round name during a bracket phase, for example "Quarter-finals".
   - "Complete" when every phase is finished.
@@ -65,7 +64,7 @@ As a user, I want to assign a distinct format to each phase (round robin, groups
 
 **Out of scope:** the settings of each format. Group count and group assignment are in epic 02. AET and the tiebreak method are in epic 03. Tie settings, byes, and the power-of-2 warning are in epic 04. Custom phase names are parked in `scorinator-future-features.md` §7. The bracket round names are in epic 04 (Task 89).
 
-**Notes:** the user chose no custom names, and one points system for the league, on 2026-10-27 (Task 86 notes). On 2026-10-27 the user chose the MVP2 handoff for the labels, the short names, and the progress text, and kept the points pill (Task 83, D1 to D4). The card text and progress text come from Task 76 (d).
+**Notes:** the user chose no custom names, and one points system for the league, on 2026-10-27 (Task 86 notes). On 2026-10-27 the user chose the MVP2 handoff for the labels, the short names, and the progress text, and kept the points pill (Task 83, D1 to D4). On 2026-10-28 the user removed the "Setup" badge: setup is only the wizard, and "Create league" starts the league, so no league exists before Start (Task 93 gap 1). The card text and progress text come from Task 76 (d).
 
 ---
 
@@ -106,8 +105,8 @@ As a user, I want to set advancement requisites per phase (e.g. "top 2 of each g
 - [ ] A Groups phase can also set "best M of place N + 1", per US-01.6.
 - [ ] The phase step shows the qualifier count of each phase. For example: "4 groups × top 2 = 8 teams go to phase 2."
 - [ ] The order inside a table decides who qualifies. The order uses the Task 78 rules: points, goal difference, goals for, the recursive mini-league, then fixed lots from UUIDs.
-- [ ] A count that does not fit shows a warning in the wizard. The league is still created.
-- [ ] The league cannot start while a count does not fit. The Start action shows the reason.
+- [ ] A count that does not fit shows a warning in the wizard.
+- [ ] The league cannot start while a count does not fit: "Create league" is disabled, and shows the reason (US-08.8).
 - [ ] A count does not fit when one of these is true:
   - Round robin: N is less than 1, or N is equal to or more than the team count.
   - Groups: N is less than 1, or N is equal to or more than the size of the smallest group.
@@ -116,7 +115,7 @@ As a user, I want to set advancement requisites per phase (e.g. "top 2 of each g
 
 **Out of scope:** the seeding of qualifiers in the next phase (epic 04 and epic 07, with the Task 78 cross-group order). Group sizes and the group count (epic 02). The power-of-2 warning for a bracket (epic 04).
 
-**Notes:** the user chose "warn in setup, block Start" on 2026-10-27 (Task 86 notes). Group sizes are known only after the Teams step, so the wizard cannot block at the phase step. The Start action and the pre-start state come from impact review §2.4, and Task 93 refines them.
+**Notes:** the user chose "warn in setup, block Start" on 2026-10-27 (Task 86 notes). Group sizes are known only after the Teams step, so the wizard cannot block at the phase step. The Start action and the pre-start state come from impact review §2.4. On 2026-10-28 the user chose "setup is only the wizard" (Task 93 gap 1): "Create league" is the Start action, so a league that does not fit is not created (US-08.8).
 
 ---
 

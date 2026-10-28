@@ -69,12 +69,14 @@ Note: the Replay itself is a one-shot fallback — if the replay also ends in a 
 
 ### Team Selection in League Setup
 Scoped to **league setup, before the league is started** (fixtures generated) — ongoing/mid-league roster editing after that point hasn't been designed yet (see Open Items).
-- The setup screen starts from an **empty state** with two actions: **Select teams** or **Load them all**.
-  - **Select teams** opens a searchable bulk-selection dialog listing eligible Team Blueprints — each row shows a checkbox, colour swatch, Name, and Tier. Multi-select, confirm to add.
+- **Setup is only the wizard.** No league exists before the last wizard click. **"Create league"** makes the league and starts it: it builds phase 1. A count that does not fit disables it. *(Added on 2026-10-28, MVP2 Task 93.)*
+- The setup screen starts from an **empty state** with three actions: **+ Add teams**, **Load them all**, or **Import slug list**. *(Changed on 2026-10-28, MVP2 Task 93.)*
+  - **+ Add teams** (the spec's "Select teams") opens a searchable bulk-selection dialog listing eligible Team Blueprints — each row shows a checkbox, colour swatch, Name, and Tier. Multi-select, confirm to add.
   - **Load them all** adds every eligible Blueprint at once, skipping the dialog. "Eligible" means: filtered by this league's location eligibility (per MVP3's location-filtering rule) if the league has a location scope; otherwise all Blueprints.
   - If **no Blueprints exist yet at all**, this empty state instead prompts the user to create their first team, rather than presenting two options that would both be no-ops.
+  - **Import slug list** reads a plain text file with one Blueprint slug on each line, and adds the teams it finds. An alert lists the slugs it does not find. *(Added on 2026-10-28, MVP2 Task 93.)*
 - Once teams are added, each row in the league's team list has three distinct actions:
-  - **Edit** opens the same aside modal used at team creation, but here it edits the team's **Instance** in this league's Instance Wrapper (current OVR override, current Tier) — the underlying Blueprint (Name/Colours/base Tier) is never touched from this screen.
+  - **Edit** opens the same aside modal used at team creation, but here it edits the team's **Instance** in this league's Instance Wrapper (name, colour, current Tier, current OVR override) — the underlying Blueprint (Name/Colours/base Tier) is never touched from this screen. The slug stays the Blueprint slug. *(Changed on 2026-10-28, MVP2 Task 93.)*
   - **Switch** reopens the same bulk-selection dialog in **single-select mode**, pre-excluding teams already in this league, and replaces this row's team with the new selection.
   - **Remove** takes the team out of the league's roster. If removal would drop the roster below the format's minimum team count, it's still allowed but shows a **soft warning** that the league can't start yet.
 - Adding a Blueprint to a league creates a fresh Instance in that league's Instance Wrapper (OVR rolled from Tier). In MVP2, each league is its own wrapper, so two leagues never share an Instance. From MVP3, the leagues of one Season share a wrapper, and the add reuses the Instance that is already there.
@@ -82,7 +84,7 @@ Scoped to **league setup, before the league is started** (fixtures generated) �
 ### Teams Module (Blueprints) — supersedes MVP1's flat Team model
 - Teams are split into two layers:
   - **Team Blueprint** — the reusable template, living in the global "Teams" module: Name, Colours, base Tier, and an optional Location label (free text, not a City). Not tied to any specific league. MVP3 adds City and Crest. *(Added on 2026-10-28, MVP2 Task 99.)*
-  - **Team Instance** — the live/mutable state a blueprint gets once it's actually put into play: current OVR, current Tier, current league membership(s). In MVP2, each league is its own Instance Wrapper, with its own Instances. See MVP3 for how Instance scope is formalized around the new **Season** concept — within one Season, a blueprint has exactly one shared Instance across every league it's concurrently a member of (matches real football: a club has one strength, not one per competition).
+  - **Team Instance** — the live/mutable state a blueprint gets once it's actually put into play: name, colour, current OVR, current Tier, current league membership(s). In MVP2, each league is its own Instance Wrapper, with its own Instances. See MVP3 for how Instance scope is formalized around the new **Season** concept — within one Season, a blueprint has exactly one shared Instance across every league it's concurrently a member of (matches real football: a club has one strength, not one per competition). *(Changed on 2026-10-28, MVP2 Task 93.)*
 - The MVP1 CSV import/export (`ID/slug, Name, Colours, Tier`, plus an optional `Location` column) is retained for quick bulk list editing — it operates on Blueprints and carries no provenance metadata. A file with no `Location` column still imports. MVP3 adds `City`. *(Added on 2026-10-28, MVP2 Task 99.)*
 
 ### File Module (generalized)
@@ -158,6 +160,7 @@ MVP1's single "Save/Load league" pair is replaced with scoped export/import acti
 - As a user, when I have no teams created yet, I want to be prompted to create one instead of seeing options that would do nothing, so that the empty state actually helps me.
 - As a user, I want to Edit a team's Instance in this league (not its global Blueprint) directly from the league's team list, so that per-league tweaks do not change the Blueprint or any other league.
 - As a user, I want to Switch a team for a different one via the same picker, pre-filtered to exclude teams already in the league, so that swapping is quick and duplicate-safe.
+- As a user, I want to load a plain text file of team slugs into the league setup, with an alert for the slugs not found, so that I can set up a known roster fast. *(Added on 2026-10-28, MVP2 Task 93.)*
 - As a user, I want to Remove a team from the roster, with a warning (not a hard block) if that drops below the format's minimum, so that I know the league isn't ready to start without being stopped outright.
 
 ### Epic: Teams Module (Blueprints)

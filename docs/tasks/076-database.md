@@ -21,6 +21,7 @@ Decide the five open points of the MVP2 database (`src/persistence/PERSISTENCE.m
 - **2026-10-27:** (e) The user chose one `.zip` file. (d) The user wants the card to show progress: the current phase and its matchday, so the status relates to the phase. The format text needs more detail for leagues with several round-robin phases. The user asked if this is too much work. Claude proposed one pure summary function, see the report.
 
 - **2026-10-27:** The user accepted the proposed rule for (d).
+- **2026-10-28 (Task 93):** The user chose "setup is only the wizard". A league exists only after "Create league", which starts it. So the progress in (d) is never "setup". The rest of (d) stays.
 
 ## Report
 

@@ -91,11 +91,13 @@ Scoped to **league setup, before the league is started** (fixtures generated) �
 
 ### File Module (generalized)
 MVP1's single "Save/Load league" pair is replaced with scoped export/import actions:
-- **Per-league export/import** — moved to a button on the **League Detail screen** (no longer a global File-module action). Self-contained JSON: embeds full Blueprint + Instance snapshots of the league's member teams, plus fixtures/results/config.
+- **Per-league export** — moved to an export menu on the **League Detail screen** (no longer a global File-module action). A single league imports through **Import leagues** in the File module, or through an **Import league** button on the Leagues dashboard. *(Changed on 2026-10-28, MVP2 Task 95.)* Self-contained JSON: embeds full Blueprint + Instance snapshots of the league's member teams, plus fixtures/results/config.
 - **Export all leagues** (bulk, JSON, File module) / **Import leagues** — an import file may contain one or many leagues; if multiple, the user gets a picker to select which specific ones to bring in.
 - **Export all team blueprints** (bulk, JSON, File module, full fidelity incl. UUID/provenance) / **Import teams** — same selective-picker pattern as leagues.
-- **Export entire database** / **Import entire database** — everything: all Blueprints + Instances, all Leagues, all Seasons (MVP3+), Locations (MVP3+), and Story Mode state (MVP4+) in one file. Import merges into the current database using the same conflict rules as any other import (see below) — it never destructively replaces the local database wholesale.
+- **Export entire database** / **Import entire database** — everything: all Blueprints + Instances, all Leagues, all Seasons (MVP3+), Locations (MVP3+), and Story Mode state (MVP4+) in one file. In MVP2 the file is one `.zip` with the manifest, the league wrappers, and the Blueprints (Task 76). *(Changed on 2026-10-28, MVP2 Task 95.)* Import merges into the current database using the same conflict rules as any other import (see below) — it never destructively replaces the local database wholesale.
 - **Export results** (plain `.txt`, read-only) stays scoped per-league, moved alongside the league's export button on its Detail screen.
+- **Export slug list** (plain `.txt`, one team slug on each line) is per-league, in the League Detail export menu. The order is the final ranking: teams that reached a later phase first, then the order inside each phase. "Import slug list" in league setup reads the same format. *(Added on 2026-10-28, MVP2 Task 95.)*
+- **MVP1 files**: MVP2 does not import MVP1 league or team JSON files. Teams move over by CSV. A converter is parked (`scorinator-future-features.md` §12). *(Added on 2026-10-28, MVP2 Task 95.)*
 
 ### Identity & Provenance System
 - Every exportable entity (Team Blueprint, League, Season, Location, ...) gets a **permanent UUID v4, assigned once at creation and never reassigned or overwritten.**
@@ -177,6 +179,7 @@ MVP1's single "Save/Load league" pair is replaced with scoped export/import acti
 - As a user, I want to export all my leagues or all my team blueprints in bulk, so that I can back up everything at once.
 - As a user, when I import a file with multiple leagues or teams, I want to pick which specific ones to bring in, so that I'm not forced to import everything in the file.
 - As a user, I want to export or import my entire database (teams, leagues, locations, story state) as one file, so that I can fully back up or transfer my whole setup.
+- As a user, I want to export a league's team slugs in ranking order, so that I can reuse the list in a new league. *(Added on 2026-10-28, MVP2 Task 95.)*
 
 ### Epic: Identity & Provenance
 - As a user, I want every team/league/location to keep the same permanent identity no matter how many times it's exported and re-imported, so that re-sharing data doesn't create confusing duplicates.

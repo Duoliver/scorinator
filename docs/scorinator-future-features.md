@@ -74,3 +74,8 @@ In MVP2, only a Bracket phase lists its qualifiers, in its Seed List (US-04.2). 
 In MVP2, the user can delete a Blueprint at any time. A league keeps its Instances, with their own name, colour, Tier, and OVR (US-08.4), but the team loses its Location (US-09.3). Later, League Detail can restore a deleted Blueprint from an Instance: a new Blueprint with the Instance name, colour, and Tier.
 
 *Raised during: MVP2 sprint 0, Task 94 (Teams Module refinement), 2026-10-28.*
+
+## 12. Import MVP1 files
+In MVP2, an MVP1 JSON file (a league save file or a teams JSON) does not import. The user moves teams with the CSV (US-10.3). Later, a converter reads MVP1 files: it gives each team and league a new UUID, and makes one "Round robin (two-way)" phase for each league.
+
+*Raised during: MVP2 sprint 0, Task 95 (File Module refinement), 2026-10-28.*

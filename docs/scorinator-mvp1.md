@@ -33,7 +33,7 @@
 - Points system is **configurable per league**, defaulting to **3 / 1 / 0** (win/draw/loss).
 
 ### Team Colours
-- A team colour is picked from a **16-colour palette**. *(Added on 2026-10-05. Before that date, the palette was MVP3 scope.)*
+- A team colour is picked from a **24-colour palette**. *(Added on 2026-10-05. Before that date, the palette was MVP3 scope. Changed in MVP2 Task 101, on 2026-10-28: 16 colours became 24.)*
 - MVP1 uses the **placeholder palette** below. The values can change later, for example after a Claude Design pass.
 - Keep the palette values in **one place** in the code, so a change to the palette is one edit.
 - A custom colour (hex field, live preview, RGB sliders) is MVP3 scope.
@@ -41,21 +41,31 @@
 | # | Name | Hex (placeholder) |
 |---|------|------|
 | 1 | Red | #E53935 |
-| 2 | Maroon | #7B1E1E |
-| 3 | Orange | #FB8C00 |
-| 4 | Gold | #F9A825 |
+| 2 | Coral | #FF7043 |
+| 3 | Orange | #F57C00 |
+| 4 | Gold | #FFB300 |
 | 5 | Yellow | #FDD835 |
-| 6 | Olive | #827717 |
-| 7 | Green | #2E7D32 |
-| 8 | Teal | #00897B |
-| 9 | Sky Blue | #039BE5 |
-| 10 | Navy | #1A237E |
-| 11 | Blue | #1E88E5 |
-| 12 | Purple | #6A1B9A |
-| 13 | Pink | #D81B60 |
-| 14 | Black | #212121 |
-| 15 | Grey | #9E9E9E |
-| 16 | White | #FAFAFA |
+| 6 | Lime | #A4C639 |
+| 7 | Olive | #827717 |
+| 8 | Green | #2E7D32 |
+| 9 | Bottle Green | #1B4D2E |
+| 10 | Teal | #00897B |
+| 11 | Turquoise | #26C6DA |
+| 12 | Sky Blue | #64B5F6 |
+| 13 | Blue | #1565C0 |
+| 14 | Navy | #1A237E |
+| 15 | Lavender | #B39DDB |
+| 16 | Purple | #6A1B9A |
+| 17 | Pink | #D81B60 |
+| 18 | Light Pink | #F48FB1 |
+| 19 | Maroon | #7B1E1E |
+| 20 | Brown | #6D4C41 |
+| 21 | Sand | #E8D9A8 |
+| 22 | Black | #212121 |
+| 23 | Grey | #9E9E9E |
+| 24 | White | #FAFAFA |
+
+*Changed in MVP2 Task 101 (2026-10-28): 8 new colours (Coral, Lime, Bottle Green, Turquoise, Lavender, Light Pink, Brown, Sand). New values for Orange (was #FB8C00), Gold (was #F9A825), Sky Blue (was #039BE5), and Blue (was #1E88E5).*
 
 ### Data Portability
 - **Team CSV** (import/export) columns: `ID/slug`, `Name`, `Colours`, `Tier`. *(Extended in MVP3 to add `City`, once teams gain location data.)*

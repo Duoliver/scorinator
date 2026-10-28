@@ -79,3 +79,8 @@ In MVP2, the user can delete a Blueprint at any time. A league keeps its Instanc
 In MVP2, an MVP1 JSON file (a league save file or a teams JSON) does not import. The user moves teams with the CSV (US-10.3). Later, a converter reads MVP1 files: it gives each team and league a new UUID, and makes one "Round robin (two-way)" phase for each league.
 
 *Raised during: MVP2 sprint 0, Task 95 (File Module refinement), 2026-10-28.*
+
+## 13. Colour distance test for the team palette
+In MVP2, the palette tests check the count, the hex format, and unique names and values (US-09.7). Later, a test checks that every pair of palette colours has a CIEDE2000 distance (ΔE) of 12 or more, so that a palette change cannot bring two close colours back. The MVP2 palette of 24 colours passes it: its smallest ΔE is 12.5.
+
+*Raised during: MVP2, Task 101 (team palette), 2026-10-28.*

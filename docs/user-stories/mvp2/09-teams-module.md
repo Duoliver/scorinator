@@ -2,7 +2,7 @@
 
 Source: [`docs/scorinator-mvp2.md`](/docs/scorinator-mvp2.md) §1 Teams Module (Blueprints), §2 Epic: Teams Module (Blueprints). Layout reference: the MVP2 handoff, `Footballer - Teams` and `Footballer - League Setup Wizard` (Teams step).
 
-US-09.1 and US-09.2 are the two spec stories, refined in [Task 94](/docs/tasks/094-refine-teams-module.md). US-09.3 comes from [Task 99](/docs/tasks/099-team-location-label.md). US-09.4 and US-09.5 are new in Task 94. US-09.6 comes from [Task 100](/docs/tasks/100-team-trigrams.md).
+US-09.1 and US-09.2 are the two spec stories, refined in [Task 94](/docs/tasks/094-refine-teams-module.md). US-09.3 comes from [Task 99](/docs/tasks/099-team-location-label.md). US-09.4 and US-09.5 are new in Task 94. US-09.6 comes from [Task 100](/docs/tasks/100-team-trigrams.md). US-09.7 comes from [Task 101](/docs/tasks/101-team-palette.md).
 
 **Terms used in this file:**
 
@@ -170,3 +170,52 @@ As a user, I want each team to have a short three-letter code, with alternatives
 **Out of scope:** a trigram in the bracket tie cards and the results `.txt` export. Trigrams longer or shorter than 3 characters.
 
 **Notes:** the user asked for trigrams on 2026-10-28 (Task 100, draft feature #1). The user chose the trigram made from the name, the OVR order for the same Tier, the digit fallback, the display places, the live pick with a fixed store at "Create league", the Edit override, and the A to Z and 0 to 9 format with a spaced CSV column. The limit of 5, the `X` padding, the hint text, and the fixed trigram taken first are Claude choices. The user confirmed them on 2026-10-28.
+
+---
+
+### US-09.7: a team palette of 24 colours
+
+**Status:** Agreed
+**Spec:** `docs/scorinator-mvp1.md` §1 Team Colours. A new story, from [Task 101](/docs/tasks/101-team-palette.md). The spec has the 24 colours since 2026-10-28, with the user's OK.
+
+As a user, I want more team colours, and colours that are easy to tell apart, so that each team in a league looks different.
+
+**Acceptance criteria:**
+
+- [ ] `TEAM_PALETTE` (`src/design-system/tokens/teamPalette.ts`) has 24 entries, in this order:
+
+  | # | Name | Hex | Change |
+  |---|---|---|---|
+  | 1 | Red | #E53935 | |
+  | 2 | Coral | #FF7043 | new |
+  | 3 | Orange | #F57C00 | was #FB8C00 |
+  | 4 | Gold | #FFB300 | was #F9A825 |
+  | 5 | Yellow | #FDD835 | |
+  | 6 | Lime | #A4C639 | new |
+  | 7 | Olive | #827717 | |
+  | 8 | Green | #2E7D32 | |
+  | 9 | Bottle Green | #1B4D2E | new |
+  | 10 | Teal | #00897B | |
+  | 11 | Turquoise | #26C6DA | new |
+  | 12 | Sky Blue | #64B5F6 | was #039BE5 |
+  | 13 | Blue | #1565C0 | was #1E88E5 |
+  | 14 | Navy | #1A237E | |
+  | 15 | Lavender | #B39DDB | new |
+  | 16 | Purple | #6A1B9A | |
+  | 17 | Pink | #D81B60 | |
+  | 18 | Light Pink | #F48FB1 | new |
+  | 19 | Maroon | #7B1E1E | |
+  | 20 | Brown | #6D4C41 | new |
+  | 21 | Sand | #E8D9A8 | new |
+  | 22 | Black | #212121 | |
+  | 23 | Grey | #9E9E9E | |
+  | 24 | White | #FAFAFA | |
+
+- [ ] The swatch picker shows the palette in 3 rows of 8.
+- [ ] White stays the colour of a new team.
+- [ ] A team keeps its hex value. A team with an old value, for example #039BE5, keeps that colour on every screen. The picker then shows no selected swatch, until the user picks one.
+- [ ] The palette tests check 24 entries, the hex format, and unique names and values. Each test still checks rules, not values.
+
+**Out of scope:** a colour distance test: parked in `scorinator-future-features.md` §13. A custom colour (MVP3). A map from the old values to the new ones.
+
+**Notes:** the user asked for more colours and two blues that are easier to tell apart on 2026-10-28 (Task 101, draft feature #6). The user chose the 24-colour proposal, "keep the old hex", and parked the ΔE test. Smallest ΔE in the new palette: 12.5 (Gold / Yellow, Orange / Coral). The order by hue is a Claude choice. The user confirmed it on 2026-10-28. The user also kept the custom colour (hex field, live preview, RGB sliders) as MVP3 scope (`scorinator-mvp3.md` §1, MVP1 Task 34).

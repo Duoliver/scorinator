@@ -51,7 +51,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 98 | Reword the decision rows: "Can close inside Task X" becomes "Related epics: … One of them can settle this decision." | `PROGRESS.md` | ✅ Done | 2026-10-26 | 2026-10-26 | [098](/docs/tasks/098-decision-row-wording.md) | Task created by User - 2026-10-26. |
 | 99 | A Location label on each team: story US-09.3 in `docs/user-stories/mvp2/09-teams-module.md`, with every place it shows | `docs/user-stories` | ✅ Done | 2026-10-28 | 2026-10-28 | [099](/docs/tasks/099-team-location-label.md) | Task created by User - 2026-10-28. US-09.3 Agreed. Three spec edits. |
 | 100 | Team trigrams: story US-09.6, a three-letter code with alternatives by Tier | `docs/user-stories` | ✅ Done | 2026-10-28 | 2026-10-28 | [100](/docs/tasks/100-team-trigrams.md) | Task created by User - 2026-10-28. US-09.6 Agreed. Three spec edits. |
-| 101 | Team palette: more colours, two blues easier to tell apart | `docs/`, `design-system/` | ⬜ Not started |  |  | [101](/docs/tasks/101-team-palette.md) | Task created by User - 2026-10-28. Draft feature #6. |
+| 101 | Team palette: more colours, two blues easier to tell apart | `docs/`, `design-system/` | ✅ Done | 2026-10-28 | 2026-10-28 | [101](/docs/tasks/101-team-palette.md) | Task created by User - 2026-10-28. US-09.7 Agreed: 24 colours. ΔE test parked (§13). |
 | 102 | Refine new epic 12, Standings display: last 5, GF and GA hover, header hints, chart, zones | `docs/user-stories` | ⬜ Not started |  |  | [102](/docs/tasks/102-standings-display.md) | Task created by User - 2026-10-28. Draft features #2 to #5, #7. After Task 100. |
 
 **Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input, see Open Questions) · 🟩 Review · ✅ Done · ❌ Cancelled (the reason is in the Notes column)
@@ -96,6 +96,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-10-28 (Task 101 — team palette):** The user agreed US-09.7: 24 colours in 3 rows of 8, ordered by hue. New: Coral, Lime, Bottle Green, Turquoise, Lavender, Light Pink, Brown, Sand. Changed: Orange, Gold, Sky Blue (#64B5F6), Blue (#1565C0). A team keeps its old hex, with no map. The ΔE ≥ 12 test is parked (§13). The custom colour stays MVP3. Detail in [`docs/tasks/101-team-palette.md`](/docs/tasks/101-team-palette.md).
 
 - **2026-10-28 (Task 100 — team trigrams):** The user agreed US-09.6. A Blueprint has up to 5 trigrams (A to Z, 0 to 9). An empty list uses one made from the name. A league picks one unique trigram for each team: Tier, then OVR, then fixed lots, with a digit fallback. The wizard picks live, the Edit drawer can fix one, and "Create league" stores it. Mono font. Shown in narrow standings, fixtures, the chart, and the last-5 card. CSV column "Trigrams". Detail in [`docs/tasks/100-team-trigrams.md`](/docs/tasks/100-team-trigrams.md).
 

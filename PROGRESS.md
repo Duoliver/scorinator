@@ -34,7 +34,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 81 | Settle open decision 7: when OVR is rolled | `engine/tier-ovr`, `app/state` | ✅ Done | 2026-10-27 | 2026-10-27 | [081](/docs/tasks/081-ovr-roll-timing.md) | Sprint 0. Decided: roll at add-to-league, override inside the Tier range, roll again on a Tier change. |
 | 82 | Settle open decision 8: the single duels generator | `engine/round-robin` | ✅ Done | 2026-10-27 | 2026-10-27 | [082](/docs/tasks/082-single-duels-generator.md) | Sprint 0. Decided: new `generateSingleDuels(teams, rng)`, shared pairing, spec balance rule. |
 | 83 | MVP2 design reference: add the Claude Design handoff bundle for MVP2 at `docs/design-reference/MVP2/`, or decide to build the MVP2 screens without one | `docs/design-reference` | ✅ Done | 2026-10-27 | 2026-10-27 | [083](/docs/tasks/083-mvp2-design-reference.md) | Sprint 0. Handoff added. Review against Tasks 86 and 87 done: D1 to D9 decided. |
-| 84 | Split the MVP2 epics into build task rows, in build order | `PROGRESS.md` | ⬜ Not started |  |  |  | Sprint 0. Do it last, after the refinement Tasks 86 to 96. |
+| 84 | Split the MVP2 epics into build task rows, in build order | `PROGRESS.md` | ⬜ Not started |  |  |  | Sprint 0. Do it last, after the refinement Tasks 86 to 96, and Tasks 100 to 102. |
 | 85 | MVP2 workflow directives: refined user stories in their own files, short status board notes with detail in a task file, and one task for every activity | `PROGRESS.md`, `docs/` | ✅ Done | 2026-10-26 | 2026-10-26 | [085](/docs/tasks/085-workflow-directives.md) | Task created by User - 2026-10-26. |
 | 86 | Refine epic 01, League Format Configuration: refined stories in `docs/user-stories/mvp2/01-league-format.md` | `docs/user-stories` | ✅ Done | 2026-10-27 | 2026-10-27 | [086](/docs/tasks/086-refine-league-format.md) | Sprint 0. Six stories Agreed (US-01.1 to US-01.6). One spec line added. |
 | 87 | Refine epic 02, Groups: refined stories in `docs/user-stories/mvp2/02-groups.md` | `docs/user-stories` | ✅ Done | 2026-10-27 | 2026-10-27 | [087](/docs/tasks/087-refine-groups.md) | Sprint 0. Four stories Agreed, US-02.3 Dropped (MVP3). Two spec lines added. |
@@ -50,6 +50,9 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 97 | Fix the `docs/tdd` link in `CLAUDE.md`, and check the other repo links | `CLAUDE.md`, `docs/` | ✅ Done | 2026-10-26 | 2026-10-26 | [097](/docs/tasks/097-tdd-link.md) | Task created by User - 2026-10-26. |
 | 98 | Reword the decision rows: "Can close inside Task X" becomes "Related epics: … One of them can settle this decision." | `PROGRESS.md` | ✅ Done | 2026-10-26 | 2026-10-26 | [098](/docs/tasks/098-decision-row-wording.md) | Task created by User - 2026-10-26. |
 | 99 | A Location label on each team: story US-09.3 in `docs/user-stories/mvp2/09-teams-module.md`, with every place it shows | `docs/user-stories` | ✅ Done | 2026-10-28 | 2026-10-28 | [099](/docs/tasks/099-team-location-label.md) | Task created by User - 2026-10-28. US-09.3 Agreed. Three spec edits. |
+| 100 | Team trigrams: story US-09.6, a three-letter code with alternatives by Tier | `docs/user-stories` | ✅ Done | 2026-10-28 | 2026-10-28 | [100](/docs/tasks/100-team-trigrams.md) | Task created by User - 2026-10-28. US-09.6 Agreed. Three spec edits. |
+| 101 | Team palette: more colours, two blues easier to tell apart | `docs/`, `design-system/` | ⬜ Not started |  |  | [101](/docs/tasks/101-team-palette.md) | Task created by User - 2026-10-28. Draft feature #6. |
+| 102 | Refine new epic 12, Standings display: last 5, GF and GA hover, header hints, chart, zones | `docs/user-stories` | ⬜ Not started |  |  | [102](/docs/tasks/102-standings-display.md) | Task created by User - 2026-10-28. Draft features #2 to #5, #7. After Task 100. |
 
 **Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input, see Open Questions) · 🟩 Review · ✅ Done · ❌ Cancelled (the reason is in the Notes column)
 
@@ -93,6 +96,10 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-10-28 (Task 100 — team trigrams):** The user agreed US-09.6. A Blueprint has up to 5 trigrams (A to Z, 0 to 9). An empty list uses one made from the name. A league picks one unique trigram for each team: Tier, then OVR, then fixed lots, with a digit fallback. The wizard picks live, the Edit drawer can fix one, and "Create league" stores it. Mono font. Shown in narrow standings, fixtures, the chart, and the last-5 card. CSV column "Trigrams". Detail in [`docs/tasks/100-team-trigrams.md`](/docs/tasks/100-team-trigrams.md).
+
+- **2026-10-28 (Tasks 100 to 102 — unplanned features):** The user approved the 7 MVP2 items of `docs/unplanned-features-draft.md` as MVP2 scope. Task 100: trigrams. Task 101: the team palette. Task 102: a new epic 12, Standings display (last 5, GF and GA on hover, header hints, chart, position zones). The MVP3 section of the draft stays out of scope. Task 84 waits for these tasks.
 
 - **2026-10-28 (Task 96 — Identity & Provenance refinement):** The user agreed US-11.1 and US-11.2. Key choices: Blueprints and leagues get a permanent UUID. An Instance has none and keeps its Blueprint UUID. The provenance is not shown. A known UUID with the same content skips silently. The "Resolve conflicts" dialog gets "Skip all" and "Import all as new", and each row starts on Skip. A re-import of a deleted Blueprint brings it back with the same UUID. Detail in [`docs/tasks/096-refine-identity-provenance.md`](/docs/tasks/096-refine-identity-provenance.md).
 

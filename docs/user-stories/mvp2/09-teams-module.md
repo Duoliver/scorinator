@@ -2,7 +2,7 @@
 
 Source: [`docs/scorinator-mvp2.md`](/docs/scorinator-mvp2.md) §1 Teams Module (Blueprints), §2 Epic: Teams Module (Blueprints). Layout reference: the MVP2 handoff, `Footballer - Teams` and `Footballer - League Setup Wizard` (Teams step).
 
-US-09.1 and US-09.2 are the two spec stories, refined in [Task 94](/docs/tasks/094-refine-teams-module.md). US-09.3 comes from [Task 99](/docs/tasks/099-team-location-label.md). US-09.4 and US-09.5 are new in Task 94.
+US-09.1 and US-09.2 are the two spec stories, refined in [Task 94](/docs/tasks/094-refine-teams-module.md). US-09.3 comes from [Task 99](/docs/tasks/099-team-location-label.md). US-09.4 and US-09.5 are new in Task 94. US-09.6 comes from [Task 100](/docs/tasks/100-team-trigrams.md).
 
 **Terms used in this file:**
 
@@ -135,3 +135,38 @@ As a user, I want a team slug to stay the same when I rename the team, unless I 
 **Out of scope:** a slug typed by hand.
 
 **Notes:** the user chose "fixed at create, with a regenerate button" on 2026-10-28 (Task 94 gap 2), after Claude listed the risks of a slug that follows the name. The user set the button form: an icon, a hover hint, an `aria-label`, and a confirm. The texts and the disabled state are Claude choices. The user confirmed them on 2026-10-28. The button needs an icon-only Button variant and the Tooltip primitive (US-09.3) in `design-system/`.
+
+---
+
+### US-09.6: team trigrams
+
+**Status:** Agreed
+**Spec:** `docs/scorinator-mvp2.md` §1 Teams Module (Blueprints), §2 Teams Module. A new story, from [Task 100](/docs/tasks/100-team-trigrams.md). The spec has it since 2026-10-28, with the user's OK.
+
+As a user, I want each team to have a short three-letter code, with alternatives, so that I can tell teams apart where a full name does not fit.
+
+**Acceptance criteria:**
+
+- [ ] A Blueprint has an ordered list of trigrams, for example `ASH AFC ATN`. The list can be empty. It holds 5 trigrams at most.
+- [ ] A trigram has exactly 3 characters: uppercase letters A to Z, or digits. The app makes a typed letter uppercase. One list has no duplicates. Two Blueprints can share a trigram.
+- [ ] An empty list uses one trigram made from the name: the first three letters or digits, uppercase. "Ashfield Rovers" gives `ASH`. A name with fewer than 3 gives `X` for each missing place, for example "FC" gives `FCX`.
+- [ ] The team drawer has a "Trigrams" field after "Team name", with the values split by spaces. With an empty field, the placeholder shows the trigram made from the name.
+- [ ] The Teams list has a "Trigrams" column, for example `ASH · AFC`.
+- [ ] A league picks one trigram for each team, unique in the league. The teams pick in this order: higher Tier first, then higher OVR, then the fixed lots of Task 78. Each team takes the first trigram of its list that is still free.
+- [ ] A team with no free trigram takes its first trigram with the last character changed to a digit, from 2 to 9, the first one that is free. For example `ASH` gives `AS2`. The wizard shows a hint on that row: "No free trigram. Add an alternative to the team."
+- [ ] In the wizard, the pick runs again after each add, Switch, Remove, Tier change, or OVR change. The team list shows the picked trigram on each row.
+- [ ] The Edit drawer (US-08.4) has a "Trigram" field. A typed trigram is fixed for that team, and must be unique in the league. A fixed trigram is taken before the pick runs. An empty field goes back to the pick.
+- [ ] "Create league" stores the picked trigram on each Instance. After that, it does not change. A later Blueprint edit does not change it (US-09.2).
+- [ ] A trigram always shows in the mono font, `--font-mono`.
+- [ ] The league trigram shows in these places:
+  - The standings table and the group cards show the trigram in place of the name when the window is too narrow for the name.
+  - Each fixtures row shows the trigram after the name, in muted mono text.
+  - The standings chart labels its lines with trigrams (Task 102).
+  - The last-5 hover card shows the opponent trigram (Task 102).
+- [ ] The team CSV gets an optional "Trigrams" column, with the values split by spaces. A file with no "Trigrams" column keeps the list of an updated Blueprint, as for Location (US-09.3).
+- [ ] The Blueprint JSON and the league JSON carry the list. The league JSON also carries the picked trigram of each Instance.
+- [ ] The pick is one pure function, with tests: the Tier order, the OVR order, the fixed lots, a fixed trigram, the digit fallback, and the same result for the same input.
+
+**Out of scope:** a trigram in the bracket tie cards and the results `.txt` export. Trigrams longer or shorter than 3 characters.
+
+**Notes:** the user asked for trigrams on 2026-10-28 (Task 100, draft feature #1). The user chose the trigram made from the name, the OVR order for the same Tier, the digit fallback, the display places, the live pick with a fixed store at "Create league", the Edit override, and the A to Z and 0 to 9 format with a spaced CSV column. The limit of 5, the `X` padding, the hint text, and the fixed trigram taken first are Claude choices. The user confirmed them on 2026-10-28.

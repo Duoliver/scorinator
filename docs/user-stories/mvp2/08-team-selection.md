@@ -88,7 +88,7 @@ As a user, I want to Edit a team's Instance in this league (not its global Bluep
 - [ ] ✎ Edit opens the team drawer, as in the handoff, with the title "Edit team for this league".
 - [ ] The drawer has an "Original state" block, read only: the Blueprint name, colour, slug, base Tier, and Location.
 - [ ] The editable fields: "Team name", "Colour", "Tier", and "OVR".
-- [ ] The slug shows read only. It is always the Blueprint slug, also after a name change.
+- [ ] The slug shows read only. It is the slug that the Instance copied from the Blueprint at add, also after a name change (US-09.2).
 - [ ] The OVR must stay inside the Tier range, for example 60 to 69 for Tier C. The field shows the range (Task 81).
 - [ ] A Tier change rolls a new OVR from the new Tier at once. The user can then change it inside the new range (Task 81).
 - [ ] "Save" writes the changes to the Instance only. The Blueprint and every other league stay the same.

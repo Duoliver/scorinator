@@ -69,3 +69,8 @@ In MVP2, a phase locks when the next phase starts, and its results can no longer
 In MVP2, only a Bracket phase lists its qualifiers, in its Seed List (US-04.2). For a round-robin or Groups phase, the highlight on the earlier phase shows who qualified (US-07.2). Later, every phase after the first gets a "Qualifiers" list: seed, team, and origin tag, for example "A1" or "3rd".
 
 *Raised during: MVP2 sprint 0, Task 92 (Phase Transition), 2026-10-28.*
+
+## 11. Restore a team Blueprint from a league
+In MVP2, the user can delete a Blueprint at any time. A league keeps its Instances, with their own name, colour, Tier, and OVR (US-08.4), but the team loses its Location (US-09.3). Later, League Detail can restore a deleted Blueprint from an Instance: a new Blueprint with the Instance name, colour, and Tier.
+
+*Raised during: MVP2 sprint 0, Task 94 (Teams Module refinement), 2026-10-28.*

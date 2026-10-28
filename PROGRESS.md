@@ -52,7 +52,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 99 | A Location label on each team: story US-09.3 in `docs/user-stories/mvp2/09-teams-module.md`, with every place it shows | `docs/user-stories` | ✅ Done | 2026-10-28 | 2026-10-28 | [099](/docs/tasks/099-team-location-label.md) | Task created by User - 2026-10-28. US-09.3 Agreed. Three spec edits. |
 | 100 | Team trigrams: story US-09.6, a three-letter code with alternatives by Tier | `docs/user-stories` | ✅ Done | 2026-10-28 | 2026-10-28 | [100](/docs/tasks/100-team-trigrams.md) | Task created by User - 2026-10-28. US-09.6 Agreed. Three spec edits. |
 | 101 | Team palette: more colours, two blues easier to tell apart | `docs/`, `design-system/` | ✅ Done | 2026-10-28 | 2026-10-28 | [101](/docs/tasks/101-team-palette.md) | Task created by User - 2026-10-28. US-09.7 Agreed: 24 colours. ΔE test parked (§13). |
-| 102 | Refine new epic 12, Standings display: last 5, GF and GA hover, header hints, chart, zones | `docs/user-stories` | ⬜ Not started |  |  | [102](/docs/tasks/102-standings-display.md) | Task created by User - 2026-10-28. Draft features #2 to #5, #7. After Task 100. |
+| 102 | Refine new epic 12, Standings display: last 5, GF and GA hover, header hints, chart, zones | `docs/user-stories` | ✅ Done | 2026-10-28 | 2026-10-28 | [102](/docs/tasks/102-standings-display.md) | Task created by User - 2026-10-28. New epic 12, five stories Agreed. Two items parked (§14, §15). |
 
 **Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input, see Open Questions) · 🟩 Review · ✅ Done · ❌ Cancelled (the reason is in the Notes column)
 
@@ -96,6 +96,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-10-28 (Task 102 — Standings display):** The user agreed US-12.1 to US-12.5, a new epic 12. Form column ("Form" kept) with 5 lettered dots and a hint for each dot, round-robin table only. GF and GA move into a GD hint. Hints on short headers. A position chart in a "Chart" sub-tab, SVG, no library. Up to four zones replace the qualifier highlight, set in the wizard and League Detail. Parked: Form in group cards (§14), chart points mode (§15). Detail in [`docs/tasks/102-standings-display.md`](/docs/tasks/102-standings-display.md).
 
 - **2026-10-28 (Task 101 — team palette):** The user agreed US-09.7: 24 colours in 3 rows of 8, ordered by hue. New: Coral, Lime, Bottle Green, Turquoise, Lavender, Light Pink, Brown, Sand. Changed: Orange, Gold, Sky Blue (#64B5F6), Blue (#1565C0). A team keeps its old hex, with no map. The ΔE ≥ 12 test is parked (§13). The custom colour stays MVP3. Detail in [`docs/tasks/101-team-palette.md`](/docs/tasks/101-team-palette.md).
 

@@ -84,3 +84,13 @@ In MVP2, an MVP1 JSON file (a league save file or a teams JSON) does not import.
 In MVP2, the palette tests check the count, the hex format, and unique names and values (US-09.7). Later, a test checks that every pair of palette colours has a CIEDE2000 distance (ΔE) of 12 or more, so that a palette change cannot bring two close colours back. The MVP2 palette of 24 colours passes it: its smallest ΔE is 12.5.
 
 *Raised during: MVP2, Task 101 (team palette), 2026-10-28.*
+
+## 14. Last 5 matches in the group cards
+In MVP2, only the round-robin table shows the last 5 matches (US-12.1). The group cards are narrow. Later, a Groups phase can show a full table for each group, with the "Form" column.
+
+*Raised during: MVP2, Task 102 (Standings display), 2026-10-28.*
+
+## 15. Points mode for the standings chart
+In MVP2, the standings chart shows each team's place after each matchday (US-12.4). Later, a switch shows the points after each matchday instead.
+
+*Raised during: MVP2, Task 102 (Standings display), 2026-10-28.*

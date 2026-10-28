@@ -115,6 +115,14 @@ MVP1's single "Save/Load league" pair is replaced with scoped export/import acti
 - ~~The bulk **"Scorinate bracket"** action shows the same confirmation modal, for consistency, whenever downstream results already exist.~~ *(Removed on 2026-10-28, MVP2 Task 89: "Scorinate bracket" plays only ties with no result, so it never clears a result.)*
 - **Tie cards** display a footer containing: the **aggregate score** (for two-legged ties), the **penalty shootout result** (if the tie was decided by penalties), and the tie's **"Scorinate" button**.
 
+### Standings display
+*(Added on 2026-10-28, MVP2 Task 102.)*
+- **Form**: the round-robin table has a "Form" column with the team's last 5 results in the phase, oldest on the left. Each dot has a letter (W, D, L), a colour, and its own hint with the opponent trigram, H or A, the score, and the matchday.
+- **Goals**: the round-robin table has no GF and GA columns. The GD cell shows them in a hint. The table order still uses goals for.
+- **Header hints**: each short header (#, P, W, D, L, GD, Pts, Form, and "Agg" on tie cards) has a hint with its full name, a dotted underline, and the help cursor.
+- **Position chart**: a "Chart" sub-tab in each round-robin or Groups phase shows each team's place after each matchday, one line for each team in its colour, ended by its trigram. A Groups phase has one chart for each group. A points mode is parked (`scorinator-future-features.md` §15).
+- **Zones**: up to four place zones (green, blue, yellow, red) for each round-robin or Groups phase, each with an optional label, a row tint, a left stripe, and a legend. Zones replace the qualifier highlight: in a phase that is not the last, green is the top N and yellow the best-M place, both from the advancement. The user sets zones in the wizard and in League Detail, at any time.
+
 ---
 
 ## 2. User Stories — MVP 2
@@ -188,6 +196,14 @@ MVP1's single "Save/Load league" pair is replaced with scoped export/import acti
 ### Epic: Identity & Provenance
 - As a user, I want every team/league/location to keep the same permanent identity no matter how many times it's exported and re-imported, so that re-sharing data doesn't create confusing duplicates.
 - As a user, when an import conflicts with something I already have, I want to be asked whether to skip it or bring it in as a new separate copy, so that my existing data is never silently overwritten.
+
+### Epic: Standings display
+*(Added on 2026-10-28, MVP2 Task 102.)*
+- As a user, I want to see the last 5 results of each team in the table, so that I can see which teams are in form.
+- As a user, I want a shorter table that still gives me the goals scored and conceded, so that the table stays easy to read.
+- As a user, I want each short table header to tell me its full name, so that I know what each column means.
+- As a user, I want a chart of each team's place after each matchday, so that I can see how the table changed over the phase.
+- As a user, I want to colour place ranges in a table, so that I can see what each place means.
 
 ---
 

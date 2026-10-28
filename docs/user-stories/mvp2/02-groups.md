@@ -54,9 +54,9 @@ As a user, I want each group to run as its own independent round-robin, with its
 - [ ] The table order uses the Task 78 rules: points, goal difference, goals for, the recursive mini-league, then the fixed lots.
 - [ ] Teams level on every criterion show the MVP1 shared place: the first row of the tied block shows the place number, and each row after it shows "-". The fixed lots set the row order inside the block.
 - [ ] Each group card shows the columns W, D, L, GD, and Pts.
-- [ ] The rows in places 1 to N (top N, US-01.4) have the qualifier highlight at all times.
+- [ ] The rows in places 1 to N (top N, US-01.4) have the qualifier highlight at all times: the green zone of US-12.5.
 - [ ] When the phase sends the best M of place N + 1 (US-01.6), each group's place N + 1 row has a second, lighter highlight during the phase.
-- [ ] When the phase is finished, the best M rows get the qualifier highlight. The other place N + 1 rows lose the second highlight.
+- [ ] When the phase is finished, the best M rows get the qualifier highlight. The other place N + 1 rows lose the second highlight. *(Since 2026-10-28, these highlights are the zones of US-12.5: green for the top N, yellow for the best-M place.)*
 - [ ] The Fixtures tab shows one list for each matchday. Each match carries its group tag, as in the handoff.
 - [ ] "Scorinate matchday" plays the unplayed matches of that matchday in every group.
 - [ ] A group with a bye on that matchday shows the bye under its group tag.

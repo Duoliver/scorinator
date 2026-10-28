@@ -41,7 +41,7 @@ As a user, I want to see which teams qualified from one phase into the next, and
 
 **Acceptance criteria:**
 
-- [ ] A round-robin table of a phase that is not the last highlights the qualifier places, with the qualifier highlight of the group cards (US-02.2).
+- [ ] A round-robin table of a phase that is not the last highlights the qualifier places, with the qualifier highlight of the group cards (US-02.2). Since 2026-10-28, this highlight is the green zone of US-12.5.
 - [ ] The round-robin table shows the advancement line under it, for example "Top 4 advance to the Bracket.", as the group cards do (US-02.4).
 - [ ] During the phase, the highlight follows the current order. When the phase is complete, it marks the final qualifiers.
 - [ ] When a Groups phase is complete, the best M teams of place N + 1 get the full qualifier highlight. The other teams of that place lose the lighter highlight (US-02.2).

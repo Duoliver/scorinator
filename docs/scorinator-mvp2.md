@@ -51,6 +51,7 @@ Note: the Replay itself is a one-shot fallback — if the replay also ends in a 
 ### Bracket Specifics
 - Ties can be configured as **single match** or **two-legged (aggregate score, home/away)** — set per bracket phase.
 - Bracket seeding is determined by **final standing** from the previous phase (1st seed vs. last qualifier, 2nd vs. second-last, etc. — standard seeding).
+- **A bracket as the first phase** (for example a pure cup) has no previous standings. An injected `Rng` draws its seeds when the league starts, and the draw is stored. *(Added on 2026-10-28, MVP2 Task 89.)*
 - **Away-goals rule** for two-legged ties is a **configurable toggle per bracket phase** (off = go straight to AET/tiebreak if level on aggregate; on = away goals break the aggregate tie first).
 - **Third-place match** is a **configurable toggle per bracket phase**, off by default. When on, the two semi-final losers play a tie for third place, before the final. *(Added on 2026-10-27, MVP2 Task 77.)*
 - **Single-match final** is a **configurable toggle per two-legged bracket phase**. When on, the final is one match at a neutral venue. The third-place tie plays the same way. When off, both have two legs, like the other ties of the phase. *(Added on 2026-10-27, MVP2 Task 79.)*
@@ -58,7 +59,8 @@ Note: the Replay itself is a one-shot fallback — if the replay also ends in a 
 
 ### Bracket Sizing & Byes
 - Bracket phases need a **power-of-2** number of participating teams for a clean single-elimination structure. When the qualifier count isn't a power of 2, the system **auto-assigns byes by default** (filling up to the next power of 2), but the user can **manually reassign who gets a bye**.
-- **Bye assignment**: the highest seeds get the byes through the first round. Beyond that, bracket slotting is simple seed order — not the full anti-clash placement algorithm that keeps top seeds apart for as long as possible.
+- **Bye assignment**: the highest seeds get the byes through the first round. Bracket slotting uses the **standard bracket placement**: seeds 1 and 2 can meet only in the final, seeds 1 to 4 only from the semi-finals on, and so on. For 8 slots, the first round is 1 v 8, 4 v 5, 2 v 7, 3 v 6, and the winners of adjacent ties meet. *(Changed on 2026-10-28, MVP2 Task 89. It was simple seed order, without the anti-clash placement.)*
+- **Bye change**: the user can change who gets a bye at any time. After the first bracket result, a change asks for a confirm, then clears every result of the bracket phase. *(Added on 2026-10-28, MVP2 Task 89.)*
 - **Early warning in the league creation wizard**, before it becomes a problem:
   - For a league that's a **single Bracket phase** (e.g. a pure Cup), the warning appears at the **team-selection step**, since the qualifier count is determined directly there.
   - For a **mixed-format league** where a Bracket phase follows another phase, the warning appears at the **phase-configuration step**, based on how many teams the advancement requisites say will qualify into the bracket.
@@ -97,10 +99,10 @@ MVP1's single "Save/Load league" pair is replaced with scoped export/import acti
 - Because UUIDs never change once assigned, an entity keeps its identity across any number of export/import hops — there's no need to track "who exported it last"; only an explicit fork ever creates a new identity.
 
 ### Bracket Scorination Workflow
-- Each tie can be scorinated individually via a **per-tie "Scorinate" button**, or the whole bracket can be resolved at once via a **"Scorinate bracket" button** that scorinates every currently-playable tie in one action.
+- Each tie can be scorinated individually via a **per-tie "Scorinate" button**, or the bracket can move forward via a **"Scorinate bracket" button** that scorinates every currently-playable tie in one action. A playable tie has both teams known and no result. "Scorinate bracket" never plays a tie that has a result, so a user who plays round by round plays one round for each click. *(Changed on 2026-10-28, MVP2 Task 89.)*
 - **Re-scorinating an earlier tie is destructive downstream**: it recalculates who advances from that tie and **clears/disables every tie in later rounds that depended on it** (they revert to an unplayed state).
 - **Confirmation required**: re-scorinating a tie that has already-scored downstream rounds triggers a confirm modal — *"This will clear results for later rounds. Continue?"* Confirming clears the affected later-round ties (e.g. SF/Final/Third-place) back to unplayed: their "Scorinate" buttons re-enable, and any team slot not yet determined shows a **"TBD"** placeholder.
-- The bulk **"Scorinate bracket"** action shows the same confirmation modal, for consistency, whenever downstream results already exist.
+- ~~The bulk **"Scorinate bracket"** action shows the same confirmation modal, for consistency, whenever downstream results already exist.~~ *(Removed on 2026-10-28, MVP2 Task 89: "Scorinate bracket" plays only ties with no result, so it never clears a result.)*
 - **Tie cards** display a footer containing: the **aggregate score** (for two-legged ties), the **penalty shootout result** (if the tie was decided by penalties), and the tie's **"Scorinate" button**.
 
 ---

@@ -40,7 +40,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 87 | Refine epic 02, Groups: refined stories in `docs/user-stories/mvp2/02-groups.md` | `docs/user-stories` | ✅ Done | 2026-10-27 | 2026-10-27 | [087](/docs/tasks/087-refine-groups.md) | Sprint 0. Four stories Agreed, US-02.3 Dropped (MVP3). Two spec lines added. |
 | 88 | Refine epic 03, Tiebreak Configuration: refined stories in `docs/user-stories/mvp2/03-tiebreak-configuration.md` | `docs/user-stories` | ✅ Done | 2026-10-27 | 2026-10-27 | [088](/docs/tasks/088-refine-tiebreak.md) | Sprint 0. Three stories Agreed (US-03.1 to US-03.3). Spec table row 3 and two bullets edited. |
 | 89 | Refine epic 04, Bracket Phase: refined stories in `docs/user-stories/mvp2/04-bracket-phase.md` | `docs/user-stories` | ✅ Done | 2026-10-28 | 2026-10-28 | [089](/docs/tasks/089-refine-bracket-phase.md) | Sprint 0. 14 stories Agreed (US-04.1 to US-04.14), three new. Four spec edits. |
-| 90 | Refine epic 05, Region Adjacency: refined stories in `docs/user-stories/mvp2/05-region-adjacency.md` | `docs/user-stories` | ⬜ Not started |  |  |  | Sprint 0. Check the MVP3 Location scope line first. |
+| 90 | Refine epic 05, Region Adjacency: refined stories in `docs/user-stories/mvp2/05-region-adjacency.md` | `docs/user-stories` | ✅ Done | 2026-10-28 | 2026-10-28 | [090](/docs/tasks/090-refine-region-adjacency.md) | Sprint 0. US-05.1 Dropped: Regions are MVP3. One spec note added. |
 | 91 | Refine epic 06, Single Duels Home/Away Balancing: refined stories in `docs/user-stories/mvp2/06-single-duels-balancing.md` | `docs/user-stories` | ⬜ Not started |  |  |  | Sprint 0. Related decision: 8 (Task 82). |
 | 92 | Refine epic 07, Phase Transition: refined stories in `docs/user-stories/mvp2/07-phase-transition.md` | `docs/user-stories` | ⬜ Not started |  |  |  | Sprint 0. Related decision: 4 (Task 78). Also the card progress text (Task 76). |
 | 93 | Refine epic 08, Team Selection in League Setup: refined stories in `docs/user-stories/mvp2/08-team-selection.md` | `docs/user-stories` | ⬜ Not started |  |  |  | Sprint 0. Related decision: 7 (Task 81). |
@@ -49,6 +49,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 96 | Refine epic 11, Identity & Provenance: refined stories in `docs/user-stories/mvp2/11-identity-provenance.md` | `docs/user-stories` | ⬜ Not started |  |  |  | Sprint 0. Related decision: 1 (Task 75). |
 | 97 | Fix the `docs/tdd` link in `CLAUDE.md`, and check the other repo links | `CLAUDE.md`, `docs/` | ✅ Done | 2026-10-26 | 2026-10-26 | [097](/docs/tasks/097-tdd-link.md) | Task created by User - 2026-10-26. |
 | 98 | Reword the decision rows: "Can close inside Task X" becomes "Related epics: … One of them can settle this decision." | `PROGRESS.md` | ✅ Done | 2026-10-26 | 2026-10-26 | [098](/docs/tasks/098-decision-row-wording.md) | Task created by User - 2026-10-26. |
+| 99 | A Location label on each team: story US-09.3 in `docs/user-stories/mvp2/09-teams-module.md`, with every place it shows | `docs/user-stories` | ✅ Done | 2026-10-28 | 2026-10-28 | [099](/docs/tasks/099-team-location-label.md) | Task created by User - 2026-10-28. US-09.3 Agreed. Three spec edits. |
 
 **Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input, see Open Questions) · 🟩 Review · ✅ Done · ❌ Cancelled (the reason is in the Notes column)
 
@@ -80,6 +81,7 @@ A running list of items flagged under the `CLAUDE.md` open items section. Each i
 
 The 8 MVP2 decisions below come from `docs/mvp1-to-mvp2-impact-review.md` §4, which has the full reasoning. Each one needs a decision before the related MVP2 task starts. The numbers are the ones the review uses.
 
+- **2026-10-28 (Task 99, for MVP3 — the team Location label):** MVP2 adds a free-text Location label to each Blueprint (US-09.3). MVP3 adds a City entity. What does MVP3 do with the label: keep it as a separate label, turn it into a City, or remove it? Settle it when MVP3 is refined.
 - **2026-10-27 (Task 78, for Task 92 — re-scorinate after the next phase starts):** Can the user re-scorinate a match of a finished phase after the next phase starts? If so, the qualifiers and seeds can change. One option: an earlier phase locks when the next phase starts. Settle it in Task 92.
 - **2026-10-19 (MVP1 Task 72 — the plural in `Imported 1 team.`):** `app/loadActions.ts` writes its own team plural. `formatTeamCount` lives in `features/components/`. Only `AppShell` in `app/` imports `features/` today, for the routes. Options: an app action imports `formatTeamCount` from `features/`, or the function moves to a lower layer, or the copy stays. Not a blocker. The copy stays until the user decides. Carried over from the MVP1 log.
 
@@ -92,6 +94,10 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-10-28 (Task 99 — the team Location label):** The user approved a free-text Location on each Blueprint as MVP2 scope (US-09.3). It is a label, not the MVP3 City. At most 40 characters, optional. It shows in the team drawer, the Teams list, the Select-teams dialog and its search, the setup Teams and Review steps, and as a tooltip in standings, group cards, and tie cards. The CSV gets an optional `Location` column. A file without it keeps the location of an updated team. JSON exports carry it. Detail in [`docs/tasks/099-team-location-label.md`](/docs/tasks/099-team-location-label.md).
+
+- **2026-10-28 (Task 90 — Region Adjacency refinement):** The user dropped US-05.1. MVP2 has no Regions, and MVP3 Location Management has the same story. The adjacency rule stays in the specs. In MVP2, the user can move teams between groups by hand (US-02.5). Detail in [`docs/tasks/090-refine-region-adjacency.md`](/docs/tasks/090-refine-region-adjacency.md).
 
 - **2026-10-28 (Task 89 — Bracket Phase refinement):** The user agreed US-04.1 to US-04.14. Key choices: a first-phase bracket seeds by a stored `Rng` draw. The tree uses the standard bracket placement (spec changed from simple seed order). "Scorinate bracket" plays only playable ties with no result, so it needs no confirm. Bye changes are allowed at any time, and after the first result a confirm clears every bracket result. A re-scorinate clears the dependent ties only. Round names "Quarter-finals", "Semi-finals". A "Winner" line. Defaults: Single match, away goals off, third place off, single-match final off. Detail in [`docs/tasks/089-refine-bracket-phase.md`](/docs/tasks/089-refine-bracket-phase.md).
 

@@ -80,9 +80,9 @@ Scoped to **league setup, before the league is started** (fixtures generated) �
 
 ### Teams Module (Blueprints) — supersedes MVP1's flat Team model
 - Teams are split into two layers:
-  - **Team Blueprint** — the reusable template, living in the global "Teams" module: Name, Colours, base Tier. Not tied to any specific league. MVP3 adds City and Crest.
+  - **Team Blueprint** — the reusable template, living in the global "Teams" module: Name, Colours, base Tier, and an optional Location label (free text, not a City). Not tied to any specific league. MVP3 adds City and Crest. *(Added on 2026-10-28, MVP2 Task 99.)*
   - **Team Instance** — the live/mutable state a blueprint gets once it's actually put into play: current OVR, current Tier, current league membership(s). In MVP2, each league is its own Instance Wrapper, with its own Instances. See MVP3 for how Instance scope is formalized around the new **Season** concept — within one Season, a blueprint has exactly one shared Instance across every league it's concurrently a member of (matches real football: a club has one strength, not one per competition).
-- The MVP1 CSV import/export (`ID/slug, Name, Colours, Tier`) is retained as-is for quick bulk list editing — it operates on Blueprints and carries no provenance metadata. MVP3 adds `City`.
+- The MVP1 CSV import/export (`ID/slug, Name, Colours, Tier`, plus an optional `Location` column) is retained for quick bulk list editing — it operates on Blueprints and carries no provenance metadata. A file with no `Location` column still imports. MVP3 adds `City`. *(Added on 2026-10-28, MVP2 Task 99.)*
 
 ### File Module (generalized)
 MVP1's single "Save/Load league" pair is replaced with scoped export/import actions:
@@ -141,6 +141,7 @@ MVP1's single "Save/Load league" pair is replaced with scoped export/import acti
 - As a user, I want a bye to auto-advance its team with a "BYE" placeholder and a disabled "Scorinate" button, so that it's visually consistent with every other tie even though there's nothing to simulate.
 
 ### Epic: Region Adjacency (Location model groundwork)
+*Not built in MVP2: Regions arrive in MVP3. See MVP3 Epic: Location Management. (Added on 2026-10-28, MVP2 Task 90.)*
 - As a user, I want to manually link two Regions as adjacent when creating or editing them, so that future grouping logic (MVP3) can favor geographically close teams.
 
 ### Epic: Single Duels Home/Away Balancing
@@ -161,6 +162,7 @@ MVP1's single "Save/Load league" pair is replaced with scoped export/import acti
 ### Epic: Teams Module (Blueprints)
 - As a user, I want a global "Teams" list of reusable Blueprints, separate from any one league, so that I can build a roster once and use it across multiple competitions.
 - As a user, I want each league to keep its own live state for a team (OVR, current Tier), apart from the Blueprint, so that a change in one league does not change the Blueprint. *(From MVP3, the leagues of one Season share one live state.)*
+- As a user, I want to give each team a free-text location, so that I can see where a team comes from when I pick teams and read results. *(Added on 2026-10-28, MVP2 Task 99.)*
 
 ### Epic: File Module (generalized export/import)
 - As a user, I want an export button on each League's Detail screen that produces a self-contained file (teams included), so that I can share or back up that one league without extra steps.

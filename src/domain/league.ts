@@ -1,4 +1,4 @@
-import type { Bye, Fixture } from '@/engine/round-robin';
+import type { Bye, Fixture, PhaseFixture } from '@/engine/round-robin';
 import type { MatchResult, PointsConfig } from '@/engine/standings';
 import type { Provenance } from './provenance';
 import type { TeamRecord } from './team';
@@ -73,13 +73,14 @@ export interface PhaseResult extends MatchResult<string> {
 
 /**
  * A two-way round-robin phase (MVP1 §1 Fixtures). The schedule comes from
- * `generateRoundRobin` when the phase starts, and `results` gets one entry
+ * `generateRoundRobin` when the phase starts, with ids from
+ * `assignFixtureIds` (Task 105), and `results` gets one entry
  * for each scorinated match. Fixtures, byes, and results name a team by its
  * Blueprint UUID (US-11.1). Points reset in each phase (US-07.1).
  */
 export interface RoundRobinPhase {
   format: 'round-robin';
-  fixtures: Fixture<string>[];
+  fixtures: PhaseFixture<string>[];
   byes: Bye<string>[];
   results: PhaseResult[];
 }

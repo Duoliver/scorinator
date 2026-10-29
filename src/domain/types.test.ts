@@ -1,5 +1,5 @@
 import { describe, expectTypeOf, it } from 'vitest';
-import type { Fixture } from '@/engine/round-robin';
+import type { PhaseFixture } from '@/engine/round-robin';
 import type { MatchResult } from '@/engine/standings';
 import type { Tier } from '@/engine/tier-ovr';
 import type {
@@ -81,8 +81,8 @@ describe('Phase (Task 77)', () => {
     expectTypeOf<Phase['format']>().toEqualTypeOf<PhaseFormat>();
   });
 
-  it('holds fixtures and results that name a team by a uuid string', () => {
-    expectTypeOf<Phase['fixtures']>().toEqualTypeOf<Fixture<string>[]>();
+  it('holds fixtures with ids, and results that name a team by a uuid string', () => {
+    expectTypeOf<Phase['fixtures']>().toEqualTypeOf<PhaseFixture<string>[]>();
     expectTypeOf<Phase['results']>().toEqualTypeOf<PhaseResult[]>();
   });
 

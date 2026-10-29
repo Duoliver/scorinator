@@ -60,7 +60,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 107 | The database folder, the installation UUID, wrappers then manifest | `adapters/tauri-fs` | ✅ Done | 2026-10-29 | 2026-10-29 | [107](/docs/tasks/107-database-folder.md) | M1. Task 76 (a, b). `createDatabaseFolder`, `openTauriDatabaseFolder`. The installation UUID moves to 108. |
 | 108 | Stores on the database: open at start, Save and Ctrl+S, unsaved snapshots, the summary row, routes by UUID | `app/` | ✅ Done | 2026-10-29 | 2026-10-29 | [108](/docs/tasks/108-database-store.md) | M1. Database store built, not wired. Actions to 160, wiring to 109. |
 | 109 | The MVP1 screens on the v2 model: Teams, the wizard, League Detail, the dashboard | `features/` | ✅ Done | 2026-10-29 | 2026-10-29 | [109](/docs/tasks/109-roster-on-blueprints.md) | M1. Roster on Blueprints, database at start. Six choices agreed. Leagues to 161. |
-| 110 | M1 smoke check | all | ⬜ Not started |  |  |  | M1. After 162. The user runs `npm run tauri:dev`. |
+| 110 | M1 smoke check | all | ✅ Done | 2026-10-29 | 2026-10-29 | [110](/docs/tasks/110-m1-smoke-check.md) | M1 complete. The user checked the real app. |
 | 111 | Tooltip, and the icon-only Button variant | `design-system/` | ⬜ Not started |  |  |  | M2. US-09.3, US-09.5, US-12.1 to 12.3. After 110. |
 | 112 | Modal, with a focus trap, and the confirm pattern | `design-system/` | ⬜ Not started |  |  |  | M2. US-04.6, 07.3, 09.4, 09.5, 10.2. After 110. |
 | 113 | Picker dialog: search, multi-select and single-select | `design-system/` | ⬜ Not started |  |  |  | M2. US-08.1, 08.5, 10.3. After 112. |

@@ -2,61 +2,47 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { FileScreen } from './FileScreen';
-import * as saveActions from '@/app/saveActions';
-import * as leagueFile from '@/app/data/leagueFile';
 import * as csvIO from '@/app/data/teamsCsv';
 import * as jsonIO from '@/app/data/teamsJson';
 import * as resultsTxtIO from '@/app/data/resultsTxt';
+import { serializeLeagueWrapper } from '@/app/data/databaseFile';
 import { useFileStore } from '@/app/state/fileStore';
-import { useLeagueStore } from '@/app/state/leagueStore';
-import type { LeagueRecord, TeamRecord } from '@/domain';
-import { openTestDatabase, teamFields } from '@/test/databaseRecords';
+import { summarizeLeague } from '@/app/state/summarizeLeague';
+import type { LeagueWrapper } from '@/domain';
+import {
+  LEAGUE,
+  OTHER_LEAGUE,
+  openTestDatabase,
+  openTestLeague,
+  roundRobinLeague,
+  teamFields,
+} from '@/test/databaseRecords';
 import { useDatabaseStore } from '@/app/state/databaseStore';
 
-const league = (overrides: Partial<LeagueRecord> = {}): LeagueRecord => ({
-  slug: 'coastal-premier',
-  name: 'Coastal Premier',
-  homeAdvantage: false,
-  points: { win: 3, draw: 1, loss: 0 },
-  teams: [
-    { slug: 'fc-united', ovr: 70 },
-    { slug: 'fc-rivals', ovr: 65 },
-  ],
-  fixtures: [{ matchday: 1, home: 'fc-united', away: 'fc-rivals' }],
-  byes: [],
-  results: [],
-  ...overrides,
-});
-
-const teams: TeamRecord[] = [
-  { slug: 'fc-united', name: 'FC United', colour: '#E53935', tier: 'B' },
-  { slug: 'fc-rivals', name: 'FC Rivals', colour: '#1E88E5', tier: 'C' },
+const TEAMS = [
+  { name: 'FC United', colour: '#E53935' },
+  { name: 'FC Rivals', colour: '#1E88E5' },
 ];
+
+const coastal = (): LeagueWrapper => roundRobinLeague(TEAMS);
+const inland = (): LeagueWrapper =>
+  roundRobinLeague(TEAMS, { uuid: OTHER_LEAGUE, name: 'Inland Cup' });
 
 beforeEach(() => {
   vi.restoreAllMocks();
   openTestDatabase([]);
-  useLeagueStore.setState({ leagues: [] });
-  useFileStore.setState({
-    currentLeagueSlug: null,
-    paths: {},
-    savedLeagues: {},
-    status: null,
-  });
+  useFileStore.setState({ status: null });
 });
 
 describe('FileScreen', () => {
-  it('shows the five cards from the design reference', () => {
+  it('shows the team cards and Export results, and no league save or load (Task 161)', () => {
     render(<FileScreen />);
 
-    for (const title of [
-      'Save league',
-      'Load league',
-      'Import teams',
-      'Export teams',
-      'Export results',
-    ]) {
+    for (const title of ['Import teams', 'Export teams', 'Export results']) {
       expect(screen.getByRole('heading', { name: title })).toBeInTheDocument();
+    }
+    for (const title of ['Save league', 'Load league']) {
+      expect(screen.queryByRole('heading', { name: title })).not.toBeInTheDocument();
     }
   });
 
@@ -64,177 +50,6 @@ describe('FileScreen', () => {
     render(<FileScreen />);
     expect(screen.getByText(/Slug, Name, Colour, Tier/)).toBeInTheDocument();
     expect(screen.queryByText(/City/)).not.toBeInTheDocument();
-  });
-
-  describe('Save league', () => {
-    it('disables Save and Save as, with a hint, when there are no leagues', () => {
-      render(<FileScreen />);
-
-      expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
-      expect(screen.getByRole('button', { name: 'Save as...' })).toBeDisabled();
-      expect(screen.getByText('No leagues to save yet.')).toBeInTheDocument();
-    });
-
-    it('saves the current league by default', async () => {
-      const save = vi.spyOn(saveActions, 'saveLeagueBySlug').mockResolvedValue(true);
-      useLeagueStore.setState({
-        leagues: [league({ slug: 'inland-cup', name: 'Inland Cup' }), league()],
-      });
-      useFileStore.setState({ currentLeagueSlug: 'coastal-premier' });
-      render(<FileScreen />);
-
-      await userEvent.click(screen.getByRole('button', { name: 'Save' }));
-
-      expect(save).toHaveBeenCalledWith('coastal-premier');
-    });
-
-    it('saves the league picked in the selector', async () => {
-      const save = vi.spyOn(saveActions, 'saveLeagueBySlug').mockResolvedValue(true);
-      useLeagueStore.setState({
-        leagues: [league({ slug: 'inland-cup', name: 'Inland Cup' }), league()],
-      });
-      useFileStore.setState({ currentLeagueSlug: 'coastal-premier' });
-      render(<FileScreen />);
-
-      await userEvent.selectOptions(screen.getByLabelText('League'), 'inland-cup');
-      await userEvent.click(screen.getByRole('button', { name: 'Save' }));
-
-      expect(save).toHaveBeenCalledWith('inland-cup');
-    });
-
-    it('falls back to the first league when there is no current one', async () => {
-      const save = vi.spyOn(saveActions, 'saveLeagueBySlug').mockResolvedValue(true);
-      useLeagueStore.setState({ leagues: [league()] });
-      render(<FileScreen />);
-
-      await userEvent.click(screen.getByRole('button', { name: 'Save' }));
-
-      expect(save).toHaveBeenCalledWith('coastal-premier');
-    });
-
-    it('Save as asks for a new file', async () => {
-      const save = vi.spyOn(saveActions, 'saveLeagueBySlug').mockResolvedValue(true);
-      useLeagueStore.setState({ leagues: [league()] });
-      render(<FileScreen />);
-
-      await userEvent.click(screen.getByRole('button', { name: 'Save as...' }));
-
-      expect(save).toHaveBeenCalledWith('coastal-premier', { saveAs: true });
-    });
-
-    it('shows the status the save left in the file store', () => {
-      useFileStore.setState({
-        status: {
-          tone: 'info',
-          message: 'Saved Coastal Premier to /saves/coastal.json',
-        },
-      });
-      render(<FileScreen />);
-
-      expect(screen.getByRole('status')).toHaveTextContent(
-        'Saved Coastal Premier to /saves/coastal.json'
-      );
-    });
-  });
-
-  describe('Load league', () => {
-    it('adds a loaded league, merges its teams into the roster, and remembers the path', async () => {
-      vi.spyOn(leagueFile, 'loadLeagueFile').mockResolvedValue({
-        path: '/saves/coastal.json',
-        league: league(),
-        teams,
-      });
-      render(<FileScreen />);
-
-      await userEvent.click(screen.getByRole('button', { name: 'Load...' }));
-
-      expect(
-        await screen.findByText('Loaded Coastal Premier from /saves/coastal.json')
-      ).toBeInTheDocument();
-      expect(useLeagueStore.getState().leagues).toEqual([league()]);
-      expect(teamFields(useDatabaseStore.getState().blueprints)).toEqual(teams);
-      expect(useFileStore.getState().paths['coastal-premier']).toBe(
-        '/saves/coastal.json'
-      );
-      expect(useFileStore.getState().currentLeagueSlug).toBe('coastal-premier');
-    });
-
-    it('changes nothing when the user cancels the open dialog', async () => {
-      vi.spyOn(leagueFile, 'loadLeagueFile').mockResolvedValue(null);
-      render(<FileScreen />);
-
-      await userEvent.click(screen.getByRole('button', { name: 'Load...' }));
-
-      expect(useLeagueStore.getState().leagues).toEqual([]);
-      expect(useFileStore.getState().status).toBeNull();
-    });
-
-    describe('when a league with the same slug is already open', () => {
-      const played = league({
-        results: [
-          {
-            matchday: 1,
-            home: 'fc-united',
-            away: 'fc-rivals',
-            homeGoals: 3,
-            awayGoals: 0,
-          },
-        ],
-      });
-
-      beforeEach(async () => {
-        useLeagueStore.setState({ leagues: [league()] });
-        vi.spyOn(leagueFile, 'loadLeagueFile').mockResolvedValue({
-          path: '/saves/coastal.json',
-          league: played,
-          teams,
-        });
-        render(<FileScreen />);
-        await userEvent.click(screen.getByRole('button', { name: 'Load...' }));
-      });
-
-      it('asks before replacing, and changes nothing yet', async () => {
-        expect(
-          await screen.findByText(/Replace "Coastal Premier"\?/)
-        ).toBeInTheDocument();
-        expect(useLeagueStore.getState().leagues).toEqual([league()]);
-      });
-
-      it('replaces the open league on Replace', async () => {
-        await userEvent.click(await screen.findByRole('button', { name: 'Replace' }));
-
-        expect(useLeagueStore.getState().leagues).toEqual([played]);
-        expect(useFileStore.getState().paths['coastal-premier']).toBe(
-          '/saves/coastal.json'
-        );
-        expect(
-          screen.queryByText(/Replace "Coastal Premier"\?/)
-        ).not.toBeInTheDocument();
-      });
-
-      it('keeps the open league on Cancel', async () => {
-        await userEvent.click(await screen.findByRole('button', { name: 'Cancel' }));
-
-        expect(useLeagueStore.getState().leagues).toEqual([league()]);
-        expect(useFileStore.getState().paths).toEqual({});
-        expect(
-          screen.queryByText(/Replace "Coastal Premier"\?/)
-        ).not.toBeInTheDocument();
-      });
-    });
-
-    it('shows an error and changes nothing when the file is not a valid save', async () => {
-      vi.spyOn(leagueFile, 'loadLeagueFile').mockRejectedValue(
-        new Error('Invalid save file: a fixture on matchday 1 names team "ghost-fc".')
-      );
-      render(<FileScreen />);
-
-      await userEvent.click(screen.getByRole('button', { name: 'Load...' }));
-
-      expect(await screen.findByText(/names team "ghost-fc"/)).toBeInTheDocument();
-      expect(useLeagueStore.getState().leagues).toEqual([]);
-      expect(teamFields(useDatabaseStore.getState().blueprints)).toEqual([]);
-    });
   });
 
   describe('Import and export teams', () => {
@@ -337,50 +152,63 @@ describe('FileScreen', () => {
       expect(screen.getByText('No leagues to export yet.')).toBeInTheDocument();
     });
 
-    it('exports the current league by default, with the team roster', async () => {
+    it('exports the first league by default', async () => {
       const exportSpy = vi
         .spyOn(resultsTxtIO, 'exportResultsTxt')
         .mockResolvedValue('/r.txt');
-      const current = league();
-      useLeagueStore.setState({
-        leagues: [league({ slug: 'inland-cup', name: 'Inland Cup' }), current],
-      });
-      openTestDatabase(teams);
-      useFileStore.setState({ currentLeagueSlug: 'coastal-premier' });
+      const first = openTestLeague(coastal());
+      openTestLeague(inland());
       render(<FileScreen />);
 
       await userEvent.click(screen.getByRole('button', { name: 'Export TXT...' }));
 
-      expect(exportSpy.mock.calls[0][0]).toEqual(current);
-      expect(teamFields(exportSpy.mock.calls[0][1])).toEqual(teams);
       expect(
         await screen.findByText('Exported Coastal Premier results to /r.txt')
       ).toBeInTheDocument();
+      expect(exportSpy.mock.calls[0][0]).toBe(first);
     });
 
     it('exports the league picked in the selector', async () => {
       const exportSpy = vi
         .spyOn(resultsTxtIO, 'exportResultsTxt')
         .mockResolvedValue('/r.txt');
-      const other = league({ slug: 'inland-cup', name: 'Inland Cup' });
-      useLeagueStore.setState({ leagues: [other, league()] });
-      openTestDatabase(teams);
-      useFileStore.setState({ currentLeagueSlug: 'coastal-premier' });
+      openTestLeague(coastal());
+      const other = openTestLeague(inland());
       render(<FileScreen />);
 
       await userEvent.selectOptions(
         screen.getByLabelText('League to export'),
-        'inland-cup'
+        OTHER_LEAGUE
       );
       await userEvent.click(screen.getByRole('button', { name: 'Export TXT...' }));
 
-      expect(exportSpy.mock.calls[0][0]).toEqual(other);
-      expect(teamFields(exportSpy.mock.calls[0][1])).toEqual(teams);
+      expect(
+        await screen.findByText('Exported Inland Cup results to /r.txt')
+      ).toBeInTheDocument();
+      expect(exportSpy.mock.calls[0][0]).toBe(other);
+    });
+
+    it('reads a league that is not open yet from the database before the export', async () => {
+      const exportSpy = vi
+        .spyOn(resultsTxtIO, 'exportResultsTxt')
+        .mockResolvedValue('/r.txt');
+      const memory = openTestDatabase([]);
+      const wrapper = coastal();
+      memory.files.wrappers[LEAGUE] = serializeLeagueWrapper(wrapper);
+      const row = summarizeLeague(wrapper);
+      useDatabaseStore.setState({ rows: [row], savedRows: [row] });
+      render(<FileScreen />);
+
+      await userEvent.click(screen.getByRole('button', { name: 'Export TXT...' }));
+
+      await screen.findByText('Exported Coastal Premier results to /r.txt');
+      expect(exportSpy.mock.calls[0][0]).toEqual(wrapper);
+      expect(useDatabaseStore.getState().leagues[LEAGUE]).toEqual(wrapper);
     });
 
     it('says so when the dialog is canceled', async () => {
       vi.spyOn(resultsTxtIO, 'exportResultsTxt').mockResolvedValue(null);
-      useLeagueStore.setState({ leagues: [league()] });
+      openTestLeague(coastal());
       render(<FileScreen />);
 
       await userEvent.click(screen.getByRole('button', { name: 'Export TXT...' }));
@@ -392,25 +220,13 @@ describe('FileScreen', () => {
       vi.spyOn(resultsTxtIO, 'exportResultsTxt').mockRejectedValue(
         new Error('Disk is full.')
       );
-      useLeagueStore.setState({ leagues: [league()] });
+      openTestLeague(coastal());
       render(<FileScreen />);
 
       await userEvent.click(screen.getByRole('button', { name: 'Export TXT...' }));
 
       expect(await screen.findByText('Disk is full.')).toBeInTheDocument();
       expect(useFileStore.getState().status?.tone).toBe('error');
-    });
-
-    it('leaves the saved path and the current league alone', async () => {
-      vi.spyOn(resultsTxtIO, 'exportResultsTxt').mockResolvedValue('/r.txt');
-      useLeagueStore.setState({ leagues: [league()] });
-      render(<FileScreen />);
-
-      await userEvent.click(screen.getByRole('button', { name: 'Export TXT...' }));
-      await screen.findByText('Exported Coastal Premier results to /r.txt');
-
-      expect(useFileStore.getState().paths).toEqual({});
-      expect(useFileStore.getState().currentLeagueSlug).toBeNull();
     });
   });
 });

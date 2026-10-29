@@ -1,44 +1,34 @@
-import { useRef } from 'preact/hooks';
+import { useMemo, useRef } from 'preact/hooks';
 import type { FieldHandle } from '@/design-system';
-import { exportResultsBySlug, exportTeams } from '@/app/exportActions';
+import { exportResults, exportTeams } from '@/app/exportActions';
 import { importTeamsFromCsv, importTeamsFromJson } from '@/app/loadActions';
-import { saveLeagueBySlug } from '@/app/saveActions';
-import { useFileStore } from '@/app/state/fileStore';
-import { useLeagueStore } from '@/app/state/leagueStore';
-import { pickDefaultLeagueSlug, toLeagueOptions } from './helpers';
+import { currentRows, useDatabaseStore } from '@/app/state/databaseStore';
+import { toLeagueOptions } from './helpers';
 import type { FileManager } from './types';
-import { useLeagueLoad } from './useLeagueLoad';
 
-/** The File screen (Task 17): save and load a league, import and export
- * team lists, and export results (Task 18). Every action reports through
- * `fileStore`'s status line, the same one Ctrl+S uses. The selectors are
- * uncontrolled, so each handler reads the picked league from its ref, or
- * else uses the default league. */
+/** The File screen (Task 17): import and export team lists, and export
+ * results (Task 18). A league saves into the database with Ctrl+S, so the
+ * screen has no league save or load until Task 149 (Task 161). Every action
+ * reports through `fileStore`'s status line. The selector is uncontrolled,
+ * so the export reads the picked league from its ref, or else uses the
+ * first league. */
 export function useFileManager(): FileManager {
-  const leagues = useLeagueStore((state) => state.leagues);
-  const currentLeagueSlug = useFileStore((state) => state.currentLeagueSlug);
-  const leagueLoad = useLeagueLoad();
+  const rows = useDatabaseStore((state) => state.rows);
+  const leagues = useDatabaseStore((state) => state.leagues);
+  const leagueRows = useMemo(() => currentRows({ rows, leagues }), [rows, leagues]);
 
-  const leagueSelect = useRef<FieldHandle<string>>(null);
   const resultsSelect = useRef<FieldHandle<string>>(null);
-  const defaultLeagueSlug = pickDefaultLeagueSlug(leagues, currentLeagueSlug);
-
-  const pickedLeague = (select: typeof leagueSelect): string =>
-    select.current?.getValue() || defaultLeagueSlug;
+  const defaultLeagueUuid = leagueRows[0]?.uuid ?? '';
 
   return {
-    ...leagueLoad,
-    hasLeagues: leagues.length > 0,
-    leagueOptions: toLeagueOptions(leagues),
-    defaultLeagueSlug,
-    leagueSelect,
+    hasLeagues: leagueRows.length > 0,
+    leagueOptions: toLeagueOptions(leagueRows),
+    defaultLeagueUuid,
     resultsSelect,
-    handleSave: (): void => void saveLeagueBySlug(pickedLeague(leagueSelect)),
-    handleSaveAs: (): void =>
-      void saveLeagueBySlug(pickedLeague(leagueSelect), { saveAs: true }),
     handleImportCsv: importTeamsFromCsv,
     handleImportJson: importTeamsFromJson,
     handleExportTeams: exportTeams,
-    handleExportResults: () => exportResultsBySlug(pickedLeague(resultsSelect)),
+    handleExportResults: () =>
+      exportResults(resultsSelect.current?.getValue() || defaultLeagueUuid),
   };
 }

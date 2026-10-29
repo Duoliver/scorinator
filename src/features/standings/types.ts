@@ -1,11 +1,11 @@
 import type { StandingsRow } from '@/engine/standings';
-import type { LeagueRecord } from '@/domain';
+import type { LeagueWrapper } from '@/domain';
 
 export default interface StandingsViewProps {
-  league: LeagueRecord;
+  league: LeagueWrapper;
 }
 
-/** One standings row, with the roster name and colour of its team. */
+/** One standings row, with the Instance name and colour of its team. */
 export interface StandingsViewRow extends StandingsRow<string> {
   teamName: string;
   teamColour: string;

@@ -1,7 +1,9 @@
 import { useState } from 'preact/hooks';
-import { findCurrentMatchday } from '@/engine/round-robin';
+import { findPhaseCurrentMatchday } from '@/engine/round-robin';
+import { findCurrentPhase } from '@/app/state/currentPhase';
 import type FixturesViewProps from './types';
 import type { MatchdayNav } from './types';
+import { EMPTY_PHASE } from './helpers';
 
 /** The visible matchday and the header's jump buttons. The matchday is
  * local state, seeded from `initialMatchday`, and each change goes to
@@ -12,6 +14,7 @@ export function useMatchdayNav({
   onMatchdayChange,
 }: FixturesViewProps): MatchdayNav {
   const [matchday, setMatchday] = useState(initialMatchday);
+  const phase = findCurrentPhase(league) ?? EMPTY_PHASE;
 
   const goTo = (next: number): void => {
     setMatchday(next);
@@ -20,11 +23,11 @@ export function useMatchdayNav({
 
   const totalMatchdays = Math.max(
     0,
-    ...league.fixtures.map((fixture) => fixture.matchday),
-    ...league.byes.map((bye) => bye.matchday)
+    ...phase.fixtures.map((fixture) => fixture.matchday),
+    ...phase.byes.map((bye) => bye.matchday)
   );
   // `undefined` means every match has a result: the league is completed.
-  const currentMatchday = findCurrentMatchday(league.fixtures, league.results);
+  const currentMatchday = findPhaseCurrentMatchday(phase.fixtures, phase.results);
 
   return {
     matchday,

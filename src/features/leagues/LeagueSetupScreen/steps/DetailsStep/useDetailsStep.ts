@@ -8,7 +8,7 @@ import type { DetailsStepHandle, DetailsStepState } from './types';
 import { parsePoints } from './helpers';
 
 export function useDetailsStep(
-  { initial, takenSlugs = [] }: Pick<DetailsStepProps, 'initial' | 'takenSlugs'>,
+  { initial }: Pick<DetailsStepProps, 'initial'>,
   ref: ForwardedRef<DetailsStepHandle>
 ): DetailsStepState {
   const nameRef = useRef<FieldHandle<string>>(null);
@@ -16,8 +16,8 @@ export function useDetailsStep(
   const drawRef = useRef<FieldHandle<string>>(null);
   const lossRef = useRef<FieldHandle<string>>(null);
   const homeAdvantageRef = useRef<FieldHandle<boolean>>(null);
-  // Next stays off while the name has a problem (invalid, or taken by an
-  // open league), so such a league never reaches Review through Next. The
+  // Next stays off while the name has no letter or number, so such a
+  // league never reaches Review through Next. The
   // field stays uncontrolled: this copy of the name only feeds the check.
   const [name, setName] = useState(initial.name);
 
@@ -50,7 +50,7 @@ export function useDetailsStep(
       loss: String(initial.points.loss),
       homeAdvantage: initial.homeAdvantage,
     },
-    nameProblem: leagueNameProblem(name, takenSlugs),
+    nameProblem: leagueNameProblem(name),
     handleNameChange: setName,
   };
 }

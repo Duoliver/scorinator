@@ -11,9 +11,9 @@ import { getErrorMessage } from '@/app/getErrorMessage';
 import { cryptoRandomBytes } from '@/app/random';
 import {
   currentRows,
-  isLeagueUnsaved,
   isManifestUnsaved,
   requireOpenDatabase,
+  unsavedLeagues,
   useDatabaseStore,
 } from './databaseStore';
 
@@ -95,9 +95,7 @@ export async function saveDatabase(): Promise<void> {
   const state = useDatabaseStore.getState();
   const { folder, installationUuid } = requireOpenDatabase(state);
 
-  const leagues = Object.values(state.leagues).filter((wrapper) =>
-    isLeagueUnsaved(state, wrapper.uuid)
-  );
+  const leagues = unsavedLeagues(state);
   const manifestUnsaved = isManifestUnsaved(state);
   if (leagues.length === 0 && !manifestUnsaved) return;
 

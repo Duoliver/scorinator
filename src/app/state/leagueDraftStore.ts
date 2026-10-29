@@ -25,8 +25,8 @@ export function emptyLeagueDraft(): LeagueDraft {
 }
 
 /** The League Setup wizard's in-progress, not-yet-created state. Kept apart
- * from `leagueStore` (the committed leagues list) on purpose — this is a
- * draft, not a `LeagueRecord`. Exists so `LeagueSetupScreen` can unmount and
+ * from the leagues of `databaseStore` on purpose — this is a draft, not a
+ * `LeagueWrapper`. Exists so `LeagueSetupScreen` can unmount and
  * remount, as `preact-router` does on every nav switch, without losing what
  * the user was in the middle of entering.
  *

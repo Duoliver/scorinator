@@ -1,7 +1,7 @@
 import type { RefObject } from 'preact';
 import type { FieldHandle } from '@/design-system';
 import type { LeagueDraftDetails, LeagueSetupStep } from '@/app/state/leagueDraftStore';
-import type { TeamRecord } from '@/domain';
+import type { TeamBlueprint } from '@/domain';
 import type { DetailsStepHandle } from '@/features/leagues/LeagueSetupScreen/steps/DetailsStep';
 
 /** What `useTeamSelection` gives: the teams picked on the Teams step, and
@@ -19,8 +19,7 @@ export interface TeamSelection {
 export interface LeagueSetup extends TeamSelection {
   step: LeagueSetupStep;
   details: LeagueDraftDetails;
-  takenSlugs: string[];
-  selectedTeams: TeamRecord[];
+  selectedTeams: TeamBlueprint[];
   /** The message of the last failed create, shown under the steps. */
   status: string | null;
   stepsRef: RefObject<FieldHandle<string>>;

@@ -1,23 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { exportResultsBySlug, exportTeams } from './exportActions';
+import { exportResults, exportTeams } from './exportActions';
 import * as resultsTxt from '@/app/data/resultsTxt';
 import * as teamsCsv from '@/app/data/teamsCsv';
 import { useFileStore } from '@/app/state/fileStore';
-import { useLeagueStore } from '@/app/state/leagueStore';
-import type { LeagueRecord, TeamRecord } from '@/domain';
-import { openTestDatabase, teamFields } from '@/test/databaseRecords';
-
-const league = (overrides: Partial<LeagueRecord> = {}): LeagueRecord => ({
-  slug: 'coastal-premier',
-  name: 'Coastal Premier',
-  homeAdvantage: false,
-  points: { win: 3, draw: 1, loss: 0 },
-  teams: [],
-  fixtures: [],
-  byes: [],
-  results: [],
-  ...overrides,
-});
+import type { TeamRecord } from '@/domain';
+import {
+  LEAGUE,
+  openTestDatabase,
+  openTestLeague,
+  roundRobinLeague,
+  teamFields,
+} from '@/test/databaseRecords';
 
 const team: TeamRecord = {
   slug: 'fc-united',
@@ -28,14 +21,8 @@ const team: TeamRecord = {
 
 beforeEach(() => {
   vi.restoreAllMocks();
-  useLeagueStore.setState({ leagues: [league()] });
   openTestDatabase([team]);
-  useFileStore.setState({
-    currentLeagueSlug: 'coastal-premier',
-    paths: {},
-    savedLeagues: {},
-    status: null,
-  });
+  useFileStore.setState({ status: null });
 });
 
 describe('exportTeams', () => {
@@ -87,36 +74,40 @@ describe('exportTeams', () => {
   });
 });
 
-describe('exportResultsBySlug', () => {
-  it('exports the league with the roster and reports the path', async () => {
+describe('exportResults', () => {
+  const coastal = (): ReturnType<typeof roundRobinLeague> =>
+    openTestLeague(roundRobinLeague([{ name: 'FC United', colour: '#E53935' }]));
+
+  it('exports the league and reports the path', async () => {
+    const league = coastal();
     const write = vi.spyOn(resultsTxt, 'exportResultsTxt').mockResolvedValue('/r.txt');
 
-    await exportResultsBySlug('coastal-premier');
+    await exportResults(LEAGUE);
 
-    expect(write.mock.calls[0][0]).toEqual(league());
-    expect(teamFields(write.mock.calls[0][1])).toEqual([team]);
+    expect(write.mock.calls[0][0]).toBe(league);
     expect(useFileStore.getState().status).toEqual({
       tone: 'info',
       message: 'Exported Coastal Premier results to /r.txt',
     });
   });
 
-  it('reports an unknown slug and writes nothing', async () => {
+  it('reports an unknown league and writes nothing', async () => {
     const write = vi.spyOn(resultsTxt, 'exportResultsTxt');
 
-    await exportResultsBySlug('no-such-league');
+    await exportResults('no-such-league');
 
     expect(write).not.toHaveBeenCalled();
     expect(useFileStore.getState().status).toEqual({
       tone: 'error',
-      message: 'Cannot export: league "no-such-league" was not found.',
+      message: 'Cannot export: the league was not found.',
     });
   });
 
   it('reports a canceled dialog', async () => {
+    coastal();
     vi.spyOn(resultsTxt, 'exportResultsTxt').mockResolvedValue(null);
 
-    await exportResultsBySlug('coastal-premier');
+    await exportResults(LEAGUE);
 
     expect(useFileStore.getState().status).toEqual({
       tone: 'info',
@@ -125,9 +116,10 @@ describe('exportResultsBySlug', () => {
   });
 
   it('reports an error and does not throw', async () => {
+    coastal();
     vi.spyOn(resultsTxt, 'exportResultsTxt').mockRejectedValue(new Error('No access.'));
 
-    await exportResultsBySlug('coastal-premier');
+    await exportResults(LEAGUE);
 
     expect(useFileStore.getState().status).toEqual({
       tone: 'error',

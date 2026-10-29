@@ -1,19 +1,23 @@
 import { findPhaseCurrentMatchday } from '@/engine/round-robin';
 import type { LeagueProgress, LeagueWrapper, WrapperSummary } from '@/domain';
+import { findCurrentPhase } from './currentPhase';
 
-/** Where a league stands. In M1 the current phase is the last phase of the
- * league. Task 128 changes this rule, when phases start one by one. A phase
- * with no unplayed fixture, or no phase at all, counts as completed. */
+/** Where a league stands, in its current phase (`findCurrentPhase`). A
+ * phase with no unplayed fixture, or no phase at all, counts as completed. */
 function progressOf(wrapper: LeagueWrapper): LeagueProgress {
-  const { phases } = wrapper.content;
-  const current = phases[phases.length - 1];
+  const current = findCurrentPhase(wrapper);
   if (!current) return { kind: 'completed' };
 
   const matchday = findPhaseCurrentMatchday(current.fixtures, current.results);
   if (matchday === undefined) return { kind: 'completed' };
 
   const matchdays = Math.max(...current.fixtures.map((fixture) => fixture.matchday));
-  return { kind: 'phase', phase: phases.length, matchday, matchdays };
+  return {
+    kind: 'phase',
+    phase: wrapper.content.phases.indexOf(current) + 1,
+    matchday,
+    matchdays,
+  };
 }
 
 /** The manifest row of one league, for its dashboard card (Task 76 d). The

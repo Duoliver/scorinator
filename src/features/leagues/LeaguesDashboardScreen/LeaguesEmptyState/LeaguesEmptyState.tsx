@@ -4,19 +4,17 @@ import { ROUTES } from '@/app/routes';
 import { useLeaguesEmptyState } from './useLeaguesEmptyState';
 import styles from './LeaguesEmptyState.module.css';
 
-/** What the Leagues start screen shows with no leagues (Task 29): the four
- * ways to begin, in a Teams group and a League group. */
+/** What the Leagues start screen shows with no leagues (Task 29): the ways
+ * to begin, in a Teams group and a League group. */
 export function LeaguesEmptyState(): JSX.Element {
-  const { handleLoadTeams, handleLoadLeague } = useLeaguesEmptyState();
+  const { handleLoadTeams } = useLeaguesEmptyState();
 
   return (
     <Card padding="lg">
       <div class={styles.empty}>
         <div>
           <h2 class={styles.title}>No leagues yet.</h2>
-          <p class={styles.text}>
-            A league needs teams. Create or load teams first, or load a saved league.
-          </p>
+          <p class={styles.text}>A league needs teams. Create or load teams first.</p>
         </div>
         <div class={styles.groups}>
           <div class={styles.group}>
@@ -35,9 +33,6 @@ export function LeaguesEmptyState(): JSX.Element {
             <div class={styles.actions}>
               <Button href={ROUTES.leaguesNew} variant="primary" size="md">
                 Create league
-              </Button>
-              <Button variant="secondary" size="md" onClick={handleLoadLeague}>
-                Load league...
               </Button>
             </div>
           </div>

@@ -11,7 +11,7 @@ export const NAV_ITEMS: NavItem[] = [
 /** The start screen (Task 29). It also renders for any unmatched path. */
 export const DEFAULT_PATH = ROUTES.leaguesDashboard;
 
-/** A League Detail URL (`/leagues/<slug>`) never exact-matches
+/** A League Detail URL (`/leagues/<uuid>`) never exact-matches
  * `ROUTES.leaguesNew`, so the `Leagues` nav item needs a prefix check
  * instead — otherwise it would go dark while the user is still, in every
  * real sense, inside the Leagues section. */

@@ -1,17 +1,8 @@
-import {
-  applyLoadedLeague,
-  importTeamsFromFile,
-  openLeagueFile,
-} from '@/app/loadActions';
+import { importTeamsFromFile } from '@/app/loadActions';
 import type { LeaguesEmptyStateHandlers } from './types';
 
+/** The empty state loads teams only. A league lives in the database, and
+ * Task 149 (M5) adds the league import (Task 161). */
 export function useLeaguesEmptyState(): LeaguesEmptyStateHandlers {
-  // With no league open, a loaded league cannot replace one, so this needs
-  // no confirm step, unlike the File screen.
-  const handleLoadLeague = async (): Promise<void> => {
-    const loaded = await openLeagueFile();
-    if (loaded !== null) applyLoadedLeague(loaded);
-  };
-
-  return { handleLoadTeams: importTeamsFromFile, handleLoadLeague };
+  return { handleLoadTeams: importTeamsFromFile };
 }

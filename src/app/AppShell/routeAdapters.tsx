@@ -28,11 +28,11 @@ export function FileRoute(_props: RoutableProps): JSX.Element {
 }
 
 /** Unlike the adapters above, this one does carry a real prop across:
- * `slug`, the one param `preact-router` injects for `ROUTES.leagueDetail`
- * (`/leagues/:slug`) and the one piece of routing information
+ * `uuid`, the one param `preact-router` injects for `ROUTES.leagueDetail`
+ * (`/leagues/:uuid`) and the one piece of routing information
  * `LeagueDetailScreen` actually needs. */
 export function LeagueDetailRoute(
-  props: RoutableProps & { slug?: string }
+  props: RoutableProps & { uuid?: string }
 ): JSX.Element {
-  return <LeagueDetailScreen slug={props.slug ?? ''} />;
+  return <LeagueDetailScreen uuid={props.uuid ?? ''} />;
 }

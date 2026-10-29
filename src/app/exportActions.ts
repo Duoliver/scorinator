@@ -1,14 +1,14 @@
 import { exportResultsTxt } from '@/app/data/resultsTxt';
 import { exportTeamsCsv } from '@/app/data/teamsCsv';
 import { getErrorMessage } from '@/app/getErrorMessage';
+import { openLeague } from '@/app/state/databaseActions';
+import { currentRows, useDatabaseStore } from '@/app/state/databaseStore';
 import { setFileStatus } from '@/app/state/fileActions';
-import { findLeague, useLeagueStore } from '@/app/state/leagueStore';
-import { useDatabaseStore } from '@/app/state/databaseStore';
 
 /** The export actions of the File screen, the same shape as
  * `saveActions.ts` and `loadActions.ts`. Each one reports through
- * `fileStore`'s status line and never throws. An export leaves the saved
- * path and the current league alone, since an export is not a save file. */
+ * `fileStore`'s status line and never throws. An export is not a save, so
+ * it changes no unsaved marker. */
 
 /** Writes every Blueprint to a team CSV file. */
 export async function exportTeams(): Promise<void> {
@@ -23,24 +23,28 @@ export async function exportTeams(): Promise<void> {
   }
 }
 
-/** Writes the plain-text results summary of one league (Task 18). */
-export async function exportResultsBySlug(slug: string): Promise<void> {
-  const league = findLeague(useLeagueStore.getState().leagues, slug);
-  if (!league) {
+/** Writes the plain-text results summary of one league (Task 18). A league
+ * that is not open yet is read from the database first (Task 161). */
+export async function exportResults(uuid: string): Promise<void> {
+  const known = currentRows(useDatabaseStore.getState()).some(
+    (row) => row.uuid === uuid
+  );
+  if (!known) {
     setFileStatus({
       tone: 'error',
-      message: `Cannot export: league "${slug}" was not found.`,
+      message: 'Cannot export: the league was not found.',
     });
     return;
   }
   try {
-    const path = await exportResultsTxt(league, useDatabaseStore.getState().blueprints);
+    const league = await openLeague(uuid);
+    const path = await exportResultsTxt(league);
     setFileStatus({
       tone: 'info',
       message:
         path === null
           ? 'Export canceled.'
-          : `Exported ${league.name} results to ${path}`,
+          : `Exported ${league.content.name} results to ${path}`,
     });
   } catch (error) {
     setFileStatus({ tone: 'error', message: getErrorMessage(error) });

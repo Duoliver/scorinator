@@ -20,8 +20,7 @@ export type DatabaseStatus =
  * `rows` are the rows as the manifest file holds them. The row of an opened
  * league comes from the league itself (`currentRows`).
  *
- * State only. The actions that change it live in `databaseActions.ts`. The
- * MVP1 stores stay until Task 109.
+ * State only. The actions that change it live in `databaseActions.ts`.
  */
 export interface DatabaseState {
   status: DatabaseStatus;
@@ -68,7 +67,9 @@ export function requireOpenDatabase(state: DatabaseState): {
 
 /** The manifest rows as they are now: the row of each opened league comes
  * from the league, and a new league adds its row at the end. */
-export function currentRows(state: DatabaseState): WrapperSummary[] {
+export function currentRows(
+  state: Pick<DatabaseState, 'rows' | 'leagues'>
+): WrapperSummary[] {
   const known = new Set(state.rows.map((row) => row.uuid));
   const rows = state.rows.map((row) => {
     const opened = state.leagues[row.uuid];
@@ -89,7 +90,10 @@ function sameRows(a: readonly WrapperSummary[], b: readonly WrapperSummary[]): b
 /** True when the opened league is not the object last opened or saved. A
  * new league with no snapshot is unsaved. A league that is not open is
  * not unsaved. */
-export function isLeagueUnsaved(state: DatabaseState, uuid: string): boolean {
+export function isLeagueUnsaved(
+  state: Pick<DatabaseState, 'leagues' | 'savedLeagues'>,
+  uuid: string
+): boolean {
   const league = state.leagues[uuid];
   return league !== undefined && state.savedLeagues[uuid] !== league;
 }
@@ -103,4 +107,16 @@ export function areBlueprintsUnsaved(state: DatabaseState): boolean {
 /** True for a Blueprint change, a new league, or a changed row. */
 export function isManifestUnsaved(state: DatabaseState): boolean {
   return areBlueprintsUnsaved(state) || !sameRows(currentRows(state), state.savedRows);
+}
+
+/** The opened leagues with unsaved changes, in the order they were opened. */
+export function unsavedLeagues(state: DatabaseState): LeagueWrapper[] {
+  return Object.values(state.leagues).filter((wrapper) =>
+    isLeagueUnsaved(state, wrapper.uuid)
+  );
+}
+
+/** True when a save has something to write: a league or the manifest. */
+export function isDatabaseUnsaved(state: DatabaseState): boolean {
+  return isManifestUnsaved(state) || unsavedLeagues(state).length > 0;
 }

@@ -11,6 +11,7 @@ import type { PointsConfig } from '@/engine/standings';
 import { rollOVR } from '@/engine/tier-ovr';
 import type { LeagueWrapper, Phase, PhaseResult, TeamInstance } from '@/domain';
 import { cryptoRandomBytes } from '@/app/random';
+import { findCurrentPhase } from './currentPhase';
 import { requireOpenDatabase, useDatabaseStore } from './databaseStore';
 
 /** What it takes to create a league (US-08.8). The OVR rolls at create in
@@ -114,7 +115,7 @@ function playFixture(
 }
 
 /**
- * Changes the current phase of an open league: in M1, its last phase. The
+ * Changes the current phase of an open league (`findCurrentPhase`). The
  * `change` returns the same phase for "no change", and then nothing happens.
  * A real change stamps the league with the local installation (Task 108).
  */
@@ -127,18 +128,18 @@ function changeCurrentPhase(
   const wrapper = state.leagues[leagueUuid];
   if (!wrapper) throw new RangeError(`No open league has the UUID ${leagueUuid}.`);
 
+  const current = findCurrentPhase(wrapper);
+  if (!current) return;
+  const phase = change(current, wrapper);
+  if (phase === current) return;
   const { phases } = wrapper.content;
-  const index = phases.length - 1;
-  if (index < 0) return;
-  const phase = change(phases[index], wrapper);
-  if (phase === phases[index]) return;
 
   const changed: LeagueWrapper = {
     ...wrapper,
     content: {
       ...wrapper.content,
       lastModifiedByInstallation: installationUuid,
-      phases: phases.map((candidate, i) => (i === index ? phase : candidate)),
+      phases: phases.map((candidate) => (candidate === current ? phase : candidate)),
     },
   };
   useDatabaseStore.setState((now) => ({

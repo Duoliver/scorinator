@@ -1,2 +1,2 @@
 export { LeagueList } from './LeagueList';
-export type { LeagueListProps } from './LeagueList';
+export type { LeagueCard, LeagueListProps } from './LeagueList';

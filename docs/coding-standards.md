@@ -78,10 +78,11 @@ features/standings/
 
 ```tsx
 // features/standings/useStandings.ts
-export function useStandings(league: LeagueRecord): Standings {
-  const lookupTeam = useTeamLookup();
+export function useStandings(league: LeagueWrapper): Standings {
+  const lookupTeam = useTeamLookup(league.teams);
+  const results = findCurrentPhase(league)?.results ?? [];
   const rows = useMemo(() => /* calculateStandings + team names */, [league, lookupTeam]);
-  return { rows, hasTeams: league.teams.length > 0, hasResults: league.results.length > 0 };
+  return { rows, hasTeams: league.teams.length > 0, hasResults: results.length > 0 };
 }
 
 // features/standings/helpers.tsx
@@ -227,7 +228,7 @@ A `style` prop is acceptable only for a value your code computes at runtime from
 
 ## Start a function name with a verb in the imperative
 
-Name a function, or a method, for the action it does. Start the name with a verb in the imperative: `getErrorMessage`, `findLeague`, `addTeam`, `saveLeagueBySlug`. A noun name such as `errorMessage` reads like a value, not a call.
+Name a function, or a method, for the action it does. Start the name with a verb in the imperative: `getErrorMessage`, `findCurrentPhase`, `addTeamBlueprint`, `saveDatabaseChanges`. A noun name such as `errorMessage` reads like a value, not a call.
 
 - **`get` or `find`:** use `get` when the function always gives a value. Use `find` when it can give `undefined`, as `findLeague` does for an unknown slug.
 - **A function that gives a boolean** starts with `is`, `has`, or `can`: `isLeagueUnsaved`, `isTier`.

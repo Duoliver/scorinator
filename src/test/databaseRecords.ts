@@ -1,5 +1,7 @@
+import { assignFixtureIds, generateRoundRobin } from '@/engine/round-robin';
 import type { LeagueWrapper, PhaseResult, TeamBlueprint, TeamInstance } from '@/domain';
 import { useDatabaseStore } from '@/app/state/databaseStore';
+import { summarizeLeague } from '@/app/state/summarizeLeague';
 import type { DatabaseFolder, WrapperText } from '@/persistence/types';
 
 /** Test data for the v2 database records (Task 108). Fixed UUIDs, so the
@@ -166,4 +168,66 @@ export function teamFields(
     colour,
     tier,
   }));
+}
+
+/**
+ * A league with one Instance for each team, and phase 1 built as
+ * `createLeague` builds it, with no results (Task 161). Team n gets the
+ * Blueprint UUID `testUuid(n)`, the slug `team-n`, Tier B, and OVR 70. The
+ * schedule has no shuffle, so a test can predict it.
+ */
+export function roundRobinLeague(
+  teams: readonly Pick<TeamInstance, 'name' | 'colour'>[],
+  overrides: Partial<
+    Pick<LeagueWrapper['content'], 'name' | 'homeAdvantage' | 'points'>
+  > & {
+    uuid?: string;
+  } = {}
+): LeagueWrapper {
+  const { uuid = LEAGUE, ...details } = overrides;
+  const instances = teams.map((team, index): TeamInstance => ({
+    blueprintUuid: testUuid(index + 1),
+    slug: `team-${index + 1}`,
+    name: team.name,
+    colour: team.colour,
+    tier: 'B',
+    ovr: 70,
+  }));
+  const uuids = instances.map((team) => team.blueprintUuid);
+  const schedule =
+    uuids.length >= 2 ? generateRoundRobin(uuids) : { fixtures: [], byes: [] };
+  return {
+    uuid,
+    teams: instances,
+    content: {
+      uuid,
+      name: 'Coastal Premier',
+      homeAdvantage: false,
+      points: { win: 3, draw: 1, loss: 0 },
+      ...provenance,
+      ...details,
+      phases: [
+        {
+          format: 'round-robin',
+          fixtures: assignFixtureIds(schedule.fixtures, { phase: 1, group: 1 }),
+          byes: schedule.byes,
+          results: [],
+        },
+      ],
+    },
+  };
+}
+
+/** Puts one league in the open test database, as `openLeague` leaves it:
+ * opened, with its manifest row, and nothing unsaved. Call
+ * `openTestDatabase` first. */
+export function openTestLeague(wrapper: LeagueWrapper): LeagueWrapper {
+  const row = summarizeLeague(wrapper);
+  useDatabaseStore.setState((state) => ({
+    leagues: { ...state.leagues, [wrapper.uuid]: wrapper },
+    savedLeagues: { ...state.savedLeagues, [wrapper.uuid]: wrapper },
+    rows: [...state.rows, row],
+    savedRows: [...state.savedRows, row],
+  }));
+  return wrapper;
 }

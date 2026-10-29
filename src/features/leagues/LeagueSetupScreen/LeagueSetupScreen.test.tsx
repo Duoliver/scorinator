@@ -1,14 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { addLeague } from '@/app/state/leagueActions';
 import { cleanup, render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { route } from 'preact-router';
 import { LeagueSetupScreen } from './LeagueSetupScreen';
-import { useLeagueStore } from '@/app/state/leagueStore';
 import { useLeagueDraftStore } from '@/app/state/leagueDraftStore';
 import { TIER_OVR_RANGES } from '@/engine/tier-ovr';
 import { DEFAULT_POINTS_CONFIG } from '@/engine/standings';
-import { openTestDatabase } from '@/test/databaseRecords';
+import { useDatabaseStore } from '@/app/state/databaseStore';
+import { openTestDatabase, testUuid } from '@/test/databaseRecords';
 
 vi.mock('preact-router', () => ({ route: vi.fn() }));
 
@@ -18,7 +17,6 @@ beforeEach(() => {
     { slug: 'fc-united', name: 'FC United', colour: '#E53935', tier: 'B' },
     { slug: 'harborview-sc', name: 'Harborview SC', colour: '#1E88E5', tier: 'A' },
   ]);
-  useLeagueStore.setState({ leagues: [] });
   useLeagueDraftStore.setState({
     details: { name: '', points: DEFAULT_POINTS_CONFIG, homeAdvantage: false },
     selectedSlugs: [],
@@ -43,13 +41,22 @@ describe('LeagueSetupScreen', () => {
 
     await userEvent.click(screen.getByText('Create league'));
 
-    const [league] = useLeagueStore.getState().leagues;
-    expect(league.name).toBe('Coastal Premier');
-    expect(league.homeAdvantage).toBe(true);
-    expect(league.teams).toEqual([{ slug: 'fc-united', ovr: expect.any(Number) }]);
+    const [league] = Object.values(useDatabaseStore.getState().leagues);
+    expect(league.content.name).toBe('Coastal Premier');
+    expect(league.content.homeAdvantage).toBe(true);
+    expect(league.teams).toEqual([
+      {
+        blueprintUuid: testUuid(1),
+        slug: 'fc-united',
+        name: 'FC United',
+        colour: '#E53935',
+        tier: 'B',
+        ovr: expect.any(Number),
+      },
+    ]);
     expect(league.teams[0].ovr).toBeGreaterThanOrEqual(TIER_OVR_RANGES.B.min);
     expect(league.teams[0].ovr).toBeLessThanOrEqual(TIER_OVR_RANGES.B.max);
-    expect(route).toHaveBeenCalledWith(`/leagues/${league.slug}`);
+    expect(route).toHaveBeenCalledWith(`/leagues/${league.uuid}`);
   });
 
   it('does not create a league or navigate when the name is symbols-only', async () => {
@@ -64,7 +71,7 @@ describe('LeagueSetupScreen', () => {
     await userEvent.click(screen.getByText('Create league'));
 
     expect(route).not.toHaveBeenCalled();
-    expect(useLeagueStore.getState().leagues).toEqual([]);
+    expect(useDatabaseStore.getState().leagues).toEqual({});
     expect(
       screen.getByText('Enter a league name with at least one letter or number.')
     ).toBeInTheDocument();
@@ -150,46 +157,32 @@ describe('LeagueSetupScreen', () => {
     await userEvent.click(screen.getByText('Create league'));
 
     expect(route).not.toHaveBeenCalled();
-    expect(useLeagueStore.getState().leagues).toEqual([]);
+    expect(useDatabaseStore.getState().leagues).toEqual({});
     expect(
       screen.getByText('Enter a league name with at least one letter or number.')
     ).toBeInTheDocument();
   });
 
-  describe('a second league with the same slug (Task 40)', () => {
-    beforeEach(() => {
-      addLeague({
-        name: 'Coastal Premier',
-        homeAdvantage: false,
-        points: DEFAULT_POINTS_CONFIG,
-        teams: [],
-      });
-    });
-
-    it('blocks Next on page 1 and says why', async () => {
-      render(<LeagueSetupScreen />);
-      await userEvent.type(screen.getByLabelText('League name'), 'coastal premier!');
-
-      expect(screen.getByText('Next: Teams →')).toBeDisabled();
-      expect(
-        screen.getByText('A league with this name already exists.')
-      ).toBeInTheDocument();
-    });
-
-    it('creates nothing when the step tabs reach Create', async () => {
+  it('creates a second league with a name that another league uses (Task 160)', async () => {
+    const create = async (): Promise<void> => {
       render(<LeagueSetupScreen />);
       await userEvent.type(screen.getByLabelText('League name'), 'Coastal Premier');
-      await userEvent.click(screen.getByRole('tab', { name: '2 · Teams' }));
+      await userEvent.click(screen.getByText('Next: Teams →'));
       await userEvent.click(screen.getByLabelText('FC United'));
-      await userEvent.click(screen.getByRole('tab', { name: '3 · Review' }));
+      await userEvent.click(screen.getByText('Next: Review →'));
       await userEvent.click(screen.getByText('Create league'));
+      cleanup();
+    };
 
-      expect(route).not.toHaveBeenCalled();
-      expect(useLeagueStore.getState().leagues).toHaveLength(1);
-      expect(
-        screen.getByText('A league with this name already exists.')
-      ).toBeInTheDocument();
-    });
+    await create();
+    await create();
+
+    const leagues = Object.values(useDatabaseStore.getState().leagues);
+    expect(leagues.map((league) => league.content.name)).toEqual([
+      'Coastal Premier',
+      'Coastal Premier',
+    ]);
+    expect(leagues[0].uuid).not.toBe(leagues[1].uuid);
   });
 
   it('shows the name and settings from the Details step at the top of the Teams step', async () => {

@@ -2,7 +2,7 @@ import type { JSX } from 'preact';
 import { Router } from 'preact-router';
 import { StatusLine } from '@/features/components';
 import { ROUTES } from '@/app/routes';
-import { NAV_ITEMS, isNavItemActive } from './helpers';
+import { NAV_ITEMS, databaseNote, isNavItemActive } from './helpers';
 import {
   FileRoute,
   LeagueDetailRoute,
@@ -14,7 +14,9 @@ import { useAppShell } from './useAppShell';
 import styles from './AppShell.module.css';
 
 export function AppShell(): JSX.Element {
-  const { activePath, handleRouteChange, handleNavClick } = useAppShell();
+  const { activePath, databaseStatus, handleRouteChange, handleNavClick } =
+    useAppShell();
+  const note = databaseNote(databaseStatus);
 
   return (
     <div class={styles.shell}>
@@ -35,13 +37,22 @@ export function AppShell(): JSX.Element {
         {activePath !== ROUTES.file && <StatusLine placement="sidebar" />}
       </nav>
       <div class={styles.content}>
-        <Router onChange={handleRouteChange}>
-          <TeamsRoute path={ROUTES.teams} />
-          <FileRoute path={ROUTES.file} />
-          <LeagueSetupRoute path={ROUTES.leaguesNew} />
-          <LeaguesDashboardRoute path={ROUTES.leaguesDashboard} default />
-          <LeagueDetailRoute path={ROUTES.leagueDetail} />
-        </Router>
+        {note !== null ? (
+          <p
+            class={styles.databaseNote}
+            role={databaseStatus.kind === 'error' ? 'alert' : 'status'}
+          >
+            {note}
+          </p>
+        ) : (
+          <Router onChange={handleRouteChange}>
+            <TeamsRoute path={ROUTES.teams} />
+            <FileRoute path={ROUTES.file} />
+            <LeagueSetupRoute path={ROUTES.leaguesNew} />
+            <LeaguesDashboardRoute path={ROUTES.leaguesDashboard} default />
+            <LeagueDetailRoute path={ROUTES.leagueDetail} />
+          </Router>
+        )}
       </div>
     </div>
   );

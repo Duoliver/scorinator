@@ -1,59 +1,59 @@
-import { findResult, isMatchdayFullyPlayed, matchKey } from '@/engine/round-robin';
+import { findPhaseResult, isPhaseMatchdayPlayed } from '@/engine/round-robin';
+import { findCurrentPhase } from '@/app/state/currentPhase';
 import {
   rescorinateFixture,
   scorinateFixture,
   scorinateMatchday,
-} from '@/app/state/leagueActions';
+} from '@/app/state/leagueWrapperActions';
 import { useTeamLookup } from '@/features/components';
 import type FixturesViewProps from './types';
 import type { FixtureRow, Fixtures } from './types';
+import { EMPTY_PHASE } from './helpers';
 import { useMatchdayNav } from './useMatchdayNav';
 import { useScoreFlash } from './useScoreFlash';
 
-/** The matchday browser for one league, ready for `FixturesView` to render.
+/** The matchday browser for the current phase of one league, ready for
+ * `FixturesView` to render.
  *
  * Scorination (Task 15) plays an unplayed match, or a whole unplayed
- * matchday, via `leagueActions`' `scorinateFixture`/`scorinateMatchday`.
- * A played match shows its real score, and its button turns into
+ * matchday, with the `leagueWrapperActions` of Task 160, by fixture id. A
+ * played match shows its real score, and its button turns into
  * Re-scorinate (Task 7 action, Task 19 UI), which draws a new score
- * and overwrites the old one with no confirm — MVP1 §1: a round-robin
+ * and overwrites the old one with no confirm. MVP1 §1: a round-robin
  * match feeds nothing downstream. */
 export function useFixtures(props: FixturesViewProps): Fixtures {
   const { league } = props;
-  const lookupTeam = useTeamLookup();
+  const phase = findCurrentPhase(league) ?? EMPTY_PHASE;
+  const lookupTeam = useTeamLookup(league.teams);
   const nav = useMatchdayNav(props);
-  const isFlashing = useScoreFlash(league.results);
+  const isFlashing = useScoreFlash(phase.results);
   const { matchday } = nav;
 
-  const rows = league.fixtures
+  const rows = phase.fixtures
     .filter((fixture) => fixture.matchday === matchday)
     .map((fixture): FixtureRow => {
-      const result = findResult(league.results, fixture);
+      const result = findPhaseResult(phase.results, fixture);
       return {
-        key: matchKey(fixture),
+        key: fixture.id,
         home: lookupTeam(fixture.home),
         away: lookupTeam(fixture.away),
         result,
-        flashing: isFlashing(fixture),
+        flashing: isFlashing(fixture.id),
         scorinate: () =>
           result
-            ? rescorinateFixture(league.slug, fixture)
-            : scorinateFixture(league.slug, fixture),
+            ? rescorinateFixture(league.uuid, fixture.id)
+            : scorinateFixture(league.uuid, fixture.id),
       };
     });
 
-  const bye = league.byes.find((candidate) => candidate.matchday === matchday);
+  const bye = phase.byes.find((candidate) => candidate.matchday === matchday);
 
   return {
-    hasFixtures: league.fixtures.length > 0,
+    hasFixtures: phase.fixtures.length > 0,
     nav,
     rows,
     byeTeamName: bye ? lookupTeam(bye.team).name : undefined,
-    matchdayFullyPlayed: isMatchdayFullyPlayed(
-      league.fixtures,
-      league.results,
-      matchday
-    ),
-    scorinateMatchday: () => scorinateMatchday(league.slug, matchday),
+    matchdayFullyPlayed: isPhaseMatchdayPlayed(phase.fixtures, phase.results, matchday),
+    scorinateMatchday: () => scorinateMatchday(league.uuid, matchday),
   };
 }

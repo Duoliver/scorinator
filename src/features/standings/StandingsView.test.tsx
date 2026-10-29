@@ -1,36 +1,52 @@
 import type { JSX } from 'preact';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { scorinateFixture } from '@/app/state/leagueActions';
 import { act, render, screen } from '@testing-library/preact';
-import { generateRoundRobin } from '@/engine/round-robin';
-import { useTeamsStore } from '@/app/state/teamsStore';
-import { useLeagueStore } from '@/app/state/leagueStore';
-import type { LeagueRecord, TeamRecord } from '@/domain';
+import { scorinateFixture } from '@/app/state/leagueWrapperActions';
+import { useDatabaseStore } from '@/app/state/databaseStore';
+import type { LeagueWrapper, PhaseResult } from '@/domain';
 import { StandingsView } from './StandingsView';
+import {
+  LEAGUE,
+  openTestDatabase,
+  openTestLeague,
+  roundRobinLeague,
+  testUuid,
+} from '@/test/databaseRecords';
 
-const team = (overrides: Partial<TeamRecord> = {}): TeamRecord => ({
-  slug: 'fc-united',
-  name: 'FC United',
-  colour: '#E53935',
-  tier: 'B',
-  ...overrides,
-});
+const UNITED = testUuid(1);
+const RIVALS = testUuid(2);
+const TOWN = testUuid(3);
 
-const league = (overrides: Partial<LeagueRecord> = {}): LeagueRecord => ({
-  slug: 'coastal-premier',
-  name: 'Coastal Premier',
-  homeAdvantage: false,
-  points: { win: 3, draw: 1, loss: 0 },
-  teams: [
-    { slug: 'fc-united', ovr: 70 },
-    { slug: 'fc-rivals', ovr: 65 },
-    { slug: 'fc-town', ovr: 60 },
-  ],
-  fixtures: [],
-  byes: [],
-  results: [],
-  ...overrides,
-});
+const TEAMS = [
+  { name: 'FC United', colour: '#E53935' },
+  { name: 'FC Rivals', colour: '#1E88E5' },
+  { name: 'FC Town', colour: '#2E7D32' },
+];
+
+/** A three-team league with the given results in phase 1, and other
+ * league fields from `details`. */
+function league(
+  results: PhaseResult[] = [],
+  details: Parameters<typeof roundRobinLeague>[1] = {},
+  teams = TEAMS
+): LeagueWrapper {
+  const wrapper = roundRobinLeague(teams, details);
+  const [phase] = wrapper.content.phases;
+  return {
+    ...wrapper,
+    content: { ...wrapper.content, phases: [{ ...phase, results }] },
+  };
+}
+
+function score(
+  fixtureId: string,
+  home: string,
+  away: string,
+  homeGoals: number,
+  awayGoals: number
+): PhaseResult {
+  return { fixtureId, home, away, homeGoals, awayGoals };
+}
 
 /** Every data row of the rendered table as an array of cell texts, header
  * row skipped. `Table` renders each cell as a direct child of its row. */
@@ -47,24 +63,17 @@ function pointsOf(row: string[] | undefined): string | undefined {
 }
 
 /** `StandingsView` reads `league` as a plain prop, the same way
- * `FixturesView` does — `LeagueDetailScreen` is what subscribes to the
+ * `FixturesView` does: `LeagueDetailScreen` is what subscribes to the
  * store. A scorinate call only shows up if whatever renders the view
- * re-renders with the store's fresh league, so the live-update test
- * renders through this small harness, mirroring that lookup. */
-function StandingsViewFromStore({ slug }: { slug: string }): JSX.Element | null {
-  const found = useLeagueStore((state) => state.leagues.find((l) => l.slug === slug));
+ * renders again with the fresh league from the store, so the live update
+ * test renders through this small harness, as League Detail does. */
+function StandingsViewFromStore({ uuid }: { uuid: string }): JSX.Element | null {
+  const found = useDatabaseStore((state) => state.leagues[uuid]);
   return found ? <StandingsView league={found} /> : null;
 }
 
 beforeEach(() => {
-  useLeagueStore.setState({ leagues: [] });
-  useTeamsStore.setState({
-    teams: [
-      team({ slug: 'fc-united', name: 'FC United' }),
-      team({ slug: 'fc-rivals', name: 'FC Rivals', colour: '#1E88E5' }),
-      team({ slug: 'fc-town', name: 'FC Town', colour: '#2E7D32' }),
-    ],
-  });
+  openTestDatabase();
 });
 
 describe('StandingsView', () => {
@@ -78,24 +87,10 @@ describe('StandingsView', () => {
   it('ranks teams by points, then goal difference, with the full stat line per team', () => {
     render(
       <StandingsView
-        league={league({
-          results: [
-            {
-              matchday: 1,
-              home: 'fc-united',
-              away: 'fc-rivals',
-              homeGoals: 2,
-              awayGoals: 0,
-            },
-            {
-              matchday: 2,
-              home: 'fc-town',
-              away: 'fc-rivals',
-              homeGoals: 1,
-              awayGoals: 1,
-            },
-          ],
-        })}
+        league={league([
+          score('a', UNITED, RIVALS, 2, 0),
+          score('b', TOWN, RIVALS, 1, 1),
+        ])}
       />
     );
 
@@ -107,16 +102,14 @@ describe('StandingsView', () => {
   });
 
   it("uses the league's configured points system", () => {
-    const results = [
-      { matchday: 1, home: 'fc-united', away: 'fc-rivals', homeGoals: 2, awayGoals: 0 },
-    ];
-    const { unmount } = render(<StandingsView league={league({ results })} />);
+    const results = [score('a', UNITED, RIVALS, 2, 0)];
+    const { unmount } = render(<StandingsView league={league(results)} />);
     expect(pointsOf(dataRows()[0])).toBe('3');
     unmount();
 
     render(
       <StandingsView
-        league={league({ results, points: { win: 2, draw: 1, loss: 0 } })}
+        league={league(results, { points: { win: 2, draw: 1, loss: 0 } })}
       />
     );
     expect(pointsOf(dataRows()[0])).toBe('2');
@@ -125,21 +118,7 @@ describe('StandingsView', () => {
   it("shows a joint place as '-' on the second row of a tied block", () => {
     render(
       <StandingsView
-        league={league({
-          teams: [
-            { slug: 'fc-united', ovr: 70 },
-            { slug: 'fc-rivals', ovr: 65 },
-          ],
-          results: [
-            {
-              matchday: 1,
-              home: 'fc-united',
-              away: 'fc-rivals',
-              homeGoals: 1,
-              awayGoals: 1,
-            },
-          ],
-        })}
+        league={league([score('a', UNITED, RIVALS, 1, 1)], {}, TEAMS.slice(0, 2))}
       />
     );
 
@@ -148,14 +127,18 @@ describe('StandingsView', () => {
     expect(rows[1]?.[0]).toBe('-');
   });
 
-  it("falls back to a team's slug when it is missing from the team roster", () => {
-    useTeamsStore.setState({ teams: [] });
+  it('shows the Instance name, not the Blueprint name (US-09.2)', () => {
+    openTestDatabase([
+      { slug: 'team-1', name: 'Renamed Blueprint', colour: '#000000', tier: 'B' },
+    ]);
     render(<StandingsView league={league()} />);
-    expect(screen.getByText('fc-united')).toBeInTheDocument();
+
+    expect(screen.getByText('FC United')).toBeInTheDocument();
+    expect(screen.queryByText('Renamed Blueprint')).not.toBeInTheDocument();
   });
 
   it('shows an empty-state message and no table for a league with no teams', () => {
-    render(<StandingsView league={league({ teams: [] })} />);
+    render(<StandingsView league={league([], {}, [])} />);
     expect(screen.getByText('No teams in this league yet.')).toBeInTheDocument();
     expect(screen.queryByRole('row')).not.toBeInTheDocument();
   });
@@ -168,25 +151,13 @@ describe('StandingsView', () => {
   });
 
   it('updates live when a match is scorinated', () => {
-    const { fixtures, byes } = generateRoundRobin(['fc-united', 'fc-rivals']);
-    useLeagueStore.setState({
-      leagues: [
-        league({
-          teams: [
-            { slug: 'fc-united', ovr: 70 },
-            { slug: 'fc-rivals', ovr: 65 },
-          ],
-          fixtures,
-          byes,
-        }),
-      ],
-    });
-    render(<StandingsViewFromStore slug="coastal-premier" />);
+    const wrapper = openTestLeague(league([], {}, TEAMS.slice(0, 2)));
+    render(<StandingsViewFromStore uuid={LEAGUE} />);
     expect(screen.getByText('No matches played yet.')).toBeInTheDocument();
 
-    const first = fixtures[0];
+    const first = wrapper.content.phases[0]?.fixtures[0];
     if (!first) throw new Error('expected a generated fixture');
-    act(() => scorinateFixture('coastal-premier', first));
+    act(() => scorinateFixture(LEAGUE, first.id));
 
     const rows = dataRows();
     expect(rows.map((row) => row[2])).toEqual(['1', '1']);

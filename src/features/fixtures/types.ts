@@ -1,8 +1,8 @@
 import type { TeamDisplay } from '@/features/components';
-import type { LeagueRecord, LeagueResult } from '@/domain';
+import type { LeagueWrapper, PhaseResult } from '@/domain';
 
 export default interface FixturesViewProps {
-  league: LeagueRecord;
+  league: LeagueWrapper;
   /** Which matchday is visible on mount. Uncontrolled after that, the same
    * convention as `Tabs`' `defaultTab`. */
   initialMatchday?: number;
@@ -37,7 +37,7 @@ export interface FixtureRow {
   key: string;
   home: TeamDisplay;
   away: TeamDisplay;
-  result: LeagueResult | undefined;
+  result: PhaseResult | undefined;
   /** True for `SCORE_FLASH_MS` after the score of this match is generated. */
   flashing: boolean;
   /** Scorinate for an unplayed match, Re-scorinate for a played one. */

@@ -1,19 +1,18 @@
 import { useLayoutEffect, useRef, useState } from 'preact/hooks';
-import type { LeagueResult } from '@/domain';
-import { matchKey, type MatchIdentity } from '@/engine/round-robin';
+import type { PhaseResult } from '@/domain';
 import { SCORE_FLASH_MS } from './helpers';
 
-/** Tells which scores flash in the accent colour. A score flashes for
- * `SCORE_FLASH_MS` whenever it is generated, the first time or on a
- * re-scorinate. A generated score is a result object the previous render
- * did not hold (`scorinateFixture` adds one, `rescorinateFixture` replaces
- * one, and both leave every other result as the same object). So the flash
- * does not depend on the new score differing from the old, does not play for
- * results that exist when the view opens, and does not replay when the user
- * changes matchday. */
+/** Tells which scores flash in the accent colour, by fixture id. A score
+ * flashes for `SCORE_FLASH_MS` whenever it is generated, the first time or
+ * on a re-scorinate. A generated score is a result object the previous
+ * render did not hold (`scorinateFixture` adds one, `rescorinateFixture`
+ * replaces one, and both leave every other result as the same object). So
+ * the flash does not depend on the new score differing from the old, does
+ * not play for results that exist when the view opens, and does not replay
+ * when the user changes matchday. */
 export function useScoreFlash(
-  results: readonly LeagueResult[]
-): (match: MatchIdentity<string>) => boolean {
+  results: readonly PhaseResult[]
+): (fixtureId: string) => boolean {
   const [flashing, setFlashing] = useState<ReadonlySet<string>>(new Set());
   const seenResults = useRef(results);
   const flashTimers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
@@ -24,17 +23,17 @@ export function useScoreFlash(
     const generated = results.filter((result) => !previous.has(result));
     if (generated.length === 0) return;
 
-    const keys = generated.map(matchKey);
-    setFlashing((current) => new Set([...current, ...keys]));
-    for (const key of keys) {
-      clearTimeout(flashTimers.current.get(key));
+    const ids = generated.map((result) => result.fixtureId);
+    setFlashing((current) => new Set([...current, ...ids]));
+    for (const id of ids) {
+      clearTimeout(flashTimers.current.get(id));
       flashTimers.current.set(
-        key,
+        id,
         setTimeout(() => {
-          flashTimers.current.delete(key);
+          flashTimers.current.delete(id);
           setFlashing((current) => {
             const next = new Set(current);
-            next.delete(key);
+            next.delete(id);
             return next;
           });
         }, SCORE_FLASH_MS)
@@ -47,5 +46,5 @@ export function useScoreFlash(
     return (): void => timers.forEach(clearTimeout);
   }, []);
 
-  return (match) => flashing.has(matchKey(match));
+  return (fixtureId) => flashing.has(fixtureId);
 }

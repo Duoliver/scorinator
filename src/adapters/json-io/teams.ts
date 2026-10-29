@@ -9,9 +9,8 @@ function isString(value: unknown): value is string {
  * Parses a plain JSON array of team objects — the JSON-format sibling of
  * `adapters/csv`'s `parseTeamsCsv`. Same four fields (`slug`, `name`,
  * `colour`, `tier`), same required-field rules, same reuse of
- * `TeamListRecord` as the shared record shape. Not `SavedLeague`'s `teams`
- * array — that is a full league save file (`parseLeague`'s job); this reads
- * a teams-only list, the JSON equivalent of the team CSV file.
+ * `TeamListRecord` as the shared record shape. It reads a teams-only list,
+ * the JSON equivalent of the team CSV file, not a league file.
  */
 export function parseTeamsJson(text: string): TeamListRecord[] {
   let raw: unknown;

@@ -56,6 +56,10 @@ This keeps every League's own identity fully intact for cross-referencing and pe
 - Saving remains explicit only (File > Save / Ctrl+S) for MVP1 — no autosave. See `scorinator-future-features.md` for autosave and related ideas raised and deferred.
 - Closing the app while one or more wrappers are suspended with unsaved changes should prompt the same unsaved-changes dialog.
 
+### 2c. The contract in code
+
+`DatabaseFolder` in `types.ts` is the contract for the database folder (Task 104, 2026-10-29). Like `FileSystem`, it moves text only: `readManifest`, `readWrapper(uuid)`, and `save(wrappers, manifest)`, which writes the wrappers first and the manifest last. The JSON shapes belong to `adapters/json-io` (Task 106). `app/data` maps them to the domain types (`Manifest`, `LeagueWrapper`). The folder adapter is Task 107.
+
 ## 3. Consequences to Design For
 
 - **Cross-file referential integrity.** A League inside a Season-content wrapper references Team Instances (on that same wrapper) that reference Blueprints living in `manifest.json`. The manifest becomes load-bearing — it must stay in sync whenever a wrapper is created, renamed, or its team roster changes. A wrapper file should never be treated as self-sufficient without the manifest.

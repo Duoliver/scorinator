@@ -1,10 +1,10 @@
 import { Badge, Button, type TableColumn } from '@/design-system';
-import type { TeamRecord } from '@/domain';
+import type { TeamBlueprint } from '@/domain';
 import { TeamSwatch } from '@/features/components';
 import type { TeamRow } from './types';
 import styles from './TeamsScreen.module.css';
 
-export const toTeamRows = (teams: readonly TeamRecord[]): TeamRow[] =>
+export const toTeamRows = (teams: readonly TeamBlueprint[]): TeamRow[] =>
   teams.map((team, index) => ({ ...team, rowKey: `${team.slug}::${index}`, index }));
 
 export const getRowKey = (row: TeamRow): string => row.rowKey;

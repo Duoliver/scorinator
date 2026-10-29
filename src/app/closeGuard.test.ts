@@ -1,46 +1,52 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { markLeagueSaved } from '@/app/state/fileActions';
 import {
   allowWindowClose,
   describeUnsavedLeagues,
   installCloseGuard,
+  UNSAVED_TEAMS_NAME,
 } from './closeGuard';
+import { useDatabaseStore } from '@/app/state/databaseStore';
+import { scorinateMatchday } from '@/app/state/leagueWrapperActions';
+import { updateTeamBlueprint } from '@/app/state/teamBlueprintActions';
+import {
+  LEAGUE,
+  OTHER_LEAGUE,
+  openTestDatabase,
+  openTestLeague,
+  roundRobinLeague,
+  testUuid,
+} from '@/test/databaseRecords';
 import type {
   CloseRequest,
   UnsavedChoice,
   WindowCloseAdapter,
 } from '@/adapters/tauri-window';
 import { useFileStore } from '@/app/state/fileStore';
-import { useLeagueStore } from '@/app/state/leagueStore';
-import type { LeagueRecord } from '@/domain';
 
-const league = (slug: string, name = slug): LeagueRecord => ({
-  slug,
-  name,
-  homeAdvantage: false,
-  points: { win: 3, draw: 1, loss: 0 },
-  teams: [],
-  fixtures: [],
-  byes: [],
-  results: [],
-});
-
-const coastal = league('coastal-premier', 'Coastal Premier');
-const inland = league('inland-cup', 'Inland Cup');
+const TEAMS = [
+  { name: 'FC United', colour: '#E53935' },
+  { name: 'FC Rivals', colour: '#1E88E5' },
+];
 
 const adapterAnswering = (choice: UnsavedChoice): WindowCloseAdapter => ({
   listenForCloseRequest: vi.fn(),
   askUnsavedChoice: vi.fn().mockResolvedValue(choice),
 });
 
+/** Changes a league, so it has unsaved changes. */
+const changeLeague = (uuid: string): void => scorinateMatchday(uuid, 1);
+
+/** Changes the Blueprint of `openTestDatabase`, so the teams are unsaved. */
+const editTeams = (): void =>
+  updateTeamBlueprint(testUuid(1), { name: 'FC United Renamed' });
+
 beforeEach(() => {
-  useLeagueStore.setState({ leagues: [coastal, inland] });
-  useFileStore.setState({
-    currentLeagueSlug: null,
-    paths: {},
-    savedLeagues: {},
-    status: null,
-  });
+  openTestDatabase([
+    { slug: 'fc-united', name: 'FC United', colour: '#E53935', tier: 'B' },
+  ]);
+  openTestLeague(roundRobinLeague(TEAMS));
+  openTestLeague(roundRobinLeague(TEAMS, { uuid: OTHER_LEAGUE, name: 'Inland Cup' }));
+  useFileStore.setState({ status: null });
 });
 
 describe('describeUnsavedLeagues', () => {
@@ -65,25 +71,17 @@ describe('describeUnsavedLeagues', () => {
 });
 
 describe('allowWindowClose', () => {
-  it('allows the close with no prompt when every league is saved', async () => {
-    markLeagueSaved(coastal);
-    markLeagueSaved(inland);
+  it('allows the close with no prompt when nothing is unsaved', async () => {
     const adapter = adapterAnswering('cancel');
+    const save = vi.fn();
 
-    expect(await allowWindowClose(adapter, vi.fn())).toBe(true);
+    expect(await allowWindowClose(adapter, save)).toBe(true);
     expect(adapter.askUnsavedChoice).not.toHaveBeenCalled();
-  });
-
-  it('allows the close with no prompt when there are no leagues', async () => {
-    useLeagueStore.setState({ leagues: [] });
-    const adapter = adapterAnswering('cancel');
-
-    expect(await allowWindowClose(adapter, vi.fn())).toBe(true);
-    expect(adapter.askUnsavedChoice).not.toHaveBeenCalled();
+    expect(save).not.toHaveBeenCalled();
   });
 
   it('names only the unsaved leagues in the prompt', async () => {
-    markLeagueSaved(coastal);
+    changeLeague(OTHER_LEAGUE);
     const adapter = adapterAnswering('cancel');
 
     await allowWindowClose(adapter, vi.fn());
@@ -93,42 +91,78 @@ describe('allowWindowClose', () => {
     );
   });
 
-  it('saves each unsaved league in turn on Save, then allows the close', async () => {
-    markLeagueSaved(coastal);
+  it('names a new league that the database does not hold yet', async () => {
+    useDatabaseStore.setState((state) => ({
+      leagues: {
+        ...state.leagues,
+        new: roundRobinLeague(TEAMS, { uuid: 'new', name: 'Fresh League' }),
+      },
+    }));
+    const adapter = adapterAnswering('cancel');
+
+    await allowWindowClose(adapter, vi.fn());
+
+    expect(adapter.askUnsavedChoice).toHaveBeenCalledWith(
+      describeUnsavedLeagues(['Fresh League'])
+    );
+  });
+
+  it('asks when only the Blueprints are unsaved, and names them Teams', async () => {
+    editTeams();
+    const adapter = adapterAnswering('cancel');
+
+    await expect(allowWindowClose(adapter, vi.fn())).resolves.toBe(false);
+    expect(adapter.askUnsavedChoice).toHaveBeenCalledWith(
+      `"${UNSAVED_TEAMS_NAME}" has unsaved changes. Save it before you close?`
+    );
+  });
+
+  it('lists Teams first, before the unsaved leagues', async () => {
+    editTeams();
+    changeLeague(LEAGUE);
+    changeLeague(OTHER_LEAGUE);
+    const adapter = adapterAnswering('cancel');
+
+    await allowWindowClose(adapter, vi.fn());
+
+    expect(adapter.askUnsavedChoice).toHaveBeenCalledWith(
+      'These leagues have unsaved changes: "Teams", "Coastal Premier", "Inland Cup". Save them before you close?'
+    );
+  });
+
+  it('saves the whole database once on Save, then allows the close', async () => {
+    editTeams();
+    changeLeague(LEAGUE);
     const save = vi.fn().mockResolvedValue(true);
 
     expect(await allowWindowClose(adapterAnswering('save'), save)).toBe(true);
     expect(save).toHaveBeenCalledTimes(1);
-    expect(save).toHaveBeenCalledWith('inland-cup');
   });
 
-  it('saves leagues one after the other, not at the same time', async () => {
-    const order: string[] = [];
-    const save = vi.fn(async (slug: string) => {
-      order.push(`start ${slug}`);
-      await Promise.resolve();
-      order.push(`end ${slug}`);
-      return true;
-    });
-
-    await allowWindowClose(adapterAnswering('save'), save);
-
-    expect(order).toEqual([
-      'start coastal-premier',
-      'end coastal-premier',
-      'start inland-cup',
-      'end inland-cup',
+  it('writes every unsaved league and the manifest with the default save', async () => {
+    const memory = openTestDatabase([
+      { slug: 'fc-united', name: 'FC United', colour: '#E53935', tier: 'B' },
     ]);
+    openTestLeague(roundRobinLeague(TEAMS));
+    editTeams();
+    changeLeague(LEAGUE);
+
+    expect(await allowWindowClose(adapterAnswering('save'))).toBe(true);
+    expect(memory.saves).toHaveLength(1);
+    expect(memory.saves[0]?.wrappers.map((wrapper) => wrapper.uuid)).toEqual([LEAGUE]);
+    expect(memory.saves[0]?.manifest).not.toBeNull();
   });
 
-  it('blocks the close, and stops saving, when one save fails or is canceled', async () => {
-    const save = vi.fn().mockResolvedValueOnce(false).mockResolvedValue(true);
+  it('blocks the close when the save fails', async () => {
+    changeLeague(LEAGUE);
 
-    expect(await allowWindowClose(adapterAnswering('save'), save)).toBe(false);
-    expect(save).toHaveBeenCalledTimes(1);
+    expect(
+      await allowWindowClose(adapterAnswering('save'), vi.fn().mockResolvedValue(false))
+    ).toBe(false);
   });
 
   it("allows the close and saves nothing on Don't save", async () => {
+    changeLeague(LEAGUE);
     const save = vi.fn();
 
     expect(await allowWindowClose(adapterAnswering('discard'), save)).toBe(true);
@@ -136,6 +170,7 @@ describe('allowWindowClose', () => {
   });
 
   it('blocks the close and saves nothing on Cancel', async () => {
+    changeLeague(LEAGUE);
     const save = vi.fn();
 
     expect(await allowWindowClose(adapterAnswering('cancel'), save)).toBe(false);
@@ -162,6 +197,10 @@ describe('installCloseGuard', () => {
     };
     return { adapter, unlisten, getHandler: () => handler! };
   };
+
+  beforeEach(() => {
+    changeLeague(LEAGUE);
+  });
 
   it('prevents the close when the user cancels', async () => {
     const { adapter, getHandler } = setup('cancel');

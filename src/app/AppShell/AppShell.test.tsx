@@ -4,26 +4,29 @@ import { act, render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { route } from 'preact-router';
 import { AppShell } from './AppShell';
-import { useTeamsStore } from '@/app/state/teamsStore';
-import { useLeagueStore } from '@/app/state/leagueStore';
 import { useLeagueDraftStore } from '@/app/state/leagueDraftStore';
 import { useFileStore } from '@/app/state/fileStore';
 import * as saveActions from '@/app/saveActions';
 import * as closeGuard from '@/app/closeGuard';
-import * as leagueFile from '@/app/data/leagueFile';
+import * as databaseStart from '@/app/databaseStart';
+import { useDatabaseStore } from '@/app/state/databaseStore';
 import * as leaguesFeature from '@/features/leagues';
 import { DEFAULT_POINTS_CONFIG } from '@/engine/standings';
+import { scorinateMatchday } from '@/app/state/leagueWrapperActions';
+import {
+  LEAGUE,
+  openTestDatabase,
+  openTestLeague,
+  roundRobinLeague,
+} from '@/test/databaseRecords';
 
 beforeEach(() => {
   vi.restoreAllMocks();
-  useFileStore.setState({
-    currentLeagueSlug: null,
-    paths: {},
-    savedLeagues: {},
-    status: null,
-  });
-  useTeamsStore.setState({ teams: [] });
-  useLeagueStore.setState({ leagues: [] });
+  // The real start opens the Tauri app data folder. These tests seed an
+  // open database instead (Task 109).
+  vi.spyOn(databaseStart, 'openAppDatabase').mockResolvedValue();
+  useFileStore.setState({ status: null });
+  openTestDatabase([]);
   useLeagueDraftStore.setState({
     details: { name: '', points: DEFAULT_POINTS_CONFIG, homeAdvantage: false },
     selectedSlugs: [],
@@ -32,6 +35,38 @@ beforeEach(() => {
 });
 
 describe('AppShell', () => {
+  it('opens the database once, at start (Task 109)', () => {
+    render(<AppShell />);
+    expect(databaseStart.openAppDatabase).toHaveBeenCalledOnce();
+  });
+
+  it('shows no screen while the database opens', () => {
+    useDatabaseStore.setState(useDatabaseStore.getInitialState(), true);
+    render(<AppShell />);
+    expect(screen.getByRole('status')).toHaveTextContent('Opening the database…');
+    expect(
+      screen.queryByRole('heading', { name: 'No leagues yet.' })
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Teams' })).toBeInTheDocument();
+  });
+
+  it('shows the error and no screen when the database cannot open', () => {
+    useDatabaseStore.setState({
+      ...useDatabaseStore.getInitialState(),
+      status: {
+        kind: 'error',
+        message: 'manifest.json is not valid: the text is not JSON.',
+      },
+    });
+    render(<AppShell />);
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'The database could not open: manifest.json is not valid: the text is not JSON.'
+    );
+    expect(
+      screen.queryByRole('heading', { name: 'No leagues yet.' })
+    ).not.toBeInTheDocument();
+  });
+
   it('installs the close guard on mount, and removes it on unmount', () => {
     const remove = vi.fn();
     const install = vi.spyOn(closeGuard, 'installCloseGuard').mockReturnValue(remove);
@@ -91,20 +126,7 @@ describe('AppShell', () => {
   });
 
   it("reaches League Detail through a card's Open standings link", async () => {
-    useLeagueStore.setState({
-      leagues: [
-        {
-          slug: 'coastal-premier',
-          name: 'Coastal Premier',
-          homeAdvantage: true,
-          points: DEFAULT_POINTS_CONFIG,
-          teams: [],
-          fixtures: [],
-          byes: [],
-          results: [],
-        },
-      ],
-    });
+    openTestLeague(roundRobinLeague([]));
     render(<AppShell />);
 
     await userEvent.click(screen.getByRole('link', { name: 'Leagues' }));
@@ -133,24 +155,11 @@ describe('AppShell', () => {
     expect(screen.getByLabelText('League name')).toHaveValue('Coastal Premier');
   });
 
-  it('routes to League Detail for a league slug, with Leagues marked active', async () => {
-    useLeagueStore.setState({
-      leagues: [
-        {
-          slug: 'coastal-premier',
-          name: 'Coastal Premier',
-          homeAdvantage: true,
-          points: DEFAULT_POINTS_CONFIG,
-          teams: [],
-          fixtures: [],
-          byes: [],
-          results: [],
-        },
-      ],
-    });
+  it('routes to League Detail for a league UUID, with Leagues marked active', async () => {
+    openTestLeague(roundRobinLeague([]));
     render(<AppShell />);
 
-    route('/leagues/coastal-premier');
+    route(`/leagues/${LEAGUE}`);
 
     expect(
       await screen.findByRole('heading', { name: 'Coastal Premier' })
@@ -188,8 +197,8 @@ describe('AppShell', () => {
       return event;
     };
 
-    it('saves the current league, from any screen, and blocks the browser default', () => {
-      const save = vi.spyOn(saveActions, 'saveCurrentLeague').mockResolvedValue();
+    it('saves the database, from any screen, and blocks the browser default', () => {
+      const save = vi.spyOn(saveActions, 'saveDatabaseChanges').mockResolvedValue(true);
       render(<AppShell />);
 
       const event = pressCtrlS();
@@ -199,7 +208,7 @@ describe('AppShell', () => {
     });
 
     it('also works with the Meta key, for macOS', () => {
-      const save = vi.spyOn(saveActions, 'saveCurrentLeague').mockResolvedValue();
+      const save = vi.spyOn(saveActions, 'saveDatabaseChanges').mockResolvedValue(true);
       render(<AppShell />);
 
       pressCtrlS({ ctrlKey: false, metaKey: true });
@@ -208,7 +217,7 @@ describe('AppShell', () => {
     });
 
     it('ignores other keys, and Ctrl+Shift+S', () => {
-      const save = vi.spyOn(saveActions, 'saveCurrentLeague').mockResolvedValue();
+      const save = vi.spyOn(saveActions, 'saveDatabaseChanges').mockResolvedValue(true);
       render(<AppShell />);
 
       pressCtrlS({ key: 'a' });
@@ -219,7 +228,7 @@ describe('AppShell', () => {
     });
 
     it('ignores a held key, but still blocks the browser default', () => {
-      const save = vi.spyOn(saveActions, 'saveCurrentLeague').mockResolvedValue();
+      const save = vi.spyOn(saveActions, 'saveDatabaseChanges').mockResolvedValue(true);
       render(<AppShell />);
 
       const event = pressCtrlS({ repeat: true });
@@ -228,40 +237,29 @@ describe('AppShell', () => {
       expect(event.defaultPrevented).toBe(true);
     });
 
-    it('tells the user to open or create a league when there is none', async () => {
+    it('says "Nothing to save." when nothing is unsaved', async () => {
       render(<AppShell />);
 
       pressCtrlS();
 
-      expect(
-        await screen.findByText('No league to save. Open or create a league first.')
-      ).toBeInTheDocument();
+      expect(await screen.findByText('Nothing to save.')).toBeInTheDocument();
     });
 
-    it('saves the current league to its file and reports the path', async () => {
-      useLeagueStore.setState({
-        leagues: [
-          {
-            slug: 'coastal-premier',
-            name: 'Coastal Premier',
-            homeAdvantage: false,
-            points: DEFAULT_POINTS_CONFIG,
-            teams: [],
-            fixtures: [],
-            byes: [],
-            results: [],
-          },
-        ],
-      });
-      useFileStore.setState({ currentLeagueSlug: 'coastal-premier' });
-      vi.spyOn(leagueFile, 'saveLeagueFile').mockResolvedValue('/saves/coastal.json');
+    it('writes the unsaved league to the database and says "Saved."', async () => {
+      const memory = openTestDatabase([]);
+      openTestLeague(
+        roundRobinLeague([
+          { name: 'FC United', colour: '#E53935' },
+          { name: 'FC Rivals', colour: '#1E88E5' },
+        ])
+      );
+      scorinateMatchday(LEAGUE, 1);
       render(<AppShell />);
 
       pressCtrlS();
 
-      expect(
-        await screen.findByText('Saved Coastal Premier to /saves/coastal.json')
-      ).toBeInTheDocument();
+      expect(await screen.findByText('Saved.')).toBeInTheDocument();
+      expect(Object.keys(memory.files.wrappers)).toEqual([LEAGUE]);
     });
   });
 

@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { TeamFormDrawer } from './TeamFormDrawer';
-import type { TeamRecord } from '@/domain';
+import type { TeamFields } from '@/domain';
 
 describe('TeamFormDrawer', () => {
   it('titles and labels itself for creating a team by default', () => {
@@ -12,7 +12,7 @@ describe('TeamFormDrawer', () => {
   });
 
   it('titles and labels itself for editing a team when isEdit is set', () => {
-    const initial: TeamRecord = {
+    const initial: TeamFields = {
       slug: 'fc-united',
       name: 'FC United',
       colour: '#E53935',

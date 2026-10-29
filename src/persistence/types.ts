@@ -22,6 +22,14 @@ export interface TeamListRecord {
   tier: Tier;
 }
 
+/** A `FileSystem` that can also make a folder. The database folder needs it
+ * at the first save (Task 107). `mkdir` makes the folder and its parents,
+ * and does nothing when the folder exists. A separate contract, so the
+ * MVP1 code and its test mocks keep the plain `FileSystem`. */
+export interface FolderFileSystem extends FileSystem {
+  mkdir(path: string): Promise<void>;
+}
+
 /** One entry in a native file dialog's type filter, e.g.
  * `{ name: 'Team CSV', extensions: ['csv'] }`. */
 export interface FileFilter {
@@ -39,4 +47,33 @@ export interface SaveFileDialog {
     filters?: readonly FileFilter[]
   ): Promise<string | null>;
   pickOpenPath(filters?: readonly FileFilter[]): Promise<string | null>;
+}
+
+/** One wrapper file to save: the wrapper UUID, which names the file, and
+ * its JSON text. */
+export interface WrapperText {
+  uuid: string;
+  contents: string;
+}
+
+/**
+ * What an adapter must implement to read and save the database folder
+ * (Task 76, `PERSISTENCE.md` §2 and §3). Like `FileSystem`, it moves text
+ * only. The JSON shapes of the manifest and the wrappers belong to
+ * `adapters/json-io` (Task 106), and `app/data` maps them to the domain
+ * types.
+ *
+ * - `readManifest` gives `null` when the folder has no manifest yet, before
+ *   the first save.
+ * - `readWrapper` rejects when the folder has no file for that UUID.
+ * - `save` writes each wrapper text, then the manifest text: manifest last.
+ *   Each file write is atomic, temp file then rename. A crash before the
+ *   manifest write leaves an extra wrapper file at worst, never a manifest
+ *   row with no file. A `null` manifest means that the manifest did not
+ *   change, so `save` writes the wrappers only.
+ */
+export interface DatabaseFolder {
+  readManifest(): Promise<string | null>;
+  readWrapper(uuid: string): Promise<string>;
+  save(wrappers: readonly WrapperText[], manifest: string | null): Promise<void>;
 }

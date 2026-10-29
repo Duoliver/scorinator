@@ -78,10 +78,11 @@ features/standings/
 
 ```tsx
 // features/standings/useStandings.ts
-export function useStandings(league: LeagueRecord): Standings {
-  const lookupTeam = useTeamLookup();
+export function useStandings(league: LeagueWrapper): Standings {
+  const lookupTeam = useTeamLookup(league.teams);
+  const results = findCurrentPhase(league)?.results ?? [];
   const rows = useMemo(() => /* calculateStandings + team names */, [league, lookupTeam]);
-  return { rows, hasTeams: league.teams.length > 0, hasResults: league.results.length > 0 };
+  return { rows, hasTeams: league.teams.length > 0, hasResults: results.length > 0 };
 }
 
 // features/standings/helpers.tsx
@@ -111,7 +112,7 @@ A function or object that a render makes again costs microseconds. It causes ext
 
 `preact-router` fully unmounts a screen on nav-away, and fully remounts it on nav-back. Any plain `useState` inside that screen resets on remount. A wizard, a multi-field form, or any screen holding real in-progress work needs a place to keep its draft between those two events. Without one, the user loses it.
 
-Reach for a small Zustand slice under `app/state/`, next to `teamsStore.ts` and `leagueStore.ts` — see `leagueDraftStore.ts` and `leagueDraftActions.ts` for a worked example. Keep that store to exactly this shape, with its two actions in a sibling `xDraftActions.ts` (see the store actions rule below):
+Reach for a small Zustand slice under `app/state/`, next to `databaseStore.ts` and `fileStore.ts` — see `leagueDraftStore.ts` and `leagueDraftActions.ts` for a worked example. Keep that store to exactly this shape, with its two actions in a sibling `xDraftActions.ts` (see the store actions rule below):
 
 ```ts
 // app/state/xDraftStore.ts
@@ -139,18 +140,18 @@ The point of the three-point rule: a screen with `N` fields and `M` keystrokes s
 This rule applies to every Zustand store under `app/state/`. The store file (`xStore.ts`) holds the state interface, the `create()` call with the initial state, and pure read helpers such as `isLeagueUnsaved`. It holds no action. Each action is a plain exported function in a sibling file, `xActions.ts`. The action changes the store through `useXStore.setState` and reads it through `useXStore.getState`. Zustand calls this the "no store actions" pattern.
 
 ```ts
-// app/state/teamsStore.ts
-export interface TeamsState {
-  teams: TeamRecord[];
+// app/state/fileStore.ts
+export interface FileState {
+  status: FileStatus | null;
 }
 
-export const useTeamsStore = create<TeamsState>()(() => ({
-  teams: [],
+export const useFileStore = create<FileState>()(() => ({
+  status: null,
 }));
 
-// app/state/teamsActions.ts
-export function addTeam(team: TeamRecord): void {
-  useTeamsStore.setState((state) => ({ teams: [...state.teams, team] }));
+// app/state/fileActions.ts
+export function setFileStatus(status: FileStatus): void {
+  useFileStore.setState({ status });
 }
 ```
 
@@ -158,18 +159,18 @@ A component imports the action directly. It uses the store hook only to read sta
 
 ```tsx
 // Don't
-const addTeam = useTeamsStore((state) => state.addTeam);
+const addTeamBlueprint = useDatabaseStore((state) => state.addTeamBlueprint);
 
 // Do
-import { addTeam } from '@/app/state/teamsActions';
-const teams = useTeamsStore((state) => state.teams);
+import { addTeamBlueprint } from '@/app/state/teamBlueprintActions';
+const blueprints = useDatabaseStore((state) => state.blueprints);
 ```
 
 Rules for the actions file:
 
 - **Name an action for what it does, with the store's subject in the name.** The action is a module-level export, so a name like `setStatus` or `reset` loses its context at the call site. Write `setFileStatus` and `resetLeagueDraft`.
-- **An action may call an action of another store.** Import it from that store's actions file. For example, `addLeague` calls `setCurrentLeague` from `fileActions.ts`. Do not call another store's `setState` directly.
-- **Keep helpers private.** A helper that only actions use, such as `playFixture` in `leagueActions.ts`, stays an unexported function in the actions file.
+- **An action may call an action of another store.** Import it from that store's actions file. For example, an action that sets the status line calls `setFileStatus` from `fileActions.ts`. Do not call another store's `setState` directly.
+- **Keep helpers private.** A helper that only actions use, such as `playFixture` in `leagueWrapperActions.ts`, stays an unexported function in the actions file.
 - **Tests go in `xActions.test.ts`.** A test resets the store with `useXStore.setState(...)` in `beforeEach`, calls the action, and asserts on `useXStore.getState()`.
 
 An action that uses several stores and an `app/data` function, such as a save or a load, is an app action. It lives one level up, in `app/` (`saveActions.ts`, `loadActions.ts`, `exportActions.ts`). It follows the same plain-function shape.
@@ -227,7 +228,7 @@ A `style` prop is acceptable only for a value your code computes at runtime from
 
 ## Start a function name with a verb in the imperative
 
-Name a function, or a method, for the action it does. Start the name with a verb in the imperative: `getErrorMessage`, `findLeague`, `addTeam`, `saveLeagueBySlug`. A noun name such as `errorMessage` reads like a value, not a call.
+Name a function, or a method, for the action it does. Start the name with a verb in the imperative: `getErrorMessage`, `findCurrentPhase`, `addTeamBlueprint`, `saveDatabaseChanges`. A noun name such as `errorMessage` reads like a value, not a call.
 
 - **`get` or `find`:** use `get` when the function always gives a value. Use `find` when it can give `undefined`, as `findLeague` does for an unknown slug.
 - **A function that gives a boolean** starts with `is`, `has`, or `can`: `isLeagueUnsaved`, `isTier`.

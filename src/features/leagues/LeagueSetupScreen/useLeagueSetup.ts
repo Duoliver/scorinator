@@ -4,16 +4,15 @@ import { route } from 'preact-router';
 import type { FieldHandle } from '@/design-system';
 import { getErrorMessage } from '@/app/getErrorMessage';
 import { leagueDetailPath } from '@/app/routes';
-import { addLeague } from '@/app/state/leagueActions';
 import { resetLeagueDraft } from '@/app/state/leagueDraftActions';
 import {
   useLeagueDraftStore,
   type LeagueDraftDetails,
   type LeagueSetupStep,
 } from '@/app/state/leagueDraftStore';
-import { useLeagueStore } from '@/app/state/leagueStore';
-import type { LeagueRecord } from '@/domain';
-import { useTeamsStore } from '@/app/state/teamsStore';
+import { createLeague } from '@/app/state/leagueWrapperActions';
+import type { LeagueWrapper } from '@/domain';
+import { useDatabaseStore } from '@/app/state/databaseStore';
 import type { DetailsStepHandle } from '@/features/leagues/LeagueSetupScreen/steps/DetailsStep';
 import { leagueNameProblem } from './leagueName';
 import type { LeagueSetup } from './types';
@@ -22,11 +21,7 @@ import { useTeamSelection } from './useTeamSelection';
 
 /** The League Setup wizard: the draft, the step changes, and the create. */
 export function useLeagueSetup(): LeagueSetup {
-  const teams = useTeamsStore((state) => state.teams);
-  // The whole list, not a mapped selector: a new array on every call would
-  // make the store hook re-render without end.
-  const leagues = useLeagueStore((state) => state.leagues);
-  const takenSlugs = leagues.map((league) => league.slug);
+  const teams = useDatabaseStore((state) => state.blueprints);
 
   // Read the persisted draft once, on mount — not a subscribed selector.
   // Nothing below ties this screen's render to `leagueDraftStore` while it
@@ -72,24 +67,26 @@ export function useLeagueSetup(): LeagueSetup {
     // `DetailsStep` is unmounted by the time Review is reachable — `details`
     // already holds its final values, synced by `goToStep` on the way out.
     // The step tabs can reach Review past a disabled Next, so check the
-    // name again here: invalid, or taken by an open league (Task 40).
-    const nameProblem = leagueNameProblem(details.name, takenSlugs);
+    // name again here.
+    const nameProblem = leagueNameProblem(details.name);
     if (nameProblem) {
       setStatus(nameProblem);
       return;
     }
-    let league: LeagueRecord;
+    let league: LeagueWrapper;
     try {
-      league = addLeague({
+      // The selection keeps slugs until Task 120: a Blueprint slug is
+      // unique and fixed, so it finds one UUID (Task 161).
+      league = createLeague({
         name: details.name.trim(),
         homeAdvantage: details.homeAdvantage,
         points: details.points,
-        teams: selectedTeams,
+        blueprintUuids: selectedTeams.map((team) => team.uuid),
       });
     } catch (error) {
-      // The check above covers both errors `addLeague` can throw (a name
-      // with no slug, a taken slug). This only keeps the screen up if a
-      // store change elsewhere ever adds another.
+      // `createLeague` throws for an unknown Blueprint or a closed
+      // database. Neither can happen from this screen today. This only
+      // keeps the screen up if a store change elsewhere ever adds another.
       setStatus(getErrorMessage(error));
       return;
     }
@@ -99,14 +96,13 @@ export function useLeagueSetup(): LeagueSetup {
     // instance is about to unmount and never render again.
     skipDraftSync();
     resetLeagueDraft();
-    route(leagueDetailPath(league.slug));
+    route(leagueDetailPath(league.uuid));
   };
 
   return {
     ...selection,
     step,
     details,
-    takenSlugs,
     selectedTeams,
     status,
     stepsRef,

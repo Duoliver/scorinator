@@ -12,9 +12,6 @@ export interface DetailsStepHandle {
 
 export default interface DetailsStepProps {
   initial: LeagueDraftDetails;
-  /** Slugs of the leagues already open. A name that gives one of them is
-   * refused, like an invalid name (Task 40). */
-  takenSlugs?: readonly string[];
   onNext: () => void;
 }
 

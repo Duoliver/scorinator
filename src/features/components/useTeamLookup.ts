@@ -1,25 +1,27 @@
 import { useMemo } from 'preact/hooks';
-import { useTeamsStore } from '@/app/state/teamsStore';
+import type { TeamInstance } from '@/domain';
 import type { TeamDisplay } from './types';
 
 export type { TeamDisplay };
 
-/** Looks up a team in the shared roster by slug. A league team that is no
- * longer in the roster shows its slug and no colour, so a view never breaks
- * on a missing team.
+/** Looks up a team of one league by its Blueprint UUID, in the league
+ * Instances (US-09.2, Task 161). A Blueprint edit does not change them. A
+ * UUID that no Instance has shows the UUID and no colour, so a view never
+ * breaks on a missing team.
  *
  * The lookup goes through a `Map`, so a view with many rows does not scan
- * the roster once for each row. The function stays the same object until
- * the roster changes, so another hook can list it as a dependency. */
-export function useTeamLookup(): (slug: string) => TeamDisplay {
-  const teams = useTeamsStore((state) => state.teams);
+ * the Instances once for each row. The function stays the same object until
+ * the Instances change, so another hook can list it as a dependency. */
+export function useTeamLookup(
+  teams: readonly TeamInstance[]
+): (blueprintUuid: string) => TeamDisplay {
   return useMemo(() => {
-    const bySlug = new Map(teams.map((team) => [team.slug, team]));
-    return (slug: string): TeamDisplay => {
-      const team = bySlug.get(slug);
+    const byUuid = new Map(teams.map((team) => [team.blueprintUuid, team]));
+    return (blueprintUuid: string): TeamDisplay => {
+      const team = byUuid.get(blueprintUuid);
       return team
         ? { name: team.name, colour: team.colour }
-        : { name: slug, colour: '' };
+        : { name: blueprintUuid, colour: '' };
     };
   }, [teams]);
 }

@@ -1,5 +1,5 @@
 import type { TableColumn } from '@/design-system';
-import type { TeamRecord } from '@/domain';
+import type { TeamBlueprint, TeamFields } from '@/domain';
 import type { PointsConfig } from '@/engine/standings';
 
 export default interface TeamsStepProps {
@@ -21,8 +21,8 @@ export interface TeamsStepState {
   leagueName: string;
   chipLabels: string[];
   handleSearchChange: (query: string) => void;
-  rows: TeamRecord[];
-  columns: TableColumn<TeamRecord>[];
+  rows: TeamBlueprint[];
+  columns: TableColumn<TeamBlueprint>[];
   selectedCountText: string;
   /** True when every team that the search shows is selected. The one
    * selection button then clears them, or else it selects them all. */
@@ -33,5 +33,5 @@ export interface TeamsStepState {
   showCreateTeam: boolean;
   openCreateTeam: () => void;
   closeCreateTeam: () => void;
-  handleTeamCreated: (record: TeamRecord) => void;
+  handleTeamCreated: (record: TeamFields) => void;
 }

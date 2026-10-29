@@ -1,8 +1,8 @@
-import type { LeagueRecord } from '@/domain';
+import type { LeagueCard } from './LeagueList';
 
 /** What `useLeaguesDashboard` gives `LeaguesDashboardScreen`. */
 export interface LeaguesDashboard {
-  leagues: readonly LeagueRecord[];
+  leagues: readonly LeagueCard[];
   hasLeagues: boolean;
   subtitle: string;
 }

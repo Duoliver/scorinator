@@ -37,11 +37,11 @@ Holds components with real business logic that more than one screen needs. This 
 
 This is a one-way dependency. No lint rule enforces it yet — flag it in review if a `features/components/` file ever imports from a screen folder. The reason is cyclic imports. If `features/leagues` imported `TeamForm` straight out of `features/teams`, and a later change made `features/teams` import something from `features/leagues`, the two folders would import each other. Routing every shared component through `features/components/` instead keeps the dependency graph one-directional: screens depend on shared components, shared components depend on nothing above them in `features/`.
 
-A hook that more than one screen folder needs lives here too, as `features/components/useX.ts`, with the same import rule. `useTeamLookup` is the first example: `StandingsView` and `FixturesView` both show a team name and colour from a slug. Its `TeamDisplay` type lives in `features/components/types.ts`. See the three-layer rule in `docs/coding-standards.md`.
+A hook that more than one screen folder needs lives here too, as `features/components/useX.ts`, with the same import rule. `useTeamLookup` is the first example: `StandingsView` and `FixturesView` both show the name and colour of a league Instance from its Blueprint UUID. Its `TeamDisplay` type lives in `features/components/types.ts`. See the three-layer rule in `docs/coding-standards.md`.
 
 A plain function that more than one screen folder needs lives here too, as `features/components/x.ts`, with the same import rule. `formatTeamCount` is the first example: the Teams screen and the league screens both show a team count (Task 72).
 
-A view type that a shared component needs also lives in `features/components/`, not in the screen folder that uses it most. `TeamDisplay` is the example. A record type that `app/` also uses, such as `TeamRecord` or `LeagueRecord`, does not live in `features/` at all. It lives in `src/domain/`. See `src/domain/DOMAIN.md`.
+A view type that a shared component needs also lives in `features/components/`, not in the screen folder that uses it most. `TeamDisplay` is the example. A record type that `app/` also uses, such as `TeamBlueprint` or `LeagueWrapper`, does not live in `features/` at all. It lives in `src/domain/`. See `src/domain/DOMAIN.md`.
 
 ## Where this fits with `module-boundaries.md`
 

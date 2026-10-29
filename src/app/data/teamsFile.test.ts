@@ -54,7 +54,7 @@ describe('importTeamsFile', () => {
     expect(await importTeamsFile(fs, dialog)).toEqual([FC_UNITED]);
   });
 
-  it('fills in a blank slug from the team name', async () => {
+  it('keeps a blank slug blank, so importTeamBlueprints makes a unique one (Task 109)', async () => {
     const fs = fakeFs({
       readTextFile: vi
         .fn()
@@ -63,7 +63,7 @@ describe('importTeamsFile', () => {
     const dialog = fakeDialog({
       pickOpenPath: vi.fn().mockResolvedValue('/teams.csv'),
     });
-    expect(await importTeamsFile(fs, dialog)).toEqual([FC_UNITED]);
+    expect(await importTeamsFile(fs, dialog)).toEqual([{ ...FC_UNITED, slug: '' }]);
   });
 
   it('reads a .json file as a team list, whatever the extension case', async () => {

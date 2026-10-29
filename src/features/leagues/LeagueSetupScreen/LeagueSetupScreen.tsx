@@ -19,7 +19,6 @@ export function LeagueSetupScreen(): JSX.Element {
       content: (
         <DetailsStep
           initial={details}
-          takenSlugs={setup.takenSlugs}
           onNext={setup.goToTeams}
           ref={setup.detailsStepRef}
         />

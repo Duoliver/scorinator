@@ -50,7 +50,7 @@ describe('importTeamsJson', () => {
     ]);
   });
 
-  it('fills in a blank slug from the team name', async () => {
+  it('keeps a blank slug blank, so importTeamBlueprints makes a unique one (Task 109)', async () => {
     const json = JSON.stringify([{ name: 'Harborview SC', tier: 'A' }]);
     const fs = fakeFs({ readTextFile: vi.fn().mockResolvedValue(json) });
     const dialog = fakeDialog({
@@ -58,7 +58,7 @@ describe('importTeamsJson', () => {
     });
     const result = await importTeamsJson(fs, dialog);
     expect(result).toEqual([
-      { slug: 'harborview-sc', name: 'Harborview SC', colour: '', tier: 'A' },
+      { slug: '', name: 'Harborview SC', colour: '', tier: 'A' },
     ]);
   });
 });

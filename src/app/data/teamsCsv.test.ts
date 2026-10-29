@@ -40,7 +40,7 @@ describe('importTeamsCsv', () => {
     ]);
   });
 
-  it('fills in a blank slug from the team name', async () => {
+  it('keeps a blank slug blank, so importTeamBlueprints makes a unique one (Task 109)', async () => {
     const csv = 'Slug,Name,Colour,Tier\n,Harborview SC,,A\n';
     const fs = fakeFs({ readTextFile: vi.fn().mockResolvedValue(csv) });
     const dialog = fakeDialog({
@@ -48,7 +48,7 @@ describe('importTeamsCsv', () => {
     });
     const result = await importTeamsCsv(fs, dialog);
     expect(result).toEqual([
-      { slug: 'harborview-sc', name: 'Harborview SC', colour: '', tier: 'A' },
+      { slug: '', name: 'Harborview SC', colour: '', tier: 'A' },
     ]);
   });
 

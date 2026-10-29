@@ -1,47 +1,31 @@
-import { beforeEach, describe, expect, it } from 'vitest';
-import { act, renderHook } from '@testing-library/preact';
-import { setTeams } from '@/app/state/teamsActions';
-import { useTeamsStore } from '@/app/state/teamsStore';
-import type { TeamRecord } from '@/domain';
+import { describe, expect, it } from 'vitest';
+import { renderHook } from '@testing-library/preact';
+import { HARBORVIEW, instance, SALT_MARSH } from '@/test/databaseRecords';
 import { useTeamLookup } from './useTeamLookup';
 
-const team = (overrides: Partial<TeamRecord> = {}): TeamRecord => ({
-  slug: 'fc-united',
-  name: 'FC United',
-  colour: '#E53935',
-  tier: 'B',
-  ...overrides,
-});
-
-beforeEach(() => {
-  useTeamsStore.setState({ teams: [] });
-});
+const teams = [
+  instance(),
+  instance({ blueprintUuid: HARBORVIEW, name: 'Harborview SC', colour: '#E53935' }),
+];
 
 describe('useTeamLookup', () => {
-  it('gives the name and colour of a roster team by slug', () => {
-    useTeamsStore.setState({
-      teams: [
-        team(),
-        team({ slug: 'fc-rivals', name: 'FC Rivals', colour: '#1E88E5' }),
-      ],
-    });
-    const { result } = renderHook(() => useTeamLookup());
+  it('gives the name and colour of a league Instance by its Blueprint UUID', () => {
+    const { result } = renderHook(() => useTeamLookup(teams));
 
-    expect(result.current('fc-rivals')).toEqual({
-      name: 'FC Rivals',
-      colour: '#1E88E5',
+    expect(result.current(HARBORVIEW)).toEqual({
+      name: 'Harborview SC',
+      colour: '#E53935',
     });
   });
 
-  it('falls back to the slug and no colour for a team not in the roster', () => {
-    const { result } = renderHook(() => useTeamLookup());
+  it('falls back to the UUID and no colour for a team not in the league', () => {
+    const { result } = renderHook(() => useTeamLookup(teams));
 
     expect(result.current('fc-gone')).toEqual({ name: 'fc-gone', colour: '' });
   });
 
-  it('keeps the same function while the roster does not change', () => {
-    useTeamsStore.setState({ teams: [team()] });
-    const { result, rerender } = renderHook(() => useTeamLookup());
+  it('keeps the same function while the Instances do not change', () => {
+    const { result, rerender } = renderHook(() => useTeamLookup(teams));
     const first = result.current;
 
     rerender();
@@ -49,14 +33,15 @@ describe('useTeamLookup', () => {
     expect(result.current).toBe(first);
   });
 
-  it('gives a new function that sees the change when the roster changes', () => {
-    useTeamsStore.setState({ teams: [team()] });
-    const { result } = renderHook(() => useTeamLookup());
+  it('gives a new function that sees the change when the Instances change', () => {
+    const { result, rerender } = renderHook(({ list }) => useTeamLookup(list), {
+      initialProps: { list: teams },
+    });
     const first = result.current;
 
-    act(() => setTeams([team({ name: 'FC United Renamed' })]));
+    rerender({ list: [instance({ name: 'Salt Marsh Renamed' })] });
 
     expect(result.current).not.toBe(first);
-    expect(result.current('fc-united').name).toBe('FC United Renamed');
+    expect(result.current(SALT_MARSH).name).toBe('Salt Marsh Renamed');
   });
 });

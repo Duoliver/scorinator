@@ -1,60 +1,71 @@
 import type { JSX } from 'preact';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { scorinateMatchday } from '@/app/state/leagueActions';
 import { act, render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
-import { generateRoundRobin } from '@/engine/round-robin';
-import { useTeamsStore } from '@/app/state/teamsStore';
-import { useLeagueStore } from '@/app/state/leagueStore';
-import type { LeagueRecord, TeamRecord } from '@/domain';
+import { scorinateMatchday } from '@/app/state/leagueWrapperActions';
+import { useDatabaseStore } from '@/app/state/databaseStore';
+import type { LeagueWrapper, Phase } from '@/domain';
 import { FixturesView } from './FixturesView';
+import {
+  LEAGUE,
+  openTestDatabase,
+  openTestLeague,
+  roundRobinLeague,
+} from '@/test/databaseRecords';
 
-const team = (overrides: Partial<TeamRecord> = {}): TeamRecord => ({
-  slug: 'fc-united',
-  name: 'FC United',
-  colour: '#E53935',
-  tier: 'B',
-  ...overrides,
-});
+const ALL_TEAMS = [
+  { name: 'FC United', colour: '#E53935' },
+  { name: 'FC Rivals', colour: '#1E88E5' },
+  { name: 'FC Town', colour: '#2E7D32' },
+  { name: 'FC Rangers', colour: '#6A1B9A' },
+];
 
-const league = (overrides: Partial<LeagueRecord> = {}): LeagueRecord => ({
-  slug: 'coastal-premier',
-  name: 'Coastal Premier',
-  homeAdvantage: false,
-  points: { win: 3, draw: 1, loss: 0 },
-  teams: [],
-  fixtures: [],
-  byes: [],
-  results: [],
-  ...overrides,
-});
+type Score = { homeGoals: number; awayGoals: number };
+
+/** A league of the first `teamCount` teams. Score `i` becomes the result
+ * of fixture `i` of phase 1. */
+function league(teamCount: number, scores: Score[] = []): LeagueWrapper {
+  const wrapper = roundRobinLeague(ALL_TEAMS.slice(0, teamCount));
+  const [phase] = wrapper.content.phases;
+  const results = scores.map((score, i) => {
+    const fixture = phase.fixtures[i];
+    return { fixtureId: fixture.id, home: fixture.home, away: fixture.away, ...score };
+  });
+  return {
+    ...wrapper,
+    content: { ...wrapper.content, phases: [{ ...phase, results }] },
+  };
+}
+
+/** Phase 1 of the league. */
+function fixturesOf(wrapper: LeagueWrapper): Phase {
+  return wrapper.content.phases[0];
+}
+
+/** Puts the league in the store, for a test that renders through
+ * `FixturesViewFromStore`. */
+function openLeague(teamCount: number, scores: Score[] = []): LeagueWrapper {
+  return openTestLeague(league(teamCount, scores));
+}
 
 /** `FixturesView` reads `league` as a plain prop, the same way
- * `LeagueDetailScreen` passes it down in the real app — it holds no store
+ * `LeagueDetailScreen` passes it down in the real app: it holds no store
  * subscription of its own. A Scorinate click only becomes visible if
- * whatever renders `FixturesView` re-renders with the store's fresh
- * league object, so the two Scorinate tests below render through this
- * small harness instead, mirroring `LeagueDetailScreen`'s own lookup. */
-function FixturesViewFromStore({ slug }: { slug: string }): JSX.Element | null {
-  const found = useLeagueStore((state) => state.leagues.find((l) => l.slug === slug));
+ * whatever renders `FixturesView` renders again with the fresh league from
+ * the store, so the Scorinate tests render through this small harness, as
+ * League Detail does. */
+function FixturesViewFromStore(): JSX.Element | null {
+  const found = useDatabaseStore((state) => state.leagues[LEAGUE]);
   return found ? <FixturesView league={found} /> : null;
 }
 
 beforeEach(() => {
-  useLeagueStore.setState({ leagues: [] });
-  useTeamsStore.setState({
-    teams: [
-      team({ slug: 'fc-united', name: 'FC United' }),
-      team({ slug: 'fc-rivals', name: 'FC Rivals', colour: '#1E88E5' }),
-      team({ slug: 'fc-town', name: 'FC Town', colour: '#2E7D32' }),
-      team({ slug: 'fc-rangers', name: 'FC Rangers', colour: '#6A1B9A' }),
-    ],
-  });
+  openTestDatabase();
 });
 
 describe('FixturesView', () => {
   it('shows an empty-state message when the league has no fixtures', () => {
-    render(<FixturesView league={league()} />);
+    render(<FixturesView league={league(1)} />);
 
     expect(
       screen.getByText('Not enough teams to generate fixtures yet.')
@@ -62,9 +73,9 @@ describe('FixturesView', () => {
   });
 
   it('renders matchday 1 by default, with the correct matches and team names', () => {
-    const slugs = ['fc-united', 'fc-rivals', 'fc-town', 'fc-rangers'];
-    const { fixtures, byes } = generateRoundRobin(slugs);
-    render(<FixturesView league={league({ teams: [], fixtures, byes })} />);
+    const wrapper = league(4);
+    const { fixtures } = fixturesOf(wrapper);
+    render(<FixturesView league={wrapper} />);
 
     const totalMatchdays = Math.max(...fixtures.map((f) => f.matchday));
     expect(screen.getByText(`Matchday 1 / ${totalMatchdays}`)).toBeInTheDocument();
@@ -76,15 +87,16 @@ describe('FixturesView', () => {
   });
 
   it('disables Previous on matchday 1, and advances the header and matches on Next', async () => {
-    const slugs = ['fc-united', 'fc-rivals', 'fc-town', 'fc-rangers'];
-    const { fixtures, byes } = generateRoundRobin(slugs);
-    render(<FixturesView league={league({ fixtures, byes })} />);
+    const wrapper = league(4);
+    render(<FixturesView league={wrapper} />);
 
     expect(screen.getByRole('button', { name: /Previous matchday/ })).toBeDisabled();
 
     await userEvent.click(screen.getByRole('button', { name: /Next matchday/ }));
 
-    const totalMatchdays = Math.max(...fixtures.map((f) => f.matchday));
+    const totalMatchdays = Math.max(
+      ...fixturesOf(wrapper).fixtures.map((f) => f.matchday)
+    );
     expect(screen.getByText(`Matchday 2 / ${totalMatchdays}`)).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: /Previous matchday/ })
@@ -92,18 +104,19 @@ describe('FixturesView', () => {
   });
 
   it('opens on initialMatchday, and reports each matchday change through onMatchdayChange', async () => {
-    const slugs = ['fc-united', 'fc-rivals', 'fc-town', 'fc-rangers'];
-    const { fixtures, byes } = generateRoundRobin(slugs);
+    const wrapper = league(4);
     const changes: number[] = [];
     render(
       <FixturesView
-        league={league({ fixtures, byes })}
+        league={wrapper}
         initialMatchday={2}
         onMatchdayChange={(next) => changes.push(next)}
       />
     );
 
-    const totalMatchdays = Math.max(...fixtures.map((f) => f.matchday));
+    const totalMatchdays = Math.max(
+      ...fixturesOf(wrapper).fixtures.map((f) => f.matchday)
+    );
     expect(screen.getByText(`Matchday 2 / ${totalMatchdays}`)).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: /Next matchday/ }));
@@ -112,10 +125,11 @@ describe('FixturesView', () => {
   });
 
   it('disables Next on the last matchday', async () => {
-    const slugs = ['fc-united', 'fc-rivals', 'fc-town', 'fc-rangers'];
-    const { fixtures, byes } = generateRoundRobin(slugs);
-    const totalMatchdays = Math.max(...fixtures.map((f) => f.matchday));
-    render(<FixturesView league={league({ fixtures, byes })} />);
+    const wrapper = league(4);
+    const totalMatchdays = Math.max(
+      ...fixturesOf(wrapper).fixtures.map((f) => f.matchday)
+    );
+    render(<FixturesView league={wrapper} />);
 
     for (let step = 1; step < totalMatchdays; step++) {
       await userEvent.click(screen.getByRole('button', { name: /Next matchday/ }));
@@ -128,42 +142,29 @@ describe('FixturesView', () => {
   });
 
   it('shows a Bye row with the correct team, for an odd-team-count schedule', () => {
-    const slugs = ['fc-united', 'fc-rivals', 'fc-town'];
-    const { fixtures, byes } = generateRoundRobin(slugs);
-    render(<FixturesView league={league({ fixtures, byes })} />);
+    const wrapper = league(3);
+    render(<FixturesView league={wrapper} />);
 
-    const byeOnMatchdayOne = byes.find((bye) => bye.matchday === 1);
+    const byeOnMatchdayOne = fixturesOf(wrapper).byes.find((bye) => bye.matchday === 1);
     expect(byeOnMatchdayOne).toBeDefined();
     expect(screen.getByText('Bye')).toBeInTheDocument();
-    const byeName = useTeamsStore
-      .getState()
-      .teams.find((t) => t.slug === byeOnMatchdayOne?.team)?.name;
+    const byeName = wrapper.teams.find(
+      (team) => team.blueprintUuid === byeOnMatchdayOne?.team
+    )?.name;
     expect(screen.getByText(byeName ?? '')).toBeInTheDocument();
   });
 
-  it('falls back to the raw slug when a team is no longer in the roster', () => {
-    const { fixtures, byes } = generateRoundRobin(['fc-united', 'ghost-fc']);
-    useTeamsStore.setState({ teams: [team({ slug: 'fc-united', name: 'FC United' })] });
-    render(<FixturesView league={league({ fixtures, byes })} />);
+  it('falls back to the raw UUID when a fixture names a team with no Instance', () => {
+    const wrapper = league(2);
+    const [, ghost] = wrapper.teams;
+    render(<FixturesView league={{ ...wrapper, teams: wrapper.teams.slice(0, 1) }} />);
 
-    expect(screen.getByText('ghost-fc')).toBeInTheDocument();
+    expect(screen.getByText(ghost.blueprintUuid)).toBeInTheDocument();
   });
 
   it('turns a match’s "vs" into a real score on Scorinate, and swaps its button for Re-scorinate', async () => {
-    const { fixtures, byes } = generateRoundRobin(['fc-united', 'fc-rivals']);
-    useLeagueStore.setState({
-      leagues: [
-        league({
-          teams: [
-            { slug: 'fc-united', ovr: 70 },
-            { slug: 'fc-rivals', ovr: 65 },
-          ],
-          fixtures,
-          byes,
-        }),
-      ],
-    });
-    render(<FixturesViewFromStore slug="coastal-premier" />);
+    openLeague(2);
+    render(<FixturesViewFromStore />);
 
     expect(screen.getByRole('button', { name: 'Scorinate' })).toBeInTheDocument();
     expect(screen.getByText('vs')).toBeInTheDocument();
@@ -177,53 +178,22 @@ describe('FixturesView', () => {
   });
 
   it('replaces a played score on Re-scorinate, and keeps exactly one score for the match', async () => {
-    const { fixtures, byes } = generateRoundRobin(['fc-united', 'fc-rivals']);
-    useLeagueStore.setState({
-      leagues: [
-        league({
-          teams: [
-            { slug: 'fc-united', ovr: 70 },
-            { slug: 'fc-rivals', ovr: 65 },
-          ],
-          fixtures,
-          byes,
-          // 99-99 is far outside what the engine can draw, so a changed score proves the overwrite.
-          results: [{ ...fixtures[0], homeGoals: 99, awayGoals: 99 }],
-        }),
-      ],
-    });
-    render(<FixturesViewFromStore slug="coastal-premier" />);
+    // 99-99 is far outside what the engine can draw, so a changed score proves the overwrite.
+    openLeague(2, [{ homeGoals: 99, awayGoals: 99 }]);
+    render(<FixturesViewFromStore />);
     expect(screen.getByText('99 - 99')).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'Re-scorinate' }));
 
     expect(screen.queryByText('99 - 99')).not.toBeInTheDocument();
     expect(screen.getAllByText(/^\d+ - \d+$/)).toHaveLength(1);
-    expect(useLeagueStore.getState().leagues[0].results).toHaveLength(1);
+    const stored = useDatabaseStore.getState().leagues[LEAGUE];
+    expect(stored?.content.phases[0]?.results).toHaveLength(1);
   });
 
   it('scorinates every remaining match on Scorinate matchday, then disables that button', async () => {
-    const { fixtures, byes } = generateRoundRobin([
-      'fc-united',
-      'fc-rivals',
-      'fc-town',
-      'fc-rangers',
-    ]);
-    useLeagueStore.setState({
-      leagues: [
-        league({
-          teams: [
-            { slug: 'fc-united', ovr: 70 },
-            { slug: 'fc-rivals', ovr: 65 },
-            { slug: 'fc-town', ovr: 60 },
-            { slug: 'fc-rangers', ovr: 55 },
-          ],
-          fixtures,
-          byes,
-        }),
-      ],
-    });
-    render(<FixturesViewFromStore slug="coastal-premier" />);
+    openLeague(4);
+    render(<FixturesViewFromStore />);
 
     expect(
       screen.getByRole('button', { name: 'Scorinate matchday' })
@@ -237,22 +207,6 @@ describe('FixturesView', () => {
   });
 
   describe('score flash', () => {
-    const twoTeams = (results: LeagueRecord['results'] = []): void => {
-      const { fixtures, byes } = generateRoundRobin(['fc-united', 'fc-rivals']);
-      useLeagueStore.setState({
-        leagues: [
-          league({
-            teams: [
-              { slug: 'fc-united', ovr: 70 },
-              { slug: 'fc-rivals', ovr: 65 },
-            ],
-            fixtures,
-            byes,
-            results: results.map((result, i) => ({ ...fixtures[i], ...result })),
-          }),
-        ],
-      });
-    };
     const user = (): ReturnType<typeof userEvent.setup> =>
       userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
 
@@ -264,8 +218,8 @@ describe('FixturesView', () => {
     });
 
     it('turns a new score green for 500ms, then back', async () => {
-      twoTeams();
-      render(<FixturesViewFromStore slug="coastal-premier" />);
+      openLeague(2);
+      render(<FixturesViewFromStore />);
 
       await user().click(screen.getByRole('button', { name: 'Scorinate' }));
 
@@ -282,8 +236,8 @@ describe('FixturesView', () => {
     });
 
     it('turns a re-scorinated score green too', async () => {
-      twoTeams([{ homeGoals: 99, awayGoals: 99 } as LeagueRecord['results'][number]]);
-      render(<FixturesViewFromStore slug="coastal-premier" />);
+      openLeague(2, [{ homeGoals: 99, awayGoals: 99 }]);
+      render(<FixturesViewFromStore />);
       expect(screen.getByText('99 - 99')).not.toHaveAttribute('data-flashing');
 
       await user().click(screen.getByRole('button', { name: 'Re-scorinate' }));
@@ -296,27 +250,8 @@ describe('FixturesView', () => {
     });
 
     it('flashes every score that Scorinate matchday generates', async () => {
-      const { fixtures, byes } = generateRoundRobin([
-        'fc-united',
-        'fc-rivals',
-        'fc-town',
-        'fc-rangers',
-      ]);
-      useLeagueStore.setState({
-        leagues: [
-          league({
-            teams: [
-              { slug: 'fc-united', ovr: 70 },
-              { slug: 'fc-rivals', ovr: 65 },
-              { slug: 'fc-town', ovr: 60 },
-              { slug: 'fc-rangers', ovr: 55 },
-            ],
-            fixtures,
-            byes,
-          }),
-        ],
-      });
-      render(<FixturesViewFromStore slug="coastal-premier" />);
+      openLeague(4);
+      render(<FixturesViewFromStore />);
 
       await user().click(screen.getByRole('button', { name: 'Scorinate matchday' }));
 
@@ -326,8 +261,8 @@ describe('FixturesView', () => {
     });
 
     it('does not flash scores that already exist when the view opens or the matchday changes', async () => {
-      twoTeams([{ homeGoals: 2, awayGoals: 1 } as LeagueRecord['results'][number]]);
-      render(<FixturesViewFromStore slug="coastal-premier" />);
+      openLeague(2, [{ homeGoals: 2, awayGoals: 1 }]);
+      render(<FixturesViewFromStore />);
       expect(screen.getByText('2 - 1')).not.toHaveAttribute('data-flashing');
 
       await user().click(screen.getByRole('button', { name: /Next matchday/ }));
@@ -338,26 +273,17 @@ describe('FixturesView', () => {
   });
 
   describe('matchday jump buttons', () => {
-    const slugs = ['fc-united', 'fc-rivals', 'fc-town', 'fc-rangers'];
     // Four teams play six matchdays.
-    const { fixtures, byes } = generateRoundRobin(slugs);
-    const lastMatchday = Math.max(...fixtures.map((f) => f.matchday));
+    let lastMatchday = 0;
 
     beforeEach(() => {
-      useLeagueStore.setState({
-        leagues: [
-          league({
-            teams: slugs.map((slug) => ({ slug, ovr: 60 })),
-            fixtures,
-            byes,
-          }),
-        ],
-      });
+      const wrapper = openLeague(4);
+      lastMatchday = Math.max(...fixturesOf(wrapper).fixtures.map((f) => f.matchday));
     });
 
     it('goes to the last and back to the first matchday, and reports both changes', async () => {
       const changes: number[] = [];
-      const found = useLeagueStore.getState().leagues[0]!;
+      const found = useDatabaseStore.getState().leagues[LEAGUE]!;
       render(
         <FixturesView league={found} onMatchdayChange={(next) => changes.push(next)} />
       );
@@ -377,7 +303,7 @@ describe('FixturesView', () => {
     });
 
     it('jumps back to the first unplayed matchday on Current matchday', async () => {
-      render(<FixturesViewFromStore slug="coastal-premier" />);
+      render(<FixturesViewFromStore />);
 
       // Nothing played yet: matchday 1 is current, so the button has nothing to do.
       expect(screen.getByRole('button', { name: 'Current matchday' })).toBeDisabled();
@@ -394,15 +320,15 @@ describe('FixturesView', () => {
     });
 
     it('shows no League completed badge while matches remain', () => {
-      render(<FixturesViewFromStore slug="coastal-premier" />);
+      render(<FixturesViewFromStore />);
       expect(screen.queryByText('League completed')).not.toBeInTheDocument();
     });
 
     it('swaps Current matchday for a League completed badge once every match is played', () => {
-      render(<FixturesViewFromStore slug="coastal-premier" />);
+      render(<FixturesViewFromStore />);
       act(() => {
         for (let matchday = 1; matchday <= lastMatchday; matchday += 1) {
-          scorinateMatchday('coastal-premier', matchday);
+          scorinateMatchday(LEAGUE, matchday);
         }
       });
 
@@ -415,10 +341,10 @@ describe('FixturesView', () => {
     });
 
     it('gives the League completed badge a short Completed form for a compact header, hidden from screen readers', () => {
-      render(<FixturesViewFromStore slug="coastal-premier" />);
+      render(<FixturesViewFromStore />);
       act(() => {
         for (let matchday = 1; matchday <= lastMatchday; matchday += 1) {
-          scorinateMatchday('coastal-premier', matchday);
+          scorinateMatchday(LEAGUE, matchday);
         }
       });
 
@@ -430,16 +356,10 @@ describe('FixturesView', () => {
     // jsdom applies no container query, so these tests check the markup the
     // CSS relies on: stable accessible names, and the short text marked
     // aria-hidden. The narrow look itself needs a browser check.
-    const slugs = ['fc-united', 'fc-rivals', 'fc-town', 'fc-rangers'];
-    const { fixtures, byes } = generateRoundRobin(slugs);
-
-    const renderView = (): void => {
-      useLeagueStore.setState({
-        leagues: [
-          league({ teams: slugs.map((slug) => ({ slug, ovr: 60 })), fixtures, byes }),
-        ],
-      });
-      render(<FixturesView league={useLeagueStore.getState().leagues[0]!} />);
+    const renderView = (): LeagueWrapper => {
+      const wrapper = league(4);
+      render(<FixturesView league={wrapper} />);
+      return wrapper;
     };
 
     it('gives the four text buttons a full accessible name that does not depend on the visible label', () => {
@@ -468,8 +388,8 @@ describe('FixturesView', () => {
     });
 
     it('keeps the full counter for screen readers, and marks the short counter aria-hidden', () => {
-      renderView();
-      const total = Math.max(...fixtures.map((f) => f.matchday));
+      const wrapper = renderView();
+      const total = Math.max(...fixturesOf(wrapper).fixtures.map((f) => f.matchday));
       expect(screen.getByText(`Matchday 1 / ${total}`)).not.toHaveAttribute(
         'aria-hidden'
       );
@@ -482,28 +402,9 @@ describe('FixturesView', () => {
     const goals = (side: 'home' | 'away'): HTMLElement =>
       document.querySelector(`[data-goals="${side}"]`) as HTMLElement;
 
-    const twoTeamLeague = (results: LeagueRecord['results'] = []): void => {
-      const { fixtures, byes } = generateRoundRobin(['fc-united', 'fc-rivals']);
-      useLeagueStore.setState({
-        leagues: [
-          league({
-            teams: [
-              { slug: 'fc-united', ovr: 70 },
-              { slug: 'fc-rivals', ovr: 65 },
-            ],
-            fixtures,
-            byes,
-            results: results.map((result, i) => ({ ...fixtures[i], ...result })),
-          }),
-        ],
-      });
-    };
-
     it('shows each team its own goals after a result, hidden from screen readers', () => {
-      twoTeamLeague([
-        { homeGoals: 2, awayGoals: 1 } as LeagueRecord['results'][number],
-      ]);
-      render(<FixturesViewFromStore slug="coastal-premier" />);
+      openLeague(2, [{ homeGoals: 2, awayGoals: 1 }]);
+      render(<FixturesViewFromStore />);
 
       expect(goals('home')).toHaveTextContent(/^2$/);
       expect(goals('away')).toHaveTextContent(/^1$/);
@@ -512,26 +413,27 @@ describe('FixturesView', () => {
     });
 
     it('leaves both goals empty before a result, with no vs', () => {
-      twoTeamLeague();
-      render(<FixturesViewFromStore slug="coastal-premier" />);
+      openLeague(2);
+      render(<FixturesViewFromStore />);
 
       expect(goals('home')).toBeEmptyDOMElement();
       expect(goals('away')).toBeEmptyDOMElement();
     });
 
     it('puts the home goals in the home team block and the away goals in the away block', () => {
-      twoTeamLeague([
-        { homeGoals: 3, awayGoals: 0 } as LeagueRecord['results'][number],
-      ]);
-      render(<FixturesViewFromStore slug="coastal-premier" />);
+      const wrapper = openLeague(2, [{ homeGoals: 3, awayGoals: 0 }]);
+      const [first] = fixturesOf(wrapper).fixtures;
+      const nameOf = (uuid: string): string =>
+        wrapper.teams.find((team) => team.blueprintUuid === uuid)?.name ?? '';
+      render(<FixturesViewFromStore />);
 
-      expect(goals('home').parentElement).toHaveTextContent('FC United');
-      expect(goals('away').parentElement).toHaveTextContent('FC Rivals');
+      expect(goals('home').parentElement).toHaveTextContent(nameOf(first.home));
+      expect(goals('away').parentElement).toHaveTextContent(nameOf(first.away));
     });
 
     it('flashes both goals with the score after a scorinate', async () => {
-      twoTeamLeague();
-      render(<FixturesViewFromStore slug="coastal-premier" />);
+      openLeague(2);
+      render(<FixturesViewFromStore />);
 
       await userEvent.click(screen.getByRole('button', { name: 'Scorinate' }));
 

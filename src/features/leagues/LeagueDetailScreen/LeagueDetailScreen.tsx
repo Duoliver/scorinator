@@ -7,28 +7,34 @@ import styles from './LeagueDetailScreen.module.css';
 
 export type { LeagueDetailScreenProps };
 
-export function LeagueDetailScreen({ slug }: LeagueDetailScreenProps): JSX.Element {
-  const detail = useLeagueDetail(slug);
+export function LeagueDetailScreen({ uuid }: LeagueDetailScreenProps): JSX.Element {
+  const state = useLeagueDetail(uuid);
+  const backLink = (
+    <a href={ROUTES.leaguesDashboard} class={styles.backLink}>
+      ← Leagues
+    </a>
+  );
 
-  if (!detail) {
+  if (state.kind !== 'open') {
     return (
       <div class={styles.screen}>
-        <a href={ROUTES.leaguesDashboard} class={styles.backLink}>
-          ← Leagues
-        </a>
-        <p>League not found.</p>
+        {backLink}
+        {state.kind === 'not-found' && <p>League not found.</p>}
+        {state.kind === 'opening' && <p role="status">Opening the league…</p>}
+        {state.kind === 'error' && (
+          <p role="alert">The league could not open: {state.message}</p>
+        )}
       </div>
     );
   }
 
+  const { detail } = state;
   return (
     <div class={styles.screen}>
       <div>
-        <a href={ROUTES.leaguesDashboard} class={styles.backLink}>
-          ← Leagues
-        </a>
+        {backLink}
         <div class={styles.titleRow}>
-          <h1 class={styles.title}>{detail.league.name}</h1>
+          <h1 class={styles.title}>{detail.league.content.name}</h1>
           {detail.isUnsaved && <Badge tone="warning">Unsaved</Badge>}
         </div>
         <span class={styles.meta}>{detail.meta}</span>

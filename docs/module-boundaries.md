@@ -21,7 +21,7 @@ The module map below is a direct transcription of decisions already made in the 
     /story-mode         (season pipeline, team events, mergers)
     /identity           (UUID generation, skip/fork conflict resolution)
 
-  /domain            the app's record types (TeamRecord, LeagueRecord, ...),
+  /domain            the app's record types (TeamBlueprint, LeagueWrapper, ...),
                       shared by /app and /features. Types only. Imports
                       only /engine types. See /domain/DOMAIN.md.
 

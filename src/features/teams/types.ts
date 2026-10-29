@@ -1,5 +1,5 @@
 import type { TableColumn } from '@/design-system';
-import type { TeamRecord } from '@/domain';
+import type { TeamBlueprint, TeamFields } from '@/domain';
 
 /** Which drawer is open: none, a new team, or the team at `index`. */
 export type TeamDrawerState =
@@ -7,7 +7,7 @@ export type TeamDrawerState =
 
 /** One roster row. Two teams can share a slug, so the key and the edit
  * target use the row's index in the roster, not the slug. */
-export interface TeamRow extends TeamRecord {
+export interface TeamRow extends TeamBlueprint {
   rowKey: string;
   index: number;
 }
@@ -19,9 +19,9 @@ export interface Teams {
   countText: string;
   drawer: TeamDrawerState;
   /** The team the edit drawer starts from, or `undefined` for a new team. */
-  editedTeam: TeamRecord | undefined;
+  editedTeam: TeamFields | undefined;
   openCreateDrawer: () => void;
   closeDrawer: () => void;
-  handleSave: (record: TeamRecord) => void;
+  handleSave: (record: TeamFields) => void;
   handleImport: () => Promise<void>;
 }

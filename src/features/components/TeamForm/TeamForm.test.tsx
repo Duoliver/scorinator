@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { TeamForm } from './TeamForm';
 import { DEFAULT_TEAM_COLOUR, TEAM_PALETTE } from '@/design-system';
-import type { TeamRecord } from '@/domain';
+import type { TeamFields } from '@/domain';
 
 describe('TeamForm', () => {
   it('renders the given save label and every field', () => {
@@ -37,7 +37,7 @@ describe('TeamForm', () => {
   });
 
   it('pre-fills every field from `initial` when editing', () => {
-    const initial: TeamRecord = {
+    const initial: TeamFields = {
       slug: 'fc-united',
       name: 'FC United',
       colour: '#E53935',
@@ -92,7 +92,7 @@ describe('TeamForm', () => {
 
   it('keeps a colour that is not in the palette when the user picks none', async () => {
     const onSave = vi.fn();
-    const initial: TeamRecord = {
+    const initial: TeamFields = {
       slug: 'fc-united',
       name: 'FC United',
       colour: '#123456',
@@ -115,7 +115,7 @@ describe('TeamForm', () => {
 
   it('keeps an empty colour from an import when the user picks none', async () => {
     const onSave = vi.fn();
-    const initial: TeamRecord = {
+    const initial: TeamFields = {
       slug: 'fc-united',
       name: 'FC United',
       colour: '',

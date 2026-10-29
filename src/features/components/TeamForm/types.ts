@@ -1,13 +1,13 @@
 import type { RefObject } from 'preact';
 import type { FieldHandle } from '@/design-system';
-import type { TeamRecord } from '@/domain';
+import type { TeamFields } from '@/domain';
 import type { Tier } from '@/engine/tier-ovr';
 
 export default interface TeamFormProps {
   saveLabel: string;
-  initial?: TeamRecord;
+  initial?: TeamFields;
   onCancel: () => void;
-  onSave: (record: TeamRecord) => void;
+  onSave: (record: TeamFields) => void;
 }
 
 /** The value each field starts with: the team's own value when editing,

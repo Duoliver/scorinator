@@ -1,9 +1,14 @@
 export { generateRoundRobin } from './roundRobin';
+export { assignFixtureIds, fixtureId } from './fixtureIds';
 export {
-  findCurrentMatchday,
-  findResult,
-  isMatchdayFullyPlayed,
-  isSameMatch,
-  matchKey,
+  findPhaseCurrentMatchday,
+  findPhaseResult,
+  isPhaseMatchdayPlayed,
 } from './schedule';
-export type { Fixture, Bye, MatchIdentity, RoundRobinSchedule } from './types';
+export type {
+  Bye,
+  Fixture,
+  FixturePosition,
+  PhaseFixture,
+  RoundRobinSchedule,
+} from './types';

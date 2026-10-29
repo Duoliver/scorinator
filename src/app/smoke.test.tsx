@@ -4,18 +4,17 @@ import userEvent from '@testing-library/user-event';
 import { AppShell } from './AppShell';
 import { useFileStore } from '@/app/state/fileStore';
 import { useLeagueDraftStore } from '@/app/state/leagueDraftStore';
-import { useLeagueStore } from '@/app/state/leagueStore';
-import { useTeamsStore } from '@/app/state/teamsStore';
 import { DEFAULT_POINTS_CONFIG } from '@/engine/standings';
+import { useDatabaseStore } from '@/app/state/databaseStore';
 
 /** The end-to-end smoke test `docs/tdd.md` asks for (Task 50): create
  * teams, create a league, scorinate every match, save, start a new session,
- * and load the save. It drives the real screens through `AppShell`, with
- * the real stores, `app/` actions, `app/data`, and adapters. Only the two
- * Tauri plugins are fake: an in-memory disk, and dialogs that return a
- * fixed path. */
-
-const SAVE_PATH = '/saves/coastal-premier.json';
+ * and open the league again. Since Task 161 the teams and the league go to
+ * the database folder with Ctrl+S, and come back from it in the new
+ * session. It drives the real screens through `AppShell`, with the real
+ * stores, `app/` actions, `app/data`, and adapters. Only the Tauri modules
+ * are fake: an in-memory disk, dialogs that the flow never opens, and a
+ * fixed app data folder. */
 
 const disk = vi.hoisted(() => new Map<string, string>());
 
@@ -38,23 +37,29 @@ vi.mock('@tauri-apps/plugin-fs', () => ({
     disk.delete(path);
   },
   exists: async (path: string): Promise<boolean> => disk.has(path),
+  // The in-memory disk has no folders: a path is just a key.
+  mkdir: async (): Promise<void> => {},
 }));
 
+// The database folder (Task 109): `database/` in the app data folder.
+vi.mock('@tauri-apps/api/path', () => ({
+  appDataDir: async (): Promise<string> => '/appdata',
+  join: async (...parts: string[]): Promise<string> => parts.join('/'),
+}));
+
+const MANIFEST_PATH = '/appdata/database/manifest.json';
+
 vi.mock('@tauri-apps/plugin-dialog', () => ({
-  save: vi.fn(async () => SAVE_PATH),
-  open: vi.fn(async () => SAVE_PATH),
+  save: vi.fn(async () => null),
+  open: vi.fn(async () => null),
   message: vi.fn(),
 }));
 
+/** A new session: every store empty, and the database closed, so the app
+ * opens it from the disk again. */
 function resetSession(): void {
-  useTeamsStore.setState({ teams: [] });
-  useLeagueStore.setState({ leagues: [] });
-  useFileStore.setState({
-    currentLeagueSlug: null,
-    paths: {},
-    savedLeagues: {},
-    status: null,
-  });
+  useDatabaseStore.setState(useDatabaseStore.getInitialState(), true);
+  useFileStore.setState({ status: null });
   useLeagueDraftStore.setState({
     details: { name: '', points: DEFAULT_POINTS_CONFIG, homeAdvantage: false },
     selectedSlugs: [],
@@ -95,12 +100,17 @@ beforeEach(() => {
   openAt('/');
 });
 
-describe('smoke: create, scorinate, save, and load a league', () => {
-  it('gives back the same league and standings after a save and a load', async () => {
+describe('smoke: create, scorinate, save, and open a league again', () => {
+  it('gives back the same league and standings in a new session', async () => {
     const user = userEvent.setup();
     const { unmount } = render(<AppShell />);
 
-    // 1. Create two teams on the Teams screen.
+    // 1. The app opens the database: the first start writes the manifest.
+    // Then create two teams on the Teams screen.
+    expect(
+      await screen.findByRole('heading', { name: 'No leagues yet.' })
+    ).toBeInTheDocument();
+    expect([...disk.keys()]).toEqual([MANIFEST_PATH]);
     await user.click(screen.getByRole('link', { name: 'Teams' }));
     for (const name of ['Salt Marsh United', 'Harborview SC']) {
       await user.click(screen.getByRole('button', { name: '+ New team' }));
@@ -132,44 +142,45 @@ describe('smoke: create, scorinate, save, and load a league', () => {
     await user.click(screen.getByRole('tab', { name: 'Standings' }));
     const standingsBefore = standingsRows();
     expect(standingsBefore).toHaveLength(2);
-    const leagueBefore = useLeagueStore.getState().leagues[0];
-    expect(leagueBefore.results).toHaveLength(2);
+    const [leagueBefore] = Object.values(useDatabaseStore.getState().leagues);
+    expect(leagueBefore.content.phases[0]?.results).toHaveLength(2);
     expect(screen.getByText('Unsaved')).toBeInTheDocument();
 
-    // 4. Ctrl+S saves the league to disk.
+    // 4. Ctrl+S saves the league file, then the manifest, in the database.
     pressCtrlS();
-    expect(
-      await screen.findByText(`Saved Coastal Premier to ${SAVE_PATH}`)
-    ).toBeInTheDocument();
+    expect(await screen.findByText('Saved.')).toBeInTheDocument();
     expect(screen.queryByText('Unsaved')).not.toBeInTheDocument();
-    expect([...disk.keys()]).toEqual([SAVE_PATH]);
+    const wrapperPath = `/appdata/database/wrapper-${leagueBefore.uuid}.json`;
+    expect([...disk.keys()].sort()).toEqual([MANIFEST_PATH, wrapperPath].sort());
 
-    // 5. A new session: empty stores, the app opens on the start screen.
+    // 5. A new session: empty stores, the app opens on the start screen. The
+    // dashboard card comes from the manifest, with no league file read.
     unmount();
     resetSession();
     openAt('/');
     render(<AppShell />);
     expect(
-      screen.getByRole('heading', { name: 'No leagues yet.' })
+      await screen.findByRole('heading', { name: 'Coastal Premier' })
     ).toBeInTheDocument();
-
-    // 6. Load the save from the empty state.
-    await user.click(screen.getByRole('button', { name: 'Load league...' }));
-    expect(
-      await screen.findByText(`Loaded Coastal Premier from ${SAVE_PATH}`)
-    ).toBeInTheDocument();
-
-    expect(useLeagueStore.getState().leagues).toEqual([leagueBefore]);
-    expect(useTeamsStore.getState().teams.map((team) => team.name)).toEqual([
+    expect(useDatabaseStore.getState().leagues).toEqual({});
+    expect(useDatabaseStore.getState().blueprints.map((team) => team.name)).toEqual([
       'Salt Marsh United',
       'Harborview SC',
     ]);
-
     const card = screen
       .getByRole('heading', { name: 'Coastal Premier' })
       .closest('div')!;
     expect(within(card).queryByText('Unsaved')).not.toBeInTheDocument();
+
+    // 6. Open the league: League Detail reads its file from the database.
     await user.click(screen.getByRole('link', { name: 'Open standings' }));
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Coastal Premier' })
+    ).toBeInTheDocument();
+    expect(useDatabaseStore.getState().leagues[leagueBefore.uuid]).toEqual(
+      leagueBefore
+    );
     expect(standingsRows()).toEqual(standingsBefore);
+    expect(screen.queryByText('Unsaved')).not.toBeInTheDocument();
   });
 });

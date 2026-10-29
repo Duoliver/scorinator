@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { exportResultsTxt } from './resultsTxt';
 import type { FileSystem, SaveFileDialog } from '@/persistence/types';
-import type { LeagueRecord, TeamRecord } from '@/domain';
+import { HARBORVIEW, leagueWrapper, result, SALT_MARSH } from '@/test/databaseRecords';
 
 function fakeFs(overrides: Partial<FileSystem> = {}): FileSystem {
   return {
@@ -22,81 +22,43 @@ function fakeDialog(overrides: Partial<SaveFileDialog> = {}): SaveFileDialog {
   };
 }
 
-const roster: TeamRecord[] = [
-  { slug: 'fc-united', name: 'FC United', colour: '#E53935', tier: 'B' },
-  { slug: 'fc-rivals', name: 'FC Rivals', colour: '#1E88E5', tier: 'C' },
-];
-
-const league: LeagueRecord = {
-  slug: 'coastal-premier',
-  name: 'Coastal Premier',
-  homeAdvantage: true,
-  points: { win: 3, draw: 1, loss: 0 },
-  teams: [
-    { slug: 'fc-united', ovr: 70 },
-    { slug: 'fc-rivals', ovr: 65 },
-  ],
-  fixtures: [{ matchday: 1, home: 'fc-united', away: 'fc-rivals' }],
-  byes: [],
-  results: [
-    { matchday: 1, home: 'fc-united', away: 'fc-rivals', homeGoals: 2, awayGoals: 1 },
-  ],
-};
+const league = leagueWrapper([result('p1.g1.md1.m1', SALT_MARSH, HARBORVIEW)]);
 
 describe('exportResultsTxt', () => {
   it('returns null and writes nothing when the user cancels the dialog', async () => {
     const writeTextFile = vi.fn();
     const dialog = fakeDialog({ pickSavePath: vi.fn().mockResolvedValue(null) });
 
-    const result = await exportResultsTxt(
-      league,
-      roster,
-      fakeFs({ writeTextFile }),
-      dialog
-    );
+    const path = await exportResultsTxt(league, fakeFs({ writeTextFile }), dialog);
 
-    expect(result).toBeNull();
+    expect(path).toBeNull();
     expect(writeTextFile).not.toHaveBeenCalled();
   });
 
-  it('writes the summary to the chosen path, with team names and not slugs', async () => {
+  it('writes phase 1 to the chosen path, with the Instance names and not the UUIDs', async () => {
     const writeTextFile = vi.fn();
     const dialog = fakeDialog({
       pickSavePath: vi.fn().mockResolvedValue('/results.txt'),
     });
 
-    const result = await exportResultsTxt(
-      league,
-      roster,
-      fakeFs({ writeTextFile }),
-      dialog
-    );
+    const path = await exportResultsTxt(league, fakeFs({ writeTextFile }), dialog);
 
-    expect(result).toBe('/results.txt');
+    expect(path).toBe('/results.txt');
     expect(writeTextFile).toHaveBeenCalled();
     const [, contents] = writeTextFile.mock.calls[0];
     expect(contents).toContain('Coastal Premier');
     expect(contents).toContain('STANDINGS');
-    expect(contents).toContain('FC United  2 - 1  FC Rivals');
-    expect(contents).not.toContain('fc-united');
+    expect(contents).toContain('Salt Marsh United  2 - 1  Harborview SC');
+    expect(contents).not.toContain(SALT_MARSH);
   });
 
   it('opens the save dialog filtered to .txt, named after the league', async () => {
     const pickSavePath = vi.fn().mockResolvedValue(null);
 
-    await exportResultsTxt(league, roster, fakeFs(), fakeDialog({ pickSavePath }));
+    await exportResultsTxt(league, fakeFs(), fakeDialog({ pickSavePath }));
 
     expect(pickSavePath).toHaveBeenCalledWith('coastal-premier-results.txt', [
       { name: 'Text file', extensions: ['txt'] },
     ]);
-  });
-
-  it('throws before it opens the dialog when a league team is not in the roster', async () => {
-    const pickSavePath = vi.fn();
-
-    await expect(
-      exportResultsTxt(league, [roster[0]], fakeFs(), fakeDialog({ pickSavePath }))
-    ).rejects.toThrow(/not in the team roster/);
-    expect(pickSavePath).not.toHaveBeenCalled();
   });
 });

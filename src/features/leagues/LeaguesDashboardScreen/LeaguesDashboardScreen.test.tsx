@@ -1,38 +1,46 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { markLeagueSaved } from '@/app/state/fileActions';
 import { act, render, screen, within } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { LeaguesDashboardScreen } from './LeaguesDashboardScreen';
-import * as leagueFile from '@/app/data/leagueFile';
 import * as teamsFile from '@/app/data/teamsFile';
+import { saveDatabase } from '@/app/state/databaseActions';
+import { useDatabaseStore } from '@/app/state/databaseStore';
 import { useFileStore } from '@/app/state/fileStore';
-import { useLeagueStore } from '@/app/state/leagueStore';
-import { useTeamsStore } from '@/app/state/teamsStore';
+import { scorinateMatchday } from '@/app/state/leagueWrapperActions';
+import { summarizeLeague } from '@/app/state/summarizeLeague';
 import { ROUTES, leagueDetailPath } from '@/app/routes';
-import type { LeagueRecord } from '@/domain';
+import type { LeagueWrapper } from '@/domain';
+import {
+  LEAGUE,
+  OTHER_LEAGUE,
+  openTestDatabase,
+  openTestLeague,
+  roundRobinLeague,
+} from '@/test/databaseRecords';
 
-const league = (overrides: Partial<LeagueRecord> = {}): LeagueRecord => ({
-  slug: 'coastal-premier',
-  name: 'Coastal Premier',
-  homeAdvantage: true,
-  points: { win: 3, draw: 1, loss: 0 },
-  teams: [{ slug: 'fc-united', ovr: 70 }],
-  fixtures: [],
-  byes: [],
-  results: [],
-  ...overrides,
-});
+const coastal = (): LeagueWrapper =>
+  roundRobinLeague([{ name: 'FC United', colour: '#E53935' }], {
+    homeAdvantage: true,
+  });
+
+const ironValley = (): LeagueWrapper =>
+  roundRobinLeague([], {
+    uuid: OTHER_LEAGUE,
+    name: 'Iron Valley Cup',
+    homeAdvantage: false,
+  });
+
+/** Puts manifest rows in the store for leagues that are not open, as a new
+ * session finds them. */
+function storeRows(...wrappers: LeagueWrapper[]): void {
+  const rows = wrappers.map(summarizeLeague);
+  useDatabaseStore.setState({ rows, savedRows: rows });
+}
 
 beforeEach(() => {
   vi.restoreAllMocks();
-  useLeagueStore.setState({ leagues: [] });
-  useTeamsStore.setState({ teams: [] });
-  useFileStore.setState({
-    currentLeagueSlug: null,
-    paths: {},
-    savedLeagues: {},
-    status: null,
-  });
+  openTestDatabase([]);
+  useFileStore.setState({ status: null });
 });
 
 describe('LeaguesDashboardScreen', () => {
@@ -46,13 +54,13 @@ describe('LeaguesDashboardScreen', () => {
   });
 
   it('uses the singular for one league', () => {
-    useLeagueStore.setState({ leagues: [league()] });
+    storeRows(coastal());
     render(<LeaguesDashboardScreen />);
     expect(screen.getByText('1 league running')).toBeInTheDocument();
   });
 
   it('offers + New League once a league exists', () => {
-    useLeagueStore.setState({ leagues: [league()] });
+    storeRows(coastal());
     render(<LeaguesDashboardScreen />);
     expect(screen.getByRole('link', { name: '+ New League' })).toHaveAttribute(
       'href',
@@ -73,7 +81,7 @@ describe('LeaguesDashboardScreen', () => {
       );
     });
 
-    it('loads teams from one CSV-or-JSON dialog and merges them into the roster', async () => {
+    it('loads teams from one CSV-or-JSON dialog into the Blueprints', async () => {
       vi.spyOn(teamsFile, 'importTeamsFile').mockResolvedValue([
         { slug: 'fc-united', name: 'FC United', colour: '#E53935', tier: 'B' },
       ]);
@@ -81,43 +89,16 @@ describe('LeaguesDashboardScreen', () => {
 
       await userEvent.click(screen.getByRole('button', { name: 'Load teams...' }));
 
-      expect(useTeamsStore.getState().teams.map((team) => team.slug)).toEqual([
+      expect(useDatabaseStore.getState().blueprints.map((team) => team.slug)).toEqual([
         'fc-united',
       ]);
       expect(useFileStore.getState().status).toEqual({
         tone: 'info',
-        message: 'Imported 1 team.',
+        message: 'Imported 1 team: 1 new, 0 updated.',
       });
     });
 
-    it('loads a league, and the dashboard then lists it', async () => {
-      vi.spyOn(leagueFile, 'loadLeagueFile').mockResolvedValue({
-        path: '/saves/coastal.json',
-        league: league(),
-        teams: [{ slug: 'fc-united', name: 'FC United', colour: '#E53935', tier: 'B' }],
-      });
-      render(<LeaguesDashboardScreen />);
-
-      await userEvent.click(screen.getByRole('button', { name: 'Load league...' }));
-
-      expect(await screen.findByText('Coastal Premier')).toBeInTheDocument();
-      expect(screen.queryByText('No leagues yet.')).not.toBeInTheDocument();
-      expect(useFileStore.getState().currentLeagueSlug).toBe('coastal-premier');
-    });
-
-    it('changes nothing when the league dialog is canceled', async () => {
-      vi.spyOn(leagueFile, 'loadLeagueFile').mockResolvedValue(null);
-      render(<LeaguesDashboardScreen />);
-
-      await userEvent.click(screen.getByRole('button', { name: 'Load league...' }));
-
-      expect(screen.getByText('No leagues yet.')).toBeInTheDocument();
-      expect(useLeagueStore.getState().leagues).toEqual([]);
-      expect(useFileStore.getState().currentLeagueSlug).toBeNull();
-    });
-
-    it('does not show the empty state actions once a league exists', () => {
-      useLeagueStore.setState({ leagues: [league()] });
+    it('has no Load league button: leagues live in the database (Task 161)', () => {
       render(<LeaguesDashboardScreen />);
       expect(
         screen.queryByRole('button', { name: 'Load league...' })
@@ -125,18 +106,8 @@ describe('LeaguesDashboardScreen', () => {
     });
   });
 
-  it('renders one card per league, with its name, meta line, and points pill', () => {
-    useLeagueStore.setState({
-      leagues: [
-        league(),
-        league({
-          slug: 'iron-valley-cup',
-          name: 'Iron Valley Cup',
-          homeAdvantage: false,
-          teams: [],
-        }),
-      ],
-    });
+  it('renders one card per manifest row, with its name, meta line, and points pill, and opens no league', () => {
+    storeRows(coastal(), ironValley());
     render(<LeaguesDashboardScreen />);
 
     expect(screen.getByText('2 leagues running')).toBeInTheDocument();
@@ -149,13 +120,21 @@ describe('LeaguesDashboardScreen', () => {
     expect(screen.getByText(/1 team · Home adv\. on/)).toBeInTheDocument();
     expect(screen.getByText(/0 teams · Home adv\. off/)).toBeInTheDocument();
     expect(screen.getAllByText('3/1/0 pts')).toHaveLength(2);
+    expect(useDatabaseStore.getState().leagues).toEqual({});
   });
 
   it('shows an Unsaved badge on a league with unsaved changes, and on no other', () => {
-    const saved = league();
-    const unsaved = league({ slug: 'iron-valley-cup', name: 'Iron Valley Cup' });
-    useLeagueStore.setState({ leagues: [saved, unsaved] });
-    markLeagueSaved(saved);
+    openTestLeague(coastal());
+    openTestLeague(
+      roundRobinLeague(
+        [
+          { name: 'FC United', colour: '#E53935' },
+          { name: 'FC Rivals', colour: '#1E88E5' },
+        ],
+        { uuid: OTHER_LEAGUE, name: 'Iron Valley Cup' }
+      )
+    );
+    scorinateMatchday(OTHER_LEAGUE, 1);
     render(<LeaguesDashboardScreen />);
 
     expect(screen.getAllByText('Unsaved')).toHaveLength(1);
@@ -165,23 +144,29 @@ describe('LeaguesDashboardScreen', () => {
     expect(within(unsavedCard).getByText('Unsaved')).toBeInTheDocument();
   });
 
-  it('drops the Unsaved badge once the league is saved', () => {
-    const open = league();
-    useLeagueStore.setState({ leagues: [open] });
+  it('drops the Unsaved badge once the database is saved', async () => {
+    openTestLeague(
+      roundRobinLeague([
+        { name: 'FC United', colour: '#E53935' },
+        { name: 'FC Rivals', colour: '#1E88E5' },
+      ])
+    );
+    scorinateMatchday(LEAGUE, 1);
     render(<LeaguesDashboardScreen />);
     expect(screen.getByText('Unsaved')).toBeInTheDocument();
 
-    act(() => markLeagueSaved(open));
+    await act(() => saveDatabase());
 
     expect(screen.queryByText('Unsaved')).not.toBeInTheDocument();
   });
 
-  it("links each card to that league's detail page", () => {
-    useLeagueStore.setState({ leagues: [league()] });
+  it("links each card to that league's detail page, by UUID", () => {
+    storeRows(coastal());
     render(<LeaguesDashboardScreen />);
     expect(screen.getByRole('link', { name: 'Open standings' })).toHaveAttribute(
       'href',
-      leagueDetailPath('coastal-premier')
+      leagueDetailPath(LEAGUE)
     );
+    expect(leagueDetailPath(LEAGUE)).toBe(`/leagues/${LEAGUE}`);
   });
 });

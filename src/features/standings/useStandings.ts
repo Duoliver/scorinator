@@ -1,33 +1,35 @@
 import { useMemo } from 'preact/hooks';
 import { calculateStandings } from '@/engine/standings';
+import { findCurrentPhase } from '@/app/state/currentPhase';
 import { useTeamLookup } from '@/features/components';
-import type { LeagueRecord } from '@/domain';
+import type { LeagueWrapper } from '@/domain';
 import type { Standings, StandingsViewRow } from './types';
 
-/** The league table for one league, ready for `StandingsView` to render.
- * `calculateStandings` is a pure recompute from `league.results` (Task 4),
- * so "live update" needs no state here: a scorinate (Task 15) gives a new
- * `league`, and the rows follow. `useMemo` keeps the recompute to a change
- * of the league or the roster. */
-export function useStandings(league: LeagueRecord): Standings {
-  const lookupTeam = useTeamLookup();
+/** The table of the current phase of one league, ready for `StandingsView`
+ * to render. `calculateStandings` is a pure recompute from the phase
+ * results (Task 4), so "live update" needs no state here: a scorinate
+ * (Task 15) gives a new `league`, and the rows follow. `useMemo` keeps the
+ * recompute to a change of the league. */
+export function useStandings(league: LeagueWrapper): Standings {
+  const lookupTeam = useTeamLookup(league.teams);
+  const results = findCurrentPhase(league)?.results;
 
   const rows = useMemo(
     () =>
       calculateStandings(
-        league.teams.map((team) => team.slug),
-        league.results,
-        league.points
+        league.teams.map((team) => team.blueprintUuid),
+        results ?? [],
+        league.content.points
       ).map((row): StandingsViewRow => {
         const { name, colour } = lookupTeam(row.team);
         return { ...row, teamName: name, teamColour: colour };
       }),
-    [league, lookupTeam]
+    [league, results, lookupTeam]
   );
 
   return {
     rows,
     hasTeams: league.teams.length > 0,
-    hasResults: league.results.length > 0,
+    hasResults: (results?.length ?? 0) > 0,
   };
 }

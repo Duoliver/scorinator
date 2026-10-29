@@ -1,7 +1,7 @@
 import { useEffect } from 'preact/hooks';
-import { saveCurrentLeague } from '@/app/saveActions';
+import { saveDatabaseChanges } from '@/app/saveActions';
 
-/** Ctrl+S (Cmd+S on macOS) saves the current league, from any screen. A
+/** Ctrl+S (Cmd+S on macOS) saves the database, from any screen. A
  * held key still gets its browser default blocked, but saves only once. */
 export function useSaveShortcut(): void {
   useEffect(() => {
@@ -14,7 +14,7 @@ export function useSaveShortcut(): void {
       if (!isSave) return;
       event.preventDefault();
       if (event.repeat) return;
-      void saveCurrentLeague();
+      void saveDatabaseChanges();
     };
     window.addEventListener('keydown', handleKeyDown);
     return (): void => window.removeEventListener('keydown', handleKeyDown);

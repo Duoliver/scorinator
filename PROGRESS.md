@@ -56,7 +56,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 103 | UUID v4 with an injected source. The unique slug function (`-2` rule) | `engine/identity` | ✅ Done | 2026-10-29 | 2026-10-29 | [103](/docs/tasks/103-uuid-and-unique-slug.md) | M1. US-11.1, US-09.5 (rule), Task 75. `uuidV4`, `isUuidV4`, `uniqueSlug` built. |
 | 104 | Record types v2: Blueprint, Instance, League with phases, provenance. Persistence contracts for the manifest and the wrappers | `domain/`, `persistence/` | ✅ Done | 2026-10-29 | 2026-10-29 | [104](/docs/tasks/104-record-types-v2.md) | M1. US-09.2, US-11.1. v2 types and `DatabaseFolder` built. |
 | 105 | Fixture ids, and the result lookup by id | `engine/round-robin` | ✅ Done | 2026-10-29 | 2026-10-29 | [105](/docs/tasks/105-fixture-ids.md) | M1. Task 77, US-02.2 (ids). `fixtureId`, `assignFixtureIds`, three lookups by id. |
-| 106 | JSON v2: manifest and wrapper files with a format version. The MVP1 file check | `adapters/json-io` | ⬜ Not started |  |  |  | M1. Task 76, US-10.3 (MVP1 message). After 104. |
+| 106 | JSON v2: manifest and wrapper files with a format version. The MVP1 file check | `adapters/json-io` | ✅ Done | 2026-10-29 | 2026-10-29 | [106](/docs/tasks/106-json-v2.md) | M1. Task 76, US-10.3 (MVP1 message). Manifest and wrapper parsers, `isMvp1File`. |
 | 107 | The database folder, the installation UUID, wrappers then manifest | `adapters/tauri-fs` | ⬜ Not started |  |  |  | M1. Task 76 (a, b), US-11.1. After 106. |
 | 108 | Stores on the database: open at start, Save and Ctrl+S, unsaved snapshots, the summary row, routes by UUID | `app/` | ⬜ Not started |  |  |  | M1. Task 76 (b, c, d), US-11.1. After 105, 107. |
 | 109 | The MVP1 screens on the v2 model: Teams, the wizard, League Detail, the dashboard | `features/` | ⬜ Not started |  |  |  | M1. US-09.1, US-09.2. After 108. |
@@ -156,6 +156,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-10-29 (Task 106 — JSON v2):** The user chose three rules. (1) All JSON keys are camelCase, also `createdByInstallation` and `lastModifiedByInstallation`. (2) Each MVP2 file has a `kind` and `formatVersion: 2`. A field added later with a default keeps the version. (3) A parser checks the shape and the links inside its own file, not the links between files. Claude choices: the error prefixes `manifest.json is not valid:` and `A league file is not valid:`, and a progress row that must fit its league. Detail in [`docs/tasks/106-json-v2.md`](/docs/tasks/106-json-v2.md).
 
 - **2026-10-29 (Task 105 — fixture ids):** The user chose permanent names for the lookups by id: `findPhaseResult`, `isPhaseMatchdayPlayed`, `findPhaseCurrentMatchday`. Task 109 removes the MVP1 triple lookups, which have a `@deprecated` tag, with no rename. Claude choices: `assignFixtureIds(fixtures, { phase, group })` counts the match number inside each matchday, in list order. The lookups take the fixture, not the id string. Detail in [`docs/tasks/105-fixture-ids.md`](/docs/tasks/105-fixture-ids.md).
 

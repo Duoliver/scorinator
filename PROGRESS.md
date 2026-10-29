@@ -54,7 +54,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 101 | Team palette: more colours, two blues easier to tell apart | `docs/`, `design-system/` | ✅ Done | 2026-10-28 | 2026-10-28 | [101](/docs/tasks/101-team-palette.md) | Task created by User - 2026-10-28. US-09.7 Agreed: 24 colours. ΔE test parked (§13). |
 | 102 | Refine new epic 12, Standings display: last 5, GF and GA hover, header hints, chart, zones | `docs/user-stories` | ✅ Done | 2026-10-28 | 2026-10-28 | [102](/docs/tasks/102-standings-display.md) | Task created by User - 2026-10-28. New epic 12, five stories Agreed. Two items parked (§14, §15). |
 | 103 | UUID v4 with an injected source. The unique slug function (`-2` rule) | `engine/identity` | ✅ Done | 2026-10-29 | 2026-10-29 | [103](/docs/tasks/103-uuid-and-unique-slug.md) | M1. US-11.1, US-09.5 (rule), Task 75. `uuidV4`, `isUuidV4`, `uniqueSlug` built. |
-| 104 | Record types v2: Blueprint, Instance, League with phases, provenance. Persistence contracts for the manifest and the wrappers | `domain/`, `persistence/` | ⬜ Not started |  |  |  | M1. US-09.2, US-11.1. After 103. |
+| 104 | Record types v2: Blueprint, Instance, League with phases, provenance. Persistence contracts for the manifest and the wrappers | `domain/`, `persistence/` | ✅ Done | 2026-10-29 | 2026-10-29 | [104](/docs/tasks/104-record-types-v2.md) | M1. US-09.2, US-11.1. v2 types and `DatabaseFolder` built. |
 | 105 | Fixture ids, and the result lookup by id | `engine/round-robin` | ⬜ Not started |  |  |  | M1. Task 77, US-02.2 (ids). After 104. |
 | 106 | JSON v2: manifest and wrapper files with a format version. The MVP1 file check | `adapters/json-io` | ⬜ Not started |  |  |  | M1. Task 76, US-10.3 (MVP1 message). After 104. |
 | 107 | The database folder, the installation UUID, wrappers then manifest | `adapters/tauri-fs` | ⬜ Not started |  |  |  | M1. Task 76 (a, b), US-11.1. After 106. |
@@ -143,6 +143,7 @@ A running list of items flagged under the `CLAUDE.md` open items section. Each i
 
 The 8 MVP2 decisions below come from `docs/mvp1-to-mvp2-impact-review.md` §4, which has the full reasoning. Each one needs a decision before the related MVP2 task starts. The numbers are the ones the review uses.
 
+- **2026-10-29 (Task 104, for Task 144 — the import decisions):** Task 144 puts the import decisions in `persistence/`. They compare Blueprints and leagues, but `DOMAIN.md` says that only `app/` and `features/` import `domain/`. One option: generic functions over a UUID and a content compare, as the engine is generic over its `TeamId`. Settle it when Task 144 starts.
 - **2026-10-28 (Task 99, for MVP3 — the team Location label):** MVP2 adds a free-text Location label to each Blueprint (US-09.3). MVP3 adds a City entity. What does MVP3 do with the label: keep it as a separate label, turn it into a City, or remove it? Settle it when MVP3 is refined.
 - **2026-10-19 (MVP1 Task 72 — the plural in `Imported 1 team.`):** `app/loadActions.ts` writes its own team plural. `formatTeamCount` lives in `features/components/`. Only `AppShell` in `app/` imports `features/` today, for the routes. Options: an app action imports `formatTeamCount` from `features/`, or the function moves to a lower layer, or the copy stays. Not a blocker. The copy stays until the user decides. Carried over from the MVP1 log.
 
@@ -155,6 +156,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-10-29 (Task 104 — record types v2):** The user chose four rules. (1) The v2 types live next to the MVP1 types, which get a `@deprecated` tag, until Task 109 removes them. (2) The Blueprint gets `location` and `trigrams` now, but the phase formats wait for their tasks: `Phase` has the round robin only. (3) The `DatabaseFolder` contract moves text only, as `FileSystem` does. (4) Compile-time tests with `expectTypeOf`. Claude choices: `PhaseFormat` `'round-robin'` with no "two-way", `PhaseResult` keeps `home` and `away`, progress counts from 1. Detail in [`docs/tasks/104-record-types-v2.md`](/docs/tasks/104-record-types-v2.md).
 
 - **2026-10-29 (Task 159 — the commit workflow):** The user set the rule. Claude commits the work of a task when the user agrees that it is Done, never before. Subject: `task N: message`, `tasks N, M: message`, or `tasks N-M: message` for more than two consecutive tasks, with a body. Push and branches stay with the user. This replaces the MVP1 rule "never commit". Detail in the `CLAUDE.md` Git commits section and [`docs/tasks/159-commit-workflow.md`](/docs/tasks/159-commit-workflow.md).
 

@@ -11,6 +11,17 @@
 - **`adapters/` never imports it.** A file format keeps its own types (`SavedLeague`, `TeamListRecord`). `app/data` maps between the two.
 - **Import from the barrel:** `import type { LeagueRecord } from '@/domain'`.
 
-## Where this goes next
+## The MVP2 types
 
-MVP2 splits a team into a Blueprint and an Instance, and adds the Instance Wrapper (`PERSISTENCE.md` §2a). Those types belong here.
+Task 104 added the MVP2 record types (2026-10-29):
+
+| File | Types |
+|---|---|
+| `provenance.ts` | `Provenance`: the two installation UUIDs on an exported entity (US-11.1) |
+| `team.ts` | `TeamBlueprint`, the reusable team. `TeamInstance`, its state in one league, with no UUID of its own (US-09.2) |
+| `league.ts` | `League`, `Phase` (a union on `format`), `RoundRobinPhase`, `PhaseResult` (with a `fixtureId`, Task 77), `PhaseFormat` |
+| `wrapper.ts` | `InstanceWrapper<T>`, `LeagueWrapper`, `Manifest`, `WrapperSummary`, `LeagueProgress` (`PERSISTENCE.md` §2a, Task 76) |
+
+Fixtures, byes, and results name a team by its Blueprint UUID. Each later task adds its own fields: for example, Task 126 adds the groups phase to `Phase`.
+
+**The MVP1 types are deprecated.** `TeamRecord`, `LeagueRecord`, `LeagueTeam`, `LeagueResult`, and `CreateLeagueInput` have a `@deprecated` tag that names the v2 type to use. Do not use them in new code. The MVP1 screens use them until Task 109 moves the screens to the v2 types and removes them.

@@ -60,7 +60,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 107 | The database folder, the installation UUID, wrappers then manifest | `adapters/tauri-fs` | ✅ Done | 2026-10-29 | 2026-10-29 | [107](/docs/tasks/107-database-folder.md) | M1. Task 76 (a, b). `createDatabaseFolder`, `openTauriDatabaseFolder`. The installation UUID moves to 108. |
 | 108 | Stores on the database: open at start, Save and Ctrl+S, unsaved snapshots, the summary row, routes by UUID | `app/` | ✅ Done | 2026-10-29 | 2026-10-29 | [108](/docs/tasks/108-database-store.md) | M1. Database store built, not wired. Actions to 160, wiring to 109. |
 | 109 | The MVP1 screens on the v2 model: Teams, the wizard, League Detail, the dashboard | `features/` | ✅ Done | 2026-10-29 | 2026-10-29 | [109](/docs/tasks/109-roster-on-blueprints.md) | M1. Roster on Blueprints, database at start. Six choices agreed. Leagues to 161. |
-| 110 | M1 smoke check | all | ⬜ Not started |  |  |  | M1. After 162. |
+| 110 | M1 smoke check | all | ⬜ Not started |  |  |  | M1. After 162. The user runs `npm run tauri:dev`. |
 | 111 | Tooltip, and the icon-only Button variant | `design-system/` | ⬜ Not started |  |  |  | M2. US-09.3, US-09.5, US-12.1 to 12.3. After 110. |
 | 112 | Modal, with a focus trap, and the confirm pattern | `design-system/` | ⬜ Not started |  |  |  | M2. US-04.6, 07.3, 09.4, 09.5, 10.2. After 110. |
 | 113 | Picker dialog: search, multi-select and single-select | `design-system/` | ⬜ Not started |  |  |  | M2. US-08.1, 08.5, 10.3. After 112. |
@@ -112,8 +112,9 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 159 | The commit workflow: commit at Done, the message pattern | `CLAUDE.md`, `PROGRESS.md` | ✅ Done | 2026-10-29 | 2026-10-29 | [159](/docs/tasks/159-commit-workflow.md) | Task created by User - 2026-10-29. Commit at Done. Push and branches stay with the user. |
 | 160 | v2 actions: Blueprint create and edit (UUID, unique slug, provenance), league create (Instances, phase 1, fixture ids), scorinate in phase 1 | `app/state` | ✅ Done | 2026-10-29 | 2026-10-29 | [160](/docs/tasks/160-v2-actions.md) | Task created by User - 2026-10-29, split from 108. M1. Built. Seven choices agreed. |
 | 161 | The leagues on the v2 store: the wizard create, League Detail, the dashboard rows, the File screen, Ctrl+S, the close guard, the routes by UUID | `features/`, `app/` | ✅ Done | 2026-10-29 | 2026-10-29 | [161](/docs/tasks/161-leagues-on-v2-store.md) | Task created by User - 2026-10-29, split from 109. M1. Leagues on the database. Ten choices agreed. |
-| 162 | Remove the MVP1 code: domain types, stores, save files, triple lookups | all | ⬜ Not started |  |  |  | Task created by User - 2026-10-29, split from 109 (recommended option). M1. After 161. Closes the 109 choice 6 gap. |
+| 162 | Remove the MVP1 code: domain types, stores, save files, triple lookups | all | ✅ Done | 2026-10-29 | 2026-10-29 | [162](/docs/tasks/162-remove-mvp1-code.md) | Task created by User - 2026-10-29, split from 109. M1. MVP1 code removed. 718 tests pass. |
 | 163 | Rename the `blueprint*` files to `teamBlueprint*` | `app/state` | ✅ Done | 2026-10-29 | 2026-10-29 | [163](/docs/tasks/163-rename-team-blueprint-actions.md) | Task created by User - 2026-10-29. Files and names inside (option B). |
+| 164 | Rename `fileStore` and `fileActions` to a name for the status line | `app/state` | ⬜ Not started |  |  |  | Task created by User - 2026-10-29. After 158: the store holds the status line only (Task 162). |
 
 **Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input, see Open Questions) · 🟩 Review · ✅ Done · ❌ Cancelled (the reason is in the Notes column)
 
@@ -161,6 +162,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-10-29 (Task 162 — remove the MVP1 code):** The user agreed four choices. (1) A domain type `TeamFields` types the team form values, and the lists use `TeamBlueprint`. (2) The results text adapter takes the v2 fixture ids. (3) `fileStore` keeps its name with the status line only, and new Task 164 renames it after Task 158. (4) `isMvp1File` keeps its own MVP1 format version. Detail in [`docs/tasks/162-remove-mvp1-code.md`](/docs/tasks/162-remove-mvp1-code.md).
 
 - **2026-10-29 (Task 161 — the leagues on the v2 store):** The user agreed six choices. (1) The File screen loses "Save league" and "Load league" until Task 149. (2) League Detail shows the Instance names and colours. (3) "Export results" stays, with the current phase in the MVP1 text shape. (4) League Detail opens its league on demand. (5) Ctrl+S says "Saved." or "Nothing to save.". (6) The wizard maps its slug selection to UUIDs at create. At review, the user agreed four Claude choices: no "Load league..." in the empty state, the first league as the export default, no close prompt for a row-only change, and one `findCurrentPhase` rule. Detail in [`docs/tasks/161-leagues-on-v2-store.md`](/docs/tasks/161-leagues-on-v2-store.md).
 

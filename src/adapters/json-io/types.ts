@@ -1,40 +1,6 @@
-import type { Bye, Fixture, PhaseFixture } from '@/engine/round-robin';
+import type { Bye, PhaseFixture } from '@/engine/round-robin';
 import type { MatchResult, PointsConfig } from '@/engine/standings';
 import type { Tier } from '@/engine/tier-ovr';
-
-/** Bumped whenever the save-file shape changes. `parseLeague` rejects any
- * other value, rather than guessing at a migration. */
-export const SAVE_FORMAT_VERSION = 1;
-
-export interface SavedTeam {
-  slug: string;
-  name: string;
-  colour: string;
-  tier: Tier;
-  /** The OVR already rolled for this team this season (spec: OVR is rolled
-   * once per season and stays fixed). Saved as-is so a reload does not
-   * re-roll it and silently change match odds. */
-  ovr: number;
-}
-
-export interface SavedLeagueConfig {
-  name: string;
-  homeAdvantage: boolean;
-  points: PointsConfig;
-}
-
-export interface SavedResult extends MatchResult<string> {
-  matchday: number;
-}
-
-export interface SavedLeague {
-  formatVersion: typeof SAVE_FORMAT_VERSION;
-  league: SavedLeagueConfig;
-  teams: SavedTeam[];
-  fixtures: Fixture<string>[];
-  byes: Bye<string>[];
-  results: SavedResult[];
-}
 
 // ---------------------------------------------------------------------------
 // MVP2 database files (Task 106): `manifest.json` and `wrapper-{uuid}.json`.

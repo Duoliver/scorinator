@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import type { SavedLeague } from '@/adapters/json-io';
 import { serializeResultsTxt, type ResultsTxtInput } from './resultsTxt';
 
 const POINTS = { win: 3, draw: 1, loss: 0 };
@@ -17,19 +16,21 @@ function partialLeague(): Mutable<ResultsTxtInput> {
   return {
     league: { name: 'Ash League', homeAdvantage: true, points: POINTS },
     teams: [
-      { slug: 'ash', name: 'Ash Town' },
-      { slug: 'north', name: 'Northgate FC' },
-      { slug: 'salt', name: 'Salt Marsh United' },
+      { id: 'ash', name: 'Ash Town' },
+      { id: 'north', name: 'Northgate FC' },
+      { id: 'salt', name: 'Salt Marsh United' },
     ],
     fixtures: [
-      { matchday: 1, home: 'ash', away: 'north' },
-      { matchday: 2, home: 'salt', away: 'ash' },
+      { id: 'f1', matchday: 1, home: 'ash', away: 'north' },
+      { id: 'f2', matchday: 2, home: 'salt', away: 'ash' },
     ],
     byes: [
       { matchday: 1, team: 'salt' },
       { matchday: 2, team: 'north' },
     ],
-    results: [{ matchday: 1, home: 'ash', away: 'north', homeGoals: 2, awayGoals: 1 }],
+    results: [
+      { fixtureId: 'f1', home: 'ash', away: 'north', homeGoals: 2, awayGoals: 1 },
+    ],
   };
 }
 
@@ -37,12 +38,12 @@ function twoTeamLeague(homeGoals: number, awayGoals: number): Mutable<ResultsTxt
   return {
     league: { name: 'Duel', homeAdvantage: false, points: POINTS },
     teams: [
-      { slug: 'a', name: 'Alpha' },
-      { slug: 'b', name: 'Bravo' },
+      { id: 'a', name: 'Alpha' },
+      { id: 'b', name: 'Bravo' },
     ],
-    fixtures: [{ matchday: 1, home: 'a', away: 'b' }],
+    fixtures: [{ id: 'f1', matchday: 1, home: 'a', away: 'b' }],
     byes: [],
-    results: [{ matchday: 1, home: 'a', away: 'b', homeGoals, awayGoals }],
+    results: [{ fixtureId: 'f1', home: 'a', away: 'b', homeGoals, awayGoals }],
   };
 }
 
@@ -73,22 +74,6 @@ describe('serializeResultsTxt', () => {
     ].join('\n');
 
     expect(serializeResultsTxt(partialLeague())).toBe(expected);
-  });
-
-  it('accepts a SavedLeague as it is', () => {
-    const saved: SavedLeague = {
-      formatVersion: 1,
-      league: { name: 'Duel', homeAdvantage: false, points: POINTS },
-      teams: [
-        { slug: 'a', name: 'Alpha', colour: '#fff', tier: 'A', ovr: 85 },
-        { slug: 'b', name: 'Bravo', colour: '#000', tier: 'B', ovr: 75 },
-      ],
-      fixtures: [{ matchday: 1, home: 'a', away: 'b' }],
-      byes: [],
-      results: [{ matchday: 1, home: 'a', away: 'b', homeGoals: 1, awayGoals: 0 }],
-    };
-
-    expect(serializeResultsTxt(saved)).toContain('Alpha  1 - 0  Bravo');
   });
 
   it('says the league is completed once every fixture has a result', () => {
@@ -171,7 +156,7 @@ describe('serializeResultsTxt', () => {
 
   it('throws a RangeError for a fixture that names an unknown team', () => {
     const input = partialLeague();
-    input.fixtures.push({ matchday: 3, home: 'ghost', away: 'ash' });
+    input.fixtures.push({ id: 'f3', matchday: 3, home: 'ghost', away: 'ash' });
 
     expect(() => serializeResultsTxt(input)).toThrow(RangeError);
   });
@@ -186,7 +171,7 @@ describe('serializeResultsTxt', () => {
   it('throws a RangeError for a result that has no fixture', () => {
     const input = partialLeague();
     input.results.push({
-      matchday: 2,
+      fixtureId: 'f9',
       home: 'north',
       away: 'salt',
       homeGoals: 0,

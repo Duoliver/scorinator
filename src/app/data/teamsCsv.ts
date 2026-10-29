@@ -11,7 +11,7 @@ import type {
   SaveFileDialog,
   TeamListRecord,
 } from '@/persistence/types';
-import type { TeamRecord } from '@/domain';
+import type { TeamFields } from '@/domain';
 
 /** The thin `app/` → `adapters/` data layer `module-boundaries.md`
  * requires, so `features/` never imports `adapters/csv` or
@@ -35,7 +35,7 @@ export async function importTeamsCsv(
 }
 
 export async function exportTeamsCsv(
-  teams: readonly TeamRecord[],
+  teams: readonly TeamFields[],
   fs: FileSystem = tauriFileSystem,
   dialog: SaveFileDialog = tauriDialog
 ): Promise<string | null> {

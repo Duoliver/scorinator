@@ -19,25 +19,18 @@ import type { LeagueWrapper } from '@/domain';
  * back to its default `.json` filter. */
 const TXT_FILTERS: readonly FileFilter[] = [{ name: 'Text file', extensions: ['txt'] }];
 
-/** The current phase of a league in the MVP1 text shape (Task 161). The
- * Blueprint UUID takes the place of the MVP1 slug, and each result gets the
- * matchday of its fixture. Task 148 writes every phase. */
+/** The current phase of a league, in the MVP1 text layout (Task 161).
+ * Fixtures name teams by Blueprint UUID, so that is the team id. Task 148
+ * writes every phase. */
 function toResultsTxtInput(wrapper: LeagueWrapper): ResultsTxtInput {
   const { name, homeAdvantage, points } = wrapper.content;
   const phase = findCurrentPhase(wrapper);
-  const fixtures = phase?.fixtures ?? [];
-  const matchdayOf = new Map(fixtures.map((fixture) => [fixture.id, fixture.matchday]));
   return {
     league: { name, homeAdvantage, points },
-    teams: wrapper.teams.map((team) => ({ slug: team.blueprintUuid, name: team.name })),
-    fixtures,
+    teams: wrapper.teams.map((team) => ({ id: team.blueprintUuid, name: team.name })),
+    fixtures: phase?.fixtures ?? [],
     byes: phase?.byes ?? [],
-    results: (phase?.results ?? []).map((result) => ({
-      ...result,
-      // A result with no fixture keeps matchday 0, and the text adapter
-      // then rejects it as a caller bug.
-      matchday: matchdayOf.get(result.fixtureId) ?? 0,
-    })),
+    results: phase?.results ?? [],
   };
 }
 

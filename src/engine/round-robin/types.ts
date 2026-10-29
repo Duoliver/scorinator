@@ -4,14 +4,6 @@ export interface Fixture<TeamId> {
   away: TeamId;
 }
 
-/** The fields that identify one round-robin match. A result carries them
- * too, so a result finds its fixture by them.
- *
- * @deprecated MVP1 triple. A v2 result names its fixture by `fixtureId`
- * (`PhaseFixture`). Task 109 removes it.
- */
-export type MatchIdentity<TeamId> = Pick<Fixture<TeamId>, 'matchday' | 'home' | 'away'>;
-
 export interface Bye<TeamId> {
   matchday: number;
   team: TeamId;

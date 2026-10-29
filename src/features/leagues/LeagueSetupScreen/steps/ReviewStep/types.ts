@@ -1,11 +1,11 @@
 import type { PointsConfig } from '@/engine/standings';
-import type { TeamRecord } from '@/domain';
+import type { TeamBlueprint } from '@/domain';
 
 export default interface ReviewStepProps {
   name: string;
   homeAdvantage: boolean;
   points: PointsConfig;
-  selectedTeams: readonly TeamRecord[];
+  selectedTeams: readonly TeamBlueprint[];
   onBack: () => void;
   onCreate: () => void;
 }

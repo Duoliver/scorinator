@@ -13,9 +13,7 @@ import type {
 
 /** The JSON-format sibling of `teamsCsv.ts`'s CSV import — same thin
  * `app/` → `adapters/` data layer, same `fs`/`dialog` override-in-tests
- * pattern. Imports a plain team-list JSON file, not a full league save
- * (`adapters/json-io`'s `parseLeague`/`SavedLeague`) — that is Task 17's
- * Save/Load feature, out of scope here. */
+ * pattern. Imports a plain team-list JSON file, not a league file. */
 const TEAM_JSON_FILTERS: readonly FileFilter[] = [
   { name: 'Team JSON', extensions: ['json'] },
 ];

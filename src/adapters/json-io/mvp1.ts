@@ -1,4 +1,6 @@
-import { SAVE_FORMAT_VERSION } from './types';
+/** The format version of an MVP1 league save file. Task 162 removed the
+ * MVP1 parser, so this check keeps its own copy. */
+const MVP1_SAVE_FORMAT_VERSION = 1;
 
 /**
  * True for a file from Scorinator MVP1: a league save file (format version
@@ -19,7 +21,7 @@ export function isMvp1File(text: string): boolean {
   const file = raw as Record<string, unknown>;
   return (
     file.kind === undefined &&
-    file.formatVersion === SAVE_FORMAT_VERSION &&
+    file.formatVersion === MVP1_SAVE_FORMAT_VERSION &&
     'league' in file &&
     'teams' in file
   );

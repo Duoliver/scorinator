@@ -1,20 +1,6 @@
 import type { Tier } from '@/engine/tier-ovr';
 import type { Provenance } from './provenance';
 
-/** A team in the shared in-memory roster. No OVR: a league rolls an OVR for
- * each of its teams when it is created, so the same team can have a
- * different OVR in each league. No UUID either: `engine/identity` only has
- * `slug()` so far, and the later provenance system owns cross-file identity.
- *
- * @deprecated MVP1 shape. Use `TeamBlueprint` in new code. Task 109 removes it.
- */
-export interface TeamRecord {
-  slug: string;
-  name: string;
-  colour: string;
-  tier: Tier;
-}
-
 /**
  * A reusable team in the Teams module (US-09.1). It belongs to no league.
  *
@@ -56,3 +42,8 @@ export interface TeamInstance {
   tier: Tier;
   ovr: number;
 }
+
+/** The four team fields that the team form edits and a team list file
+ * holds: slug, name, colour, and Tier. A Blueprint has them all, so a
+ * Blueprint fits where `TeamFields` is asked for. */
+export type TeamFields = Pick<TeamBlueprint, 'slug' | 'name' | 'colour' | 'tier'>;

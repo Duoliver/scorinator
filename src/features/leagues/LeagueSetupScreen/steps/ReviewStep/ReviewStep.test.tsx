@@ -2,9 +2,10 @@ import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { ReviewStep } from './ReviewStep';
+import { blueprint } from '@/test/databaseRecords';
 
 const selectedTeams = [
-  { slug: 'fc-united', name: 'FC United', colour: '#E53935', tier: 'B' as const },
+  blueprint({ slug: 'fc-united', name: 'FC United', colour: '#E53935', tier: 'B' }),
 ];
 
 describe('ReviewStep', () => {

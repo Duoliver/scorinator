@@ -41,7 +41,7 @@ A hook that more than one screen folder needs lives here too, as `features/compo
 
 A plain function that more than one screen folder needs lives here too, as `features/components/x.ts`, with the same import rule. `formatTeamCount` is the first example: the Teams screen and the league screens both show a team count (Task 72).
 
-A view type that a shared component needs also lives in `features/components/`, not in the screen folder that uses it most. `TeamDisplay` is the example. A record type that `app/` also uses, such as `TeamRecord` or `LeagueRecord`, does not live in `features/` at all. It lives in `src/domain/`. See `src/domain/DOMAIN.md`.
+A view type that a shared component needs also lives in `features/components/`, not in the screen folder that uses it most. `TeamDisplay` is the example. A record type that `app/` also uses, such as `TeamBlueprint` or `LeagueWrapper`, does not live in `features/` at all. It lives in `src/domain/`. See `src/domain/DOMAIN.md`.
 
 ## Where this fits with `module-boundaries.md`
 

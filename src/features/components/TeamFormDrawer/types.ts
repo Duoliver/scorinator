@@ -1,8 +1,8 @@
-import type { TeamRecord } from '@/domain';
+import type { TeamFields } from '@/domain';
 
 export default interface TeamFormDrawerProps {
   isEdit?: boolean;
-  initial?: TeamRecord;
+  initial?: TeamFields;
   onCancel: () => void;
-  onSave: (record: TeamRecord) => void;
+  onSave: (record: TeamFields) => void;
 }

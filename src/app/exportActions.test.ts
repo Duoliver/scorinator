@@ -3,7 +3,7 @@ import { exportResults, exportTeams } from './exportActions';
 import * as resultsTxt from '@/app/data/resultsTxt';
 import * as teamsCsv from '@/app/data/teamsCsv';
 import { useFileStore } from '@/app/state/fileStore';
-import type { TeamRecord } from '@/domain';
+import type { TeamFields } from '@/domain';
 import {
   LEAGUE,
   openTestDatabase,
@@ -12,7 +12,7 @@ import {
   teamFields,
 } from '@/test/databaseRecords';
 
-const team: TeamRecord = {
+const team: TeamFields = {
   slug: 'fc-united',
   name: 'FC United',
   colour: '#E53935',

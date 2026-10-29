@@ -1,6 +1,6 @@
 import { useRef, useState } from 'preact/hooks';
 import type { FieldHandle } from '@/design-system';
-import type { TeamRecord } from '@/domain';
+import type { TeamFields } from '@/domain';
 import { formatTeamCount } from '@/features/components';
 import { settingsChipLabels } from '@/features/leagues/LeagueSetupScreen/steps/SetupChips';
 import { formatLeagueName } from '@/features/leagues/leagueSummary';
@@ -56,7 +56,7 @@ export function useTeamsStep({
 
   // The Blueprint gets a unique slug (Task 75), which can differ from the
   // form preview, so the selection takes the slug of the new Blueprint.
-  const handleTeamCreated = ({ name, colour, tier }: TeamRecord): void => {
+  const handleTeamCreated = ({ name, colour, tier }: TeamFields): void => {
     const created = addTeamBlueprint({ name, colour, tier });
     onTeamCreated(created.slug);
     setShowCreateTeam(false);

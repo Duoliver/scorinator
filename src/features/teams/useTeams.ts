@@ -1,5 +1,5 @@
 import { useState } from 'preact/hooks';
-import type { TeamRecord } from '@/domain';
+import type { TeamFields } from '@/domain';
 import { formatTeamCount } from '@/features/components';
 import { importTeamsFromFile } from '@/app/loadActions';
 import {
@@ -20,7 +20,7 @@ export function useTeams(): Teams {
   const teams = useDatabaseStore((state) => state.blueprints);
   const [drawer, setDrawer] = useState<TeamDrawerState>(null);
 
-  const handleSave = (record: TeamRecord): void => {
+  const handleSave = (record: TeamFields): void => {
     const { name, colour, tier } = record;
     if (drawer?.mode === 'edit') {
       updateTeamBlueprint(teams[drawer.index].uuid, { name, colour, tier });

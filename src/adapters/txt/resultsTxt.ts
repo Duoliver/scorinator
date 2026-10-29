@@ -3,18 +3,19 @@ import {
   type MatchResult,
   type PointsConfig,
 } from '@/engine/standings';
-import { matchKey, type Bye, type Fixture } from '@/engine/round-robin';
+import type { Bye, PhaseFixture } from '@/engine/round-robin';
 
-/** What the results summary needs from a league. A `SavedLeague` (see
- * `adapters/json-io`) fits this shape as it is, so a caller can pass the
- * same object it would save. This type is declared here, not imported, so
- * the two adapters stay independent of each other. */
+/** What the results summary needs from one phase of a league. Teams are
+ * named by an `id`, and a result finds its fixture by `fixtureId` (Task
+ * 77). A round-robin phase of the domain fits it with no change to the
+ * fixtures and results. This type is declared here, not imported, so the
+ * adapter does not depend on `domain/`. */
 export interface ResultsTxtInput {
   league: { name: string; homeAdvantage: boolean; points: PointsConfig };
-  teams: readonly { slug: string; name: string }[];
-  fixtures: readonly Fixture<string>[];
+  teams: readonly { id: string; name: string }[];
+  fixtures: readonly PhaseFixture<string>[];
   byes: readonly Bye<string>[];
-  results: readonly (MatchResult<string> & { matchday: number })[];
+  results: readonly (MatchResult<string> & { fixtureId: string })[];
 }
 
 type Align = 'left' | 'right';
@@ -68,28 +69,24 @@ function renderTable(
  */
 export function serializeResultsTxt(input: ResultsTxtInput): string {
   const { league, teams, fixtures, byes, results } = input;
-  const names = new Map(teams.map((team) => [team.slug, team.name]));
-  const nameOf = (slug: string): string => {
-    const name = names.get(slug);
+  const names = new Map(teams.map((team) => [team.id, team.name]));
+  const nameOf = (id: string): string => {
+    const name = names.get(id);
     if (name === undefined) {
-      throw new RangeError(`Team "${slug}" is not in the league roster.`);
+      throw new RangeError(`Team "${id}" is not in the league roster.`);
     }
     return name;
   };
 
-  const resultByMatch = new Map(results.map((result) => [matchKey(result), result]));
-  const fixtureKeys = new Set(fixtures.map((fixture) => matchKey(fixture)));
+  const resultByFixture = new Map(results.map((result) => [result.fixtureId, result]));
+  const fixtureIds = new Set(fixtures.map((fixture) => fixture.id));
   for (const result of results) {
-    if (!fixtureKeys.has(matchKey(result))) {
-      throw new RangeError(
-        `The result of matchday ${result.matchday}, "${result.home}" v "${result.away}", has no fixture.`
-      );
+    if (!fixtureIds.has(result.fixtureId)) {
+      throw new RangeError(`No fixture has the id "${result.fixtureId}" of a result.`);
     }
   }
 
-  const played = fixtures.filter((fixture) =>
-    resultByMatch.has(matchKey(fixture))
-  ).length;
+  const played = fixtures.filter((fixture) => resultByFixture.has(fixture.id)).length;
   const completed = fixtures.length > 0 && played === fixtures.length;
 
   const title = league.name.trim() || 'Untitled league';
@@ -105,7 +102,7 @@ export function serializeResultsTxt(input: ResultsTxtInput): string {
   ];
 
   const standings = calculateStandings(
-    teams.map((team) => team.slug),
+    teams.map((team) => team.id),
     results,
     league.points
   );
@@ -149,8 +146,8 @@ export function serializeResultsTxt(input: ResultsTxtInput): string {
   }
 
   const homeWidth = Math.max(0, ...teams.map((team) => team.name.length));
-  const scoreOf = (fixture: Fixture<string>): string => {
-    const result = resultByMatch.get(matchKey(fixture));
+  const scoreOf = (fixture: PhaseFixture<string>): string => {
+    const result = resultByFixture.get(fixture.id);
     return result ? `${result.homeGoals} - ${result.awayGoals}` : 'vs';
   };
   const scoreWidth = Math.max(2, ...fixtures.map((fixture) => scoreOf(fixture).length));

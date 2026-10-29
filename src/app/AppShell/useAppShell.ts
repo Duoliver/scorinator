@@ -2,16 +2,26 @@ import { useEffect, useState } from 'preact/hooks';
 import { route, type RouterOnChangeArgs } from 'preact-router';
 import type { TargetedMouseEvent } from 'preact';
 import { installCloseGuard } from '@/app/closeGuard';
+import { openAppDatabase } from '@/app/databaseStart';
+import { useDatabaseStore } from '@/app/state/databaseStore';
 import type { RoutePath } from '@/app/routes';
 import { useStatusAutoClear } from '@/app/useStatusAutoClear';
 import { DEFAULT_PATH, isScreenChange, toActivePath } from './helpers';
 import type { AppShellState } from './types';
 import { useSaveShortcut } from './useSaveShortcut';
 
-/** The app-wide behaviour that lives as long as the window: Ctrl+S, the
- * close guard, the status line timer, and the route state of the nav. */
+/** The app-wide behaviour that lives as long as the window: the database
+ * open at start, Ctrl+S, the close guard, the status line timer, and the
+ * route state of the nav. */
 export function useAppShell(): AppShellState {
   const [activePath, setActivePath] = useState<string>(DEFAULT_PATH);
+  const databaseStatus = useDatabaseStore((state) => state.status);
+
+  // The database opens once, at start (Task 76 a). Until it is open, the
+  // shell shows no screen (Task 109).
+  useEffect(() => {
+    void openAppDatabase();
+  }, []);
 
   useSaveShortcut();
 
@@ -39,5 +49,5 @@ export function useAppShell(): AppShellState {
       route(path);
     };
 
-  return { activePath, handleRouteChange, handleNavClick };
+  return { activePath, databaseStatus, handleRouteChange, handleNavClick };
 }

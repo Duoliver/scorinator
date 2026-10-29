@@ -3,8 +3,9 @@ import { saveCurrentLeague, saveLeagueBySlug } from './saveActions';
 import * as leagueFile from '@/app/data/leagueFile';
 import { isLeagueUnsaved, useFileStore } from '@/app/state/fileStore';
 import { useLeagueStore } from '@/app/state/leagueStore';
-import { useTeamsStore } from '@/app/state/teamsStore';
 import type { LeagueRecord } from '@/domain';
+import { openTestDatabase } from '@/test/databaseRecords';
+import { areBlueprintsUnsaved, useDatabaseStore } from '@/app/state/databaseStore';
 
 const league = (overrides: Partial<LeagueRecord> = {}): LeagueRecord => ({
   slug: 'coastal-premier',
@@ -21,7 +22,7 @@ const league = (overrides: Partial<LeagueRecord> = {}): LeagueRecord => ({
 beforeEach(() => {
   vi.restoreAllMocks();
   useLeagueStore.setState({ leagues: [league()] });
-  useTeamsStore.setState({ teams: [] });
+  openTestDatabase([]);
   useFileStore.setState({
     currentLeagueSlug: 'coastal-premier',
     paths: {},
@@ -218,5 +219,64 @@ describe('saveCurrentLeague', () => {
       tone: 'info',
       message: 'No league to save. Open or create a league first.',
     });
+  });
+});
+
+describe('saveCurrentLeague with unsaved Blueprints (Task 109)', () => {
+  const editTeams = (): ReturnType<typeof openTestDatabase> => {
+    const memory = openTestDatabase([
+      { slug: 'fc-united', name: 'FC United', colour: '#E53935', tier: 'B' },
+    ]);
+    useDatabaseStore.setState((state) => ({
+      blueprints: state.blueprints.map((b) => ({ ...b, name: 'FC United Renamed' })),
+    }));
+    return memory;
+  };
+
+  it('saves the database, then the current league', async () => {
+    const memory = editTeams();
+    const save = vi.spyOn(leagueFile, 'saveLeagueFile').mockResolvedValue('/c.json');
+    await saveCurrentLeague();
+
+    expect(memory.saves).toHaveLength(1);
+    expect(memory.files.manifest).toContain('FC United Renamed');
+    expect(save).toHaveBeenCalledOnce();
+    expect(areBlueprintsUnsaved(useDatabaseStore.getState())).toBe(false);
+  });
+
+  it('saves the database and says so when no league is current', async () => {
+    editTeams();
+    useFileStore.setState({ currentLeagueSlug: null });
+    await saveCurrentLeague();
+    expect(useFileStore.getState().status).toEqual({
+      tone: 'info',
+      message: 'Saved the teams.',
+    });
+  });
+
+  it('reports a failed database save, and saves no league', async () => {
+    const memory = editTeams();
+    useDatabaseStore.setState({
+      folder: {
+        ...memory.folder,
+        save: async () => {
+          throw new Error('disk full');
+        },
+      },
+    });
+    const save = vi.spyOn(leagueFile, 'saveLeagueFile');
+    await saveCurrentLeague();
+    expect(useFileStore.getState().status).toEqual({
+      tone: 'error',
+      message: 'disk full',
+    });
+    expect(save).not.toHaveBeenCalled();
+  });
+
+  it('writes no database file when nothing in it is unsaved', async () => {
+    const memory = openTestDatabase([]);
+    vi.spyOn(leagueFile, 'saveLeagueFile').mockResolvedValue('/c.json');
+    await saveCurrentLeague();
+    expect(memory.saves).toEqual([]);
   });
 });

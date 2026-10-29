@@ -50,6 +50,22 @@ export const useDatabaseStore = create<DatabaseState>()(() => ({
   savedLeagues: {},
 }));
 
+/** The folder and the installation UUID of an open database. Each action
+ * calls it first, so an action on a closed database throws. */
+export function requireOpenDatabase(state: DatabaseState): {
+  folder: DatabaseFolder;
+  installationUuid: string;
+} {
+  if (
+    state.status.kind !== 'open' ||
+    state.folder === null ||
+    state.installationUuid === null
+  ) {
+    throw new Error('The database is not open.');
+  }
+  return { folder: state.folder, installationUuid: state.installationUuid };
+}
+
 /** The manifest rows as they are now: the row of each opened league comes
  * from the league, and a new league adds its row at the end. */
 export function currentRows(state: DatabaseState): WrapperSummary[] {

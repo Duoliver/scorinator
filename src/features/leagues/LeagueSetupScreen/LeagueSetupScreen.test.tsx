@@ -4,22 +4,20 @@ import { cleanup, render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { route } from 'preact-router';
 import { LeagueSetupScreen } from './LeagueSetupScreen';
-import { useTeamsStore } from '@/app/state/teamsStore';
 import { useLeagueStore } from '@/app/state/leagueStore';
 import { useLeagueDraftStore } from '@/app/state/leagueDraftStore';
 import { TIER_OVR_RANGES } from '@/engine/tier-ovr';
 import { DEFAULT_POINTS_CONFIG } from '@/engine/standings';
+import { openTestDatabase } from '@/test/databaseRecords';
 
 vi.mock('preact-router', () => ({ route: vi.fn() }));
 
 beforeEach(() => {
   vi.mocked(route).mockClear();
-  useTeamsStore.setState({
-    teams: [
-      { slug: 'fc-united', name: 'FC United', colour: '#E53935', tier: 'B' },
-      { slug: 'harborview-sc', name: 'Harborview SC', colour: '#1E88E5', tier: 'A' },
-    ],
-  });
+  openTestDatabase([
+    { slug: 'fc-united', name: 'FC United', colour: '#E53935', tier: 'B' },
+    { slug: 'harborview-sc', name: 'Harborview SC', colour: '#1E88E5', tier: 'A' },
+  ]);
   useLeagueStore.setState({ leagues: [] });
   useLeagueDraftStore.setState({
     details: { name: '', points: DEFAULT_POINTS_CONFIG, homeAdvantage: false },

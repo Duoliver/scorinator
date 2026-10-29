@@ -1,5 +1,4 @@
 import { loadLeagueFile, type LoadedLeagueFile } from '@/app/data/leagueFile';
-import { mergeImportedTeams } from '@/app/data/importMerge';
 import { importTeamsCsv } from '@/app/data/teamsCsv';
 import { importTeamsFile } from '@/app/data/teamsFile';
 import { importTeamsJson } from '@/app/data/teamsJson';
@@ -12,9 +11,8 @@ import {
 } from '@/app/state/fileActions';
 import { loadLeague } from '@/app/state/leagueActions';
 import { findLeague, useLeagueStore } from '@/app/state/leagueStore';
-import { setTeams } from '@/app/state/teamsActions';
-import { useTeamsStore } from '@/app/state/teamsStore';
-import type { TeamRecord } from '@/domain';
+import { importBlueprints } from '@/app/state/blueprintActions';
+import type { TeamListRecord } from '@/persistence/types';
 
 /** The league load and the team imports, as app actions, so every screen
  * loads a file the same way. Each one reports through `fileStore`'s status
@@ -37,11 +35,11 @@ export function isLeagueOpen(slug: string): boolean {
 }
 
 /** Opens a loaded league: it replaces an open league with the same slug,
- * merges the file's teams into the roster, remembers the file path, and
- * marks the league saved (Task 26). */
+ * adds or updates the file's teams in the Blueprints by slug (Task 75 rule,
+ * Task 109), remembers the file path, and marks the league saved (Task 26). */
 export function applyLoadedLeague(loaded: LoadedLeagueFile): void {
   loadLeague(loaded.league);
-  setTeams(mergeImportedTeams(useTeamsStore.getState().teams, loaded.teams));
+  importBlueprints(loaded.teams);
   markLeagueSaved(loaded.league);
   setLeaguePath(loaded.league.slug, loaded.path);
   setCurrentLeague(loaded.league.slug);
@@ -66,20 +64,24 @@ export function importTeamsFromJson(): Promise<void> {
   return importTeams(importTeamsJson);
 }
 
-/** Runs one `app/data` team import and merges its teams into the roster by
- * slug. The importer is called with no argument, so it uses the real
- * Tauri file system and dialog. */
+/** The import message, with the counts that `importBlueprints` gives
+ * (Task 109). */
+export function describeTeamImport(added: number, updated: number): string {
+  const total = added + updated;
+  return `Imported ${total} team${total === 1 ? '' : 's'}: ${added} new, ${updated} updated.`;
+}
+
+/** Runs one `app/data` team import and adds or updates the Blueprints by
+ * slug (Task 75 rule). The importer is called with no argument, so it uses
+ * the real Tauri file system and dialog. */
 async function importTeams(
-  importer: () => Promise<TeamRecord[] | null>
+  importer: () => Promise<TeamListRecord[] | null>
 ): Promise<void> {
   try {
     const imported = await importer();
     if (imported === null) return;
-    setTeams(mergeImportedTeams(useTeamsStore.getState().teams, imported));
-    setFileStatus({
-      tone: 'info',
-      message: `Imported ${imported.length} team${imported.length === 1 ? '' : 's'}.`,
-    });
+    const { added, updated } = importBlueprints(imported);
+    setFileStatus({ tone: 'info', message: describeTeamImport(added, updated) });
   } catch (error) {
     setFileStatus({ tone: 'error', message: getErrorMessage(error) });
   }

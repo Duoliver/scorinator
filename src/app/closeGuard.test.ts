@@ -4,7 +4,10 @@ import {
   allowWindowClose,
   describeUnsavedLeagues,
   installCloseGuard,
+  UNSAVED_TEAMS_NAME,
 } from './closeGuard';
+import { useDatabaseStore } from '@/app/state/databaseStore';
+import { openTestDatabase } from '@/test/databaseRecords';
 import type {
   CloseRequest,
   UnsavedChoice,
@@ -221,5 +224,67 @@ describe('installCloseGuard', () => {
         message: 'Could not watch for a window close: No window.',
       })
     );
+  });
+});
+
+describe('allowWindowClose with unsaved Blueprints (Task 109)', () => {
+  const editTeams = (): void => {
+    openTestDatabase([
+      { slug: 'fc-united', name: 'FC United', colour: '#E53935', tier: 'B' },
+    ]);
+    useDatabaseStore.setState((state) => ({
+      blueprints: state.blueprints.map((b) => ({ ...b, name: 'FC United Renamed' })),
+    }));
+  };
+
+  beforeEach(() => {
+    [coastal, inland].forEach(markLeagueSaved);
+  });
+
+  it('asks before a close when only the Blueprints are unsaved, and names them Teams', async () => {
+    editTeams();
+    const adapter = adapterAnswering('cancel');
+    await expect(allowWindowClose(adapter)).resolves.toBe(false);
+    expect(adapter.askUnsavedChoice).toHaveBeenCalledWith(
+      `"${UNSAVED_TEAMS_NAME}" has unsaved changes. Save it before you close?`
+    );
+  });
+
+  it('lists Teams first, before the unsaved leagues', async () => {
+    editTeams();
+    useFileStore.setState({ savedLeagues: {} });
+    const adapter = adapterAnswering('cancel');
+    await allowWindowClose(adapter);
+    expect(adapter.askUnsavedChoice).toHaveBeenCalledWith(
+      'These leagues have unsaved changes: "Teams", "Coastal Premier", "Inland Cup". Save them before you close?'
+    );
+  });
+
+  it('saves the Blueprints first on Save, then the leagues', async () => {
+    editTeams();
+    useFileStore.setState({ savedLeagues: {} });
+    const order: string[] = [];
+    const saveLeague = vi.fn(async (slug: string) => {
+      order.push(slug);
+      return true;
+    });
+    const saveBlueprints = vi.fn(async () => {
+      order.push('teams');
+      return true;
+    });
+    await expect(
+      allowWindowClose(adapterAnswering('save'), saveLeague, saveBlueprints)
+    ).resolves.toBe(true);
+    expect(order).toEqual(['teams', 'coastal-premier', 'inland-cup']);
+  });
+
+  it('blocks the close, and saves no league, when the Blueprints save fails', async () => {
+    editTeams();
+    useFileStore.setState({ savedLeagues: {} });
+    const saveLeague = vi.fn(async () => true);
+    await expect(
+      allowWindowClose(adapterAnswering('save'), saveLeague, async () => false)
+    ).resolves.toBe(false);
+    expect(saveLeague).not.toHaveBeenCalled();
   });
 });

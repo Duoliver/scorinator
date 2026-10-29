@@ -4,8 +4,8 @@ import type { TeamRecord } from '@/domain';
 import { formatTeamCount } from '@/features/components';
 import { settingsChipLabels } from '@/features/leagues/LeagueSetupScreen/steps/SetupChips';
 import { formatLeagueName } from '@/features/leagues/leagueSummary';
-import { addTeam } from '@/app/state/teamsActions';
-import { useTeamsStore } from '@/app/state/teamsStore';
+import { addBlueprint } from '@/app/state/blueprintActions';
+import { useDatabaseStore } from '@/app/state/databaseStore';
 import { filterTeamsByName, getTeamsStepColumns } from './helpers';
 import type TeamsStepProps from './types';
 import type { TeamsStepState } from './types';
@@ -20,7 +20,7 @@ export function useTeamsStep({
   onClearSelection,
   onTeamCreated,
 }: Omit<TeamsStepProps, 'onBack' | 'onNext'>): TeamsStepState {
-  const teams = useTeamsStore((state) => state.teams);
+  const teams = useDatabaseStore((state) => state.blueprints);
   const [query, setQuery] = useState('');
   const [showCreateTeam, setShowCreateTeam] = useState(false);
   const checkboxHandles = useRef(new Map<string, FieldHandle<boolean>>());
@@ -54,9 +54,11 @@ export function useTeamsStep({
       else checkboxHandles.current.delete(slug);
     };
 
-  const handleTeamCreated = (record: TeamRecord): void => {
-    addTeam(record);
-    onTeamCreated(record.slug);
+  // The Blueprint gets a unique slug (Task 75), which can differ from the
+  // form preview, so the selection takes the slug of the new Blueprint.
+  const handleTeamCreated = ({ name, colour, tier }: TeamRecord): void => {
+    const created = addBlueprint({ name, colour, tier });
+    onTeamCreated(created.slug);
     setShowCreateTeam(false);
   };
 

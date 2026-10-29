@@ -4,8 +4,8 @@ import * as resultsTxt from '@/app/data/resultsTxt';
 import * as teamsCsv from '@/app/data/teamsCsv';
 import { useFileStore } from '@/app/state/fileStore';
 import { useLeagueStore } from '@/app/state/leagueStore';
-import { useTeamsStore } from '@/app/state/teamsStore';
 import type { LeagueRecord, TeamRecord } from '@/domain';
+import { openTestDatabase, teamFields } from '@/test/databaseRecords';
 
 const league = (overrides: Partial<LeagueRecord> = {}): LeagueRecord => ({
   slug: 'coastal-premier',
@@ -29,7 +29,7 @@ const team: TeamRecord = {
 beforeEach(() => {
   vi.restoreAllMocks();
   useLeagueStore.setState({ leagues: [league()] });
-  useTeamsStore.setState({ teams: [team] });
+  openTestDatabase([team]);
   useFileStore.setState({
     currentLeagueSlug: 'coastal-premier',
     paths: {},
@@ -44,7 +44,7 @@ describe('exportTeams', () => {
 
     await exportTeams();
 
-    expect(write).toHaveBeenCalledWith([
+    expect(teamFields(write.mock.calls[0][0])).toEqual([
       { slug: 'fc-united', name: 'FC United', colour: '#E53935', tier: 'B' },
     ]);
     expect(useFileStore.getState().status).toEqual({
@@ -93,7 +93,8 @@ describe('exportResultsBySlug', () => {
 
     await exportResultsBySlug('coastal-premier');
 
-    expect(write).toHaveBeenCalledWith(league(), [team]);
+    expect(write.mock.calls[0][0]).toEqual(league());
+    expect(teamFields(write.mock.calls[0][1])).toEqual([team]);
     expect(useFileStore.getState().status).toEqual({
       tone: 'info',
       message: 'Exported Coastal Premier results to /r.txt',

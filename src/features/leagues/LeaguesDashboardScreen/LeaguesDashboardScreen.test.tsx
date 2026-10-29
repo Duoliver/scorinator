@@ -7,9 +7,10 @@ import * as leagueFile from '@/app/data/leagueFile';
 import * as teamsFile from '@/app/data/teamsFile';
 import { useFileStore } from '@/app/state/fileStore';
 import { useLeagueStore } from '@/app/state/leagueStore';
-import { useTeamsStore } from '@/app/state/teamsStore';
 import { ROUTES, leagueDetailPath } from '@/app/routes';
 import type { LeagueRecord } from '@/domain';
+import { openTestDatabase } from '@/test/databaseRecords';
+import { useDatabaseStore } from '@/app/state/databaseStore';
 
 const league = (overrides: Partial<LeagueRecord> = {}): LeagueRecord => ({
   slug: 'coastal-premier',
@@ -26,7 +27,7 @@ const league = (overrides: Partial<LeagueRecord> = {}): LeagueRecord => ({
 beforeEach(() => {
   vi.restoreAllMocks();
   useLeagueStore.setState({ leagues: [] });
-  useTeamsStore.setState({ teams: [] });
+  openTestDatabase([]);
   useFileStore.setState({
     currentLeagueSlug: null,
     paths: {},
@@ -73,7 +74,7 @@ describe('LeaguesDashboardScreen', () => {
       );
     });
 
-    it('loads teams from one CSV-or-JSON dialog and merges them into the roster', async () => {
+    it('loads teams from one CSV-or-JSON dialog into the Blueprints', async () => {
       vi.spyOn(teamsFile, 'importTeamsFile').mockResolvedValue([
         { slug: 'fc-united', name: 'FC United', colour: '#E53935', tier: 'B' },
       ]);
@@ -81,12 +82,12 @@ describe('LeaguesDashboardScreen', () => {
 
       await userEvent.click(screen.getByRole('button', { name: 'Load teams...' }));
 
-      expect(useTeamsStore.getState().teams.map((team) => team.slug)).toEqual([
+      expect(useDatabaseStore.getState().blueprints.map((team) => team.slug)).toEqual([
         'fc-united',
       ]);
       expect(useFileStore.getState().status).toEqual({
         tone: 'info',
-        message: 'Imported 1 team.',
+        message: 'Imported 1 team: 1 new, 0 updated.',
       });
     });
 

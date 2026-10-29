@@ -1,6 +1,7 @@
 import { tauriWindow, type WindowCloseAdapter } from '@/adapters/tauri-window';
 import { getErrorMessage } from '@/app/getErrorMessage';
-import { saveLeagueBySlug } from '@/app/saveActions';
+import { saveLeagueBySlug, saveTeams } from '@/app/saveActions';
+import { areBlueprintsUnsaved, useDatabaseStore } from '@/app/state/databaseStore';
 import { setFileStatus } from '@/app/state/fileActions';
 import { isLeagueUnsaved, useFileStore } from '@/app/state/fileStore';
 import { useLeagueStore } from '@/app/state/leagueStore';
@@ -23,27 +24,36 @@ export function describeUnsavedLeagues(names: readonly string[]): string {
   return `These leagues have unsaved changes: ${list}. Save them before you close?`;
 }
 
-/** Decides whether the window may close. No unsaved league: yes, with no
- * prompt. Otherwise asks. Save saves each unsaved league in turn, and the
- * close goes ahead only if every save works: a canceled save dialog or an
- * error keeps the window open, and leaves the later leagues unsaved. Don't
- * save closes with no save. Cancel keeps the window open. */
+/** The name the dialog uses for unsaved Blueprints (Task 109). */
+export const UNSAVED_TEAMS_NAME = 'Teams';
+
+/** Decides whether the window may close. No unsaved league and no unsaved
+ * Blueprint: yes, with no prompt. Otherwise asks, and lists the Blueprints
+ * as "Teams" first. Save saves the Blueprints first, then each unsaved
+ * league in turn, and the close goes ahead only if every save works: a
+ * canceled save dialog or an error keeps the window open, and leaves the
+ * later leagues unsaved. Don't save closes with no save. Cancel keeps the
+ * window open. */
 export async function allowWindowClose(
   adapter: Pick<WindowCloseAdapter, 'askUnsavedChoice'> = tauriWindow,
-  save: (slug: string) => Promise<boolean> = saveLeagueBySlug
+  save: (slug: string) => Promise<boolean> = saveLeagueBySlug,
+  saveBlueprints: () => Promise<boolean> = saveTeams
 ): Promise<boolean> {
   const { savedLeagues } = useFileStore.getState();
   const unsaved = useLeagueStore
     .getState()
     .leagues.filter((league) => isLeagueUnsaved(league, savedLeagues));
-  if (unsaved.length === 0) return true;
+  const teamsUnsaved = areBlueprintsUnsaved(useDatabaseStore.getState());
+  if (unsaved.length === 0 && !teamsUnsaved) return true;
 
+  const names = unsaved.map((league) => league.name);
   const choice = await adapter.askUnsavedChoice(
-    describeUnsavedLeagues(unsaved.map((league) => league.name))
+    describeUnsavedLeagues(teamsUnsaved ? [UNSAVED_TEAMS_NAME, ...names] : names)
   );
   if (choice === 'cancel') return false;
   if (choice === 'discard') return true;
 
+  if (teamsUnsaved && !(await saveBlueprints())) return false;
   for (const league of unsaved) {
     if (!(await save(league.slug))) return false;
   }

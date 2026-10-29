@@ -3,10 +3,10 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { scorinateFixture } from '@/app/state/leagueActions';
 import { act, render, screen } from '@testing-library/preact';
 import { generateRoundRobin } from '@/engine/round-robin';
-import { useTeamsStore } from '@/app/state/teamsStore';
 import { useLeagueStore } from '@/app/state/leagueStore';
 import type { LeagueRecord, TeamRecord } from '@/domain';
 import { StandingsView } from './StandingsView';
+import { openTestDatabase } from '@/test/databaseRecords';
 
 const team = (overrides: Partial<TeamRecord> = {}): TeamRecord => ({
   slug: 'fc-united',
@@ -58,13 +58,11 @@ function StandingsViewFromStore({ slug }: { slug: string }): JSX.Element | null 
 
 beforeEach(() => {
   useLeagueStore.setState({ leagues: [] });
-  useTeamsStore.setState({
-    teams: [
-      team({ slug: 'fc-united', name: 'FC United' }),
-      team({ slug: 'fc-rivals', name: 'FC Rivals', colour: '#1E88E5' }),
-      team({ slug: 'fc-town', name: 'FC Town', colour: '#2E7D32' }),
-    ],
-  });
+  openTestDatabase([
+    team({ slug: 'fc-united', name: 'FC United' }),
+    team({ slug: 'fc-rivals', name: 'FC Rivals', colour: '#1E88E5' }),
+    team({ slug: 'fc-town', name: 'FC Town', colour: '#2E7D32' }),
+  ]);
 });
 
 describe('StandingsView', () => {
@@ -149,7 +147,7 @@ describe('StandingsView', () => {
   });
 
   it("falls back to a team's slug when it is missing from the team roster", () => {
-    useTeamsStore.setState({ teams: [] });
+    openTestDatabase([]);
     render(<StandingsView league={league()} />);
     expect(screen.getByText('fc-united')).toBeInTheDocument();
   });

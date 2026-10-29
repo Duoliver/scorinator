@@ -4,10 +4,11 @@ import { scorinateMatchday } from '@/app/state/leagueActions';
 import { act, render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { generateRoundRobin } from '@/engine/round-robin';
-import { useTeamsStore } from '@/app/state/teamsStore';
 import { useLeagueStore } from '@/app/state/leagueStore';
 import type { LeagueRecord, TeamRecord } from '@/domain';
 import { FixturesView } from './FixturesView';
+import { openTestDatabase } from '@/test/databaseRecords';
+import { useDatabaseStore } from '@/app/state/databaseStore';
 
 const team = (overrides: Partial<TeamRecord> = {}): TeamRecord => ({
   slug: 'fc-united',
@@ -42,14 +43,12 @@ function FixturesViewFromStore({ slug }: { slug: string }): JSX.Element | null {
 
 beforeEach(() => {
   useLeagueStore.setState({ leagues: [] });
-  useTeamsStore.setState({
-    teams: [
-      team({ slug: 'fc-united', name: 'FC United' }),
-      team({ slug: 'fc-rivals', name: 'FC Rivals', colour: '#1E88E5' }),
-      team({ slug: 'fc-town', name: 'FC Town', colour: '#2E7D32' }),
-      team({ slug: 'fc-rangers', name: 'FC Rangers', colour: '#6A1B9A' }),
-    ],
-  });
+  openTestDatabase([
+    team({ slug: 'fc-united', name: 'FC United' }),
+    team({ slug: 'fc-rivals', name: 'FC Rivals', colour: '#1E88E5' }),
+    team({ slug: 'fc-town', name: 'FC Town', colour: '#2E7D32' }),
+    team({ slug: 'fc-rangers', name: 'FC Rangers', colour: '#6A1B9A' }),
+  ]);
 });
 
 describe('FixturesView', () => {
@@ -135,15 +134,15 @@ describe('FixturesView', () => {
     const byeOnMatchdayOne = byes.find((bye) => bye.matchday === 1);
     expect(byeOnMatchdayOne).toBeDefined();
     expect(screen.getByText('Bye')).toBeInTheDocument();
-    const byeName = useTeamsStore
+    const byeName = useDatabaseStore
       .getState()
-      .teams.find((t) => t.slug === byeOnMatchdayOne?.team)?.name;
+      .blueprints.find((t) => t.slug === byeOnMatchdayOne?.team)?.name;
     expect(screen.getByText(byeName ?? '')).toBeInTheDocument();
   });
 
   it('falls back to the raw slug when a team is no longer in the roster', () => {
     const { fixtures, byes } = generateRoundRobin(['fc-united', 'ghost-fc']);
-    useTeamsStore.setState({ teams: [team({ slug: 'fc-united', name: 'FC United' })] });
+    openTestDatabase([team({ slug: 'fc-united', name: 'FC United' })]);
     render(<FixturesView league={league({ fixtures, byes })} />);
 
     expect(screen.getByText('ghost-fc')).toBeInTheDocument();

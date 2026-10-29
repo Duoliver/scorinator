@@ -45,3 +45,9 @@
 .content {
   margin-left: var(--nav-width);
 }
+
+.databaseNote {
+  margin: 0;
+  padding: var(--space-6);
+  color: var(--color-fg-muted);
+}

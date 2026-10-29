@@ -8,7 +8,8 @@ import {
 } from '@/app/state/fileActions';
 import { useFileStore } from '@/app/state/fileStore';
 import { findLeague, useLeagueStore } from '@/app/state/leagueStore';
-import { useTeamsStore } from '@/app/state/teamsStore';
+import { saveDatabase } from '@/app/state/databaseActions';
+import { isManifestUnsaved, useDatabaseStore } from '@/app/state/databaseStore';
 
 /** The save action Ctrl+S (`AppShell`) and the File screen's Save and Save
  * as buttons share, so the two cannot drift apart. It reads the stores,
@@ -31,7 +32,7 @@ export async function saveLeagueBySlug(
     return false;
   }
 
-  const roster = useTeamsStore.getState().teams;
+  const roster = useDatabaseStore.getState().blueprints;
   const knownPath = useFileStore.getState().paths[slug] ?? null;
   try {
     const path = options.saveAs
@@ -54,15 +55,38 @@ export async function saveLeagueBySlug(
   }
 }
 
-/** Ctrl+S: saves the current league (the last one created, opened, or
- * loaded), from any screen. */
+/** Saves the database when it has unsaved changes: in M1, the Blueprints
+ * (Task 109). Never throws: a failed save becomes an error status. Resolves
+ * to `false` only for a failed save, so the close guard keeps the window
+ * open. */
+export async function saveTeams(): Promise<boolean> {
+  const database = useDatabaseStore.getState();
+  if (database.status.kind !== 'open' || !isManifestUnsaved(database)) return true;
+  try {
+    await saveDatabase();
+    setFileStatus({ tone: 'info', message: 'Saved the teams.' });
+    return true;
+  } catch (error) {
+    setFileStatus({ tone: 'error', message: getErrorMessage(error) });
+    return false;
+  }
+}
+
+/** Ctrl+S: saves the database when it has unsaved changes, then the current
+ * league (the last one created, opened, or loaded), from any screen. In M1
+ * the leagues still have their own save files: Task 161 makes Ctrl+S save
+ * the database only. */
 export async function saveCurrentLeague(): Promise<void> {
+  const teamsUnsaved = isManifestUnsaved(useDatabaseStore.getState());
+  if (!(await saveTeams())) return;
   const { currentLeagueSlug } = useFileStore.getState();
   if (currentLeagueSlug === null) {
-    setFileStatus({
-      tone: 'info',
-      message: 'No league to save. Open or create a league first.',
-    });
+    if (!teamsUnsaved) {
+      setFileStatus({
+        tone: 'info',
+        message: 'No league to save. Open or create a league first.',
+      });
+    }
     return;
   }
   await saveLeagueBySlug(currentLeagueSlug);

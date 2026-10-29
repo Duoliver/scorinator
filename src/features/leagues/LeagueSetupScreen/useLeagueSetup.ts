@@ -13,7 +13,7 @@ import {
 } from '@/app/state/leagueDraftStore';
 import { useLeagueStore } from '@/app/state/leagueStore';
 import type { LeagueRecord } from '@/domain';
-import { useTeamsStore } from '@/app/state/teamsStore';
+import { useDatabaseStore } from '@/app/state/databaseStore';
 import type { DetailsStepHandle } from '@/features/leagues/LeagueSetupScreen/steps/DetailsStep';
 import { leagueNameProblem } from './leagueName';
 import type { LeagueSetup } from './types';
@@ -22,7 +22,7 @@ import { useTeamSelection } from './useTeamSelection';
 
 /** The League Setup wizard: the draft, the step changes, and the create. */
 export function useLeagueSetup(): LeagueSetup {
-  const teams = useTeamsStore((state) => state.teams);
+  const teams = useDatabaseStore((state) => state.blueprints);
   // The whole list, not a mapped selector: a new array on every call would
   // make the store hook re-render without end.
   const leagues = useLeagueStore((state) => state.leagues);

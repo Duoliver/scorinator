@@ -4,25 +4,30 @@ import { act, render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { route } from 'preact-router';
 import { AppShell } from './AppShell';
-import { useTeamsStore } from '@/app/state/teamsStore';
 import { useLeagueStore } from '@/app/state/leagueStore';
 import { useLeagueDraftStore } from '@/app/state/leagueDraftStore';
 import { useFileStore } from '@/app/state/fileStore';
 import * as saveActions from '@/app/saveActions';
 import * as closeGuard from '@/app/closeGuard';
+import * as databaseStart from '@/app/databaseStart';
+import { useDatabaseStore } from '@/app/state/databaseStore';
 import * as leagueFile from '@/app/data/leagueFile';
 import * as leaguesFeature from '@/features/leagues';
 import { DEFAULT_POINTS_CONFIG } from '@/engine/standings';
+import { openTestDatabase } from '@/test/databaseRecords';
 
 beforeEach(() => {
   vi.restoreAllMocks();
+  // The real start opens the Tauri app data folder. These tests seed an
+  // open database instead (Task 109).
+  vi.spyOn(databaseStart, 'openAppDatabase').mockResolvedValue();
   useFileStore.setState({
     currentLeagueSlug: null,
     paths: {},
     savedLeagues: {},
     status: null,
   });
-  useTeamsStore.setState({ teams: [] });
+  openTestDatabase([]);
   useLeagueStore.setState({ leagues: [] });
   useLeagueDraftStore.setState({
     details: { name: '', points: DEFAULT_POINTS_CONFIG, homeAdvantage: false },
@@ -32,6 +37,38 @@ beforeEach(() => {
 });
 
 describe('AppShell', () => {
+  it('opens the database once, at start (Task 109)', () => {
+    render(<AppShell />);
+    expect(databaseStart.openAppDatabase).toHaveBeenCalledOnce();
+  });
+
+  it('shows no screen while the database opens', () => {
+    useDatabaseStore.setState(useDatabaseStore.getInitialState(), true);
+    render(<AppShell />);
+    expect(screen.getByRole('status')).toHaveTextContent('Opening the database…');
+    expect(
+      screen.queryByRole('heading', { name: 'No leagues yet.' })
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Teams' })).toBeInTheDocument();
+  });
+
+  it('shows the error and no screen when the database cannot open', () => {
+    useDatabaseStore.setState({
+      ...useDatabaseStore.getInitialState(),
+      status: {
+        kind: 'error',
+        message: 'manifest.json is not valid: the text is not JSON.',
+      },
+    });
+    render(<AppShell />);
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'The database could not open: manifest.json is not valid: the text is not JSON.'
+    );
+    expect(
+      screen.queryByRole('heading', { name: 'No leagues yet.' })
+    ).not.toBeInTheDocument();
+  });
+
   it('installs the close guard on mount, and removes it on unmount', () => {
     const remove = vi.fn();
     const install = vi.spyOn(closeGuard, 'installCloseGuard').mockReturnValue(remove);

@@ -2,7 +2,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { TeamsStep } from './TeamsStep';
-import { useTeamsStore } from '@/app/state/teamsStore';
+import { openTestDatabase } from '@/test/databaseRecords';
+import { useDatabaseStore } from '@/app/state/databaseStore';
 
 const baseProps = {
   name: 'Coastal Premier',
@@ -18,12 +19,10 @@ const baseProps = {
 };
 
 beforeEach(() => {
-  useTeamsStore.setState({
-    teams: [
-      { slug: 'fc-united', name: 'FC United', colour: '#E53935', tier: 'B' },
-      { slug: 'harborview-sc', name: 'Harborview SC', colour: '#1E88E5', tier: 'A' },
-    ],
-  });
+  openTestDatabase([
+    { slug: 'fc-united', name: 'FC United', colour: '#E53935', tier: 'B' },
+    { slug: 'harborview-sc', name: 'Harborview SC', colour: '#1E88E5', tier: 'A' },
+  ]);
 });
 
 describe('TeamsStep', () => {
@@ -79,7 +78,7 @@ describe('TeamsStep', () => {
 
     expect(onTeamCreated).toHaveBeenCalledWith('redbrick-athletic');
     expect(screen.getByLabelText('Redbrick Athletic')).toBeInTheDocument();
-    expect(useTeamsStore.getState().teams.map((t) => t.slug)).toContain(
+    expect(useDatabaseStore.getState().blueprints.map((t) => t.slug)).toContain(
       'redbrick-athletic'
     );
   });

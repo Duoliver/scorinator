@@ -4,11 +4,11 @@ import userEvent from '@testing-library/user-event';
 import { TeamsScreen } from './TeamsScreen';
 import * as teamsFile from '@/app/data/teamsFile';
 import { useFileStore } from '@/app/state/fileStore';
-import { useTeamsStore } from '@/app/state/teamsStore';
+import { openTestDatabase } from '@/test/databaseRecords';
 
 beforeEach(() => {
   vi.restoreAllMocks();
-  useTeamsStore.setState({ teams: [] });
+  openTestDatabase([]);
   useFileStore.setState({ status: null });
 });
 
@@ -102,7 +102,7 @@ describe('TeamsScreen', () => {
       expect(screen.getByText('2 teams')).toBeInTheDocument();
       expect(useFileStore.getState().status).toEqual({
         tone: 'info',
-        message: 'Imported 2 teams.',
+        message: 'Imported 2 teams: 2 new, 0 updated.',
       });
     });
 

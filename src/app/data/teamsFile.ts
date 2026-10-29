@@ -1,9 +1,12 @@
 import { tauriDialog, tauriFileSystem } from '@/adapters/tauri-fs';
 import { parseTeamsCsv } from '@/adapters/csv';
 import { parseTeamsJson } from '@/adapters/json-io';
-import type { FileFilter, FileSystem, SaveFileDialog } from '@/persistence/types';
-import type { TeamRecord } from '@/domain';
-import { teamListRecordToTeamRecord } from './importMerge';
+import type {
+  FileFilter,
+  FileSystem,
+  SaveFileDialog,
+  TeamListRecord,
+} from '@/persistence/types';
 
 /** A team import that takes either format (Task 29): one dialog for `.csv`
  * and `.json`, and the file extension picks the parser. */
@@ -14,7 +17,7 @@ const TEAM_LIST_FILTERS: readonly FileFilter[] = [
 export async function importTeamsFile(
   fs: FileSystem = tauriFileSystem,
   dialog: SaveFileDialog = tauriDialog
-): Promise<TeamRecord[] | null> {
+): Promise<TeamListRecord[] | null> {
   const path = await dialog.pickOpenPath(TEAM_LIST_FILTERS);
   if (path === null) return null;
 
@@ -25,7 +28,5 @@ export async function importTeamsFile(
   }
 
   const contents = await fs.readTextFile(path);
-  const records =
-    extension === 'csv' ? parseTeamsCsv(contents) : parseTeamsJson(contents);
-  return records.map(teamListRecordToTeamRecord);
+  return extension === 'csv' ? parseTeamsCsv(contents) : parseTeamsJson(contents);
 }

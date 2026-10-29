@@ -9,8 +9,9 @@ import * as jsonIO from '@/app/data/teamsJson';
 import * as resultsTxtIO from '@/app/data/resultsTxt';
 import { useFileStore } from '@/app/state/fileStore';
 import { useLeagueStore } from '@/app/state/leagueStore';
-import { useTeamsStore } from '@/app/state/teamsStore';
 import type { LeagueRecord, TeamRecord } from '@/domain';
+import { openTestDatabase, teamFields } from '@/test/databaseRecords';
+import { useDatabaseStore } from '@/app/state/databaseStore';
 
 const league = (overrides: Partial<LeagueRecord> = {}): LeagueRecord => ({
   slug: 'coastal-premier',
@@ -34,7 +35,7 @@ const teams: TeamRecord[] = [
 
 beforeEach(() => {
   vi.restoreAllMocks();
-  useTeamsStore.setState({ teams: [] });
+  openTestDatabase([]);
   useLeagueStore.setState({ leagues: [] });
   useFileStore.setState({
     currentLeagueSlug: null,
@@ -151,7 +152,7 @@ describe('FileScreen', () => {
         await screen.findByText('Loaded Coastal Premier from /saves/coastal.json')
       ).toBeInTheDocument();
       expect(useLeagueStore.getState().leagues).toEqual([league()]);
-      expect(useTeamsStore.getState().teams).toEqual(teams);
+      expect(teamFields(useDatabaseStore.getState().blueprints)).toEqual(teams);
       expect(useFileStore.getState().paths['coastal-premier']).toBe(
         '/saves/coastal.json'
       );
@@ -232,12 +233,12 @@ describe('FileScreen', () => {
 
       expect(await screen.findByText(/names team "ghost-fc"/)).toBeInTheDocument();
       expect(useLeagueStore.getState().leagues).toEqual([]);
-      expect(useTeamsStore.getState().teams).toEqual([]);
+      expect(teamFields(useDatabaseStore.getState().blueprints)).toEqual([]);
     });
   });
 
   describe('Import and export teams', () => {
-    it('imports teams from CSV and merges them into the roster', async () => {
+    it('imports teams from CSV into the Blueprints', async () => {
       vi.spyOn(csvIO, 'importTeamsCsv').mockResolvedValue([
         { slug: 'fc-united', name: 'FC United', colour: '#E53935', tier: 'B' },
       ]);
@@ -245,8 +246,10 @@ describe('FileScreen', () => {
 
       await userEvent.click(screen.getByRole('button', { name: 'Import CSV...' }));
 
-      expect(await screen.findByText('Imported 1 team.')).toBeInTheDocument();
-      expect(useTeamsStore.getState().teams).toEqual([
+      expect(
+        await screen.findByText('Imported 1 team: 1 new, 0 updated.')
+      ).toBeInTheDocument();
+      expect(teamFields(useDatabaseStore.getState().blueprints)).toEqual([
         { slug: 'fc-united', name: 'FC United', colour: '#E53935', tier: 'B' },
       ]);
     });
@@ -260,10 +263,10 @@ describe('FileScreen', () => {
       await userEvent.click(screen.getByRole('button', { name: 'Import CSV...' }));
 
       expect(await screen.findByText(/missing required column/)).toBeInTheDocument();
-      expect(useTeamsStore.getState().teams).toEqual([]);
+      expect(teamFields(useDatabaseStore.getState().blueprints)).toEqual([]);
     });
 
-    it('imports teams from JSON and merges them into the roster', async () => {
+    it('imports teams from JSON into the Blueprints', async () => {
       vi.spyOn(jsonIO, 'importTeamsJson').mockResolvedValue([
         { slug: 'fc-united', name: 'FC United', colour: '#E53935', tier: 'B' },
       ]);
@@ -271,8 +274,10 @@ describe('FileScreen', () => {
 
       await userEvent.click(screen.getByRole('button', { name: 'Import JSON...' }));
 
-      expect(await screen.findByText('Imported 1 team.')).toBeInTheDocument();
-      expect(useTeamsStore.getState().teams).toHaveLength(1);
+      expect(
+        await screen.findByText('Imported 1 team: 1 new, 0 updated.')
+      ).toBeInTheDocument();
+      expect(useDatabaseStore.getState().blueprints).toHaveLength(1);
     });
 
     it('shows an error and does not change the roster when the JSON import fails', async () => {
@@ -284,7 +289,7 @@ describe('FileScreen', () => {
       await userEvent.click(screen.getByRole('button', { name: 'Import JSON...' }));
 
       expect(await screen.findByText(/invalid tier/)).toBeInTheDocument();
-      expect(useTeamsStore.getState().teams).toEqual([]);
+      expect(teamFields(useDatabaseStore.getState().blueprints)).toEqual([]);
     });
 
     it('does not change the roster when the import dialog is canceled', async () => {
@@ -293,24 +298,22 @@ describe('FileScreen', () => {
 
       await userEvent.click(screen.getByRole('button', { name: 'Import CSV...' }));
 
-      expect(useTeamsStore.getState().teams).toEqual([]);
+      expect(teamFields(useDatabaseStore.getState().blueprints)).toEqual([]);
       expect(useFileStore.getState().status).toBeNull();
     });
 
-    it('exports the current roster to CSV', async () => {
+    it('exports the Blueprints to CSV', async () => {
       const exportSpy = vi
         .spyOn(csvIO, 'exportTeamsCsv')
         .mockResolvedValue('/teams.csv');
-      useTeamsStore.setState({
-        teams: [
-          { slug: 'ashfield-town', name: 'Ashfield Town', colour: '', tier: 'C' },
-        ],
-      });
+      openTestDatabase([
+        { slug: 'ashfield-town', name: 'Ashfield Town', colour: '', tier: 'C' },
+      ]);
       render(<FileScreen />);
 
       await userEvent.click(screen.getByRole('button', { name: 'Export CSV...' }));
 
-      expect(exportSpy).toHaveBeenCalledWith([
+      expect(teamFields(exportSpy.mock.calls[0][0])).toEqual([
         { slug: 'ashfield-town', name: 'Ashfield Town', colour: '', tier: 'C' },
       ]);
       expect(await screen.findByText('Saved to /teams.csv')).toBeInTheDocument();
@@ -342,13 +345,14 @@ describe('FileScreen', () => {
       useLeagueStore.setState({
         leagues: [league({ slug: 'inland-cup', name: 'Inland Cup' }), current],
       });
-      useTeamsStore.setState({ teams });
+      openTestDatabase(teams);
       useFileStore.setState({ currentLeagueSlug: 'coastal-premier' });
       render(<FileScreen />);
 
       await userEvent.click(screen.getByRole('button', { name: 'Export TXT...' }));
 
-      expect(exportSpy).toHaveBeenCalledWith(current, teams);
+      expect(exportSpy.mock.calls[0][0]).toEqual(current);
+      expect(teamFields(exportSpy.mock.calls[0][1])).toEqual(teams);
       expect(
         await screen.findByText('Exported Coastal Premier results to /r.txt')
       ).toBeInTheDocument();
@@ -360,7 +364,7 @@ describe('FileScreen', () => {
         .mockResolvedValue('/r.txt');
       const other = league({ slug: 'inland-cup', name: 'Inland Cup' });
       useLeagueStore.setState({ leagues: [other, league()] });
-      useTeamsStore.setState({ teams });
+      openTestDatabase(teams);
       useFileStore.setState({ currentLeagueSlug: 'coastal-premier' });
       render(<FileScreen />);
 
@@ -370,7 +374,8 @@ describe('FileScreen', () => {
       );
       await userEvent.click(screen.getByRole('button', { name: 'Export TXT...' }));
 
-      expect(exportSpy).toHaveBeenCalledWith(other, teams);
+      expect(exportSpy.mock.calls[0][0]).toEqual(other);
+      expect(teamFields(exportSpy.mock.calls[0][1])).toEqual(teams);
     });
 
     it('says so when the dialog is canceled', async () => {

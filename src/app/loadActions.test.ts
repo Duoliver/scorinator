@@ -14,8 +14,9 @@ import * as teamsJson from '@/app/data/teamsJson';
 import type { LoadedLeagueFile } from '@/app/data/leagueFile';
 import { isLeagueUnsaved, useFileStore } from '@/app/state/fileStore';
 import { useLeagueStore } from '@/app/state/leagueStore';
-import { useTeamsStore } from '@/app/state/teamsStore';
 import type { LeagueRecord } from '@/domain';
+import { openTestDatabase, teamFields } from '@/test/databaseRecords';
+import { useDatabaseStore } from '@/app/state/databaseStore';
 
 const league = (overrides: Partial<LeagueRecord> = {}): LeagueRecord => ({
   slug: 'coastal-premier',
@@ -38,7 +39,7 @@ const loaded = (): LoadedLeagueFile => ({
 beforeEach(() => {
   vi.restoreAllMocks();
   useLeagueStore.setState({ leagues: [] });
-  useTeamsStore.setState({ teams: [] });
+  openTestDatabase([]);
   useFileStore.setState({
     currentLeagueSlug: null,
     paths: {},
@@ -85,7 +86,7 @@ describe('applyLoadedLeague', () => {
     applyLoadedLeague(loaded());
 
     expect(useLeagueStore.getState().leagues).toEqual([league()]);
-    expect(useTeamsStore.getState().teams).toEqual(loaded().teams);
+    expect(teamFields(useDatabaseStore.getState().blueprints)).toEqual(loaded().teams);
     expect(useFileStore.getState().paths['coastal-premier']).toBe(
       '/saves/coastal.json'
     );
@@ -105,35 +106,35 @@ describe('team imports', () => {
     tier: 'B',
   } as const;
 
-  it('merges the imported teams into the roster and reports the count', async () => {
-    useTeamsStore.setState({
-      teams: [{ slug: 'old-town', name: 'Old Town', colour: '#000000', tier: 'C' }],
-    });
+  it('adds the imported teams to the Blueprints and reports the counts', async () => {
+    openTestDatabase([
+      { slug: 'old-town', name: 'Old Town', colour: '#000000', tier: 'C' },
+    ]);
     vi.spyOn(teamsCsv, 'importTeamsCsv').mockResolvedValue([fcUnited]);
 
     await importTeamsFromCsv();
 
-    expect(useTeamsStore.getState().teams.map((team) => team.slug)).toEqual([
+    expect(useDatabaseStore.getState().blueprints.map((team) => team.slug)).toEqual([
       'old-town',
       'fc-united',
     ]);
     expect(useFileStore.getState().status).toEqual({
       tone: 'info',
-      message: 'Imported 1 team.',
+      message: 'Imported 1 team: 1 new, 0 updated.',
     });
   });
 
   it('changes nothing when the dialog is canceled', async () => {
     vi.spyOn(teamsCsv, 'importTeamsCsv').mockResolvedValue(null);
     await importTeamsFromCsv();
-    expect(useTeamsStore.getState().teams).toEqual([]);
+    expect(teamFields(useDatabaseStore.getState().blueprints)).toEqual([]);
     expect(useFileStore.getState().status).toBeNull();
   });
 
   it('reports an error and changes nothing when the import fails', async () => {
     vi.spyOn(teamsCsv, 'importTeamsCsv').mockRejectedValue(new Error('Bad CSV.'));
     await importTeamsFromCsv();
-    expect(useTeamsStore.getState().teams).toEqual([]);
+    expect(teamFields(useDatabaseStore.getState().blueprints)).toEqual([]);
     expect(useFileStore.getState().status).toEqual({
       tone: 'error',
       message: 'Bad CSV.',
@@ -146,7 +147,7 @@ describe('team imports', () => {
       .mockResolvedValue([fcUnited]);
     await importTeamsFromJson();
     expect(importer).toHaveBeenCalledOnce();
-    expect(useTeamsStore.getState().teams).toEqual([fcUnited]);
+    expect(teamFields(useDatabaseStore.getState().blueprints)).toEqual([fcUnited]);
   });
 
   it('reads a CSV or JSON team list through the one-dialog import', async () => {
@@ -155,7 +156,7 @@ describe('team imports', () => {
       .mockResolvedValue([fcUnited]);
     await importTeamsFromFile();
     expect(importer).toHaveBeenCalledOnce();
-    expect(useTeamsStore.getState().teams).toEqual([fcUnited]);
+    expect(teamFields(useDatabaseStore.getState().blueprints)).toEqual([fcUnited]);
   });
 });
 

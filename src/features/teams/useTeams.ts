@@ -2,23 +2,27 @@ import { useState } from 'preact/hooks';
 import type { TeamRecord } from '@/domain';
 import { formatTeamCount } from '@/features/components';
 import { importTeamsFromFile } from '@/app/loadActions';
-import { addTeam, updateTeam } from '@/app/state/teamsActions';
-import { useTeamsStore } from '@/app/state/teamsStore';
+import { addBlueprint, updateBlueprint } from '@/app/state/blueprintActions';
+import { useDatabaseStore } from '@/app/state/databaseStore';
 import { getTeamColumns, toTeamRows } from './helpers';
 import type { TeamDrawerState, Teams } from './types';
 
-/** The roster, and the one drawer that creates or edits a team. The import
- * is the same one-dialog CSV-or-JSON import as the Leagues empty state.
- * Export stays on the File screen only (Task 27). */
+/** The Blueprints, and the one drawer that creates or edits a team. The
+ * import is the same one-dialog CSV-or-JSON import as the Leagues empty
+ * state. Export stays on the File screen only (Task 27).
+ *
+ * A create takes no slug from the form: `addBlueprint` makes a unique one
+ * (Task 75). An edit keeps the slug (US-09.5). */
 export function useTeams(): Teams {
-  const teams = useTeamsStore((state) => state.teams);
+  const teams = useDatabaseStore((state) => state.blueprints);
   const [drawer, setDrawer] = useState<TeamDrawerState>(null);
 
   const handleSave = (record: TeamRecord): void => {
+    const { name, colour, tier } = record;
     if (drawer?.mode === 'edit') {
-      updateTeam(drawer.index, record);
+      updateBlueprint(teams[drawer.index].uuid, { name, colour, tier });
     } else {
-      addTeam(record);
+      addBlueprint({ name, colour, tier });
     }
     setDrawer(null);
   };

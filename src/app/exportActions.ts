@@ -3,17 +3,17 @@ import { exportTeamsCsv } from '@/app/data/teamsCsv';
 import { getErrorMessage } from '@/app/getErrorMessage';
 import { setFileStatus } from '@/app/state/fileActions';
 import { findLeague, useLeagueStore } from '@/app/state/leagueStore';
-import { useTeamsStore } from '@/app/state/teamsStore';
+import { useDatabaseStore } from '@/app/state/databaseStore';
 
 /** The export actions of the File screen, the same shape as
  * `saveActions.ts` and `loadActions.ts`. Each one reports through
  * `fileStore`'s status line and never throws. An export leaves the saved
  * path and the current league alone, since an export is not a save file. */
 
-/** Writes the whole roster to a team CSV file. */
+/** Writes every Blueprint to a team CSV file. */
 export async function exportTeams(): Promise<void> {
   try {
-    const path = await exportTeamsCsv(useTeamsStore.getState().teams);
+    const path = await exportTeamsCsv(useDatabaseStore.getState().blueprints);
     setFileStatus({
       tone: 'info',
       message: path === null ? 'Export canceled.' : `Saved to ${path}`,
@@ -34,7 +34,7 @@ export async function exportResultsBySlug(slug: string): Promise<void> {
     return;
   }
   try {
-    const path = await exportResultsTxt(league, useTeamsStore.getState().teams);
+    const path = await exportResultsTxt(league, useDatabaseStore.getState().blueprints);
     setFileStatus({
       tone: 'info',
       message:

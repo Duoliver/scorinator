@@ -13,16 +13,9 @@ import {
   currentRows,
   isLeagueUnsaved,
   isManifestUnsaved,
+  requireOpenDatabase,
   useDatabaseStore,
-  type DatabaseState,
 } from './databaseStore';
-
-function openFolder(state: DatabaseState): DatabaseFolder {
-  if (state.status.kind !== 'open' || state.folder === null) {
-    throw new Error('The database is not open.');
-  }
-  return state.folder;
-}
 
 /**
  * Opens the database folder at start (Task 76 a). With no manifest yet, the
@@ -78,7 +71,7 @@ export async function openLeague(uuid: string): Promise<LeagueWrapper> {
   const opened = useDatabaseStore.getState().leagues[uuid];
   if (opened) return opened;
 
-  const folder = openFolder(useDatabaseStore.getState());
+  const { folder } = requireOpenDatabase(useDatabaseStore.getState());
   const wrapper = parseLeagueWrapper(await folder.readWrapper(uuid));
 
   // Another call can open the same league during the read: keep the first.
@@ -100,7 +93,7 @@ export async function openLeague(uuid: string): Promise<LeagueWrapper> {
  */
 export async function saveDatabase(): Promise<void> {
   const state = useDatabaseStore.getState();
-  const folder = openFolder(state);
+  const { folder, installationUuid } = requireOpenDatabase(state);
 
   const leagues = Object.values(state.leagues).filter((wrapper) =>
     isLeagueUnsaved(state, wrapper.uuid)
@@ -109,14 +102,13 @@ export async function saveDatabase(): Promise<void> {
   if (leagues.length === 0 && !manifestUnsaved) return;
 
   const rows = currentRows(state);
-  const manifest =
-    state.installationUuid === null || !manifestUnsaved
-      ? null
-      : serializeManifestRecord({
-          installationUuid: state.installationUuid,
-          blueprints: state.blueprints,
-          wrappers: rows,
-        });
+  const manifest = !manifestUnsaved
+    ? null
+    : serializeManifestRecord({
+        installationUuid,
+        blueprints: state.blueprints,
+        wrappers: rows,
+      });
   await folder.save(
     leagues.map((wrapper) => ({
       uuid: wrapper.uuid,

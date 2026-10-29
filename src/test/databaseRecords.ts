@@ -1,4 +1,5 @@
 import type { LeagueWrapper, PhaseResult, TeamBlueprint, TeamInstance } from '@/domain';
+import { useDatabaseStore } from '@/app/state/databaseStore';
 import type { DatabaseFolder, WrapperText } from '@/persistence/types';
 
 /** Test data for the v2 database records (Task 108). Fixed UUIDs, so the
@@ -113,4 +114,56 @@ export function memoryFolder(
     },
   };
   return { folder, files, saves };
+}
+
+/** A UUID v4 for test item `n`, for test data built from a list. */
+export function testUuid(n: number): string {
+  return `00000000-0000-4000-8000-${n.toString(16).padStart(12, '0')}`;
+}
+
+/**
+ * Puts an open database in the store, with one Blueprint for each team and
+ * nothing unsaved. A test that seeded the MVP1 roster uses this (Task 109).
+ * Each Blueprint gets the UUID `testUuid(1)`, `testUuid(2)`, and so on.
+ */
+export function openTestDatabase(
+  teams: readonly Pick<TeamBlueprint, 'slug' | 'name' | 'colour' | 'tier'>[] = []
+): ReturnType<typeof memoryFolder> {
+  const memory = memoryFolder();
+  const blueprints = teams.map((team, index) =>
+    blueprint({
+      uuid: testUuid(index + 1),
+      location: '',
+      trigrams: [],
+      slug: team.slug,
+      name: team.name,
+      colour: team.colour,
+      tier: team.tier,
+    })
+  );
+  useDatabaseStore.setState(
+    {
+      ...useDatabaseStore.getInitialState(),
+      status: { kind: 'open' },
+      folder: memory.folder,
+      installationUuid: INSTALLATION,
+      blueprints,
+      savedBlueprints: blueprints,
+    },
+    true
+  );
+  return memory;
+}
+
+/** The four MVP1 team fields of each Blueprint, for a test that compares the
+ * Blueprints with an MVP1 team list (Task 109). */
+export function teamFields(
+  blueprints: readonly Pick<TeamBlueprint, 'slug' | 'name' | 'colour' | 'tier'>[]
+): Pick<TeamBlueprint, 'slug' | 'name' | 'colour' | 'tier'>[] {
+  return blueprints.map(({ slug, name, colour, tier }) => ({
+    slug,
+    name,
+    colour,
+    tier,
+  }));
 }

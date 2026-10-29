@@ -1,4 +1,5 @@
 import { ROUTES } from '@/app/routes';
+import type { DatabaseStatus } from '@/app/state/databaseStore';
 import type { NavItem } from './types';
 
 export const NAV_ITEMS: NavItem[] = [
@@ -33,4 +34,12 @@ export function toActivePath(url: string): string {
  * for the current url, so neither case counts. */
 export function isScreenChange(previous: string | undefined, url: string): boolean {
   return previous !== undefined && previous !== url;
+}
+
+/** The text the content area shows in place of a screen while the database
+ * is not open (Task 109). `null` once it is open. */
+export function databaseNote(status: DatabaseStatus): string | null {
+  if (status.kind === 'open') return null;
+  if (status.kind === 'error') return `The database could not open: ${status.message}`;
+  return 'Opening the database…';
 }

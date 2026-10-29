@@ -13,7 +13,8 @@
   gap: var(--space-2);
 }
 
-.button:disabled {
+.button:disabled,
+.button[aria-disabled='true'] {
   cursor: not-allowed;
   opacity: 0.5;
 }
@@ -24,7 +25,7 @@
   padding: var(--space-2) var(--space-4);
   box-shadow: var(--shadow-offset-sm);
 }
-.sm:hover:not(:disabled) {
+.sm:hover:not(:disabled):not([aria-disabled='true']) {
   transform: translate(-0.0625rem, -0.0625rem);
   box-shadow: var(--shadow-offset-hover-sm);
 }
@@ -34,7 +35,7 @@
   padding: var(--space-3) var(--space-6);
   box-shadow: var(--shadow-offset-md);
 }
-.md:hover:not(:disabled) {
+.md:hover:not(:disabled):not([aria-disabled='true']) {
   transform: translate(-0.125rem, -0.125rem);
   box-shadow: var(--shadow-offset-hover-md);
 }
@@ -44,14 +45,28 @@
   padding: var(--space-4) var(--space-8);
   box-shadow: var(--shadow-offset-lg);
 }
-.lg:hover:not(:disabled) {
+.lg:hover:not(:disabled):not([aria-disabled='true']) {
   transform: translate(-0.125rem, -0.125rem);
   box-shadow: var(--shadow-offset-hover-lg);
 }
 
-.button:active:not(:disabled) {
+.button:active:not(:disabled):not([aria-disabled='true']) {
   transform: translate(0.125rem, 0.125rem);
   box-shadow: 0 0 0 var(--color-fg);
+}
+
+/* The handoff row buttons: a 1.75rem square, a glyph, no shadow. The hover
+   turns it dark, as the handoff ✎ ⇄ ✕. */
+.icon {
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  font-size: var(--font-size-md);
+  flex: none;
+}
+.icon:hover:not(:disabled):not([aria-disabled='true']) {
+  background: var(--color-fg);
+  color: var(--color-surface);
 }
 
 /* Variants */
@@ -76,13 +91,13 @@
   border-color: transparent;
   box-shadow: none;
 }
-.ghost:hover:not(:disabled) {
+.ghost:hover:not(:disabled):not([aria-disabled='true']) {
   background: var(--color-fg);
   color: var(--color-surface);
   transform: none;
   box-shadow: none;
 }
-.ghost:active:not(:disabled) {
+.ghost:active:not(:disabled):not([aria-disabled='true']) {
   transform: none;
   box-shadow: none;
 }
@@ -95,13 +110,13 @@
   color: var(--color-fg);
   box-shadow: none;
 }
-.outline:hover:not(:disabled) {
+.outline:hover:not(:disabled):not([aria-disabled='true']) {
   background: var(--color-fg);
   color: var(--color-surface);
   transform: none;
   box-shadow: none;
 }
-.outline:active:not(:disabled) {
+.outline:active:not(:disabled):not([aria-disabled='true']) {
   transform: none;
   box-shadow: none;
 }

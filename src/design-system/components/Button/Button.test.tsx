@@ -90,4 +90,65 @@ describe('Button', () => {
     await userEvent.click(screen.getByRole('link'));
     expect(onClick).toHaveBeenCalledOnce();
   });
+
+  describe('the icon size (Task 111)', () => {
+    it('renders a square icon button named by its aria-label', () => {
+      render(
+        <Button size="icon" aria-label="Edit team">
+          ✎
+        </Button>
+      );
+      const button = screen.getByRole('button', { name: 'Edit team' });
+      expect(button.className).toMatch(/icon/);
+    });
+
+    it('passes aria-describedby through', () => {
+      render(
+        <>
+          <Button size="icon" aria-label="Edit team" aria-describedby="hint">
+            ✎
+          </Button>
+          <span id="hint">Edit this team for this league</span>
+        </>
+      );
+      expect(
+        screen.getByRole('button', { name: 'Edit team' })
+      ).toHaveAccessibleDescription('Edit this team for this league');
+    });
+  });
+
+  describe('focusableWhenDisabled (Task 111)', () => {
+    it('keeps a disabled button a Tab stop, marked aria-disabled, with no click', async () => {
+      const onClick = vi.fn();
+      render(
+        <Button disabled focusableWhenDisabled onClick={onClick}>
+          Regenerate
+        </Button>
+      );
+      const button = screen.getByRole('button', { name: 'Regenerate' });
+      expect(button).not.toHaveAttribute('disabled');
+      expect(button).toHaveAttribute('aria-disabled', 'true');
+
+      await userEvent.tab();
+      expect(button).toHaveFocus();
+
+      await userEvent.click(button);
+      await userEvent.keyboard('{Enter}');
+      expect(onClick).not.toHaveBeenCalled();
+    });
+
+    it('changes nothing for an enabled button', async () => {
+      const onClick = vi.fn();
+      render(
+        <Button focusableWhenDisabled onClick={onClick}>
+          Regenerate
+        </Button>
+      );
+      const button = screen.getByRole('button', { name: 'Regenerate' });
+      expect(button).not.toHaveAttribute('aria-disabled');
+
+      await userEvent.click(button);
+      expect(onClick).toHaveBeenCalledOnce();
+    });
+  });
 });

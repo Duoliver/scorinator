@@ -27,6 +27,9 @@ export type { CheckboxProps } from './components/Checkbox';
 export { Switch } from './components/Switch';
 export type { SwitchProps } from './components/Switch';
 
+export { Tooltip } from './components/Tooltip';
+export type { TooltipProps } from './components/Tooltip';
+
 export { Drawer } from './components/Drawer';
 export type { DrawerProps } from './components/Drawer';
 

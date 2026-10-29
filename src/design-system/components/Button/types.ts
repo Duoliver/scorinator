@@ -2,13 +2,18 @@ import type { ComponentChildren, TargetedMouseEvent } from 'preact';
 
 export type ButtonVariant =
   'primary' | 'secondary' | 'destructive' | 'ghost' | 'outline';
-export type ButtonSize = 'sm' | 'md' | 'lg';
+/** `icon` is a square button with a glyph and no visible text (Task 111), as
+ * the handoff row buttons ✎, ⇄, and ✕. */
+export type ButtonSize = 'sm' | 'md' | 'lg' | 'icon';
 
-export default interface ButtonProps {
+interface ButtonBaseProps {
   children: ComponentChildren;
   variant?: ButtonVariant;
-  size?: ButtonSize;
   disabled?: boolean;
+  /** With `disabled`, the button stays a Tab stop and gets hover, marked
+   * `aria-disabled`, and a click does nothing. A `Tooltip` on it then still
+   * shows, for example the reason it is off (Task 111, US-09.5). */
+  focusableWhenDisabled?: boolean;
   type?: 'button' | 'submit' | 'reset';
   /** Renders as an `<a href>` instead of a `<button>`, sharing the same
    * variant/size CSS — for an action that is really a link to another
@@ -16,9 +21,25 @@ export default interface ButtonProps {
    * action. `disabled` has no effect in this mode: an `<a>` has no native
    * disabled state, and no current caller needs one. */
   href?: string;
-  /** The accessible name, for a button whose visible text is only an icon
-   * or symbol (for example `«`). Replaces the visible text for assistive
-   * technology, so it should name the action in full. */
-  'aria-label'?: string;
+  /** The id of the element that describes the button, for example a
+   * `Tooltip` (Task 111). */
+  'aria-describedby'?: string;
   onClick?: (event: TargetedMouseEvent<HTMLButtonElement | HTMLAnchorElement>) => void;
 }
+
+/** A button with visible text. `aria-label` replaces that text for
+ * assistive technology, for a symbol such as `«`, so it names the action in
+ * full. */
+interface TextButtonProps extends ButtonBaseProps {
+  size?: Exclude<ButtonSize, 'icon'>;
+  'aria-label'?: string;
+}
+
+/** An icon button has no visible text, so it must have an `aria-label`. */
+interface IconButtonProps extends ButtonBaseProps {
+  size: 'icon';
+  'aria-label': string;
+}
+
+type ButtonProps = TextButtonProps | IconButtonProps;
+export default ButtonProps;

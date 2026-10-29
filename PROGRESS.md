@@ -58,8 +58,8 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 105 | Fixture ids, and the result lookup by id | `engine/round-robin` | ✅ Done | 2026-10-29 | 2026-10-29 | [105](/docs/tasks/105-fixture-ids.md) | M1. Task 77, US-02.2 (ids). `fixtureId`, `assignFixtureIds`, three lookups by id. |
 | 106 | JSON v2: manifest and wrapper files with a format version. The MVP1 file check | `adapters/json-io` | ✅ Done | 2026-10-29 | 2026-10-29 | [106](/docs/tasks/106-json-v2.md) | M1. Task 76, US-10.3 (MVP1 message). Manifest and wrapper parsers, `isMvp1File`. |
 | 107 | The database folder, the installation UUID, wrappers then manifest | `adapters/tauri-fs` | ✅ Done | 2026-10-29 | 2026-10-29 | [107](/docs/tasks/107-database-folder.md) | M1. Task 76 (a, b). `createDatabaseFolder`, `openTauriDatabaseFolder`. The installation UUID moves to 108. |
-| 108 | Stores on the database: open at start, Save and Ctrl+S, unsaved snapshots, the summary row, routes by UUID | `app/` | ⬜ Not started |  |  |  | M1. Task 76 (b, c, d), US-11.1. After 105, 107. Also the installation UUID (Task 107 choice). |
-| 109 | The MVP1 screens on the v2 model: Teams, the wizard, League Detail, the dashboard | `features/` | ⬜ Not started |  |  |  | M1. US-09.1, US-09.2. After 108. |
+| 108 | Stores on the database: open at start, Save and Ctrl+S, unsaved snapshots, the summary row, routes by UUID | `app/` | ✅ Done | 2026-10-29 | 2026-10-29 | [108](/docs/tasks/108-database-store.md) | M1. Database store built, not wired. Actions to 160, wiring to 109. |
+| 109 | The MVP1 screens on the v2 model: Teams, the wizard, League Detail, the dashboard | `features/` | ⬜ Not started |  |  |  | M1. US-09.1, US-09.2. After 160. Also the shell wiring and the routes by UUID (Task 108 split). |
 | 110 | M1 smoke check | all | ⬜ Not started |  |  |  | M1. After 109. |
 | 111 | Tooltip, and the icon-only Button variant | `design-system/` | ⬜ Not started |  |  |  | M2. US-09.3, US-09.5, US-12.1 to 12.3. After 110. |
 | 112 | Modal, with a focus trap, and the confirm pattern | `design-system/` | ⬜ Not started |  |  |  | M2. US-04.6, 07.3, 09.4, 09.5, 10.2. After 110. |
@@ -110,6 +110,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 157 | Trigrams and Location on league screens: narrow tables, fixtures, the Location hint | `features/` | ⬜ Not started |  |  |  | M6. US-09.3, 09.6. After 154. |
 | 158 | M6 smoke check: MVP2 complete | all | ⬜ Not started |  |  |  | M6. After 155, 156, 157. |
 | 159 | The commit workflow: commit at Done, the message pattern | `CLAUDE.md`, `PROGRESS.md` | ✅ Done | 2026-10-29 | 2026-10-29 | [159](/docs/tasks/159-commit-workflow.md) | Task created by User - 2026-10-29. Commit at Done. Push and branches stay with the user. |
+| 160 | v2 actions: Blueprint create and edit (UUID, unique slug, provenance), league create (Instances, phase 1, fixture ids), scorinate in phase 1 | `app/state` | ⬜ Not started |  |  |  | Task created by User - 2026-10-29, split from 108. M1. After 108, before 109. |
 
 **Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input, see Open Questions) · 🟩 Review · ✅ Done · ❌ Cancelled (the reason is in the Notes column)
 
@@ -156,6 +157,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-10-29 (Task 108 — the database store):** The user chose three rules. (1) Task 108 builds the v2 store next to the MVP1 stores, and wires nothing. Task 109 moves the screens, the app shell, and the routes by UUID together, then removes the MVP1 stores. (2) Task 108 splits: the database store stays here, and new Task 160 holds the v2 actions. Order: 108, 160, 109. (3) Each action that changes a Blueprint or a league sets `lastModifiedByInstallation` in the new object, not the save. Claude choices: `openDatabase` never throws and sets an `error` status, `openLeague` and `saveDatabase` reject. Detail in [`docs/tasks/108-database-store.md`](/docs/tasks/108-database-store.md).
 
 - **2026-10-29 (Task 107 — the database folder):** The user chose two rules. (1) Task 108, not this adapter, makes the installation UUID and the first manifest, and saves them at once, because the `DatabaseFolder` contract moves text only. (2) The database folder is `database/` in the Tauri app data folder. Claude choice: `mkdir` goes in a new `FolderFileSystem` contract, so `FileSystem` and its MVP1 test mocks do not change. Detail in [`docs/tasks/107-database-folder.md`](/docs/tasks/107-database-folder.md).
 

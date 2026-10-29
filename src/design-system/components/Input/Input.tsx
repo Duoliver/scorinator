@@ -12,6 +12,7 @@ export const Input = forwardRef<FieldHandle<string>, InputProps>(
   (
     {
       label,
+      'aria-label': ariaLabel,
       defaultValue = '',
       onChange,
       placeholder,
@@ -50,6 +51,7 @@ export const Input = forwardRef<FieldHandle<string>, InputProps>(
           type={type}
           value={value}
           placeholder={placeholder}
+          aria-label={ariaLabel}
           readOnly={readOnly}
           min={min}
           max={max}

@@ -43,6 +43,11 @@
   width: 23.75rem;
 }
 
+.md {
+  width: 30rem;
+  max-height: 80vh;
+}
+
 .lg {
   width: 47.5rem;
   height: 80vh;

@@ -1,8 +1,9 @@
 import type { ComponentChildren, RefObject } from 'preact';
 
-/** `sm` is the handoff confirm (23.75rem wide). `lg` is the handoff team
- * picker (47.5rem wide, 80% of the window high). */
-export type ModalSize = 'sm' | 'lg';
+/** `sm` is the handoff confirm (23.75rem wide). `md` is the handoff import
+ * picker (30rem wide, Task 113). `lg` is the handoff team picker (47.5rem
+ * wide, 80% of the window high). */
+export type ModalSize = 'sm' | 'md' | 'lg';
 
 export default interface ModalProps {
   title: string;

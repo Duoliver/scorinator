@@ -63,7 +63,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 110 | M1 smoke check | all | ✅ Done | 2026-10-29 | 2026-10-29 | [110](/docs/tasks/110-m1-smoke-check.md) | M1 complete. The user checked the real app. |
 | 111 | Tooltip, and the icon-only Button variant | `design-system/` | ⬜ Not started |  |  |  | M2. US-09.3, US-09.5, US-12.1 to 12.3. After 110. |
 | 112 | Modal, with a focus trap, and the confirm pattern | `design-system/` | ✅ Done | 2026-10-29 | 2026-10-29 | [112](/docs/tasks/112-modal-and-confirm.md) | M2. `Modal` and `ConfirmDialog` built, checked in the real app. No screen uses them yet. |
-| 113 | Picker dialog: search, multi-select and single-select | `design-system/` | ⬜ Not started |  |  |  | M2. US-08.1, 08.5, 10.3. After 112. |
+| 113 | Picker dialog: search, multi-select and single-select | `design-system/` | ✅ Done | 2026-10-29 | 2026-10-29 | [113](/docs/tasks/113-picker-dialog.md) | M2. `PickerDialog` and `ChecklistDialog` built, checked in the real app. No screen uses them yet. |
 | 114 | The 24-colour palette, and 3 rows in the swatch picker | `design-system/` | ⬜ Not started |  |  |  | M2. US-09.7. After 110. |
 | 115 | Trigrams: the auto trigram, the format check, the league pick | `engine/identity` | ⬜ Not started |  |  |  | M2. US-09.6. After 110. |
 | 116 | The OVR override range check, and the roll on a Tier change | `engine/tier-ovr` | ⬜ Not started |  |  |  | M2. US-08.4, Task 81. After 110. |
@@ -115,6 +115,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 162 | Remove the MVP1 code: domain types, stores, save files, triple lookups | all | ✅ Done | 2026-10-29 | 2026-10-29 | [162](/docs/tasks/162-remove-mvp1-code.md) | Task created by User - 2026-10-29, split from 109. M1. MVP1 code removed. 718 tests pass. |
 | 163 | Rename the `blueprint*` files to `teamBlueprint*` | `app/state` | ✅ Done | 2026-10-29 | 2026-10-29 | [163](/docs/tasks/163-rename-team-blueprint-actions.md) | Task created by User - 2026-10-29. Files and names inside (option B). |
 | 164 | Rename `fileStore` and `fileActions` to a name for the status line | `app/state` | ⬜ Not started |  |  |  | Task created by User - 2026-10-29. After 158: the store holds the status line only (Task 162). |
+| 165 | Restyle the picker dialog rows | `design-system/`, `features/leagues` | ⬜ Not started |  |  |  | Task created by User - 2026-10-29. After 120, which builds the team row content. Agree the look first. |
 
 **Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input, see Open Questions) · 🟩 Review · ✅ Done · ❌ Cancelled (the reason is in the Notes column)
 
@@ -162,6 +163,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-10-29 (Task 113 — the picker dialogs):** The user agreed five choices. (1) The team picker follows the handoff: a click moves a row to "Selected", with no checkbox, and US-08.1 says so now. (2) The caller holds the selection. (3) An item is an id, a search text, and content the caller renders. (4) The import list is a second dialog, `ChecklistDialog`. (5) `Modal` gets a `md` size. At review, the user asked for a checklist row that is clickable on its whole width, with a hover colour (`Checkbox` `fullWidth`). Detail in [`docs/tasks/113-picker-dialog.md`](/docs/tasks/113-picker-dialog.md).
 
 - **2026-10-29 (Task 112 — Modal and the confirm pattern):** The user agreed five choices. (1) The native `<dialog>`, as `Drawer`. (2) `ConfirmDialog` is a component the screen mounts, not a `confirm()` call. (3) Focus starts on "Cancel". (4) Two sizes, `sm` and `lg`. (5) Focus goes back to the opener, in `Modal` only. Detail in [`docs/tasks/112-modal-and-confirm.md`](/docs/tasks/112-modal-and-confirm.md).
 

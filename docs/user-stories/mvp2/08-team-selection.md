@@ -20,7 +20,7 @@ As a user, I want to bulk-select teams for a new league from a searchable checkl
 **Acceptance criteria:**
 
 - [ ] The Teams step has a "+ Add teams" button. It opens the "Add teams" dialog, as in the handoff.
-- [ ] The dialog lists each available Blueprint: a checkbox, the colour swatch, the name, the Location in muted text (US-09.3), and the Tier.
+- [ ] The dialog lists each available Blueprint: the colour swatch, the name, the Location in muted text (US-09.3), and the Tier. A click on a row moves it to the selected teams, as in the handoff. The rows have no checkbox (Task 113).
 - [ ] A search field filters the list by name or Location. The search ignores case.
 - [ ] The user can select many Blueprints. The dialog shows the selected teams, each with a ✕ to take it out of the selection.
 - [ ] The dialog has "+ Create new team". It opens the team drawer. A saved team becomes a new Blueprint in the Teams module, and the dialog selects it.

@@ -5,6 +5,16 @@
   cursor: pointer;
 }
 
+.fullWidth {
+  display: flex;
+  width: 100%;
+  padding: var(--space-3) var(--space-2);
+}
+
+.fullWidth:hover {
+  background: var(--color-bg);
+}
+
 .input {
   position: absolute;
   width: 1.375rem;

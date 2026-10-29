@@ -11,7 +11,7 @@ import {
 } from '@/app/state/fileActions';
 import { loadLeague } from '@/app/state/leagueActions';
 import { findLeague, useLeagueStore } from '@/app/state/leagueStore';
-import { importBlueprints } from '@/app/state/blueprintActions';
+import { importTeamBlueprints } from '@/app/state/teamBlueprintActions';
 import type { TeamListRecord } from '@/persistence/types';
 
 /** The league load and the team imports, as app actions, so every screen
@@ -39,7 +39,7 @@ export function isLeagueOpen(slug: string): boolean {
  * Task 109), remembers the file path, and marks the league saved (Task 26). */
 export function applyLoadedLeague(loaded: LoadedLeagueFile): void {
   loadLeague(loaded.league);
-  importBlueprints(loaded.teams);
+  importTeamBlueprints(loaded.teams);
   markLeagueSaved(loaded.league);
   setLeaguePath(loaded.league.slug, loaded.path);
   setCurrentLeague(loaded.league.slug);
@@ -64,7 +64,7 @@ export function importTeamsFromJson(): Promise<void> {
   return importTeams(importTeamsJson);
 }
 
-/** The import message, with the counts that `importBlueprints` gives
+/** The import message, with the counts that `importTeamBlueprints` gives
  * (Task 109). */
 export function describeTeamImport(added: number, updated: number): string {
   const total = added + updated;
@@ -80,7 +80,7 @@ async function importTeams(
   try {
     const imported = await importer();
     if (imported === null) return;
-    const { added, updated } = importBlueprints(imported);
+    const { added, updated } = importTeamBlueprints(imported);
     setFileStatus({ tone: 'info', message: describeTeamImport(added, updated) });
   } catch (error) {
     setFileStatus({ tone: 'error', message: getErrorMessage(error) });

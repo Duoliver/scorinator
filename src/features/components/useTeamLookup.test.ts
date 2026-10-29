@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { act, renderHook } from '@testing-library/preact';
-import { updateBlueprint } from '@/app/state/blueprintActions';
+import { updateTeamBlueprint } from '@/app/state/teamBlueprintActions';
 import type { TeamRecord } from '@/domain';
 import { useTeamLookup } from './useTeamLookup';
 import { openTestDatabase, testUuid } from '@/test/databaseRecords';
@@ -52,7 +52,7 @@ describe('useTeamLookup', () => {
     const { result } = renderHook(() => useTeamLookup());
     const first = result.current;
 
-    act(() => updateBlueprint(testUuid(1), { name: 'FC United Renamed' }));
+    act(() => updateTeamBlueprint(testUuid(1), { name: 'FC United Renamed' }));
 
     expect(result.current).not.toBe(first);
     expect(result.current('fc-united').name).toBe('FC United Renamed');

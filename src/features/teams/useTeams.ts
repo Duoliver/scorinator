@@ -2,7 +2,10 @@ import { useState } from 'preact/hooks';
 import type { TeamRecord } from '@/domain';
 import { formatTeamCount } from '@/features/components';
 import { importTeamsFromFile } from '@/app/loadActions';
-import { addBlueprint, updateBlueprint } from '@/app/state/blueprintActions';
+import {
+  addTeamBlueprint,
+  updateTeamBlueprint,
+} from '@/app/state/teamBlueprintActions';
 import { useDatabaseStore } from '@/app/state/databaseStore';
 import { getTeamColumns, toTeamRows } from './helpers';
 import type { TeamDrawerState, Teams } from './types';
@@ -11,7 +14,7 @@ import type { TeamDrawerState, Teams } from './types';
  * import is the same one-dialog CSV-or-JSON import as the Leagues empty
  * state. Export stays on the File screen only (Task 27).
  *
- * A create takes no slug from the form: `addBlueprint` makes a unique one
+ * A create takes no slug from the form: `addTeamBlueprint` makes a unique one
  * (Task 75). An edit keeps the slug (US-09.5). */
 export function useTeams(): Teams {
   const teams = useDatabaseStore((state) => state.blueprints);
@@ -20,9 +23,9 @@ export function useTeams(): Teams {
   const handleSave = (record: TeamRecord): void => {
     const { name, colour, tier } = record;
     if (drawer?.mode === 'edit') {
-      updateBlueprint(teams[drawer.index].uuid, { name, colour, tier });
+      updateTeamBlueprint(teams[drawer.index].uuid, { name, colour, tier });
     } else {
-      addBlueprint({ name, colour, tier });
+      addTeamBlueprint({ name, colour, tier });
     }
     setDrawer(null);
   };

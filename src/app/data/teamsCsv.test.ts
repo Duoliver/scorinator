@@ -40,7 +40,7 @@ describe('importTeamsCsv', () => {
     ]);
   });
 
-  it('keeps a blank slug blank, so importBlueprints makes a unique one (Task 109)', async () => {
+  it('keeps a blank slug blank, so importTeamBlueprints makes a unique one (Task 109)', async () => {
     const csv = 'Slug,Name,Colour,Tier\n,Harborview SC,,A\n';
     const fs = fakeFs({ readTextFile: vi.fn().mockResolvedValue(csv) });
     const dialog = fakeDialog({

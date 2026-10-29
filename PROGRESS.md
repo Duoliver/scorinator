@@ -113,6 +113,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 160 | v2 actions: Blueprint create and edit (UUID, unique slug, provenance), league create (Instances, phase 1, fixture ids), scorinate in phase 1 | `app/state` | ✅ Done | 2026-10-29 | 2026-10-29 | [160](/docs/tasks/160-v2-actions.md) | Task created by User - 2026-10-29, split from 108. M1. Built. Seven choices agreed. |
 | 161 | The leagues on the v2 store: the wizard create, League Detail, the dashboard rows, the File screen, Ctrl+S, the close guard, the routes by UUID | `features/`, `app/` | ⬜ Not started |  |  |  | Task created by User - 2026-10-29, split from 109 (recommended option). M1. After 109. |
 | 162 | Remove the MVP1 code: domain types, stores, save files, triple lookups | all | ⬜ Not started |  |  |  | Task created by User - 2026-10-29, split from 109 (recommended option). M1. After 161. Closes the 109 choice 6 gap. |
+| 163 | Rename the `blueprint*` files to `teamBlueprint*` | `app/state` | ✅ Done | 2026-10-29 | 2026-10-29 | [163](/docs/tasks/163-rename-team-blueprint-actions.md) | Task created by User - 2026-10-29. Files and names inside (option B). |
 
 **Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input, see Open Questions) · 🟩 Review · ✅ Done · ❌ Cancelled (the reason is in the Notes column)
 

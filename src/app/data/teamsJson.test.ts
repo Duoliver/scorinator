@@ -50,7 +50,7 @@ describe('importTeamsJson', () => {
     ]);
   });
 
-  it('keeps a blank slug blank, so importBlueprints makes a unique one (Task 109)', async () => {
+  it('keeps a blank slug blank, so importTeamBlueprints makes a unique one (Task 109)', async () => {
     const json = JSON.stringify([{ name: 'Harborview SC', tier: 'A' }]);
     const fs = fakeFs({ readTextFile: vi.fn().mockResolvedValue(json) });
     const dialog = fakeDialog({

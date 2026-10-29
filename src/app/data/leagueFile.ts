@@ -25,7 +25,7 @@ export interface LoadedLeagueFile {
   path: string;
   league: LeagueRecord;
   /** The teams the file carried, as roster records, ready for
-   * `importBlueprints` (Task 109) — a save file holds its own teams' name, colour, and
+   * `importTeamBlueprints` (Task 109) — a save file holds its own teams' name, colour, and
    * tier, because a `LeagueRecord` only references them by slug. */
   teams: TeamRecord[];
 }

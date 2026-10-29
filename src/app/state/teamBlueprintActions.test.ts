@@ -9,7 +9,11 @@ import {
   SALT_MARSH,
 } from '@/test/databaseRecords';
 import { serializeManifestRecord } from '@/app/data/databaseFile';
-import { addBlueprint, importBlueprints, updateBlueprint } from './blueprintActions';
+import {
+  addTeamBlueprint,
+  importTeamBlueprints,
+  updateTeamBlueprint,
+} from './teamBlueprintActions';
 import { openDatabase } from './databaseActions';
 import {
   areBlueprintsUnsaved,
@@ -38,10 +42,10 @@ beforeEach(() => {
   useDatabaseStore.setState(useDatabaseStore.getInitialState(), true);
 });
 
-describe('addBlueprint (US-09.1, US-11.1)', () => {
+describe('addTeamBlueprint (US-09.1, US-11.1)', () => {
   it('makes a Blueprint with a new UUID, a slug, and the local provenance', async () => {
     await openWithBlueprint();
-    const added = addBlueprint({
+    const added = addTeamBlueprint({
       name: 'Harborview SC',
       colour: '#E53935',
       tier: 'C',
@@ -66,7 +70,7 @@ describe('addBlueprint (US-09.1, US-11.1)', () => {
 
   it('gives a second Blueprint with the same name the -2 slug (Task 75)', async () => {
     await openWithBlueprint();
-    const added = addBlueprint({
+    const added = addTeamBlueprint({
       name: 'Salt Marsh United',
       colour: '#000',
       tier: 'D',
@@ -76,37 +80,37 @@ describe('addBlueprint (US-09.1, US-11.1)', () => {
 
   it('gives each new Blueprint its own UUID', async () => {
     await openWithBlueprint();
-    const a = addBlueprint({ name: 'A', colour: '#000', tier: 'D' });
-    const b = addBlueprint({ name: 'B', colour: '#000', tier: 'D' });
+    const a = addTeamBlueprint({ name: 'A', colour: '#000', tier: 'D' });
+    const b = addTeamBlueprint({ name: 'B', colour: '#000', tier: 'D' });
     expect(a.uuid).not.toBe(b.uuid);
   });
 
   it('defaults to an empty location and no trigrams', async () => {
     await openWithBlueprint();
-    const added = addBlueprint({ name: 'A', colour: '#000', tier: 'D' });
+    const added = addTeamBlueprint({ name: 'A', colour: '#000', tier: 'D' });
     expect(added.location).toBe('');
     expect(added.trigrams).toEqual([]);
   });
 
   it('throws the slug RangeError for a name with no letter or number, and adds nothing', async () => {
     await openWithBlueprint();
-    expect(() => addBlueprint({ name: '!!!', colour: '#000', tier: 'D' })).toThrow(
+    expect(() => addTeamBlueprint({ name: '!!!', colour: '#000', tier: 'D' })).toThrow(
       RangeError
     );
     expect(state().blueprints).toHaveLength(1);
   });
 
   it('throws when the database is not open', () => {
-    expect(() => addBlueprint({ name: 'A', colour: '#000', tier: 'D' })).toThrow(
+    expect(() => addTeamBlueprint({ name: 'A', colour: '#000', tier: 'D' })).toThrow(
       'The database is not open.'
     );
   });
 });
 
-describe('updateBlueprint (US-09.1, US-09.5)', () => {
+describe('updateTeamBlueprint (US-09.1, US-09.5)', () => {
   it('changes the fields, keeps the slug and the UUID, and stamps the local installation', async () => {
     await openWithBlueprint();
-    updateBlueprint(SALT_MARSH, {
+    updateTeamBlueprint(SALT_MARSH, {
       name: 'Salt Marsh FC',
       tier: 'A',
       location: 'Dunmore',
@@ -127,7 +131,7 @@ describe('updateBlueprint (US-09.1, US-09.5)', () => {
   it('makes no new object for an update with no real change', async () => {
     await openWithBlueprint();
     const before = state().blueprints;
-    updateBlueprint(SALT_MARSH, { name: 'Salt Marsh United', trigrams: ['SMU'] });
+    updateTeamBlueprint(SALT_MARSH, { name: 'Salt Marsh United', trigrams: ['SMU'] });
 
     expect(state().blueprints).toBe(before);
     expect(areBlueprintsUnsaved(state())).toBe(false);
@@ -137,23 +141,23 @@ describe('updateBlueprint (US-09.1, US-09.5)', () => {
     await openWithBlueprint();
     const wrapper = leagueWrapper();
     useDatabaseStore.setState({ leagues: { [wrapper.uuid]: wrapper } });
-    updateBlueprint(SALT_MARSH, { name: 'Salt Marsh FC' });
+    updateTeamBlueprint(SALT_MARSH, { name: 'Salt Marsh FC' });
 
     expect(state().leagues[wrapper.uuid]).toBe(wrapper);
   });
 
   it('throws a RangeError for an unknown Blueprint', async () => {
     await openWithBlueprint();
-    expect(() => updateBlueprint(HARBORVIEW, { name: 'X' })).toThrow(
+    expect(() => updateTeamBlueprint(HARBORVIEW, { name: 'X' })).toThrow(
       `No Blueprint has the UUID ${HARBORVIEW}.`
     );
   });
 });
 
-describe('importBlueprints (Task 75)', () => {
+describe('importTeamBlueprints (Task 75)', () => {
   it('updates the name, colour, and tier of a matching slug, keeps the rest, and stamps it', async () => {
     await openWithBlueprint();
-    const counts = importBlueprints([
+    const counts = importTeamBlueprints([
       {
         slug: 'salt-marsh-united',
         name: 'Salt Marsh FC',
@@ -176,7 +180,7 @@ describe('importBlueprints (Task 75)', () => {
 
   it('makes a new Blueprint for a new slug, and gives a blank slug a unique one', async () => {
     await openWithBlueprint();
-    const counts = importBlueprints([
+    const counts = importTeamBlueprints([
       { slug: 'harborview-sc', name: 'Harborview SC', colour: '#E53935', tier: 'C' },
       { slug: '', name: 'Salt Marsh United', colour: '#111111', tier: 'E' },
     ]);
@@ -194,7 +198,7 @@ describe('importBlueprints (Task 75)', () => {
 
   it('takes the last of two records with the same slug', async () => {
     await openWithBlueprint();
-    const counts = importBlueprints([
+    const counts = importTeamBlueprints([
       { slug: 'new-team', name: 'First', colour: '#000', tier: 'C' },
       { slug: 'new-team', name: 'Second', colour: '#000', tier: 'C' },
     ]);
@@ -208,7 +212,7 @@ describe('importBlueprints (Task 75)', () => {
   it('counts an unchanged record as updated, but makes no new object for it', async () => {
     await openWithBlueprint();
     const before = state().blueprints;
-    const counts = importBlueprints([
+    const counts = importTeamBlueprints([
       {
         slug: 'salt-marsh-united',
         name: 'Salt Marsh United',

@@ -54,7 +54,7 @@ describe('importTeamsFile', () => {
     expect(await importTeamsFile(fs, dialog)).toEqual([FC_UNITED]);
   });
 
-  it('keeps a blank slug blank, so importBlueprints makes a unique one (Task 109)', async () => {
+  it('keeps a blank slug blank, so importTeamBlueprints makes a unique one (Task 109)', async () => {
     const fs = fakeFs({
       readTextFile: vi
         .fn()

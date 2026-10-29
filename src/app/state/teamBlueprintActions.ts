@@ -6,7 +6,7 @@ import { requireOpenDatabase, useDatabaseStore } from './databaseStore';
 
 /** What the user gives to create a Blueprint (US-09.1). The slug, the UUID,
  * and the provenance come from the action. */
-export interface BlueprintInput {
+export interface TeamBlueprintInput {
   name: string;
   colour: string;
   tier: TeamBlueprint['tier'];
@@ -16,7 +16,7 @@ export interface BlueprintInput {
 
 /** The fields an edit can change. The slug stays fixed after create
  * (US-09.5): Task 119 adds the regenerate button. */
-export type BlueprintChanges = Partial<
+export type TeamBlueprintChanges = Partial<
   Pick<TeamBlueprint, 'name' | 'colour' | 'tier' | 'location' | 'trigrams'>
 >;
 
@@ -33,7 +33,7 @@ function sameValue(a: unknown, b: unknown): boolean {
  * nothing unsaved (Task 108). */
 function applyChanges(
   blueprint: TeamBlueprint,
-  changes: BlueprintChanges,
+  changes: TeamBlueprintChanges,
   installationUuid: string
 ): TeamBlueprint {
   const changed = CHANGEABLE.some(
@@ -50,7 +50,7 @@ function applyChanges(
 }
 
 function newBlueprint(
-  input: BlueprintInput,
+  input: TeamBlueprintInput,
   slug: string,
   installationUuid: string,
   randomBytes: RandomBytes
@@ -71,8 +71,8 @@ function newBlueprint(
 /** Creates a Blueprint with a new UUID (US-11.1) and a unique slug from the
  * name, with the `-2` rule (Task 75). Throws the `slug()` `RangeError` for a
  * name with no letter or number, and adds nothing. */
-export function addBlueprint(
-  input: BlueprintInput,
+export function addTeamBlueprint(
+  input: TeamBlueprintInput,
   randomBytes: RandomBytes = cryptoRandomBytes
 ): TeamBlueprint {
   const state = useDatabaseStore.getState();
@@ -89,7 +89,7 @@ export function addBlueprint(
 /** Edits a Blueprint. The slug and the UUID stay the same (US-09.5). No
  * league Instance changes (US-09.2). Throws a `RangeError` for an unknown
  * UUID. */
-export function updateBlueprint(uuid: string, changes: BlueprintChanges): void {
+export function updateTeamBlueprint(uuid: string, changes: TeamBlueprintChanges): void {
   const state = useDatabaseStore.getState();
   const { installationUuid } = requireOpenDatabase(state);
   const index = state.blueprints.findIndex((blueprint) => blueprint.uuid === uuid);
@@ -127,7 +127,7 @@ function lastRecordForEachSlug(records: readonly TeamListRecord[]): TeamListReco
  * makes a Blueprint with a new UUID. A blank slug gets a unique slug from
  * the name. Returns the counts, for the confirm of Task 119.
  */
-export function importBlueprints(
+export function importTeamBlueprints(
   records: readonly TeamListRecord[],
   randomBytes: RandomBytes = cryptoRandomBytes
 ): { added: number; updated: number } {

@@ -5,8 +5,12 @@ import { DEFAULT_TEAM_COLOUR, TEAM_PALETTE } from './teamPalette';
 // placeholders (MVP1 spec §1, Team Colours) and can change, so a palette
 // change must not need a test change.
 describe('TEAM_PALETTE', () => {
-  it('has 16 entries', () => {
-    expect(TEAM_PALETTE).toHaveLength(16);
+  it('has 24 entries (US-09.7)', () => {
+    expect(TEAM_PALETTE).toHaveLength(24);
+  });
+
+  it('fills whole rows of the 8-column swatch picker', () => {
+    expect(TEAM_PALETTE.length % 8).toBe(0);
   });
 
   it('gives every entry a 6-digit hex value', () => {

@@ -64,7 +64,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 111 | Tooltip, and the icon-only Button variant | `design-system/` | ✅ Done | 2026-10-29 | 2026-10-29 | [111](/docs/tasks/111-tooltip-and-icon-button.md) | M2. `Tooltip` and the icon button built, checked in the real app. Table header hints need Task 154. |
 | 112 | Modal, with a focus trap, and the confirm pattern | `design-system/` | ✅ Done | 2026-10-29 | 2026-10-29 | [112](/docs/tasks/112-modal-and-confirm.md) | M2. `Modal` and `ConfirmDialog` built, checked in the real app. No screen uses them yet. |
 | 113 | Picker dialog: search, multi-select and single-select | `design-system/` | ✅ Done | 2026-10-29 | 2026-10-29 | [113](/docs/tasks/113-picker-dialog.md) | M2. `PickerDialog` and `ChecklistDialog` built, checked in the real app. No screen uses them yet. |
-| 114 | The 24-colour palette, and 3 rows in the swatch picker | `design-system/` | ⬜ Not started |  |  |  | M2. US-09.7. After 110. |
+| 114 | The 24-colour palette, and 3 rows in the swatch picker | `design-system/` | ✅ Done | 2026-10-29 | 2026-10-29 | [114](/docs/tasks/114-team-palette.md) | M2. US-09.7. 24 colours, 3 rows of 8, a name hint on each swatch. |
 | 115 | Trigrams: the auto trigram, the format check, the league pick | `engine/identity` | ⬜ Not started |  |  |  | M2. US-09.6. After 110. |
 | 116 | The OVR override range check, and the roll on a Tier change | `engine/tier-ovr` | ⬜ Not started |  |  |  | M2. US-08.4, Task 81. After 110. |
 | 117 | CSV v2: the Location and Trigrams columns, the counts for the confirm | `adapters/csv` | ⬜ Not started |  |  |  | M2. US-09.3, 09.6, 10.2, Task 75. After 110. |
@@ -116,6 +116,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 163 | Rename the `blueprint*` files to `teamBlueprint*` | `app/state` | ✅ Done | 2026-10-29 | 2026-10-29 | [163](/docs/tasks/163-rename-team-blueprint-actions.md) | Task created by User - 2026-10-29. Files and names inside (option B). |
 | 164 | Rename `fileStore` and `fileActions` to a name for the status line | `app/state` | ⬜ Not started |  |  |  | Task created by User - 2026-10-29. After 158: the store holds the status line only (Task 162). |
 | 165 | Restyle the picker dialog rows | `design-system/`, `features/leagues` | ⬜ Not started |  |  |  | Task created by User - 2026-10-29. After 120, which builds the team row content. Agree the look first. |
+| 166 | Tooltip improvement: a hint that follows the pointer | `design-system/` | ⬜ Not started |  |  |  | Task created by User - 2026-10-29. An option for small, close triggers such as the swatches (Task 114). |
 
 **Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input, see Open Questions) · 🟩 Review · ✅ Done · ❌ Cancelled (the reason is in the Notes column)
 
@@ -163,6 +164,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-10-29 (Task 114 — the palette):** US-09.7 set the 24 colours. At review, the user asked for three more things. (1) Each swatch shows its colour name in a hint. (2) That hint lets the pointer through to the swatch above it: a new `Tooltip` option, `notHoverable`. (3) A new rule in `docs/coding-standards.md`: a boolean prop is off by default, named for the behaviour it turns on. A hint that follows the pointer is new Task 166. Detail in [`docs/tasks/114-team-palette.md`](/docs/tasks/114-team-palette.md).
 
 - **2026-10-29 (Task 111 — Tooltip and the icon button):** The user agreed five choices. (1) A text trigger becomes a Tab stop, and a button trigger gets the link through a render function. (2) The hint is placed on the screen from the trigger, with no arrow. (3) No show delay, a 100 ms hide delay. (4) Icons are text glyphs. (5) `focusableWhenDisabled` keeps a disabled button with a hint focusable. Detail in [`docs/tasks/111-tooltip-and-icon-button.md`](/docs/tasks/111-tooltip-and-icon-button.md).
 

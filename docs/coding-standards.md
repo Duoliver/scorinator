@@ -236,6 +236,20 @@ Name a function, or a method, for the action it does. Start the name with a verb
 
 The rule applies to new functions. An existing name changes only when the user asks for it. The user set the rule at Task 57 (2026-10-19), and `errorMessage` became `getErrorMessage`.
 
+## A boolean prop is off by default
+
+A boolean prop of a component defaults to `false`. Name it for the behaviour that the caller turns on, so the caller writes the bare prop name (`<Modal showClose>`), never `={false}`. When the default behaviour is the "on" one, name the prop for its opposite: `notHoverable`, not `hoverable` with a `true` default.
+
+```tsx
+// Don't
+<Tooltip content="Gold" hoverable={false}>
+
+// Do
+<Tooltip content="Gold" notHoverable>
+```
+
+Examples in `design-system/`: `showClose`, `fullWidth`, `underline`, `disabled`, `focusableWhenDisabled`, `notHoverable`. The user set the rule at Task 114 (2026-10-29).
+
 ## In a `catch`, read the error with `getErrorMessage`
 
 A caught value has the type `unknown`, and it is not always an `Error`. A Tauri plugin rejects with a plain string. For that string, `(error as Error).message` gives `undefined`, and the status line shows `undefined`. Use `getErrorMessage` from `app/getErrorMessage.ts`. It gives `error.message` for an `Error` and `String(error)` for any other value.

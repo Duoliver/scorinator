@@ -57,9 +57,9 @@ This module follows the general `types.ts`-per-component convention: a props int
 
 ## The team colour palette lives in `tokens/teamPalette.ts` only
 
-`TEAM_PALETTE` (16 `{ name, hex }` entries) and `DEFAULT_TEAM_COLOUR` hold the colours a team picks from (MVP1 spec §1, Team Colours). To change the palette, edit this one file. Nothing else holds a palette value: no CSS variable, and no mirror in `tokens.ts`, because a swatch gets its colour from data at runtime.
+`TEAM_PALETTE` (24 `{ name, hex }` entries, US-09.7) and `DEFAULT_TEAM_COLOUR` hold the colours a team picks from (MVP1 spec §1, Team Colours). The swatch grid has 8 columns, so the palette shows in 3 rows. To change the palette, edit this one file. Nothing else holds a palette value: no CSS variable, and no mirror in `tokens.ts`, because a swatch gets its colour from data at runtime.
 
-The values are placeholders, and a later design pass can change them. Their tests check rules only (16 entries, valid hex, unique names and values, the default is in the palette), so a palette change needs no test change.
+The values are placeholders, and a later design pass can change them. Their tests check rules only (24 entries, whole rows of 8, valid hex, unique names and values, the default is in the palette), so a palette change needs no test change.
 
 A team stores its hex value, not a palette entry. After a palette change, an old team keeps its old colour, and `SwatchPicker` shows no swatch as selected for it. The match against the palette ignores case.
 

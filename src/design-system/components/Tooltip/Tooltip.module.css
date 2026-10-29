@@ -35,6 +35,10 @@
   pointer-events: auto;
 }
 
+.passThrough {
+  pointer-events: none;
+}
+
 .hint[hidden] {
   display: none;
 }

@@ -179,6 +179,20 @@ describe('Tooltip', () => {
       expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
     });
 
+    it('with notHoverable, hides at once and lets the pointer through to the item under it', () => {
+      render(
+        <Tooltip content="Gold" notHoverable>
+          G
+        </Tooltip>
+      );
+      const anchor = screen.getByText('G').parentElement!;
+      fireEvent.mouseEnter(anchor);
+      expect(screen.getByRole('tooltip')).toHaveAttribute('data-not-hoverable');
+
+      fireEvent.mouseLeave(anchor);
+      expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+    });
+
     it('stays while the pointer moves onto the tooltip', () => {
       render(<Tooltip content="Drawn">D</Tooltip>);
       const anchor = screen.getByText('D').parentElement!;

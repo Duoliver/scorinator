@@ -4,6 +4,7 @@ import type SwatchPickerProps from './types';
 import type { SwatchOption } from './types';
 import type { FieldHandle } from '@/design-system/field';
 import { useFieldHandle } from '@/design-system/useFieldHandle';
+import { Tooltip } from '@/design-system/components/Tooltip';
 import styles from './SwatchPicker.module.css';
 
 export type { SwatchPickerProps, SwatchOption };
@@ -55,22 +56,29 @@ export const SwatchPicker = forwardRef<FieldHandle<string>, SwatchPickerProps>(
         </span>
         <div class={styles.grid}>
           {options.map((option) => (
-            <label key={option.value} class={styles.swatch}>
-              <input
-                type="radio"
-                name={groupName}
-                value={option.value}
-                aria-label={option.label}
-                class={styles.input}
-                checked={sameColour(option.value, value)}
-                onChange={() => commitValue(option.value, true)}
-              />
-              <span
-                class={styles.chip}
-                style={{ background: option.value }}
-                aria-hidden="true"
-              />
-            </label>
+            // The radio has the name as its accessible name already, so the
+            // hint gets no `aria-describedby`. The hint covers the row above,
+            // so the pointer goes through it (Task 114).
+            <Tooltip key={option.value} content={option.label} notHoverable>
+              {() => (
+                <label class={styles.swatch}>
+                  <input
+                    type="radio"
+                    name={groupName}
+                    value={option.value}
+                    aria-label={option.label}
+                    class={styles.input}
+                    checked={sameColour(option.value, value)}
+                    onChange={() => commitValue(option.value, true)}
+                  />
+                  <span
+                    class={styles.chip}
+                    style={{ background: option.value }}
+                    aria-hidden="true"
+                  />
+                </label>
+              )}
+            </Tooltip>
           ))}
         </div>
       </div>

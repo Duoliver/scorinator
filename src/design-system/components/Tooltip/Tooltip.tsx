@@ -45,6 +45,7 @@ function placeHint(trigger: DOMRect, hint: DOMRect): Place {
 export function Tooltip({
   content,
   underline = false,
+  notHoverable = false,
   children,
 }: TooltipProps): JSX.Element {
   const tooltipId = useId();
@@ -127,7 +128,7 @@ export function Tooltip({
       ref={anchorRef}
       class={styles.anchor}
       onMouseEnter={show}
-      onMouseLeave={hideSoon}
+      onMouseLeave={notHoverable ? hide : hideSoon}
       onFocusIn={show}
       onFocusOut={hide}
       onKeyDown={handleKeyDown}
@@ -137,8 +138,9 @@ export function Tooltip({
         ref={hintRef}
         id={tooltipId}
         role="tooltip"
-        class={styles.hint}
+        class={notHoverable ? `${styles.hint} ${styles.passThrough}` : styles.hint}
         hidden={!open}
+        data-not-hoverable={notHoverable ? '' : undefined}
         data-side={place?.side}
         // A runtime value from the layout, which the coding standards allow.
         style={place ? { top: `${place.top}px`, left: `${place.left}px` } : undefined}

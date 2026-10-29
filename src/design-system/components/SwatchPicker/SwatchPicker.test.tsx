@@ -156,4 +156,32 @@ describe('SwatchPicker', () => {
     await userEvent.click(homeGold);
     expect(awayRed).toBeChecked();
   });
+
+  describe('the colour name hint (Task 114)', () => {
+    it('shows the colour name on hover', async () => {
+      render(<SwatchPicker label="Colour" options={COLOURS} />);
+      await userEvent.hover(screen.getByRole('radio', { name: 'Gold' }));
+      expect(screen.getByRole('tooltip')).toHaveTextContent('Gold');
+    });
+
+    it('shows the colour name of the focused swatch', async () => {
+      render(<SwatchPicker label="Colour" options={COLOURS} defaultValue="#F9A825" />);
+      await userEvent.tab();
+      expect(screen.getByRole('radio', { name: 'Gold' })).toHaveFocus();
+      expect(screen.getByRole('tooltip')).toHaveTextContent('Gold');
+    });
+
+    it('lets the pointer through the hint to the swatch under it', async () => {
+      render(<SwatchPicker label="Colour" options={COLOURS} />);
+      await userEvent.hover(screen.getByRole('radio', { name: 'Gold' }));
+      expect(screen.getByRole('tooltip')).toHaveAttribute('data-not-hoverable');
+    });
+
+    it('does not repeat the name as a description: the radio already has it', () => {
+      render(<SwatchPicker label="Colour" options={COLOURS} />);
+      for (const radio of screen.getAllByRole('radio')) {
+        expect(radio).not.toHaveAttribute('aria-describedby');
+      }
+    });
+  });
 });

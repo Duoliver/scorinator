@@ -75,7 +75,8 @@ describe('TeamForm', () => {
     expect(onSave).toHaveBeenCalledWith({
       slug: 'harborview-sc',
       name: 'Harborview SC',
-      colour: '#F9A825',
+      // Read from the palette, so a palette change needs no test change.
+      colour: TEAM_PALETTE.find((entry) => entry.name === 'Gold')?.hex,
       tier: 'A',
     });
   });

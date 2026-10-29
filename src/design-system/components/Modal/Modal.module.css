@@ -1,0 +1,100 @@
+/* The same full-viewport `<dialog>` box as `Drawer.module.css`, which
+   explains the UA overrides. Here `.host` centers `.panel` instead of
+   docking it, so a click outside the panel lands on the dialog itself:
+   the backdrop click. */
+.host {
+  position: fixed;
+  inset: 0;
+  margin: 0;
+  width: auto;
+  height: auto;
+  max-width: none;
+  max-height: none;
+  border: none;
+  padding: var(--space-4);
+  overflow: visible;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.host::backdrop {
+  /* --color-fg (#1a1a1a = rgb(26, 26, 26)) at 50% opacity, as the handoff
+     confirm. No alpha token exists yet, as in `Drawer`. */
+  background: rgba(26, 26, 26, 0.5);
+}
+
+.panel {
+  max-width: 100%;
+  max-height: 100%;
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--color-fg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-offset-hover-md);
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  overflow-y: auto;
+}
+
+.sm {
+  width: 23.75rem;
+}
+
+.lg {
+  width: 47.5rem;
+  height: 80vh;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.heading {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: var(--font-size-2xl);
+}
+
+.description {
+  margin: 0;
+  font-size: var(--font-size-md);
+  line-height: 1.5;
+  color: var(--color-fg-muted);
+}
+
+.close {
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  font-size: var(--font-size-xl);
+  border: var(--border-width) solid var(--color-fg);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-fg);
+  cursor: pointer;
+}
+
+.close:hover {
+  background: var(--color-fg);
+  color: var(--color-surface);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}

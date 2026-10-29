@@ -30,6 +30,12 @@ export type { SwitchProps } from './components/Switch';
 export { Drawer } from './components/Drawer';
 export type { DrawerProps } from './components/Drawer';
 
+export { Modal } from './components/Modal';
+export type { ModalProps, ModalSize } from './components/Modal';
+
+export { ConfirmDialog } from './components/ConfirmDialog';
+export type { ConfirmDialogProps, ConfirmTone } from './components/ConfirmDialog';
+
 export { SwatchPicker } from './components/SwatchPicker';
 export type { SwatchPickerProps, SwatchOption } from './components/SwatchPicker';
 

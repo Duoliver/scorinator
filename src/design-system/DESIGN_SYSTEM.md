@@ -66,3 +66,12 @@ A team stores its hex value, not a palette entry. After a palette change, an old
 ## The body has no margin
 
 `tokens/elements.css` sets `margin: 0` and the `--color-bg` background on `body`. The browser default is an 8px margin on a white body. The app's background started inside that margin, so a white strip showed around the content area, and the page was 16px taller than the window (2026-10-05). The fixed sidebar ignored the margin, so only the content area showed the strip.
+
+## An overlay is a native `<dialog>`, mounted to open it
+
+`Drawer`, `Modal`, and `ConfirmDialog` render a native `<dialog>` and call `showModal()` on mount. The browser then gives the focus trap, the backdrop, and Escape, and it stacks a later dialog over an earlier one. The caller mounts the overlay to open it and unmounts it to close it. Do not add an `open` prop, and do not write a focus trap.
+
+Open a second overlay from inside the first one, after the first one is open, as a confirm from the team drawer does. Two overlays that mount in the same render open in the wrong order: the parent calls `showModal()` last and lands on top.
+
+jsdom has no `<dialog>`. The polyfill in `src/test/setup.ts` keeps a stack of open dialogs, so a test sees Escape reach the top one only (Task 112).
+

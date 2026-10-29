@@ -62,7 +62,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 109 | The MVP1 screens on the v2 model: Teams, the wizard, League Detail, the dashboard | `features/` | ✅ Done | 2026-10-29 | 2026-10-29 | [109](/docs/tasks/109-roster-on-blueprints.md) | M1. Roster on Blueprints, database at start. Six choices agreed. Leagues to 161. |
 | 110 | M1 smoke check | all | ✅ Done | 2026-10-29 | 2026-10-29 | [110](/docs/tasks/110-m1-smoke-check.md) | M1 complete. The user checked the real app. |
 | 111 | Tooltip, and the icon-only Button variant | `design-system/` | ⬜ Not started |  |  |  | M2. US-09.3, US-09.5, US-12.1 to 12.3. After 110. |
-| 112 | Modal, with a focus trap, and the confirm pattern | `design-system/` | ⬜ Not started |  |  |  | M2. US-04.6, 07.3, 09.4, 09.5, 10.2. After 110. |
+| 112 | Modal, with a focus trap, and the confirm pattern | `design-system/` | ✅ Done | 2026-10-29 | 2026-10-29 | [112](/docs/tasks/112-modal-and-confirm.md) | M2. `Modal` and `ConfirmDialog` built, checked in the real app. No screen uses them yet. |
 | 113 | Picker dialog: search, multi-select and single-select | `design-system/` | ⬜ Not started |  |  |  | M2. US-08.1, 08.5, 10.3. After 112. |
 | 114 | The 24-colour palette, and 3 rows in the swatch picker | `design-system/` | ⬜ Not started |  |  |  | M2. US-09.7. After 110. |
 | 115 | Trigrams: the auto trigram, the format check, the league pick | `engine/identity` | ⬜ Not started |  |  |  | M2. US-09.6. After 110. |
@@ -162,6 +162,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-10-29 (Task 112 — Modal and the confirm pattern):** The user agreed five choices. (1) The native `<dialog>`, as `Drawer`. (2) `ConfirmDialog` is a component the screen mounts, not a `confirm()` call. (3) Focus starts on "Cancel". (4) Two sizes, `sm` and `lg`. (5) Focus goes back to the opener, in `Modal` only. Detail in [`docs/tasks/112-modal-and-confirm.md`](/docs/tasks/112-modal-and-confirm.md).
 
 - **2026-10-29 (Task 162 — remove the MVP1 code):** The user agreed four choices. (1) A domain type `TeamFields` types the team form values, and the lists use `TeamBlueprint`. (2) The results text adapter takes the v2 fixture ids. (3) `fileStore` keeps its name with the status line only, and new Task 164 renames it after Task 158. (4) `isMvp1File` keeps its own MVP1 format version. Detail in [`docs/tasks/162-remove-mvp1-code.md`](/docs/tasks/162-remove-mvp1-code.md).
 

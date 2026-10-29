@@ -22,6 +22,14 @@ export interface TeamListRecord {
   tier: Tier;
 }
 
+/** A `FileSystem` that can also make a folder. The database folder needs it
+ * at the first save (Task 107). `mkdir` makes the folder and its parents,
+ * and does nothing when the folder exists. A separate contract, so the
+ * MVP1 code and its test mocks keep the plain `FileSystem`. */
+export interface FolderFileSystem extends FileSystem {
+  mkdir(path: string): Promise<void>;
+}
+
 /** One entry in a native file dialog's type filter, e.g.
  * `{ name: 'Team CSV', extensions: ['csv'] }`. */
 export interface FileFilter {

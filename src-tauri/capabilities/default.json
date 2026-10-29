@@ -13,6 +13,7 @@
     "fs:allow-rename",
     "fs:allow-remove",
     "fs:allow-exists",
+    "fs:allow-mkdir",
     {
       "identifier": "fs:scope",
       "allow": [{ "path": "**" }]

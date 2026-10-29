@@ -20,7 +20,7 @@ One row for each task. Keep this table current. A new session reads this table f
 
 **Keep the Notes column short:** one line, about 20 words at most. Use it for where the task stands, what it waits for, or what it depends on. Write the detail in the task file (see Task files below), and link the file in the Task file column.
 
-Do not mark a task as Done until the user gives feedback and agrees with what was delivered. The user can ask for adjustments. After the implementation, mark the task as "Review". Mark it "Done" when the user agrees, and set the Completed date.
+Do not mark a task as Done until the user gives feedback and agrees with what was delivered. The user can ask for adjustments. After the implementation, mark the task as "Review". Mark it "Done" when the user agrees, and set the Completed date. Then commit the task, as the Git commits section of `CLAUDE.md` says.
 
 | # | Task | Module | Status | Started | Completed | Task file | Notes |
 |---|------|--------|--------|---------|-----------|-----------|-------|
@@ -109,6 +109,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 156 | The position chart: the "Chart" sub-tab, SVG, the group selector | `features/standings` | ⬜ Not started |  |  |  | M6. US-12.4. After 153. |
 | 157 | Trigrams and Location on league screens: narrow tables, fixtures, the Location hint | `features/` | ⬜ Not started |  |  |  | M6. US-09.3, 09.6. After 154. |
 | 158 | M6 smoke check: MVP2 complete | all | ⬜ Not started |  |  |  | M6. After 155, 156, 157. |
+| 159 | The commit workflow: commit at Done, the message pattern | `CLAUDE.md`, `PROGRESS.md` | ✅ Done | 2026-10-29 | 2026-10-29 | [159](/docs/tasks/159-commit-workflow.md) | Task created by User - 2026-10-29. Commit at Done. Push and branches stay with the user. |
 
 **Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input, see Open Questions) · 🟩 Review · ✅ Done · ❌ Cancelled (the reason is in the Notes column)
 
@@ -154,6 +155,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-10-29 (Task 159 — the commit workflow):** The user set the rule. Claude commits the work of a task when the user agrees that it is Done, never before. Subject: `task N: message`, `tasks N, M: message`, or `tasks N-M: message` for more than two consecutive tasks, with a body. Push and branches stay with the user. This replaces the MVP1 rule "never commit". Detail in the `CLAUDE.md` Git commits section and [`docs/tasks/159-commit-workflow.md`](/docs/tasks/159-commit-workflow.md).
 
 - **2026-10-28 (Task 84 — MVP2 build tasks):** The user agreed the build map: 56 tasks (103 to 158) in six milestones (M1 identity and database, M2 Teams and selection, M3 phases and groups, M4 bracket, M5 files, M6 standings display), each with a smoke check and a review stop. New folder `engine/phases` for the phase chain rules and the final ranking. The database `.zip` goes in `adapters/json-io`. Sprint 0 is complete. Detail in [`docs/tasks/084-mvp2-build-tasks.md`](/docs/tasks/084-mvp2-build-tasks.md).
 

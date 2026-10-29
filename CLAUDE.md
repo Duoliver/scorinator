@@ -105,7 +105,43 @@ These are known-unresolved in the specs. If work touches them, stop and propose 
 - If a task stops partway — blocked, out of scope, or needing a decision from the user — record that honestly. Use an **in-progress / blocked** entry. State what is done, what is not, and what the next session needs to know. Do not leave it silently incomplete, and do not mark it done when it is not.
 - If a task surfaces one of the §6 open items, or anything needing a user decision, log it in the open-questions section of `PROGRESS.md`. Do not just mention it in chat — the next session will not see it there.
 
-A session should never end with uncommitted, unrecorded state — code without a matching `PROGRESS.md` entry is effectively invisible to the next session.
+A session should never end with unrecorded state — code without a matching `PROGRESS.md` entry is effectively invisible to the next session. Work in Review stays uncommitted until the user agrees that it is Done. See Git commits below.
+
+---
+
+## Git commits
+
+Claude commits the work of a task when the user agrees that the task is Done. Push and branches stay with the user. *(Added on 2026-10-29, Task 159.)*
+
+1. When the user agrees that a task is Done, set its status to Done and its Completed date in `PROGRESS.md`. Then commit.
+2. Put only the changes of that task in the commit. This includes its `PROGRESS.md` lines and its task file. Leave the changes of other tasks out of the commit.
+3. When the user agrees more than one task at the same time, make one commit for all of them, or one for each task, as the user asks.
+4. Commit on the current branch. Do not create, switch, merge, rebase, or delete a branch.
+5. Do not push. Do not open a pull request.
+6. Do not commit a task that is In progress, Blocked, or in Review.
+
+### The commit message
+
+The subject line is lower case, at most 72 characters, and uses one of these forms:
+
+| Tasks | Subject |
+|---|---|
+| One task | `task 103: add uuid v4 and unique slug` |
+| Two tasks | `tasks 103, 104: add identity and record types` |
+| More than two consecutive tasks | `tasks 103-105: add identity, record types, and fixture ids` |
+
+The message part starts with a verb, in the imperative: add, fix, refine, move.
+
+After the subject, write one empty line and a body. The body says what changed and why, in short lines of 72 characters at most. A list with `-` is good. Name the stories and the decisions that the work delivers, for example US-11.1 or Task 75. Do not copy the task report. The body ends with the `Co-Authored-By` line that Claude Code gives, after one empty line.
+
+```
+task 103: add uuid v4 and unique slug to engine/identity
+
+- uuidV4 makes a lowercase UUID v4 from 16 injected bytes (US-11.1).
+- isUuidV4 checks the format, lower case only, for the file parsers.
+- uniqueSlug adds the first free -2, -3 suffix (Task 75, US-09.5).
+- 24 new unit tests. No caller uses the functions yet.
+```
 
 ---
 

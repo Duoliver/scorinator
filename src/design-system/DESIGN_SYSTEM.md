@@ -73,5 +73,7 @@ A team stores its hex value, not a palette entry. After a palette change, an old
 
 Open a second overlay from inside the first one, after the first one is open, as a confirm from the team drawer does. Two overlays that mount in the same render open in the wrong order: the parent calls `showModal()` last and lands on top.
 
+While any dialog is open, one rule in `tokens/elements.css` locks the page scroll: `html:has(dialog[open]) { overflow: hidden }`. A `Drawer` scrolls its content inside itself, below a fixed title and close button (Task 170). jsdom has no layout, so only the real app shows a scroll.
+
 jsdom has no `<dialog>`. The polyfill in `src/test/setup.ts` keeps a stack of open dialogs, so a test sees Escape reach the top one only (Task 112).
 

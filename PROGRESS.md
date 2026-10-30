@@ -119,6 +119,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 166 | Tooltip improvement: a hint that follows the pointer | `design-system/` | ⬜ Not started |  |  |  | Task created by User - 2026-10-29. An option for small, close triggers such as the swatches (Task 114). |
 | 167 | Slug regenerate and Delete in the team edit drawer, each with a confirm | `features/teams`, `app/state` | ✅ Done | 2026-10-30 | 2026-10-30 | [167](/docs/tasks/167-slug-regenerate-and-delete.md) | Split from 119 - 2026-10-30. US-09.4, 09.5. Regenerate and Delete built, each with a confirm. |
 | 169 | Technical debt: an `Input` slot for a side button, in place of the fixed `Input` line height | `design-system/`, `features/components` | ⬜ Not started |  |  |  | Task created by User - 2026-10-30. From the Task 167 review. Removes `--line-height-field` and `--field-height`. |
+| 170 | Drawer layout: its own scroll, and the shell scroll locked while it is open | `design-system/` | ✅ Done | 2026-10-30 | 2026-10-30 | [170](/docs/tasks/170-drawer-scroll.md) | Task created by User - 2026-10-30. Content scroll and page lock built. The user checked the real app. |
 
 **Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input, see Open Questions) · 🟩 Review · ✅ Done · ❌ Cancelled (the reason is in the Notes column)
 
@@ -166,6 +167,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-10-30 (Task 170 — the drawer scroll):** The user agreed three choices. (1) Only the drawer content scrolls, below a fixed title and close button. (2) One CSS rule locks the page: `html:has(dialog[open]) { overflow: hidden }`. (3) The lock covers every dialog. Claude choice: `height: 100vh` on the drawer dialog. At review, the user moved the padding from the panel to the header row and the content, with one `--drawer-padding` variable, so the scroll bar sits at the window edge. Detail in [`docs/tasks/170-drawer-scroll.md`](/docs/tasks/170-drawer-scroll.md).
 
 - **2026-10-30 (Task 167 — slug regenerate and Delete):** Built with Task 119 choices 7 and 8. Claude choices: a name with no slug disables the button, with the name error as its hint. The one-league text is "1 league uses this team. It keeps its own copy, but loses its Location." No league gives the title only. The count opens the leagues at the same time. At review, the user chose `sm` drawer buttons, and "Delete team" in a new `destructive-outline` look (red text and border, no shadow), in a row below "Cancel" and "Save". The fixed `Input` line height for the button height stays, logged as technical debt in Task 169. Detail in [`docs/tasks/167-slug-regenerate-and-delete.md`](/docs/tasks/167-slug-regenerate-and-delete.md).
 

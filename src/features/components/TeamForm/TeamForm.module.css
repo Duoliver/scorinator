@@ -9,8 +9,27 @@
   font-size: var(--font-size-lg);
 }
 
+/* "Cancel" and "Save" in one row, and "Delete team" in a row below them,
+   all at the right (Task 167 review). */
 .actions {
   display: flex;
-  justify-content: flex-end;
+  flex-direction: column;
+  align-items: flex-end;
   gap: var(--space-3);
+}
+
+.mainActions {
+  display: flex;
+  gap: var(--space-3);
+}
+
+/* The slug field and its regenerate button, side by side (US-09.5). */
+.slugRow {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-2);
+}
+
+.slugRow > :first-child {
+  flex: 1;
 }

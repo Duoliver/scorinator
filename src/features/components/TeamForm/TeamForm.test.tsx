@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/preact';
+import { render, screen, within } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { TeamForm } from './TeamForm';
 import { DEFAULT_TEAM_COLOUR, TEAM_PALETTE } from '@/design-system';
@@ -296,5 +296,146 @@ describe('TeamForm, the slug (US-09.5, Task 75)', () => {
     );
     await userEvent.type(screen.getByLabelText('Team name'), ' Rovers');
     expect(screen.getByLabelText('Slug (auto-generated)')).toHaveValue('ashfield');
+  });
+});
+
+describe('TeamForm, the slug regenerate (US-09.5, Task 167)', () => {
+  const REGENERATE = 'Regenerate slug from the team name';
+  const ashfield: TeamFields = {
+    slug: 'ashfield',
+    name: 'Ashfield',
+    colour: '#E53935',
+    tier: 'B',
+    location: '',
+    trigrams: [],
+  };
+
+  function renderEdit(
+    onSave = vi.fn(),
+    takenSlugs = ['ashfield', 'ashfield-rovers']
+  ): void {
+    render(
+      <TeamForm
+        saveLabel="Save changes"
+        initial={ashfield}
+        takenSlugs={takenSlugs}
+        onCancel={vi.fn()}
+        onSave={onSave}
+      />
+    );
+  }
+
+  it('has no regenerate button for a new team', () => {
+    renderCreate();
+    expect(screen.queryByRole('button', { name: REGENERATE })).not.toBeInTheDocument();
+  });
+
+  it('disables the button while the name gives the same slug, with the reason', () => {
+    renderEdit();
+    const button = screen.getByRole('button', { name: REGENERATE });
+    expect(button).toHaveAttribute('aria-disabled', 'true');
+    expect(button).toHaveAccessibleDescription('The slug already matches the name.');
+  });
+
+  it('enables the button after a rename, with the hint', async () => {
+    renderEdit();
+    await userEvent.type(screen.getByLabelText('Team name'), ' Town');
+    const button = screen.getByRole('button', { name: REGENERATE });
+    expect(button).not.toHaveAttribute('aria-disabled');
+    expect(button).toHaveAccessibleDescription('Regenerate slug from name');
+  });
+
+  it('asks first, with the old and the new slug and the -2 rule', async () => {
+    renderEdit();
+    await userEvent.type(screen.getByLabelText('Team name'), ' Rovers');
+    await userEvent.click(screen.getByRole('button', { name: REGENERATE }));
+    const dialog = screen.getByRole('dialog', { name: 'Regenerate slug?' });
+    expect(dialog).toHaveAccessibleDescription(
+      'The slug changes from ashfield to ashfield-rovers-2. CSV files and slug lists with the old slug no longer find this team.'
+    );
+  });
+
+  it('does not count the team itself for the -2 rule', async () => {
+    renderEdit(vi.fn(), ['ashfield', 'other-fc']);
+    await userEvent.clear(screen.getByLabelText('Team name'));
+    await userEvent.type(screen.getByLabelText('Team name'), 'Ashfield');
+    expect(screen.getByRole('button', { name: REGENERATE })).toHaveAttribute(
+      'aria-disabled',
+      'true'
+    );
+  });
+
+  it('puts the new slug in the field on Regenerate, and saves it', async () => {
+    const onSave = vi.fn();
+    renderEdit(onSave);
+    await userEvent.type(screen.getByLabelText('Team name'), ' Town');
+    await userEvent.click(screen.getByRole('button', { name: REGENERATE }));
+    await userEvent.click(screen.getByRole('button', { name: 'Regenerate' }));
+    expect(screen.getByLabelText('Slug (auto-generated)')).toHaveValue('ashfield-town');
+    expect(screen.getByRole('button', { name: REGENERATE })).toHaveAttribute(
+      'aria-disabled',
+      'true'
+    );
+    await userEvent.click(screen.getByText('Save changes'));
+    expect(onSave).toHaveBeenCalledWith(
+      expect.objectContaining({ slug: 'ashfield-town', name: 'Ashfield Town' })
+    );
+  });
+
+  it('keeps the slug on Cancel in the confirm', async () => {
+    const onSave = vi.fn();
+    renderEdit(onSave);
+    await userEvent.type(screen.getByLabelText('Team name'), ' Town');
+    await userEvent.click(screen.getByRole('button', { name: REGENERATE }));
+    const dialog = screen.getByRole('dialog', { name: 'Regenerate slug?' });
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+    expect(
+      screen.queryByRole('dialog', { name: 'Regenerate slug?' })
+    ).not.toBeInTheDocument();
+    await userEvent.click(screen.getByText('Save changes'));
+    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ slug: 'ashfield' }));
+  });
+});
+
+describe('TeamForm, the Delete button (US-09.4, Task 167)', () => {
+  it('shows "Delete team" only when the caller gives onDelete', async () => {
+    const onDelete = vi.fn();
+    const { unmount } = render(
+      <TeamForm saveLabel="Save changes" onCancel={vi.fn()} onSave={vi.fn()} />
+    );
+    expect(
+      screen.queryByRole('button', { name: 'Delete team' })
+    ).not.toBeInTheDocument();
+    unmount();
+
+    render(
+      <TeamForm
+        saveLabel="Save changes"
+        onCancel={vi.fn()}
+        onSave={vi.fn()}
+        onDelete={onDelete}
+      />
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Delete team' }));
+    expect(onDelete).toHaveBeenCalledTimes(1);
+  });
+
+  it('puts "Delete team" in its own row, after Cancel and Save (Task 167 review)', () => {
+    render(
+      <TeamForm
+        saveLabel="Save changes"
+        onCancel={vi.fn()}
+        onSave={vi.fn()}
+        onDelete={vi.fn()}
+      />
+    );
+    const save = screen.getByRole('button', { name: 'Save changes' });
+    const cancel = screen.getByRole('button', { name: 'Cancel' });
+    const remove = screen.getByRole('button', { name: 'Delete team' });
+    expect(
+      save.compareDocumentPosition(remove) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+    expect(save.parentElement).toBe(cancel.parentElement);
+    expect(remove.parentElement).not.toBe(save.parentElement);
   });
 });

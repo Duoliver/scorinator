@@ -46,13 +46,17 @@ describe('Button', () => {
     expect(screen.getByRole('button')).toBeDisabled();
   });
 
-  it.each(['primary', 'secondary', 'destructive', 'ghost', 'outline'] as const)(
-    'renders the %s variant without throwing',
-    (variant) => {
-      render(<Button variant={variant}>Label</Button>);
-      expect(screen.getByRole('button')).toBeTruthy();
-    }
-  );
+  it.each([
+    'primary',
+    'secondary',
+    'destructive',
+    'destructive-outline',
+    'ghost',
+    'outline',
+  ] as const)('renders the %s variant without throwing', (variant) => {
+    render(<Button variant={variant}>Label</Button>);
+    expect(screen.getByRole('button')).toBeTruthy();
+  });
 
   it.each(['sm', 'md', 'lg'] as const)(
     'renders the %s size without throwing',
@@ -100,6 +104,18 @@ describe('Button', () => {
       );
       const button = screen.getByRole('button', { name: 'Edit team' });
       expect(button.className).toMatch(/icon/);
+      expect(button.className).not.toMatch(/fieldHeight/);
+    });
+
+    it('takes the height of a field with fieldHeight, as a square (Task 167)', () => {
+      render(
+        <Button size="icon" aria-label="Regenerate slug" fieldHeight>
+          ↻
+        </Button>
+      );
+      const button = screen.getByRole('button', { name: 'Regenerate slug' });
+      expect(button.className).toMatch(/icon/);
+      expect(button.className).toMatch(/fieldHeight/);
     });
 
     it('passes aria-describedby through', () => {

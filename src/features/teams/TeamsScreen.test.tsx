@@ -1,11 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/preact';
+import { render, screen, within } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { TeamsScreen } from './TeamsScreen';
 import * as teamsFile from '@/app/data/teamsFile';
 import { useFileStore } from '@/app/state/fileStore';
 import { openTestDatabase } from '@/test/databaseRecords';
 import { useDatabaseStore } from '@/app/state/databaseStore';
+import * as teamBlueprintActions from '@/app/state/teamBlueprintActions';
 
 beforeEach(() => {
   vi.restoreAllMocks();
@@ -176,6 +177,119 @@ describe('TeamsScreen', () => {
       expect(screen.getByLabelText('Slug (auto-generated)')).toHaveValue(
         'salt-marsh-united-2'
       );
+    });
+  });
+
+  describe('Delete team (US-09.4, Task 167)', () => {
+    beforeEach(() => {
+      openTestDatabase([
+        {
+          slug: 'ashfield-rovers',
+          name: 'Ashfield Rovers',
+          colour: '#E53935',
+          tier: 'B',
+        },
+        { slug: 'harborview-sc', name: 'Harborview SC', colour: '#1565C0', tier: 'C' },
+      ]);
+    });
+
+    async function openDelete(): Promise<void> {
+      render(<TeamsScreen />);
+      await userEvent.click(screen.getAllByText('Edit')[0]);
+      await userEvent.click(screen.getByRole('button', { name: 'Delete team' }));
+    }
+
+    it('has no Delete button in the create drawer', async () => {
+      render(<TeamsScreen />);
+      await userEvent.click(screen.getByText('+ New team'));
+      expect(
+        screen.queryByRole('button', { name: 'Delete team' })
+      ).not.toBeInTheDocument();
+    });
+
+    it('asks with the league count when leagues use the team', async () => {
+      vi.spyOn(teamBlueprintActions, 'countLeaguesUsingBlueprint').mockResolvedValue(3);
+      await openDelete();
+      const dialog = await screen.findByRole('dialog', {
+        name: 'Delete Ashfield Rovers?',
+      });
+      expect(dialog).toHaveAccessibleDescription(
+        '3 leagues use this team. They keep their own copy, but lose its Location.'
+      );
+    });
+
+    it('uses the singular for one league', async () => {
+      vi.spyOn(teamBlueprintActions, 'countLeaguesUsingBlueprint').mockResolvedValue(1);
+      await openDelete();
+      const dialog = await screen.findByRole('dialog', {
+        name: 'Delete Ashfield Rovers?',
+      });
+      expect(dialog).toHaveAccessibleDescription(
+        '1 league uses this team. It keeps its own copy, but loses its Location.'
+      );
+    });
+
+    it('asks with the title only when no league uses the team', async () => {
+      await openDelete();
+      const dialog = await screen.findByRole('dialog', {
+        name: 'Delete Ashfield Rovers?',
+      });
+      expect(dialog).not.toHaveAccessibleDescription();
+    });
+
+    it('removes the team and closes the drawer on Delete', async () => {
+      await openDelete();
+      await screen.findByRole('dialog', { name: 'Delete Ashfield Rovers?' });
+      await userEvent.click(screen.getByRole('button', { name: 'Delete' }));
+
+      expect(useDatabaseStore.getState().blueprints.map((b) => b.slug)).toEqual([
+        'harborview-sc',
+      ]);
+      expect(screen.queryByText('Ashfield Rovers')).not.toBeInTheDocument();
+      expect(screen.queryByLabelText('Team name')).not.toBeInTheDocument();
+      expect(screen.getByText('1 team')).toBeInTheDocument();
+    });
+
+    it('changes nothing on Cancel, and keeps the drawer open', async () => {
+      await openDelete();
+      const dialog = await screen.findByRole('dialog', {
+        name: 'Delete Ashfield Rovers?',
+      });
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+
+      expect(useDatabaseStore.getState().blueprints).toHaveLength(2);
+      expect(screen.getByLabelText('Team name')).toHaveValue('Ashfield Rovers');
+    });
+
+    it('shows a league read error in the status line, with no confirm', async () => {
+      vi.spyOn(teamBlueprintActions, 'countLeaguesUsingBlueprint').mockRejectedValue(
+        new Error('A league file is missing.')
+      );
+      await openDelete();
+      expect(screen.queryByRole('dialog', { name: /Delete/ })).not.toBeInTheDocument();
+      expect(useFileStore.getState().status).toEqual({
+        tone: 'error',
+        message: 'A league file is missing.',
+      });
+    });
+  });
+
+  describe('Regenerate slug (US-09.5, Task 167)', () => {
+    it('saves the new slug of an edited team', async () => {
+      openTestDatabase([
+        { slug: 'ashfield', name: 'Ashfield', colour: '#E53935', tier: 'B' },
+      ]);
+      render(<TeamsScreen />);
+      await userEvent.click(screen.getByText('Edit'));
+      await userEvent.type(screen.getByLabelText('Team name'), ' Rovers');
+      await userEvent.click(
+        screen.getByRole('button', { name: 'Regenerate slug from the team name' })
+      );
+      await userEvent.click(screen.getByRole('button', { name: 'Regenerate' }));
+      await userEvent.click(screen.getByText('Save changes'));
+
+      expect(useDatabaseStore.getState().blueprints[0].slug).toBe('ashfield-rovers');
+      expect(screen.getByText('ashfield-rovers')).toBeInTheDocument();
     });
   });
 

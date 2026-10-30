@@ -5,6 +5,16 @@ import { TeamSwatch } from '@/features/components';
 import type { TeamRow } from './types';
 import styles from './TeamsScreen.module.css';
 
+/** The text of the Delete confirm (US-09.4). With no league, the title
+ * asks alone. */
+export function deleteTeamMessage(leagueCount: number): string {
+  if (leagueCount === 0) return '';
+  if (leagueCount === 1) {
+    return '1 league uses this team. It keeps its own copy, but loses its Location.';
+  }
+  return `${leagueCount} leagues use this team. They keep their own copy, but lose its Location.`;
+}
+
 export const toTeamRows = (teams: readonly TeamBlueprint[]): TeamRow[] =>
   teams.map((team, index) => ({ ...team, rowKey: `${team.slug}::${index}`, index }));
 

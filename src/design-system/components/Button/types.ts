@@ -1,7 +1,9 @@
 import type { ComponentChildren, TargetedMouseEvent } from 'preact';
 
+/** `destructive-outline` is the quiet red button: red text and border, no
+ * shadow, for a rare action that asks first, as "Delete team" (Task 167). */
 export type ButtonVariant =
-  'primary' | 'secondary' | 'destructive' | 'ghost' | 'outline';
+  'primary' | 'secondary' | 'destructive' | 'destructive-outline' | 'ghost' | 'outline';
 /** `icon` is a square button with a glyph and no visible text (Task 111), as
  * the handoff row buttons ✎, ⇄, and ✕. */
 export type ButtonSize = 'sm' | 'md' | 'lg' | 'icon';
@@ -33,12 +35,16 @@ interface ButtonBaseProps {
 interface TextButtonProps extends ButtonBaseProps {
   size?: Exclude<ButtonSize, 'icon'>;
   'aria-label'?: string;
+  fieldHeight?: never;
 }
 
 /** An icon button has no visible text, so it must have an `aria-label`. */
 interface IconButtonProps extends ButtonBaseProps {
   size: 'icon';
   'aria-label': string;
+  /** Makes the square as tall as an `Input` (`--field-height`), for a
+   * button next to a field, as the slug regenerate (Task 167). */
+  fieldHeight?: boolean;
 }
 
 type ButtonProps = TextButtonProps | IconButtonProps;

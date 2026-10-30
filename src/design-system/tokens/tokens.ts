@@ -30,6 +30,8 @@ export const aaaTextPairs: Array<[foreground: string, background: string]> = [
   [colors.fg, colors.surface],
   [colors.accentFg, colors.accent],
   [colors.errorFg, colors.error],
+  // The red text of the `destructive-outline` button (Task 167).
+  [colors.error, colors.surface],
   [colors.warningFg, colors.warning],
   [colors.fg, colors.warning],
 ];

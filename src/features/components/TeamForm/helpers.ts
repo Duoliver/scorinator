@@ -23,6 +23,15 @@ export const DEFAULT_TIER: Tier = 'C';
 export const TEAM_NAME_INVALID =
   'Enter a team name with at least one letter or number.';
 
+export const REGENERATE_HINT = 'Regenerate slug from name';
+export const REGENERATE_LABEL = 'Regenerate slug from the team name';
+export const SLUG_MATCHES_NAME = 'The slug already matches the name.';
+
+/** The text of the regenerate confirm (US-09.5). */
+export function regenerateMessage(from: string, to: string): string {
+  return `The slug changes from ${from} to ${to}. CSV files and slug lists with the old slug no longer find this team.`;
+}
+
 export const LOCATION_TOO_LONG = `Use ${MAX_LOCATION_LENGTH} characters at most.`;
 
 /** The placeholder of an empty Trigrams field for a name with no letter or

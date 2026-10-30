@@ -1,7 +1,20 @@
 import type { JSX } from 'preact';
-import { Button, Input, Select, SwatchPicker } from '@/design-system';
+import {
+  Button,
+  ConfirmDialog,
+  Input,
+  Select,
+  SwatchPicker,
+  Tooltip,
+} from '@/design-system';
 import type TeamFormProps from './types';
-import { COLOUR_OPTIONS, TIER_OPTIONS } from './helpers';
+import type { SlugRegenerate } from './types';
+import {
+  COLOUR_OPTIONS,
+  REGENERATE_LABEL,
+  TIER_OPTIONS,
+  regenerateMessage,
+} from './helpers';
 import { useTeamForm } from './useTeamForm';
 import styles from './TeamForm.module.css';
 
@@ -16,12 +29,48 @@ function FieldError({ message }: { message: string | null }): JSX.Element | null
   );
 }
 
+/** The icon button at the right side of an edited team's slug, and its
+ * confirm (US-09.5). A disabled button stays focusable, so its hint gives
+ * the reason. */
+function RegenerateSlug({ regenerate }: { regenerate: SlugRegenerate }): JSX.Element {
+  return (
+    <>
+      <Tooltip content={regenerate.hint}>
+        {(describedBy) => (
+          <Button
+            size="icon"
+            fieldHeight
+            variant="secondary"
+            aria-label={REGENERATE_LABEL}
+            aria-describedby={describedBy}
+            disabled={regenerate.disabled}
+            focusableWhenDisabled
+            onClick={regenerate.open}
+          >
+            ↻
+          </Button>
+        )}
+      </Tooltip>
+      {regenerate.confirm && (
+        <ConfirmDialog
+          title="Regenerate slug?"
+          message={regenerateMessage(regenerate.confirm.from, regenerate.confirm.to)}
+          confirmLabel="Regenerate"
+          onConfirm={regenerate.apply}
+          onCancel={regenerate.cancel}
+        />
+      )}
+    </>
+  );
+}
+
 export function TeamForm({
   saveLabel,
   initial,
   takenSlugs,
   onCancel,
   onSave,
+  onDelete,
 }: TeamFormProps): JSX.Element {
   const {
     nameRef,
@@ -33,6 +82,7 @@ export function TeamForm({
     startValues,
     errors,
     trigramsPlaceholder,
+    regenerate,
     handleNameChange,
     handleSave,
   } = useTeamForm({ initial, takenSlugs, onSave });
@@ -48,12 +98,15 @@ export function TeamForm({
       />
       <FieldError message={errors.name} />
 
-      <Input
-        label="Slug (auto-generated)"
-        defaultValue={startValues.slug}
-        readOnly
-        ref={slugRef}
-      />
+      <div class={styles.slugRow}>
+        <Input
+          label="Slug (auto-generated)"
+          defaultValue={startValues.slug}
+          readOnly
+          ref={slugRef}
+        />
+        {regenerate && <RegenerateSlug regenerate={regenerate} />}
+      </div>
 
       <Input
         label="Location (optional)"
@@ -86,10 +139,23 @@ export function TeamForm({
       />
 
       <div class={styles.actions}>
-        <Button variant="secondary" onClick={onCancel}>
-          Cancel
-        </Button>
-        <Button onClick={handleSave}>{saveLabel}</Button>
+        <div class={styles.mainActions}>
+          <Button size="sm" variant="secondary" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button size="sm" onClick={handleSave}>
+            {saveLabel}
+          </Button>
+        </div>
+        {/* A quiet button in its own row: a delete is rare, and it asks
+            first (Task 167 review). */}
+        {onDelete && (
+          <div>
+            <Button size="sm" variant="destructive-outline" onClick={onDelete}>
+              Delete team
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

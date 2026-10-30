@@ -2,7 +2,8 @@ import { uniqueSlug, uuidV4, type RandomBytes } from '@/engine/identity';
 import type { TeamBlueprint } from '@/domain';
 import type { TeamListRecord } from '@/persistence/types';
 import { cryptoRandomBytes } from '@/app/random';
-import { requireOpenDatabase, useDatabaseStore } from './databaseStore';
+import { openLeague } from './databaseActions';
+import { currentRows, requireOpenDatabase, useDatabaseStore } from './databaseStore';
 
 /** What the user gives to create a Blueprint (US-09.1). The slug, the UUID,
  * and the provenance come from the action. */
@@ -14,13 +15,13 @@ export interface TeamBlueprintInput {
   trigrams?: string[];
 }
 
-/** The fields an edit can change. The slug stays fixed after create
- * (US-09.5): Task 119 adds the regenerate button. */
+/** The fields an edit can change. The slug changes only through the
+ * regenerate button of the edit drawer (US-09.5, Task 167). */
 export type TeamBlueprintChanges = Partial<
-  Pick<TeamBlueprint, 'name' | 'colour' | 'tier' | 'location' | 'trigrams'>
+  Pick<TeamBlueprint, 'slug' | 'name' | 'colour' | 'tier' | 'location' | 'trigrams'>
 >;
 
-const CHANGEABLE = ['name', 'colour', 'tier', 'location', 'trigrams'] as const;
+const CHANGEABLE = ['slug', 'name', 'colour', 'tier', 'location', 'trigrams'] as const;
 
 function sameValue(a: unknown, b: unknown): boolean {
   return Array.isArray(a) && Array.isArray(b)
@@ -86,20 +87,60 @@ export function addTeamBlueprint(
   return blueprint;
 }
 
-/** Edits a Blueprint. The slug and the UUID stay the same (US-09.5). No
- * league Instance changes (US-09.2). Throws a `RangeError` for an unknown
- * UUID. */
+function requireBlueprintIndex(
+  blueprints: readonly TeamBlueprint[],
+  uuid: string
+): number {
+  const index = blueprints.findIndex((blueprint) => blueprint.uuid === uuid);
+  if (index === -1) throw new RangeError(`No Blueprint has the UUID ${uuid}.`);
+  return index;
+}
+
+/** Edits a Blueprint. The UUID stays the same. A new slug must be free:
+ * no other Blueprint has it (Task 75, US-09.5). No league Instance changes
+ * (US-09.2). Throws a `RangeError` for an unknown UUID or a taken slug, and
+ * changes nothing. */
 export function updateTeamBlueprint(uuid: string, changes: TeamBlueprintChanges): void {
   const state = useDatabaseStore.getState();
   const { installationUuid } = requireOpenDatabase(state);
-  const index = state.blueprints.findIndex((blueprint) => blueprint.uuid === uuid);
-  if (index === -1) throw new RangeError(`No Blueprint has the UUID ${uuid}.`);
+  const index = requireBlueprintIndex(state.blueprints, uuid);
+  const { slug } = changes;
+  if (
+    slug !== undefined &&
+    state.blueprints.some((b, i) => i !== index && b.slug === slug)
+  ) {
+    throw new RangeError(`Another Blueprint has the slug ${slug}.`);
+  }
 
   const updated = applyChanges(state.blueprints[index], changes, installationUuid);
   if (updated === state.blueprints[index]) return;
   const blueprints = [...state.blueprints];
   blueprints[index] = updated;
   useDatabaseStore.setState({ blueprints });
+}
+
+/** Deletes a Blueprint (US-09.4). Each league keeps its Instances, and the
+ * slug is free again. There is no undo. Throws a `RangeError` for an
+ * unknown UUID. */
+export function deleteTeamBlueprint(uuid: string): void {
+  const state = useDatabaseStore.getState();
+  requireOpenDatabase(state);
+  const index = requireBlueprintIndex(state.blueprints, uuid);
+  useDatabaseStore.setState({
+    blueprints: state.blueprints.filter((_, i) => i !== index),
+  });
+}
+
+/** How many leagues have an Instance of the Blueprint, for the Delete
+ * confirm (US-09.4). A manifest row has no team list, so it opens each
+ * league that is not in memory yet (Task 119, choice 7). Rejects with the
+ * message of a missing or bad league file. */
+export async function countLeaguesUsingBlueprint(uuid: string): Promise<number> {
+  const rows = currentRows(useDatabaseStore.getState());
+  const leagues = await Promise.all(rows.map((row) => openLeague(row.uuid)));
+  return leagues.filter((league) =>
+    league.teams.some((team) => team.blueprintUuid === uuid)
+  ).length;
 }
 
 /** The records of one file, one for each slug: a later record with the same

@@ -64,6 +64,12 @@
   font-size: var(--font-size-md);
   flex: none;
 }
+/* An icon button as tall as an `Input`, still square (Task 167). */
+.fieldHeight {
+  width: var(--field-height);
+  height: var(--field-height);
+  font-size: var(--font-size-xl);
+}
 .icon:hover:not(:disabled):not([aria-disabled='true']) {
   background: var(--color-fg);
   color: var(--color-surface);
@@ -83,6 +89,25 @@
 .destructive {
   background: var(--color-error);
   color: var(--color-error-fg);
+}
+
+/* The quiet red button: the `outline` shape in red. The hover fills it red,
+   as `outline` fills dark (Task 167). */
+.destructive-outline {
+  background: var(--color-surface);
+  color: var(--color-error);
+  border-color: var(--color-error);
+  box-shadow: none;
+}
+.destructive-outline:hover:not(:disabled):not([aria-disabled='true']) {
+  background: var(--color-error);
+  color: var(--color-error-fg);
+  transform: none;
+  box-shadow: none;
+}
+.destructive-outline:active:not(:disabled):not([aria-disabled='true']) {
+  transform: none;
+  box-shadow: none;
 }
 
 .ghost {

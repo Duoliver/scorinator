@@ -11,13 +11,16 @@ export function Button({
   size = 'md',
   disabled = false,
   focusableWhenDisabled = false,
+  fieldHeight = false,
   type = 'button',
   href,
   'aria-label': ariaLabel,
   'aria-describedby': ariaDescribedBy,
   onClick,
 }: ButtonProps): JSX.Element {
-  const className = `${styles.button} ${styles[variant]} ${styles[size]}`;
+  const className = `${styles.button} ${styles[variant]} ${styles[size]}${
+    fieldHeight ? ` ${styles.fieldHeight}` : ''
+  }`;
 
   if (href) {
     return (

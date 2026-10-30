@@ -3,10 +3,12 @@ import { DEFAULT_TEAM_COLOUR, type FieldHandle } from '@/design-system';
 import { MAX_LOCATION_LENGTH, parseTrigramList, slug } from '@/engine/identity';
 import { isTier } from '@/engine/tier-ovr';
 import type TeamFormProps from './types';
-import type { TeamFormErrors, TeamFormState } from './types';
+import type { SlugRegenerate, TeamFormErrors, TeamFormState } from './types';
 import {
   DEFAULT_TIER,
   LOCATION_TOO_LONG,
+  REGENERATE_HINT,
+  SLUG_MATCHES_NAME,
   TEAM_NAME_INVALID,
   getSlugPreview,
   getTrigramsPlaceholder,
@@ -36,6 +38,18 @@ export function useTeamForm({
     getTrigramsPlaceholder(initial?.name ?? '')
   );
 
+  // The regenerate of an edited team: `slugValue` is the slug in the field,
+  // `nameSlug` the slug that the name gives, with the `-2` rule and without
+  // the team's own saved slug (US-09.5).
+  const otherSlugs = initial
+    ? takenSlugs.filter((taken) => taken !== initial.slug)
+    : [];
+  const [slugValue, setSlugValue] = useState(initial?.slug ?? '');
+  const [nameSlug, setNameSlug] = useState(() =>
+    initial ? getSlugPreview(initial.name, otherSlugs) : ''
+  );
+  const [confirmingSlug, setConfirmingSlug] = useState(false);
+
   // An edited team keeps its own colour, even a blank one from an import,
   // so only a new team gets the default.
   const startValues = {
@@ -49,9 +63,30 @@ export function useTeamForm({
 
   // An edited team keeps its slug after a rename (US-09.5).
   const handleNameChange = (name: string): void => {
-    if (!initial) slugRef.current?.setValue(getSlugPreview(name, takenSlugs));
+    if (initial) setNameSlug(getSlugPreview(name, otherSlugs));
+    else slugRef.current?.setValue(getSlugPreview(name, takenSlugs));
     setTrigramsPlaceholder(getTrigramsPlaceholder(name));
   };
+
+  const regenerate: SlugRegenerate | null = initial
+    ? {
+        disabled: nameSlug === '' || nameSlug === slugValue,
+        hint:
+          nameSlug === ''
+            ? TEAM_NAME_INVALID
+            : nameSlug === slugValue
+              ? SLUG_MATCHES_NAME
+              : REGENERATE_HINT,
+        confirm: confirmingSlug ? { from: slugValue, to: nameSlug } : null,
+        open: () => setConfirmingSlug(true),
+        apply: (): void => {
+          setSlugValue(nameSlug);
+          slugRef.current?.setValue(nameSlug);
+          setConfirmingSlug(false);
+        },
+        cancel: () => setConfirmingSlug(false),
+      }
+    : null;
 
   const handleSave = (): void => {
     const name = nameRef.current?.getValue() ?? '';
@@ -74,7 +109,7 @@ export function useTeamForm({
 
     const tier = tierRef.current?.getValue();
     onSave({
-      slug: initial?.slug ?? getSlugPreview(name, takenSlugs),
+      slug: initial ? slugValue : getSlugPreview(name, takenSlugs),
       name: name.trim(),
       colour: colourRef.current?.getValue() ?? '',
       tier: isTier(tier) ? tier : DEFAULT_TIER,
@@ -93,6 +128,7 @@ export function useTeamForm({
     startValues,
     errors,
     trigramsPlaceholder,
+    regenerate,
     handleNameChange,
     handleSave,
   };

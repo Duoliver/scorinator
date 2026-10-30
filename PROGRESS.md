@@ -117,6 +117,8 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 164 | Rename `fileStore` and `fileActions` to a name for the status line | `app/state` | ⬜ Not started |  |  |  | Task created by User - 2026-10-29. After 158: the store holds the status line only (Task 162). |
 | 165 | Restyle the picker dialog rows | `design-system/`, `features/leagues` | ⬜ Not started |  |  |  | Task created by User - 2026-10-29. After 120, which builds the team row content. Agree the look first. |
 | 166 | Tooltip improvement: a hint that follows the pointer | `design-system/` | ⬜ Not started |  |  |  | Task created by User - 2026-10-29. An option for small, close triggers such as the swatches (Task 114). |
+| 167 | Slug regenerate and Delete in the team edit drawer, each with a confirm | `features/teams`, `app/state` | ✅ Done | 2026-10-30 | 2026-10-30 | [167](/docs/tasks/167-slug-regenerate-and-delete.md) | Split from 119 - 2026-10-30. US-09.4, 09.5. Regenerate and Delete built, each with a confirm. |
+| 169 | Technical debt: an `Input` slot for a side button, in place of the fixed `Input` line height | `design-system/`, `features/components` | ⬜ Not started |  |  |  | Task created by User - 2026-10-30. From the Task 167 review. Removes `--line-height-field` and `--field-height`. |
 
 **Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input, see Open Questions) · 🟩 Review · ✅ Done · ❌ Cancelled (the reason is in the Notes column)
 
@@ -164,6 +166,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-10-30 (Task 167 — slug regenerate and Delete):** Built with Task 119 choices 7 and 8. Claude choices: a name with no slug disables the button, with the name error as its hint. The one-league text is "1 league uses this team. It keeps its own copy, but loses its Location." No league gives the title only. The count opens the leagues at the same time. At review, the user chose `sm` drawer buttons, and "Delete team" in a new `destructive-outline` look (red text and border, no shadow), in a row below "Cancel" and "Save". The fixed `Input` line height for the button height stays, logged as technical debt in Task 169. Detail in [`docs/tasks/167-slug-regenerate-and-delete.md`](/docs/tasks/167-slug-regenerate-and-delete.md).
 
 - **2026-10-30 (Task 119 — the Teams screen):** The user agreed ten choices. (1) Split: Task 119 keeps the columns and fields, new Task 167 the slug regenerate and Delete, new Task 168 the import confirm. (2) Field order: name, slug, Location, Trigrams, colour, Tier. (3) An empty list shows the name trigram, muted. (4) The Location limit is an error at Save. (5) `MAX_LOCATION_LENGTH` in `engine/identity`. (6) Three trigram error texts. (7, 8) for Task 167: the Delete count opens each league, and `updateTeamBlueprint` takes a slug. (9, 10) for Task 168: the confirm on all three import buttons, and no confirm for an empty file. Detail in [`docs/tasks/119-teams-screen.md`](/docs/tasks/119-teams-screen.md).
 

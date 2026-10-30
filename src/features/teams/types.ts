@@ -12,6 +12,13 @@ export interface TeamRow extends TeamBlueprint {
   index: number;
 }
 
+/** The open Delete confirm: the team, and how many leagues use it. */
+export interface TeamDeleteConfirm {
+  uuid: string;
+  name: string;
+  leagueCount: number;
+}
+
 /** What `useTeams` gives `TeamsScreen`. */
 export interface Teams {
   rows: TeamRow[];
@@ -25,5 +32,10 @@ export interface Teams {
   openCreateDrawer: () => void;
   closeDrawer: () => void;
   handleSave: (record: TeamFields) => void;
+  /** Counts the leagues that use the edited team, then opens the confirm. */
+  handleDelete: () => Promise<void>;
+  deleteConfirm: TeamDeleteConfirm | null;
+  confirmDelete: () => void;
+  cancelDelete: () => void;
   handleImport: () => Promise<void>;
 }

@@ -22,6 +22,7 @@ export const Input = forwardRef<FieldHandle<string>, InputProps>(
       min,
       max,
       step,
+      trailing,
     },
     ref
   ) => {
@@ -44,22 +45,25 @@ export const Input = forwardRef<FieldHandle<string>, InputProps>(
             {label}
           </label>
         )}
-        <input
-          ref={inputEl}
-          id={inputId}
-          class={styles.input}
-          type={type}
-          value={value}
-          placeholder={placeholder}
-          aria-label={ariaLabel}
-          readOnly={readOnly}
-          min={min}
-          max={max}
-          step={step}
-          onInput={(event: TargetedEvent<HTMLInputElement, Event>) =>
-            commitValue(event.currentTarget.value, true)
-          }
-        />
+        <div class={styles.row}>
+          <input
+            ref={inputEl}
+            id={inputId}
+            class={styles.input}
+            type={type}
+            value={value}
+            placeholder={placeholder}
+            aria-label={ariaLabel}
+            readOnly={readOnly}
+            min={min}
+            max={max}
+            step={step}
+            onInput={(event: TargetedEvent<HTMLInputElement, Event>) =>
+              commitValue(event.currentTarget.value, true)
+            }
+          />
+          {trailing && <div class={styles.trailing}>{trailing}</div>}
+        </div>
       </div>
     );
   }

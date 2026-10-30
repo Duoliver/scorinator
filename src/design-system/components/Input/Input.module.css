@@ -12,11 +12,33 @@
   letter-spacing: 0.05em;
 }
 
+/* The input box and the trailing slot. The row holds no label, so the slot
+   takes the height of the input box only (Task 169). A grid, not a flex
+   row: WebKit and Chromium set the width of a stretched grid item from its
+   aspect ratio, but not of a stretched flex item. With no slot, the row has
+   one column and no gap. */
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  gap: var(--space-2);
+}
+
+/* A square: the row stretches it to the box height, and the ratio sets its
+   width. Its content fills it, also a `Tooltip` wrapper. */
+.trailing {
+  display: flex;
+  aspect-ratio: 1 / 1;
+}
+
+.trailing > * {
+  flex: 1;
+}
+
 .input {
+  width: 100%;
   font-family: var(--font-body);
   font-size: var(--font-size-xl);
-  /* A fixed line height, so the field is exactly --field-height tall. */
-  line-height: var(--line-height-field);
   padding: var(--space-3);
   border: var(--border-width) solid var(--color-border);
   border-radius: var(--radius);

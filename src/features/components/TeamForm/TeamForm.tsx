@@ -9,38 +9,44 @@ import styles from './TeamForm.module.css';
 
 export type { TeamFormProps };
 
-/** The icon button at the right side of an edited team's slug, and its
- * confirm (US-09.5). A disabled button stays focusable, so its hint gives
- * the reason. */
-function RegenerateSlug({ regenerate }: { regenerate: SlugRegenerate }): JSX.Element {
+/** The icon button in the slot of an edited team's slug (US-09.5, Task
+ * 169). A disabled button stays focusable, so its hint gives the reason. */
+function RegenerateButton({ regenerate }: { regenerate: SlugRegenerate }): JSX.Element {
   return (
-    <>
-      <Tooltip content={regenerate.hint}>
-        {(describedBy) => (
-          <Button
-            size="icon"
-            fieldHeight
-            variant="secondary"
-            aria-label={REGENERATE_LABEL}
-            aria-describedby={describedBy}
-            disabled={regenerate.disabled}
-            focusableWhenDisabled
-            onClick={regenerate.open}
-          >
-            ↻
-          </Button>
-        )}
-      </Tooltip>
-      {regenerate.confirm && (
-        <ConfirmDialog
-          title="Regenerate slug?"
-          message={regenerateMessage(regenerate.confirm.from, regenerate.confirm.to)}
-          confirmLabel="Regenerate"
-          onConfirm={regenerate.apply}
-          onCancel={regenerate.cancel}
-        />
+    <Tooltip content={regenerate.hint}>
+      {(describedBy) => (
+        <Button
+          size="icon"
+          fill
+          variant="secondary"
+          aria-label={REGENERATE_LABEL}
+          aria-describedby={describedBy}
+          disabled={regenerate.disabled}
+          focusableWhenDisabled
+          onClick={regenerate.open}
+        >
+          ↻
+        </Button>
       )}
-    </>
+    </Tooltip>
+  );
+}
+
+/** The confirm of a slug regenerate, with the old and the new slug. */
+function RegenerateConfirm({
+  regenerate,
+}: {
+  regenerate: SlugRegenerate;
+}): JSX.Element | null {
+  if (!regenerate.confirm) return null;
+  return (
+    <ConfirmDialog
+      title="Regenerate slug?"
+      message={regenerateMessage(regenerate.confirm.from, regenerate.confirm.to)}
+      confirmLabel="Regenerate"
+      onConfirm={regenerate.apply}
+      onCancel={regenerate.cancel}
+    />
   );
 }
 
@@ -76,15 +82,14 @@ export function TeamForm({
         onChange={handleNameChange}
       />
 
-      <div class={styles.slugRow}>
-        <Input
-          label="Slug (auto-generated)"
-          defaultValue={startValues.slug}
-          readOnly
-          ref={slugRef}
-        />
-        {regenerate && <RegenerateSlug regenerate={regenerate} />}
-      </div>
+      <Input
+        label="Slug (auto-generated)"
+        defaultValue={startValues.slug}
+        readOnly
+        ref={slugRef}
+        trailing={regenerate && <RegenerateButton regenerate={regenerate} />}
+      />
+      {regenerate && <RegenerateConfirm regenerate={regenerate} />}
 
       <Input
         label="Location (optional)"

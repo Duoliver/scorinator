@@ -4,8 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { createSeededRng } from '@/engine/rng';
 import { TIER_OVR_RANGES } from '@/engine/tier-ovr';
 import { blueprint, instance } from '@/test/databaseRecords';
-import { EditTeamDrawer } from './EditTeamDrawer';
-import type { EditTeamDrawerProps } from './EditTeamDrawer';
+import { EditTeamDrawer, type EditTeamDrawerProps } from './EditTeamDrawer';
 
 // The Instance was renamed and recoloured in the wizard: its Blueprint
 // still has the first name, the first colour, and Tier B.

@@ -22,14 +22,3 @@
   display: flex;
   gap: var(--space-3);
 }
-
-/* The slug field and its regenerate button, side by side (US-09.5). */
-.slugRow {
-  display: flex;
-  align-items: flex-end;
-  gap: var(--space-2);
-}
-
-.slugRow > :first-child {
-  flex: 1;
-}

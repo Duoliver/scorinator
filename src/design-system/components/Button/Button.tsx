@@ -11,7 +11,7 @@ export function Button({
   size = 'md',
   disabled = false,
   focusableWhenDisabled = false,
-  fieldHeight = false,
+  fill = false,
   type = 'button',
   href,
   'aria-label': ariaLabel,
@@ -19,7 +19,7 @@ export function Button({
   onClick,
 }: ButtonProps): JSX.Element {
   const className = `${styles.button} ${styles[variant]} ${styles[size]}${
-    fieldHeight ? ` ${styles.fieldHeight}` : ''
+    fill ? ` ${styles.fill}` : ''
   }`;
 
   if (href) {

@@ -325,6 +325,12 @@ describe('TeamForm, the slug regenerate (US-09.5, Task 167)', () => {
     );
   }
 
+  it('puts the button in the slot of the slug field (Task 169)', () => {
+    renderEdit();
+    const row = screen.getByLabelText('Slug (auto-generated)').parentElement;
+    expect(row?.contains(screen.getByRole('button', { name: REGENERATE }))).toBe(true);
+  });
+
   it('has no regenerate button for a new team', () => {
     renderCreate();
     expect(screen.queryByRole('button', { name: REGENERATE })).not.toBeInTheDocument();

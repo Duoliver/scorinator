@@ -35,16 +35,16 @@ interface ButtonBaseProps {
 interface TextButtonProps extends ButtonBaseProps {
   size?: Exclude<ButtonSize, 'icon'>;
   'aria-label'?: string;
-  fieldHeight?: never;
+  fill?: never;
 }
 
 /** An icon button has no visible text, so it must have an `aria-label`. */
 interface IconButtonProps extends ButtonBaseProps {
   size: 'icon';
   'aria-label': string;
-  /** Makes the square as tall as an `Input` (`--field-height`), for a
-   * button next to a field, as the slug regenerate (Task 167). */
-  fieldHeight?: boolean;
+  /** Makes the button fill its container, for a button in the `trailing`
+   * slot of an `Input`, as the slug regenerate (Task 169). */
+  fill?: boolean;
 }
 
 type ButtonProps = TextButtonProps | IconButtonProps;

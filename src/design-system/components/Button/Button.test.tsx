@@ -104,18 +104,18 @@ describe('Button', () => {
       );
       const button = screen.getByRole('button', { name: 'Edit team' });
       expect(button.className).toMatch(/icon/);
-      expect(button.className).not.toMatch(/fieldHeight/);
+      expect(button.className).not.toMatch(/fill/);
     });
 
-    it('takes the height of a field with fieldHeight, as a square (Task 167)', () => {
+    it('fills its container with fill (Task 169)', () => {
       render(
-        <Button size="icon" aria-label="Regenerate slug" fieldHeight>
+        <Button size="icon" aria-label="Regenerate slug" fill>
           ↻
         </Button>
       );
       const button = screen.getByRole('button', { name: 'Regenerate slug' });
       expect(button.className).toMatch(/icon/);
-      expect(button.className).toMatch(/fieldHeight/);
+      expect(button.className).toMatch(/fill/);
     });
 
     it('passes aria-describedby through', () => {

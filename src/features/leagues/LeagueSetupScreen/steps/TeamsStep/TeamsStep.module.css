@@ -14,7 +14,10 @@
 
 .leagueName {
   margin: 0;
-  font-size: var(--font-size-md);
+  /* The text colour of the Review step title, not the muted summary grey. */
+  color: var(--color-fg);
+  font-size: var(--font-size-xl);
+  font-weight: 700;
 }
 
 .actions {

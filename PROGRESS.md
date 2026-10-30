@@ -120,6 +120,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 167 | Slug regenerate and Delete in the team edit drawer, each with a confirm | `features/teams`, `app/state` | ✅ Done | 2026-10-30 | 2026-10-30 | [167](/docs/tasks/167-slug-regenerate-and-delete.md) | Split from 119 - 2026-10-30. US-09.4, 09.5. Regenerate and Delete built, each with a confirm. |
 | 169 | Technical debt: an `Input` slot for a side button, in place of the fixed `Input` line height | `design-system/`, `features/components` | ⬜ Not started |  |  |  | Task created by User - 2026-10-30. From the Task 167 review. Removes `--line-height-field` and `--field-height`. |
 | 170 | Drawer layout: its own scroll, and the shell scroll locked while it is open | `design-system/` | ✅ Done | 2026-10-30 | 2026-10-30 | [170](/docs/tasks/170-drawer-scroll.md) | Task created by User - 2026-10-30. Content scroll and page lock built. The user checked the real app. |
+| 171 | The league name on the wizard Teams step: one font step larger, and bold | `features/leagues` | ✅ Done | 2026-10-30 | 2026-10-30 | [171](/docs/tasks/171-teams-step-league-name.md) | Task created by User - 2026-10-30. Name at `--font-size-xl`, bold, `--color-fg`. |
 
 **Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input, see Open Questions) · 🟩 Review · ✅ Done · ❌ Cancelled (the reason is in the Notes column)
 

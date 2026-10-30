@@ -11,6 +11,7 @@ import {
   type LeagueSetupStep,
 } from '@/app/state/leagueDraftStore';
 import { createLeague } from '@/app/state/leagueWrapperActions';
+import { teamListProblem } from '@/app/state/teamInstances';
 import type { LeagueWrapper } from '@/domain';
 import type { DetailsStepHandle } from '@/features/leagues/LeagueSetupScreen/steps/DetailsStep';
 import { leagueNameProblem } from './leagueName';
@@ -28,14 +29,14 @@ export function useLeagueSetup(): LeagueSetup {
   const initialDraft = useLeagueDraftStore.getState();
   const [details, setDetails] = useState<LeagueDraftDetails>(initialDraft.details);
   const [step, setStep] = useState<LeagueSetupStep>(initialDraft.step);
-  const teamList = useTeamList(initialDraft.teams);
+  const teamList = useTeamList(initialDraft.teams, initialDraft.fixedTrigrams);
   const [status, setStatus] = useState<string | null>(null);
 
   const detailsStepRef = useRef<DetailsStepHandle>(null);
   const stepsRef: RefObject<FieldHandle<string>> = useRef(null);
 
   const skipDraftSync = useLeagueDraftSync(
-    { details, teams: teamList.teams, step },
+    { details, teams: teamList.teams, fixedTrigrams: teamList.fixedTrigrams, step },
     detailsStepRef
   );
 
@@ -56,6 +57,8 @@ export function useLeagueSetup(): LeagueSetup {
     setStep(next);
   };
 
+  const createProblem = teamListProblem(teamList.teams);
+
   const handleCreate = (): void => {
     // `DetailsStep` is unmounted by the time Review is reachable — `details`
     // already holds its final values, synced by `goToStep` on the way out.
@@ -66,6 +69,8 @@ export function useLeagueSetup(): LeagueSetup {
       setStatus(nameProblem);
       return;
     }
+    // The Review step disables "Create league" for a list that cannot start.
+    if (createProblem) return;
     let league: LeagueWrapper;
     try {
       // The Instances keep the OVR they rolled at the add (Task 81).
@@ -74,6 +79,7 @@ export function useLeagueSetup(): LeagueSetup {
         homeAdvantage: details.homeAdvantage,
         points: details.points,
         teams: teamList.teams,
+        fixedTrigrams: teamList.fixedTrigrams,
       });
     } catch (error) {
       // `createLeague` throws for a Blueprint twice in the list or a closed
@@ -95,6 +101,7 @@ export function useLeagueSetup(): LeagueSetup {
     ...teamList,
     step,
     details,
+    createProblem,
     status,
     stepsRef,
     detailsStepRef,

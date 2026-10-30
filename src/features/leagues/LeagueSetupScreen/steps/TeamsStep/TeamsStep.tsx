@@ -75,6 +75,7 @@ function TeamListArea({
         rowKey={getRowKey}
       />
       <span class={styles.count}>{step.countText}</span>
+      {step.warning && <p class={styles.warning}>{step.warning}</p>}
     </>
   );
 }
@@ -124,7 +125,24 @@ export function TeamsStep({ onBack, onNext, ...props }: TeamsStepProps): JSX.Ele
           />
         )}
 
-        {(step.overlay === 'firstTeam' || step.overlay === 'pickerTeam') && (
+        {(step.overlay === 'switch' || step.overlay === 'switchTeam') && (
+          <PickerDialog
+            mode="single"
+            title="Switch team"
+            items={step.pickerItems}
+            current={step.switchCurrent}
+            onPick={step.pickSwitch}
+            availableAction={{
+              label: '+ Create new team',
+              onClick: step.openSwitchTeam,
+            }}
+            onCancel={step.closeSwitch}
+          />
+        )}
+
+        {(step.overlay === 'firstTeam' ||
+          step.overlay === 'pickerTeam' ||
+          step.overlay === 'switchTeam') && (
           <TeamFormDrawer
             takenSlugs={step.takenSlugs}
             onCancel={step.closeTeamDrawer}

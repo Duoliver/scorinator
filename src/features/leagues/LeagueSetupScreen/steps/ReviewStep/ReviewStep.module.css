@@ -30,4 +30,20 @@
 .footer {
   display: flex;
   justify-content: space-between;
+  /* "Back" keeps its own height next to the reason and "Create league". */
+  align-items: flex-end;
+}
+
+/* "Create league", with the reason it is off above it (US-08.8). */
+.create {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-2);
+}
+
+.problem {
+  margin: 0;
+  color: var(--color-error);
+  font-size: var(--font-size-lg);
 }

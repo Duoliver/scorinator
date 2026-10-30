@@ -63,6 +63,7 @@ function instanceToFile(team: TeamInstance): SavedInstance {
     colour: team.colour,
     tier: team.tier,
     ovr: team.ovr,
+    trigram: team.trigram,
   };
 }
 

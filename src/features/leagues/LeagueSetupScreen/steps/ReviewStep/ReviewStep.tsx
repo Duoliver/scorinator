@@ -21,6 +21,7 @@ export function ReviewStep({
   homeAdvantage,
   points,
   teams,
+  createProblem,
   onBack,
   onCreate,
 }: ReviewStepProps): JSX.Element {
@@ -59,9 +60,12 @@ export function ReviewStep({
           {/* No name check here: the Details step turns off Next for an
               invalid name. A jump through the step tabs still reaches
               this button, and `useLeagueSetup`'s `handleCreate` reports it. */}
-          <Button onClick={onCreate} disabled={teams.length === 0}>
-            Create league
-          </Button>
+          <div class={styles.create}>
+            {createProblem && <p class={styles.problem}>{createProblem}</p>}
+            <Button onClick={onCreate} disabled={createProblem !== null}>
+              Create league
+            </Button>
+          </div>
         </div>
       </div>
     </Card>

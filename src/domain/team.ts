@@ -33,6 +33,10 @@ export interface TeamBlueprint extends Provenance {
  * An Instance has no UUID of its own: `blueprintUuid` is its identity in the
  * league, also after the Blueprint is deleted (US-09.4, US-11.1). It does not
  * copy the location: a league screen reads that from the Blueprint (US-09.3).
+ *
+ * `trigram` is the code that "Create league" picked for the team, unique in
+ * the league, and it never changes (US-09.6, Task 121). It is `''` in the
+ * wizard before the create, and in a league file made before Task 121.
  */
 export interface TeamInstance {
   blueprintUuid: string;
@@ -41,6 +45,7 @@ export interface TeamInstance {
   colour: string;
   tier: Tier;
   ovr: number;
+  trigram: string;
 }
 
 /** The six team fields that the team form edits: slug, name, colour, Tier,

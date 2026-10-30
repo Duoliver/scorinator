@@ -128,8 +128,18 @@ describe('createLeague (US-09.2, US-11.1, Task 105)', () => {
   it('stores the given Instances with their OVR, and rolls nothing (Task 81, Task 120)', async () => {
     await open();
     const wrapper = createLeague(input);
-    expect(wrapper.teams).toEqual(teams);
+    expect(wrapper.teams.map(({ trigram: _t, ...rest }) => rest)).toEqual(
+      teams.map(({ trigram: _t, ...rest }) => rest)
+    );
     expect(wrapper.teams).not.toBe(teams);
+  });
+
+  it('stores the picked trigram on each Instance, with the fixed ones first (Task 121)', async () => {
+    await open();
+    const wrapper = createLeague({ ...input, fixedTrigrams: { [TOWN]: 'SMU' } });
+    // Each test Blueprint has the list ['SMU']. Old Town has it fixed. Salt
+    // Marsh (Tier B) then picks before Harborview (Tier C): SM2, then SM3.
+    expect(wrapper.teams.map((t) => t.trigram)).toEqual(['SM2', 'SM3', 'SMU']);
   });
 
   it('keeps an Instance whose Blueprint was deleted during the setup (US-09.4)', async () => {

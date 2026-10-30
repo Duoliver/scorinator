@@ -61,6 +61,7 @@ export interface SavedInstance {
   colour: string;
   tier: Tier;
   ovr: number;
+  trigram: string;
 }
 
 export interface SavedPhaseResult extends MatchResult<string> {

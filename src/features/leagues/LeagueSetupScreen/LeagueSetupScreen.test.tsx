@@ -20,16 +20,19 @@ beforeEach(() => {
   useLeagueDraftStore.setState({
     details: { name: '', points: DEFAULT_POINTS_CONFIG, homeAdvantage: false },
     teams: [],
+    fixedTrigrams: {},
     step: 'details',
   });
 });
 
-/** Adds FC United through the "Add teams" dialog of the Teams step. */
-async function addFcUnited(): Promise<void> {
+/** Adds FC United, then Harborview SC, through the "Add teams" dialog of
+ * the Teams step. A league needs 2 teams to start (US-08.8). */
+async function addTwoTeams(): Promise<void> {
   await userEvent.click(screen.getByRole('button', { name: '+ Add teams' }));
   const dialog = screen.getByRole('dialog', { name: 'Add teams' });
   await userEvent.click(within(dialog).getByRole('button', { name: 'FC United' }));
-  await userEvent.click(within(dialog).getByRole('button', { name: 'Add 1 team' }));
+  await userEvent.click(within(dialog).getByRole('button', { name: 'Harborview SC' }));
+  await userEvent.click(within(dialog).getByRole('button', { name: 'Add 2 teams' }));
 }
 
 describe('LeagueSetupScreen', () => {
@@ -40,12 +43,12 @@ describe('LeagueSetupScreen', () => {
     await userEvent.click(screen.getByLabelText('Home advantage'));
     await userEvent.click(screen.getByText('Next: Teams →'));
 
-    await addFcUnited();
+    await addTwoTeams();
     await userEvent.click(screen.getByText('Next: Review →'));
 
     expect(screen.getByText('Coastal Premier')).toBeInTheDocument();
     expect(screen.getByText('Home adv. on')).toBeInTheDocument();
-    expect(screen.getByText('1 team')).toBeInTheDocument();
+    expect(screen.getByText('2 teams')).toBeInTheDocument();
 
     await userEvent.click(screen.getByText('Create league'));
 
@@ -60,7 +63,9 @@ describe('LeagueSetupScreen', () => {
         colour: '#E53935',
         tier: 'B',
         ovr: expect.any(Number),
+        trigram: 'FCU',
       },
+      expect.objectContaining({ slug: 'harborview-sc', trigram: 'HAR' }),
     ]);
     expect(league.teams[0].ovr).toBeGreaterThanOrEqual(TIER_OVR_RANGES.B.min);
     expect(league.teams[0].ovr).toBeLessThanOrEqual(TIER_OVR_RANGES.B.max);
@@ -74,7 +79,7 @@ describe('LeagueSetupScreen', () => {
     expect(screen.getByText('Next: Teams →')).toBeDisabled();
     // The step tabs still allow a jump past the disabled Next.
     await userEvent.click(screen.getByRole('tab', { name: '2 · Teams' }));
-    await addFcUnited();
+    await addTwoTeams();
     await userEvent.click(screen.getByText('Next: Review →'));
     await userEvent.click(screen.getByText('Create league'));
 
@@ -93,7 +98,7 @@ describe('LeagueSetupScreen', () => {
 
     await userEvent.type(screen.getByLabelText('League name'), 'Coastal Premier');
     await userEvent.click(screen.getByText('Next: Teams →'));
-    await addFcUnited();
+    await addTwoTeams();
     await userEvent.click(screen.getByText('Next: Review →'));
     await userEvent.click(screen.getByText('Create league'));
 
@@ -114,7 +119,7 @@ describe('LeagueSetupScreen', () => {
 
     await userEvent.type(screen.getByLabelText('League name'), 'Coastal Premier');
     await userEvent.click(screen.getByText('Next: Teams →'));
-    await addFcUnited();
+    await addTwoTeams();
     await userEvent.click(screen.getByText('Next: Review →'));
     await userEvent.click(screen.getByText('Create league'));
 
@@ -139,7 +144,7 @@ describe('LeagueSetupScreen', () => {
     await userEvent.click(screen.getByText('Next: Teams →'));
     expect(screen.getByRole('tab', { name: '2 · Teams' })).toHaveFocus();
     // Next on the Teams step stays disabled until a team is selected.
-    await addFcUnited();
+    await addTwoTeams();
     await userEvent.click(screen.getByText('Next: Review →'));
     expect(screen.getByRole('tab', { name: '3 · Review' })).toHaveFocus();
   });
@@ -148,7 +153,7 @@ describe('LeagueSetupScreen', () => {
     render(<LeagueSetupScreen />);
     await userEvent.type(screen.getByLabelText('League name'), 'Coastal Premier');
     await userEvent.click(screen.getByText('Next: Teams →'));
-    await addFcUnited();
+    await addTwoTeams();
     await userEvent.click(screen.getByText('Next: Review →'));
     await userEvent.click(screen.getByRole('button', { name: 'Back' }));
     expect(screen.getByRole('tab', { name: '2 · Teams' })).toHaveFocus();
@@ -160,7 +165,7 @@ describe('LeagueSetupScreen', () => {
     render(<LeagueSetupScreen />);
 
     await userEvent.click(screen.getByRole('tab', { name: '2 · Teams' }));
-    await addFcUnited();
+    await addTwoTeams();
     await userEvent.click(screen.getByRole('tab', { name: '3 · Review' }));
     await userEvent.click(screen.getByText('Create league'));
 
@@ -176,7 +181,7 @@ describe('LeagueSetupScreen', () => {
       render(<LeagueSetupScreen />);
       await userEvent.type(screen.getByLabelText('League name'), 'Coastal Premier');
       await userEvent.click(screen.getByText('Next: Teams →'));
-      await addFcUnited();
+      await addTwoTeams();
       await userEvent.click(screen.getByText('Next: Review →'));
       await userEvent.click(screen.getByText('Create league'));
       cleanup();
@@ -248,6 +253,24 @@ describe('LeagueSetupScreen', () => {
     await userEvent.click(screen.getByText('Create league'));
 
     const [league] = Object.values(useDatabaseStore.getState().leagues);
-    expect(league.teams).toEqual(teams);
+    expect(league.teams).toEqual(
+      teams.map((team, i) => ({ ...team, trigram: ['FCU', 'HAR'][i] }))
+    );
+  });
+
+  it('disables "Create league" with 1 team, and shows the reason (US-08.8)', async () => {
+    render(<LeagueSetupScreen />);
+    await userEvent.type(screen.getByLabelText('League name'), 'Coastal Premier');
+    await userEvent.click(screen.getByText('Next: Teams →'));
+    await userEvent.click(screen.getByRole('button', { name: '+ Add teams' }));
+    const dialog = screen.getByRole('dialog', { name: 'Add teams' });
+    await userEvent.click(within(dialog).getByRole('button', { name: 'FC United' }));
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Add 1 team' }));
+    await userEvent.click(screen.getByText('Next: Review →'));
+
+    expect(screen.getByRole('button', { name: 'Create league' })).toBeDisabled();
+    expect(
+      screen.getAllByText('The league needs at least 2 teams to start.').length
+    ).toBeGreaterThan(0);
   });
 });

@@ -5,7 +5,11 @@ import { importSlugListTxt } from '@/app/data/slugListTxt';
 import { useDatabaseStore } from '@/app/state/databaseStore';
 import { setFileStatus } from '@/app/state/fileActions';
 import { addTeamBlueprint } from '@/app/state/teamBlueprintActions';
-import { planSlugListImport } from '@/app/state/teamInstances';
+import {
+  pickTeamTrigrams,
+  planSlugListImport,
+  teamListProblem,
+} from '@/app/state/teamInstances';
 import { formatTeamCount } from '@/features/components';
 import { settingsChipLabels } from '@/features/leagues/LeagueSetupScreen/steps/SetupChips';
 import { useBlueprintLocation } from '@/features/leagues/LeagueSetupScreen/useBlueprintLocation';
@@ -17,6 +21,7 @@ import {
   describeSlugListImport,
   getTeamsStepColumns,
   pickerConfirmLabel,
+  toCurrentItem,
   toPickerItem,
 } from './helpers';
 
@@ -28,17 +33,41 @@ export function useTeamsStep({
   homeAdvantage,
   points,
   teams,
+  fixedTrigrams,
   onAddTeams,
   onRemoveTeam,
+  onSwitchTeam,
 }: Omit<TeamsStepProps, 'onBack' | 'onNext'>): TeamsStepState {
   const blueprints = useDatabaseStore((state) => state.blueprints);
   const locationOf = useBlueprintLocation();
   const [overlay, setOverlay] = useState<TeamsStepOverlay>('none');
   const [pickerSelected, setPickerSelected] = useState<string[]>([]);
   const [notFound, setNotFound] = useState<string[] | null>(null);
+  // The team that the Switch dialog replaces (US-08.5).
+  const [switchUuid, setSwitchUuid] = useState<string | null>(null);
 
   const inList = new Set(teams.map((team) => team.blueprintUuid));
   const available = blueprints.filter((blueprint) => !inList.has(blueprint.uuid));
+  // The live pick runs again on each render, so after each add, Switch,
+  // Remove, or Edit (US-09.6).
+  const picks = pickTeamTrigrams(teams, blueprints, fixedTrigrams);
+  const switched = teams.find((team) => team.blueprintUuid === switchUuid);
+
+  const openSwitch = (blueprintUuid: string): void => {
+    setSwitchUuid(blueprintUuid);
+    setOverlay('switch');
+  };
+
+  const closeSwitch = (): void => {
+    setSwitchUuid(null);
+    setOverlay('none');
+  };
+
+  const pickSwitch = (blueprintUuid: string): void => {
+    const replacement = blueprints.find((b) => b.uuid === blueprintUuid);
+    if (switchUuid !== null && replacement) onSwitchTeam(switchUuid, replacement);
+    closeSwitch();
+  };
 
   const closePicker = (): void => {
     setPickerSelected([]);
@@ -51,8 +80,9 @@ export function useTeamsStep({
     closePicker();
   };
 
-  // A team made over the add dialog joins its selection. A team made from
-  // the empty state joins the list at once (US-08.1, US-08.3).
+  // A team made over the add dialog joins its selection. A team made over
+  // the Switch dialog replaces the team. A team made from the empty state
+  // joins the list at once (US-08.1, US-08.3, US-08.5).
   const handleTeamCreated = ({
     name: teamName,
     colour,
@@ -67,7 +97,10 @@ export function useTeamsStep({
       location,
       trigrams,
     });
-    if (overlay === 'pickerTeam') {
+    if (overlay === 'switchTeam') {
+      if (switchUuid !== null) onSwitchTeam(switchUuid, created);
+      closeSwitch();
+    } else if (overlay === 'pickerTeam') {
       setPickerSelected((current) => [...current, created.uuid]);
       setOverlay('picker');
     } else {
@@ -100,10 +133,16 @@ export function useTeamsStep({
     leagueName: formatLeagueName(name),
     chipLabels: settingsChipLabels(homeAdvantage, points),
     hasNoBlueprints: blueprints.length === 0,
-    columns: getTeamsStepColumns(locationOf, onRemoveTeam),
+    columns: getTeamsStepColumns(
+      locationOf,
+      (uuid) => picks.get(uuid),
+      openSwitch,
+      onRemoveTeam
+    ),
     countText: formatTeamCount(teams.length),
     canLoadAll: available.length > 0,
     canGoNext: teams.length > 0,
+    warning: teams.length > 0 ? teamListProblem(teams) : null,
     notFound,
     closeNotFound: () => setNotFound(null),
     overlay,
@@ -117,7 +156,19 @@ export function useTeamsStep({
     confirmPicker,
     openFirstTeam: () => setOverlay('firstTeam'),
     openPickerTeam: () => setOverlay('pickerTeam'),
-    closeTeamDrawer: () => setOverlay(overlay === 'pickerTeam' ? 'picker' : 'none'),
+    switchCurrent:
+      switched && toCurrentItem(switched, locationOf(switched.blueprintUuid)),
+    closeSwitch,
+    pickSwitch,
+    openSwitchTeam: () => setOverlay('switchTeam'),
+    closeTeamDrawer: () =>
+      setOverlay(
+        overlay === 'pickerTeam'
+          ? 'picker'
+          : overlay === 'switchTeam'
+            ? 'switch'
+            : 'none'
+      ),
     handleTeamCreated,
     loadAll: () => onAddTeams(available),
     importSlugList,

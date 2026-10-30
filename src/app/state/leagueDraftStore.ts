@@ -16,6 +16,9 @@ export interface LeagueDraft {
   /** The team list of the Teams step: each Instance has the OVR that it
    * rolled when it was added (Task 81, Task 120). */
   teams: TeamInstance[];
+  /** The trigrams fixed in the Edit drawer, by Blueprint UUID (US-09.6,
+   * Task 121 choice 2). A team with no entry takes the live pick. */
+  fixedTrigrams: Record<string, string>;
   step: LeagueSetupStep;
 }
 
@@ -23,6 +26,7 @@ export function emptyLeagueDraft(): LeagueDraft {
   return {
     details: { name: '', points: DEFAULT_POINTS_CONFIG, homeAdvantage: false },
     teams: [],
+    fixedTrigrams: {},
     step: 'details',
   };
 }

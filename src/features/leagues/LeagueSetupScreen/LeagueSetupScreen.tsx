@@ -33,8 +33,10 @@ export function LeagueSetupScreen(): JSX.Element {
           homeAdvantage={details.homeAdvantage}
           points={details.points}
           teams={setup.teams}
+          fixedTrigrams={setup.fixedTrigrams}
           onAddTeams={setup.addTeams}
           onRemoveTeam={setup.removeTeam}
+          onSwitchTeam={setup.switchTeam}
           onBack={setup.goToDetails}
           onNext={setup.goToReview}
         />
@@ -49,6 +51,7 @@ export function LeagueSetupScreen(): JSX.Element {
           homeAdvantage={details.homeAdvantage}
           points={details.points}
           teams={setup.teams}
+          createProblem={setup.createProblem}
           onBack={setup.goToTeams}
           onCreate={setup.handleCreate}
         />

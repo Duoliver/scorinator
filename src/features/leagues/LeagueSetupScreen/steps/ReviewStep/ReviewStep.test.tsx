@@ -16,6 +16,7 @@ describe('ReviewStep', () => {
         homeAdvantage
         points={{ win: 3, draw: 1, loss: 0 }}
         teams={teams}
+        createProblem={null}
         onBack={vi.fn()}
         onCreate={vi.fn()}
       />
@@ -35,6 +36,7 @@ describe('ReviewStep', () => {
         homeAdvantage={false}
         points={{ win: 3, draw: 1, loss: 0 }}
         teams={teams}
+        createProblem={null}
         onBack={vi.fn()}
         onCreate={onCreate}
       />
@@ -50,11 +52,15 @@ describe('ReviewStep', () => {
         homeAdvantage={false}
         points={{ win: 3, draw: 1, loss: 0 }}
         teams={[]}
+        createProblem="The league needs at least 2 teams to start."
         onBack={vi.fn()}
         onCreate={vi.fn()}
       />
     );
     expect(screen.getByText('Create league')).toBeDisabled();
+    expect(
+      screen.getByText('The league needs at least 2 teams to start.')
+    ).toBeInTheDocument();
   });
 
   it('does not disable Create league for a blank name: the Details step blocks it, and the screen reports a tab jump', () => {
@@ -64,6 +70,7 @@ describe('ReviewStep', () => {
         homeAdvantage={false}
         points={{ win: 3, draw: 1, loss: 0 }}
         teams={teams}
+        createProblem={null}
         onBack={vi.fn()}
         onCreate={vi.fn()}
       />
@@ -78,6 +85,7 @@ describe('ReviewStep', () => {
         homeAdvantage={false}
         points={{ win: 3, draw: 1, loss: 0 }}
         teams={teams}
+        createProblem={null}
         onBack={vi.fn()}
         onCreate={vi.fn()}
       />
@@ -103,6 +111,7 @@ describe('ReviewStep', () => {
         homeAdvantage={false}
         points={{ win: 3, draw: 1, loss: 0 }}
         teams={[instance({ blueprintUuid: testUuid(1), name: 'FC United' })]}
+        createProblem={null}
         onBack={vi.fn()}
         onCreate={vi.fn()}
       />

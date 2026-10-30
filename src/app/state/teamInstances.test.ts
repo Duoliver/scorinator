@@ -1,8 +1,14 @@
 import { describe, expect, it } from 'vitest';
+import type { TeamInstance } from '@/domain';
 import { createSeededRng } from '@/engine/rng';
 import { TIER_OVR_RANGES } from '@/engine/tier-ovr';
 import { blueprint, HARBORVIEW, instance, SALT_MARSH } from '@/test/databaseRecords';
-import { newTeamInstances, planSlugListImport } from './teamInstances';
+import {
+  newTeamInstances,
+  pickTeamTrigrams,
+  planSlugListImport,
+  teamListProblem,
+} from './teamInstances';
 
 const TOWN = '00000000-0000-4000-8000-0000000000a3';
 const saltMarsh = blueprint({ location: 'Ashfield' });
@@ -25,6 +31,7 @@ describe('newTeamInstances (Task 81, US-08.1)', () => {
       tier: 'B',
     });
     expect(made).not.toHaveProperty('location');
+    expect(made.trigram).toBe('');
   });
 
   it('rolls each OVR inside the Tier range, in the given order', () => {
@@ -89,5 +96,84 @@ describe('planSlugListImport (US-08.7)', () => {
     const plan = planSlugListImport(['salt-marsh-united'], blueprints, list);
     expect(plan.add).toEqual([]);
     expect(plan.alreadyInList).toBe(1);
+  });
+});
+
+describe('pickTeamTrigrams (US-09.6, Task 121)', () => {
+  const ash = blueprint({
+    uuid: SALT_MARSH,
+    name: 'Ashfield',
+    trigrams: ['ASH'],
+    tier: 'C',
+  });
+  const ashton = blueprint({
+    uuid: HARBORVIEW,
+    name: 'Ashton',
+    trigrams: ['ASH', 'AST'],
+    tier: 'C',
+  });
+  const team = (b: typeof ash, ovr: number): TeamInstance =>
+    instance({ blueprintUuid: b.uuid, name: b.name, tier: b.tier, ovr });
+
+  it('lets the higher OVR pick first, from the Blueprint trigrams', () => {
+    const picks = pickTeamTrigrams(
+      [team(ash, 61), team(ashton, 65)],
+      [ash, ashton],
+      {}
+    );
+    expect(picks.get(HARBORVIEW)).toEqual({ trigram: 'ASH', fallback: false });
+    expect(picks.get(SALT_MARSH)).toEqual({ trigram: 'AS2', fallback: true });
+  });
+
+  it('lets the team added first pick first on a full tie (choice 3)', () => {
+    const picks = pickTeamTrigrams(
+      [team(ash, 64), team(ashton, 64)],
+      [ash, ashton],
+      {}
+    );
+    expect(picks.get(SALT_MARSH)?.trigram).toBe('ASH');
+    expect(picks.get(HARBORVIEW)?.trigram).toBe('AST');
+  });
+
+  it('takes a fixed trigram first', () => {
+    const picks = pickTeamTrigrams([team(ash, 61), team(ashton, 65)], [ash, ashton], {
+      [SALT_MARSH]: 'ASH',
+    });
+    expect(picks.get(SALT_MARSH)?.trigram).toBe('ASH');
+    expect(picks.get(HARBORVIEW)?.trigram).toBe('AST');
+  });
+
+  it('uses the trigram made from the name for a deleted Blueprint', () => {
+    const picks = pickTeamTrigrams([team(ash, 61)], [], {});
+    expect(picks.get(SALT_MARSH)?.trigram).toBe('ASH');
+  });
+});
+
+describe('teamListProblem (US-08.6, US-08.8, Task 121)', () => {
+  it('needs at least 2 teams', () => {
+    expect(teamListProblem([])).toBe('The league needs at least 2 teams to start.');
+    expect(teamListProblem([instance()])).toBe(
+      'The league needs at least 2 teams to start.'
+    );
+  });
+
+  it('refuses two teams with the same name, with no regard to case', () => {
+    const list = [
+      instance({ name: 'Ashfield' }),
+      instance({ blueprintUuid: HARBORVIEW, name: 'Old Town' }),
+      instance({ blueprintUuid: TOWN, name: 'ASHFIELD ' }),
+    ];
+    expect(teamListProblem(list)).toBe(
+      'Two teams have the name Ashfield. Edit one of them.'
+    );
+  });
+
+  it('gives null for a list that can start', () => {
+    expect(
+      teamListProblem([
+        instance(),
+        instance({ blueprintUuid: HARBORVIEW, name: 'Old Town' }),
+      ])
+    ).toBeNull();
   });
 });

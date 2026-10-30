@@ -40,6 +40,7 @@ export function instance(overrides: Partial<TeamInstance> = {}): TeamInstance {
     colour: '#1565C0',
     tier: 'B',
     ovr: 74,
+    trigram: 'SMU',
     ...overrides,
   };
 }
@@ -193,6 +194,7 @@ export function roundRobinLeague(
     colour: team.colour,
     tier: 'B',
     ovr: 70,
+    trigram: '',
   }));
   const uuids = instances.map((team) => team.blueprintUuid);
   const schedule =

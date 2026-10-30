@@ -36,8 +36,10 @@ function Harness({
       {...summary}
       {...props}
       teams={list.teams}
+      fixedTrigrams={list.fixedTrigrams}
       onAddTeams={list.addTeams}
       onRemoveTeam={list.removeTeam}
+      onSwitchTeam={list.switchTeam}
     />
   );
 }
@@ -246,6 +248,7 @@ describe('TeamsStep, Load them all (US-08.2)', () => {
       colour: '#1565C0',
       tier: 'C',
       ovr: 64,
+      trigram: '',
     };
     render(<Harness initial={[kept]} onTeams={track} />);
     await userEvent.click(screen.getByRole('button', { name: 'Load them all' }));
@@ -332,6 +335,124 @@ describe('TeamsStep, Import slug list (US-08.7)', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Import slug list' }));
     expect(latest).toEqual([]);
     expect(useFileStore.getState().status).toBeNull();
+  });
+});
+
+describe('TeamsStep, the live trigram pick (US-09.6, Task 121)', () => {
+  it('shows the trigram that each team gets, in a Trigram column', async () => {
+    render(<Harness />);
+    await userEvent.click(screen.getByRole('button', { name: 'Load them all' }));
+    expect(screen.getByRole('columnheader', { name: 'Trigram' })).toBeInTheDocument();
+    expect(
+      teamRows().map((row) => within(row).getAllByRole('cell')[1].textContent)
+    ).toEqual(['ASH', 'HAR', 'OLD']);
+  });
+
+  it('marks a team with the digit fallback, with the hint', async () => {
+    openTestDatabase([
+      ASHFIELD,
+      { slug: 'ashby', name: 'Ashby', colour: '#fff', tier: 'D' },
+    ]);
+    render(<Harness />);
+    await userEvent.click(screen.getByRole('button', { name: 'Load them all' }));
+    const ashby = teamRows()[1];
+    expect(within(ashby).getAllByRole('cell')[1]).toHaveTextContent('AS2');
+    expect(within(ashby).getByText('⚠')).toHaveAccessibleDescription(
+      'No free trigram. Add an alternative to the team.'
+    );
+    expect(within(teamRows()[0]).queryByText('⚠')).not.toBeInTheDocument();
+  });
+});
+
+describe('TeamsStep, Switch (US-08.5, Task 121)', () => {
+  async function openSwitch(name: string): Promise<HTMLElement> {
+    await userEvent.click(screen.getByRole('button', { name: `Switch ${name}` }));
+    return screen.getByRole('dialog', { name: 'Switch team' });
+  }
+
+  it('lists only the available Blueprints, with the team in the slot', async () => {
+    render(<Harness />);
+    await userEvent.click(screen.getByRole('button', { name: '+ Add teams' }));
+    const add = screen.getByRole('dialog', { name: 'Add teams' });
+    await userEvent.click(within(add).getByRole('button', { name: 'Harborview SC' }));
+    await userEvent.click(within(add).getByRole('button', { name: 'Add 1 team' }));
+
+    const dialog = await openSwitch('Harborview SC');
+    expect(dialog).toHaveTextContent(
+      'Pick a replacement from Available — this closes the dialog right away.'
+    );
+    expect(
+      within(dialog).getByRole('region', { name: 'Currently in slot' })
+    ).toHaveTextContent('Harborview SC');
+    const available = within(dialog).getByRole('region', { name: 'Available' });
+    expect(
+      within(available).queryByRole('button', { name: 'Harborview SC' })
+    ).toBeNull();
+    expect(
+      within(available).getByRole('button', { name: 'Old Town' })
+    ).toBeInTheDocument();
+  });
+
+  it('replaces the team in its place at once, with a rolled OVR, and closes the dialog', async () => {
+    render(<Harness onTeams={track} />);
+    await userEvent.click(screen.getByRole('button', { name: '+ Add teams' }));
+    const add = screen.getByRole('dialog', { name: 'Add teams' });
+    await userEvent.click(within(add).getByRole('button', { name: 'Ashfield Rovers' }));
+    await userEvent.click(within(add).getByRole('button', { name: 'Harborview SC' }));
+    await userEvent.click(within(add).getByRole('button', { name: 'Add 2 teams' }));
+
+    const dialog = await openSwitch('Ashfield Rovers');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Old Town' }));
+
+    expect(
+      screen.queryByRole('dialog', { name: 'Switch team' })
+    ).not.toBeInTheDocument();
+    expect(latest.map((t) => t.name)).toEqual(['Old Town', 'Harborview SC']);
+    expect(latest[0].ovr).toBeGreaterThanOrEqual(TIER_OVR_RANGES.F.min);
+    expect(latest[0].ovr).toBeLessThanOrEqual(TIER_OVR_RANGES.F.max);
+  });
+
+  it('replaces the team with a new Blueprint made in the dialog', async () => {
+    render(<Harness onTeams={track} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Load them all' }));
+    const dialog = await openSwitch('Harborview SC');
+    await userEvent.click(
+      within(dialog).getByRole('button', { name: '+ Create new team' })
+    );
+    await userEvent.type(screen.getByLabelText('Team name'), 'Redbrick Athletic');
+    await userEvent.click(screen.getByText('Create team'));
+
+    expect(
+      screen.queryByRole('dialog', { name: 'Switch team' })
+    ).not.toBeInTheDocument();
+    expect(latest.map((t) => t.name)).toEqual([
+      'Ashfield Rovers',
+      'Redbrick Athletic',
+      'Old Town',
+    ]);
+  });
+});
+
+describe('TeamsStep, the start warning (US-08.6, Task 121)', () => {
+  it('warns with 1 team, and still allows Next', async () => {
+    render(<Harness />);
+    await userEvent.click(screen.getByRole('button', { name: '+ Add teams' }));
+    const add = screen.getByRole('dialog', { name: 'Add teams' });
+    await userEvent.click(within(add).getByRole('button', { name: 'Old Town' }));
+    await userEvent.click(within(add).getByRole('button', { name: 'Add 1 team' }));
+
+    expect(
+      screen.getByText('The league needs at least 2 teams to start.')
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Next: Review →' })).toBeEnabled();
+  });
+
+  it('shows no warning with 2 teams', async () => {
+    render(<Harness />);
+    await userEvent.click(screen.getByRole('button', { name: 'Load them all' }));
+    expect(
+      screen.queryByText('The league needs at least 2 teams to start.')
+    ).not.toBeInTheDocument();
   });
 });
 

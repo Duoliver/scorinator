@@ -63,6 +63,7 @@ function resetSession(): void {
   useLeagueDraftStore.setState({
     details: { name: '', points: DEFAULT_POINTS_CONFIG, homeAdvantage: false },
     teams: [],
+    fixedTrigrams: {},
     step: 'details',
   });
 }

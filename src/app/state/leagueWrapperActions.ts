@@ -11,6 +11,7 @@ import type { PointsConfig } from '@/engine/standings';
 import type { LeagueWrapper, Phase, PhaseResult, TeamInstance } from '@/domain';
 import { cryptoRandomBytes, freshSeed } from '@/app/random';
 import { findCurrentPhase } from './currentPhase';
+import { pickTeamTrigrams } from './teamInstances';
 import { requireOpenDatabase, useDatabaseStore } from './databaseStore';
 
 /** What it takes to create a league (US-08.8). `teams` is the team list of
@@ -20,12 +21,15 @@ export interface CreateLeagueInput {
   homeAdvantage: boolean;
   points: PointsConfig;
   teams: readonly TeamInstance[];
+  /** The trigrams fixed in the Edit drawer, by Blueprint UUID (US-09.6). */
+  fixedTrigrams?: Readonly<Record<string, string>>;
 }
 
 /**
  * Creates a league and keeps it in the store, unsaved (Task 108). It stores
- * the Instances of the team list as they are, with their OVR (Task 81): an
- * Instance whose Blueprint was deleted during the setup stays (US-09.4).
+ * the Instances of the team list with their OVR (Task 81), and the trigram
+ * that `pickTeamTrigrams` gives each one (Task 121). An Instance whose
+ * Blueprint was deleted during the setup stays (US-09.4).
  * Phase 1 is a two-way round robin with the shuffled match order (Task 30)
  * and the fixture ids of Task 105. Fixtures name teams by Blueprint UUID. A
  * league with fewer than 2 teams gets an empty phase 1, as in MVP1: Task 121
@@ -50,7 +54,16 @@ export function createLeague(
   }
 
   const rng = createSeededRng(freshSeed());
-  const teams: TeamInstance[] = input.teams.map((team) => ({ ...team }));
+  // The same pick as the live one of the Teams step, stored for good.
+  const picks = pickTeamTrigrams(
+    input.teams,
+    state.blueprints,
+    input.fixedTrigrams ?? {}
+  );
+  const teams: TeamInstance[] = input.teams.map((team) => ({
+    ...team,
+    trigram: picks.get(team.blueprintUuid)?.trigram ?? '',
+  }));
   const uuids = teams.map((team) => team.blueprintUuid);
   const schedule =
     uuids.length >= 2 ? generateRoundRobin(uuids, rng) : { fixtures: [], byes: [] };

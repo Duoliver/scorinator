@@ -1,6 +1,6 @@
 import { useRef, useState } from 'preact/hooks';
 import { DEFAULT_TEAM_COLOUR, type FieldHandle } from '@/design-system';
-import { MAX_LOCATION_LENGTH, parseTrigramList, slug } from '@/engine/identity';
+import { MAX_LOCATION_LENGTH, parseTrigramList } from '@/engine/identity';
 import { isTier } from '@/engine/tier-ovr';
 import type TeamFormProps from './types';
 import type { SlugRegenerate, TeamFormErrors, TeamFormState } from './types';
@@ -14,6 +14,7 @@ import {
   getTrigramsPlaceholder,
   trigramProblemMessage,
 } from './helpers';
+import { checkTeamName } from './fields';
 
 const NO_ERRORS: TeamFormErrors = { name: null, location: null, trigrams: null };
 
@@ -92,20 +93,15 @@ export function useTeamForm({
     const name = nameRef.current?.getValue() ?? '';
     const location = (locationRef.current?.getValue() ?? '').trim();
     const trigrams = parseTrigramList(trigramsRef.current?.getValue() ?? '');
-    let nameSlug: string | null = null;
-    try {
-      nameSlug = slug(name);
-    } catch {
-      // The name error below reports it.
-    }
+    const nameError = checkTeamName(name);
 
     const next: TeamFormErrors = {
-      name: nameSlug === null ? TEAM_NAME_INVALID : null,
+      name: nameError,
       location: location.length > MAX_LOCATION_LENGTH ? LOCATION_TOO_LONG : null,
       trigrams: trigrams.ok ? null : trigramProblemMessage(trigrams.problem),
     };
     setErrors(next);
-    if (nameSlug === null || !trigrams.ok || next.location !== null) return;
+    if (nameError !== null || !trigrams.ok || next.location !== null) return;
 
     const tier = tierRef.current?.getValue();
     onSave({

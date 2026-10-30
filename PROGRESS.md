@@ -121,6 +121,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 169 | Technical debt: an `Input` slot for a side button, in place of the fixed `Input` line height | `design-system/`, `features/components` | ⬜ Not started |  |  |  | Task created by User - 2026-10-30. From the Task 167 review. Removes `--line-height-field` and `--field-height`. |
 | 170 | Drawer layout: its own scroll, and the shell scroll locked while it is open | `design-system/` | ✅ Done | 2026-10-30 | 2026-10-30 | [170](/docs/tasks/170-drawer-scroll.md) | Task created by User - 2026-10-30. Content scroll and page lock built. The user checked the real app. |
 | 171 | The league name on the wizard Teams step: one font step larger, and bold | `features/leagues` | ✅ Done | 2026-10-30 | 2026-10-30 | [171](/docs/tasks/171-teams-step-league-name.md) | Task created by User - 2026-10-30. Name at `--font-size-xl`, bold, `--color-fg`. |
+| 172 | Edit a team for this league, in the wizard: Original state, OVR, Tier roll, fixed trigram, unique name, Reset | `features/leagues`, `features/components` | ✅ Done | 2026-10-30 | 2026-10-30 | [172](/docs/tasks/172-wizard-edit-team.md) | Split from 121 - 2026-10-30. US-08.4, 09.6. Edit drawer built, with shared `TeamForm` fields. |
 
 **Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input, see Open Questions) · 🟩 Review · ✅ Done · ❌ Cancelled (the reason is in the Notes column)
 
@@ -168,6 +169,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-10-30 (Task 172 — Edit a team for this league):** Built with Task 121 choices 8, 9, and 10. Claude choices: the `TeamForm` fields are shared one by one (`TeamNameField`, `TeamColourField`, `TeamTierField`, `FieldError`, `checkTeamName`), because the two forms use a different order. "Reset to original" sits below "Cancel" and "Save", in the `outline` look. Four error texts. Detail in [`docs/tasks/172-wizard-edit-team.md`](/docs/tasks/172-wizard-edit-team.md).
 
 - **2026-10-30 (Task 121 — the wizard Teams step, part 2):** The user agreed ten choices. (1) Split: ✎ Edit goes to new Task 172. (2) The fixed trigrams live in the draft as a map. (3) The lot is the list place: the team added first picks first on a full tie. (4) `TeamInstance` gets `trigram`, `''` when a file has none, format version 2. (5) A "Switch team" dialog. (6) Two teams with the same name block "Create league". (7) Next stays off with an empty list. (8, 9, 10) for Task 172: a fixed trigram differs from the other fixed ones, Reset clears it, and the Edit drawer reuses `TeamForm` parts (changed by the user). Detail in [`docs/tasks/121-wizard-teams-part-2.md`](/docs/tasks/121-wizard-teams-part-2.md).
 

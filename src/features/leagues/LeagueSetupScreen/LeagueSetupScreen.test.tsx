@@ -273,4 +273,25 @@ describe('LeagueSetupScreen', () => {
       screen.getAllByText('The league needs at least 2 teams to start.').length
     ).toBeGreaterThan(0);
   });
+
+  it('stores a trigram fixed in the Edit drawer, and the edits, in the league (Task 172)', async () => {
+    render(<LeagueSetupScreen />);
+    await userEvent.type(screen.getByLabelText('League name'), 'Coastal Premier');
+    await userEvent.click(screen.getByText('Next: Teams →'));
+    await addTwoTeams();
+    await userEvent.click(screen.getByRole('button', { name: 'Edit FC United' }));
+    await userEvent.clear(screen.getByLabelText('Team name'));
+    await userEvent.type(screen.getByLabelText('Team name'), 'United of the Coast');
+    await userEvent.type(screen.getByLabelText('Trigram (optional)'), 'uoc');
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+    await userEvent.click(screen.getByText('Next: Review →'));
+    await userEvent.click(screen.getByText('Create league'));
+
+    const [league] = Object.values(useDatabaseStore.getState().leagues);
+    expect(league.teams[0]).toMatchObject({
+      name: 'United of the Coast',
+      trigram: 'UOC',
+    });
+    expect(useDatabaseStore.getState().blueprints[0].name).toBe('FC United');
+  });
 });

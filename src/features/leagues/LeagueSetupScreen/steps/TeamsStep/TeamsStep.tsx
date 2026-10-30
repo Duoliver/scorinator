@@ -4,6 +4,7 @@ import { TeamFormDrawer } from '@/features/components';
 import { SetupChips } from '@/features/leagues/LeagueSetupScreen/steps/SetupChips';
 import type TeamsStepProps from './types';
 import type { TeamsStepState } from './types';
+import { EditTeamDrawer } from './EditTeamDrawer';
 import { describeNotFound, getRowKey } from './helpers';
 import { useTeamsStep } from './useTeamsStep';
 import styles from './TeamsStep.module.css';
@@ -149,6 +150,8 @@ export function TeamsStep({ onBack, onNext, ...props }: TeamsStepProps): JSX.Ele
             onSave={step.handleTeamCreated}
           />
         )}
+
+        {step.editDrawer && <EditTeamDrawer {...step.editDrawer} />}
 
         <div class={styles.footer}>
           <Button variant="secondary" onClick={onBack}>

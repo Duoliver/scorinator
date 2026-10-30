@@ -37,6 +37,7 @@ export function LeagueSetupScreen(): JSX.Element {
           onAddTeams={setup.addTeams}
           onRemoveTeam={setup.removeTeam}
           onSwitchTeam={setup.switchTeam}
+          onUpdateTeam={setup.updateTeam}
           onBack={setup.goToDetails}
           onNext={setup.goToReview}
         />

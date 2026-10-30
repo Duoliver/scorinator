@@ -1,0 +1,70 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* The Blueprint as it is in the Teams module, read only (US-08.4). */
+.original {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: var(--border-width) solid var(--color-border);
+  background: var(--color-bg);
+}
+
+.originalTitle {
+  margin: 0;
+  font-family: var(--font-condensed);
+  font-size: var(--font-size-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.originalRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.originalName {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.muted {
+  margin: 0;
+  color: var(--color-fg-muted);
+  font-size: var(--font-size-sm);
+}
+
+/* The Tier and the OVR in two equal columns. */
+.pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* "Cancel" and "Save" in one row, and "Reset to original" below, as the
+   team form puts "Delete team" (Task 167). */
+.actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-3);
+}
+
+.mainActions {
+  display: flex;
+  gap: var(--space-3);
+}

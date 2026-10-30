@@ -1,33 +1,13 @@
 import type { JSX } from 'preact';
-import {
-  Button,
-  ConfirmDialog,
-  Input,
-  Select,
-  SwatchPicker,
-  Tooltip,
-} from '@/design-system';
+import { Button, ConfirmDialog, Input, Tooltip } from '@/design-system';
 import type TeamFormProps from './types';
 import type { SlugRegenerate } from './types';
-import {
-  COLOUR_OPTIONS,
-  REGENERATE_LABEL,
-  TIER_OPTIONS,
-  regenerateMessage,
-} from './helpers';
+import { REGENERATE_LABEL, regenerateMessage } from './helpers';
+import { FieldError, TeamColourField, TeamNameField, TeamTierField } from './fields';
 import { useTeamForm } from './useTeamForm';
 import styles from './TeamForm.module.css';
 
 export type { TeamFormProps };
-
-function FieldError({ message }: { message: string | null }): JSX.Element | null {
-  if (message === null) return null;
-  return (
-    <span role="alert" class={styles.error}>
-      {message}
-    </span>
-  );
-}
 
 /** The icon button at the right side of an edited team's slug, and its
  * confirm (US-09.5). A disabled button stays focusable, so its hint gives
@@ -89,14 +69,12 @@ export function TeamForm({
 
   return (
     <div class={styles.form}>
-      <Input
-        label="Team name"
+      <TeamNameField
         defaultValue={startValues.name}
-        placeholder="e.g. Salt Marsh United"
+        fieldRef={nameRef}
+        error={errors.name}
         onChange={handleNameChange}
-        ref={nameRef}
       />
-      <FieldError message={errors.name} />
 
       <div class={styles.slugRow}>
         <Input
@@ -124,19 +102,9 @@ export function TeamForm({
       />
       <FieldError message={errors.trigrams} />
 
-      <SwatchPicker
-        label="Colour"
-        options={COLOUR_OPTIONS}
-        defaultValue={startValues.colour}
-        ref={colourRef}
-      />
+      <TeamColourField defaultValue={startValues.colour} fieldRef={colourRef} />
 
-      <Select
-        label="Tier"
-        defaultValue={startValues.tier}
-        options={TIER_OPTIONS}
-        ref={tierRef}
-      />
+      <TeamTierField defaultValue={startValues.tier} fieldRef={tierRef} />
 
       <div class={styles.actions}>
         <div class={styles.mainActions}>

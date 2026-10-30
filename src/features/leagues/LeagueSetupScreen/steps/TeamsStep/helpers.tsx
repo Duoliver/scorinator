@@ -32,11 +32,12 @@ function TrigramCell({ pick }: { pick: TrigramPick | undefined }): JSX.Element {
 }
 
 /** The team list columns (US-08.1): swatch, name with Location, the live
- * trigram (Task 121), Tier, ⇄ Switch, and ✕ Remove. No OVR: the Edit drawer
- * shows it (Task 120). Task 172 adds ✎. */
+ * trigram (Task 121), Tier, ✎ Edit (Task 172), ⇄ Switch, and ✕ Remove. No
+ * OVR: the Edit drawer shows it (Task 120). */
 export const getTeamsStepColumns = (
   locationOf: (blueprintUuid: string) => string,
   pickOf: (blueprintUuid: string) => TrigramPick | undefined,
+  onEdit: (blueprintUuid: string) => void,
   onSwitch: (blueprintUuid: string) => void,
   onRemove: (blueprintUuid: string) => void
 ): TableColumn<TeamInstance>[] => [
@@ -65,10 +66,18 @@ export const getTeamsStepColumns = (
   {
     key: 'actions',
     header: '',
-    width: '5.5rem',
+    width: '8rem',
     align: 'right',
     render: (team) => (
       <span class={styles.rowActions}>
+        <Button
+          size="icon"
+          variant="secondary"
+          aria-label={`Edit ${team.name}`}
+          onClick={() => onEdit(team.blueprintUuid)}
+        >
+          ✎
+        </Button>
         <Button
           size="icon"
           variant="secondary"

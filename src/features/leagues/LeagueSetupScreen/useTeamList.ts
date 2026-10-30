@@ -1,6 +1,7 @@
 import { useState } from 'preact/hooks';
 import type { TeamBlueprint, TeamInstance } from '@/domain';
 import { newTeamInstances } from '@/app/state/teamInstances';
+import type { TeamInstanceEdit } from '@/features/leagues/LeagueSetupScreen/steps/TeamsStep/EditTeamDrawer';
 import type { TeamList } from './types';
 
 /** Copies the map with no entry for the team. */
@@ -38,6 +39,21 @@ export function useTeamList(
         current.filter((team) => team.blueprintUuid !== blueprintUuid)
       );
       setFixedTrigrams((current) => withoutFixed(current, blueprintUuid));
+    },
+    updateTeam: (
+      blueprintUuid: string,
+      { fixedTrigram, ...changes }: TeamInstanceEdit
+    ): void => {
+      setTeams((current) =>
+        current.map((team) =>
+          team.blueprintUuid === blueprintUuid ? { ...team, ...changes } : team
+        )
+      );
+      setFixedTrigrams((current) =>
+        fixedTrigram === null
+          ? withoutFixed(current, blueprintUuid)
+          : { ...current, [blueprintUuid]: fixedTrigram }
+      );
     },
     switchTeam: (blueprintUuid: string, replacement: TeamBlueprint): void => {
       setTeams((current) => {

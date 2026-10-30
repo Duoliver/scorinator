@@ -1,6 +1,7 @@
 import type { PickerItem, TableColumn } from '@/design-system';
 import type { TeamBlueprint, TeamFields, TeamInstance } from '@/domain';
 import type { PointsConfig } from '@/engine/standings';
+import type { EditTeamDrawerProps, TeamInstanceEdit } from './EditTeamDrawer';
 
 export default interface TeamsStepProps {
   /** The Details step values, shown as a quiet summary at the top (Task 33). */
@@ -16,6 +17,8 @@ export default interface TeamsStepProps {
   onRemoveTeam: (blueprintUuid: string) => void;
   /** Puts a new Instance of `replacement` in the place of the team. */
   onSwitchTeam: (blueprintUuid: string, replacement: TeamBlueprint) => void;
+  /** Changes one Instance from the Edit drawer (US-08.4, Task 172). */
+  onUpdateTeam: (blueprintUuid: string, edit: TeamInstanceEdit) => void;
   onBack: () => void;
   onNext: () => void;
 }
@@ -24,7 +27,7 @@ export default interface TeamsStepProps {
  * from the empty state, the team drawer over the add dialog, the Switch
  * dialog, or the team drawer over the Switch dialog. */
 export type TeamsStepOverlay =
-  'none' | 'picker' | 'firstTeam' | 'pickerTeam' | 'switch' | 'switchTeam';
+  'none' | 'picker' | 'firstTeam' | 'pickerTeam' | 'switch' | 'switchTeam' | 'edit';
 
 /** What `useTeamsStep` gives `TeamsStep`. */
 export interface TeamsStepState {
@@ -58,6 +61,8 @@ export interface TeamsStepState {
   closeSwitch: () => void;
   pickSwitch: (blueprintUuid: string) => void;
   openSwitchTeam: () => void;
+  /** The props of the open Edit drawer, or `null`. */
+  editDrawer: Omit<EditTeamDrawerProps, 'rng'> | null;
   closeTeamDrawer: () => void;
   handleTeamCreated: (record: TeamFields) => void;
   loadAll: () => void;

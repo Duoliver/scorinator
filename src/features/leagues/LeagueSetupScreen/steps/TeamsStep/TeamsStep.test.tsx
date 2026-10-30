@@ -40,6 +40,7 @@ function Harness({
       onAddTeams={list.addTeams}
       onRemoveTeam={list.removeTeam}
       onSwitchTeam={list.switchTeam}
+      onUpdateTeam={list.updateTeam}
     />
   );
 }
@@ -430,6 +431,76 @@ describe('TeamsStep, Switch (US-08.5, Task 121)', () => {
       'Redbrick Athletic',
       'Old Town',
     ]);
+  });
+});
+
+describe('TeamsStep, Edit for this league (US-08.4, Task 172)', () => {
+  async function openEdit(name: string): Promise<HTMLElement> {
+    await userEvent.click(screen.getByRole('button', { name: `Edit ${name}` }));
+    return screen.getByRole('dialog', { name: 'Edit team for this league' });
+  }
+
+  it('changes the Instance in the list, and never the Blueprint', async () => {
+    render(<Harness onTeams={track} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Load them all' }));
+    const blueprintsBefore = useDatabaseStore.getState().blueprints;
+    await openEdit('Old Town');
+    await userEvent.clear(screen.getByLabelText('Team name'));
+    await userEvent.type(screen.getByLabelText('Team name'), 'Old Town FC');
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+
+    expect(
+      screen.queryByRole('dialog', { name: 'Edit team for this league' })
+    ).not.toBeInTheDocument();
+    expect(latest.map((t) => t.name)).toEqual([
+      'Ashfield Rovers',
+      'Harborview SC',
+      'Old Town FC',
+    ]);
+    expect(useDatabaseStore.getState().blueprints).toBe(blueprintsBefore);
+  });
+
+  it('runs the trigram pick again with a fixed trigram', async () => {
+    render(<Harness />);
+    await userEvent.click(screen.getByRole('button', { name: 'Load them all' }));
+    await openEdit('Ashfield Rovers');
+    await userEvent.type(screen.getByLabelText('Trigram (optional)'), 'har');
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+
+    expect(
+      teamRows().map((row) =>
+        within(row).getAllByRole('cell')[1].textContent?.slice(0, 3)
+      )
+    ).toEqual(['HAR', 'HA2', 'OLD']);
+  });
+
+  it('refuses a name that another team of the list has', async () => {
+    render(<Harness />);
+    await userEvent.click(screen.getByRole('button', { name: 'Load them all' }));
+    await openEdit('Old Town');
+    await userEvent.clear(screen.getByLabelText('Team name'));
+    await userEvent.type(screen.getByLabelText('Team name'), 'Harborview SC');
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Another team of this league has this name.'
+    );
+  });
+
+  it('drops the fixed trigram of a removed team, so a new add takes the pick', async () => {
+    render(<Harness />);
+    await userEvent.click(screen.getByRole('button', { name: 'Load them all' }));
+    await openEdit('Ashfield Rovers');
+    await userEvent.type(screen.getByLabelText('Trigram (optional)'), 'har');
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Remove Ashfield Rovers' })
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Load them all' }));
+
+    // Ashfield is last now. With "HAR" still fixed, it would show HAR.
+    expect(
+      teamRows().map((row) => within(row).getAllByRole('cell')[1].textContent)
+    ).toEqual(['HAR', 'OLD', 'ASH']);
   });
 });
 

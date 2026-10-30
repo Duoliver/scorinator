@@ -1,5 +1,6 @@
 import { useState } from 'preact/hooks';
 import type { TeamFields } from '@/domain';
+import type { TeamInstanceEdit } from './EditTeamDrawer';
 import { getErrorMessage } from '@/app/getErrorMessage';
 import { importSlugListTxt } from '@/app/data/slugListTxt';
 import { useDatabaseStore } from '@/app/state/databaseStore';
@@ -37,6 +38,7 @@ export function useTeamsStep({
   onAddTeams,
   onRemoveTeam,
   onSwitchTeam,
+  onUpdateTeam,
 }: Omit<TeamsStepProps, 'onBack' | 'onNext'>): TeamsStepState {
   const blueprints = useDatabaseStore((state) => state.blueprints);
   const locationOf = useBlueprintLocation();
@@ -45,6 +47,8 @@ export function useTeamsStep({
   const [notFound, setNotFound] = useState<string[] | null>(null);
   // The team that the Switch dialog replaces (US-08.5).
   const [switchUuid, setSwitchUuid] = useState<string | null>(null);
+  // The team that the Edit drawer changes (US-08.4).
+  const [editUuid, setEditUuid] = useState<string | null>(null);
 
   const inList = new Set(teams.map((team) => team.blueprintUuid));
   const available = blueprints.filter((blueprint) => !inList.has(blueprint.uuid));
@@ -52,6 +56,30 @@ export function useTeamsStep({
   // Remove, or Edit (US-09.6).
   const picks = pickTeamTrigrams(teams, blueprints, fixedTrigrams);
   const switched = teams.find((team) => team.blueprintUuid === switchUuid);
+
+  const edited =
+    overlay === 'edit' ? teams.find((t) => t.blueprintUuid === editUuid) : undefined;
+  const closeEdit = (): void => {
+    setEditUuid(null);
+    setOverlay('none');
+  };
+  const editDrawer = edited
+    ? {
+        team: edited,
+        blueprint: blueprints.find((b) => b.uuid === edited.blueprintUuid),
+        fixedTrigram: fixedTrigrams[edited.blueprintUuid],
+        pickedTrigram: picks.get(edited.blueprintUuid)?.trigram ?? '',
+        otherNames: teams.filter((t) => t !== edited).map((t) => t.name),
+        otherFixedTrigrams: Object.entries(fixedTrigrams)
+          .filter(([uuid]) => uuid !== edited.blueprintUuid)
+          .map(([, trigram]) => trigram),
+        onSave: (edit: TeamInstanceEdit): void => {
+          onUpdateTeam(edited.blueprintUuid, edit);
+          closeEdit();
+        },
+        onCancel: closeEdit,
+      }
+    : null;
 
   const openSwitch = (blueprintUuid: string): void => {
     setSwitchUuid(blueprintUuid);
@@ -136,6 +164,10 @@ export function useTeamsStep({
     columns: getTeamsStepColumns(
       locationOf,
       (uuid) => picks.get(uuid),
+      (uuid) => {
+        setEditUuid(uuid);
+        setOverlay('edit');
+      },
       openSwitch,
       onRemoveTeam
     ),
@@ -161,6 +193,7 @@ export function useTeamsStep({
     closeSwitch,
     pickSwitch,
     openSwitchTeam: () => setOverlay('switchTeam'),
+    editDrawer,
     closeTeamDrawer: () =>
       setOverlay(
         overlay === 'pickerTeam'

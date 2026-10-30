@@ -20,6 +20,10 @@ export interface TeamListRecord {
   name: string;
   colour: string;
   tier: Tier;
+  /** No field when the file has no Location column (US-09.3, Task 117). */
+  location?: string;
+  /** No field when the file has no Trigrams column (US-09.6, Task 117). */
+  trigrams?: string[];
 }
 
 /** A `FileSystem` that can also make a folder. The database folder needs it

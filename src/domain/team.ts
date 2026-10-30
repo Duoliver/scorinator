@@ -43,7 +43,8 @@ export interface TeamInstance {
   ovr: number;
 }
 
-/** The four team fields that the team form edits and a team list file
- * holds: slug, name, colour, and Tier. A Blueprint has them all, so a
- * Blueprint fits where `TeamFields` is asked for. */
+/** The four team fields that the team form edits: slug, name, colour, and
+ * Tier. A Blueprint has them all, so a Blueprint fits where `TeamFields` is
+ * asked for. A team list file can also hold a location and trigrams
+ * (Task 117). */
 export type TeamFields = Pick<TeamBlueprint, 'slug' | 'name' | 'colour' | 'tier'>;

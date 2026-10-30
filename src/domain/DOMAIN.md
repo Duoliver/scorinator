@@ -18,7 +18,7 @@ Task 104 added the MVP2 record types (2026-10-29):
 | File | Types |
 |---|---|
 | `provenance.ts` | `Provenance`: the two installation UUIDs on an exported entity (US-11.1) |
-| `team.ts` | `TeamBlueprint`, the reusable team. `TeamInstance`, its state in one league, with no UUID of its own (US-09.2). `TeamFields`, the four fields of the team form and the team list files (Task 162) |
+| `team.ts` | `TeamBlueprint`, the reusable team. `TeamInstance`, its state in one league, with no UUID of its own (US-09.2). `TeamFields`, the four fields of the team form (Task 162) |
 | `league.ts` | `League`, `Phase` (a union on `format`), `RoundRobinPhase`, `PhaseResult` (with a `fixtureId`, Task 77), `PhaseFormat` |
 | `wrapper.ts` | `InstanceWrapper<T>`, `LeagueWrapper`, `Manifest`, `WrapperSummary`, `LeagueProgress` (`PERSISTENCE.md` §2a, Task 76) |
 

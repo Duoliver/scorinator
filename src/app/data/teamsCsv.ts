@@ -11,7 +11,6 @@ import type {
   SaveFileDialog,
   TeamListRecord,
 } from '@/persistence/types';
-import type { TeamFields } from '@/domain';
 
 /** The thin `app/` → `adapters/` data layer `module-boundaries.md`
  * requires, so `features/` never imports `adapters/csv` or
@@ -34,8 +33,10 @@ export async function importTeamsCsv(
   return parseTeamsCsv(opened.contents);
 }
 
+/** Writes the teams to a `.csv` file, with the Location and Trigrams
+ * columns (Task 117). A Blueprint fits `TeamListRecord`. */
 export async function exportTeamsCsv(
-  teams: readonly TeamFields[],
+  teams: readonly TeamListRecord[],
   fs: FileSystem = tauriFileSystem,
   dialog: SaveFileDialog = tauriDialog
 ): Promise<string | null> {

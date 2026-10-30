@@ -1,8 +1,13 @@
+import {
+  MAX_TRIGRAMS,
+  parseTrigramList,
+  type TrigramListProblem,
+} from '@/engine/identity';
 import { isTier } from '@/engine/tier-ovr';
 import { parseCsv, stringifyCsv } from './csv';
 import type { TeamListRecord } from '@/persistence/types';
 
-const COLUMN_KEYS = ['slug', 'name', 'colour', 'tier'] as const;
+const COLUMN_KEYS = ['slug', 'name', 'colour', 'tier', 'location', 'trigrams'] as const;
 type ColumnKey = (typeof COLUMN_KEYS)[number];
 
 const HEADER_LABELS: Record<ColumnKey, string> = {
@@ -10,9 +15,27 @@ const HEADER_LABELS: Record<ColumnKey, string> = {
   name: 'Name',
   colour: 'Colour',
   tier: 'Tier',
+  location: 'Location',
+  trigrams: 'Trigrams',
 };
 
 const REQUIRED_COLUMNS: readonly ColumnKey[] = ['name', 'tier'];
+
+/** The Location limit of US-09.3. Task 119 moves it to a place that the
+ * drawer can share (Task 117, choice 5). */
+const MAX_LOCATION_LENGTH = 40;
+
+function trigramProblemMessage(rowNumber: number, problem: TrigramListProblem): string {
+  const row = `Team CSV row ${rowNumber}`;
+  switch (problem.kind) {
+    case 'format':
+      return `${row} has an invalid trigram "${problem.value}".`;
+    case 'duplicate':
+      return `${row} has the trigram "${problem.value}" twice.`;
+    case 'too-many':
+      return `${row} has ${problem.count} trigrams. The limit is ${MAX_TRIGRAMS}.`;
+  }
+}
 
 function findColumnIndexes(
   headerRow: readonly string[]
@@ -65,17 +88,42 @@ export function parseTeamsCsv(text: string): TeamListRecord[] {
       throw new Error(`Team CSV row ${rowNumber} has an invalid Tier "${tierValue}".`);
     }
 
-    return {
+    const record: TeamListRecord = {
       slug: cell('slug'),
       name,
       colour: cell('colour'),
       tier: tierValue,
     };
+
+    // A missing optional column gives no field, so an update keeps the
+    // Blueprint's own value (US-09.3, US-09.6).
+    if (columnIndexes.location !== undefined) {
+      const location = cell('location');
+      if (location.length > MAX_LOCATION_LENGTH) {
+        throw new Error(
+          `Team CSV row ${rowNumber} has a Location over ${MAX_LOCATION_LENGTH} characters.`
+        );
+      }
+      record.location = location;
+    }
+    if (columnIndexes.trigrams !== undefined) {
+      const parsed = parseTrigramList(cell('trigrams'));
+      if (!parsed.ok) throw new Error(trigramProblemMessage(rowNumber, parsed.problem));
+      record.trigrams = parsed.trigrams;
+    }
+    return record;
   });
+}
+
+function cellText(record: TeamListRecord, key: ColumnKey): string {
+  if (key === 'trigrams') return (record.trigrams ?? []).join(' ');
+  return record[key] ?? '';
 }
 
 export function serializeTeamsCsv(records: readonly TeamListRecord[]): string {
   const headerRow = COLUMN_KEYS.map((key) => HEADER_LABELS[key]);
-  const dataRows = records.map((record) => COLUMN_KEYS.map((key) => record[key]));
+  const dataRows = records.map((record) =>
+    COLUMN_KEYS.map((key) => cellText(record, key))
+  );
   return stringifyCsv([headerRow, ...dataRows]);
 }

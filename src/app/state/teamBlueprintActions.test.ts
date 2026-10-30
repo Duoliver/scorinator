@@ -12,6 +12,7 @@ import { serializeManifestRecord } from '@/app/data/databaseFile';
 import {
   addTeamBlueprint,
   importTeamBlueprints,
+  previewTeamImport,
   updateTeamBlueprint,
 } from './teamBlueprintActions';
 import { openDatabase } from './databaseActions';
@@ -222,5 +223,104 @@ describe('importTeamBlueprints (Task 75)', () => {
     ]);
     expect(counts).toEqual({ added: 0, updated: 1 });
     expect(state().blueprints).toBe(before);
+  });
+
+  it('sets the location and the trigrams of a matching slug when the file has the columns (Task 117)', async () => {
+    await openWithBlueprint();
+    importTeamBlueprints([
+      {
+        slug: 'salt-marsh-united',
+        name: 'Salt Marsh United',
+        colour: '#1565C0',
+        tier: 'B',
+        location: 'Saltby',
+        trigrams: ['SAL', 'SMU'],
+      },
+    ]);
+    expect(state().blueprints[0]).toMatchObject({
+      location: 'Saltby',
+      trigrams: ['SAL', 'SMU'],
+      lastModifiedByInstallation: INSTALLATION,
+    });
+  });
+
+  it('clears the location and the trigrams for empty cells (Task 117, choice 3)', async () => {
+    await openWithBlueprint();
+    importTeamBlueprints([
+      {
+        slug: 'salt-marsh-united',
+        name: 'Salt Marsh United',
+        colour: '#1565C0',
+        tier: 'B',
+        location: '',
+        trigrams: [],
+      },
+    ]);
+    expect(state().blueprints[0]).toMatchObject({ location: '', trigrams: [] });
+  });
+
+  it('gives a new Blueprint the location and the trigrams of its record', async () => {
+    await openWithBlueprint();
+    importTeamBlueprints([
+      {
+        slug: 'harborview-sc',
+        name: 'Harborview SC',
+        colour: '#E53935',
+        tier: 'C',
+        location: 'Harborview',
+        trigrams: ['HSC'],
+      },
+    ]);
+    expect(state().blueprints[1]).toMatchObject({
+      location: 'Harborview',
+      trigrams: ['HSC'],
+    });
+  });
+});
+
+describe('previewTeamImport (Task 75, Task 117)', () => {
+  it('gives the counts that importTeamBlueprints gives, and changes nothing', async () => {
+    await openWithBlueprint();
+    const before = state().blueprints;
+    const records = [
+      {
+        slug: 'salt-marsh-united',
+        name: 'Salt Marsh FC',
+        colour: '#000',
+        tier: 'A' as const,
+      },
+      {
+        slug: 'harborview-sc',
+        name: 'Harborview SC',
+        colour: '#E53935',
+        tier: 'C' as const,
+      },
+      { slug: '', name: 'Salt Marsh United', colour: '#111', tier: 'E' as const },
+      {
+        slug: 'harborview-sc',
+        name: 'Harborview SC 2',
+        colour: '#E53935',
+        tier: 'C' as const,
+      },
+    ];
+
+    expect(previewTeamImport(records)).toEqual({ added: 2, updated: 1 });
+    expect(state().blueprints).toBe(before);
+    expect(areBlueprintsUnsaved(state())).toBe(false);
+    expect(importTeamBlueprints(records)).toEqual({ added: 2, updated: 1 });
+  });
+
+  it('counts an unchanged record as updated', async () => {
+    await openWithBlueprint();
+    expect(
+      previewTeamImport([
+        {
+          slug: 'salt-marsh-united',
+          name: 'Salt Marsh United',
+          colour: '#1565C0',
+          tier: 'B',
+        },
+      ])
+    ).toEqual({ added: 0, updated: 1 });
   });
 });

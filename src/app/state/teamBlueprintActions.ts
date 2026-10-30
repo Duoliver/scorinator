@@ -120,12 +120,76 @@ function lastRecordForEachSlug(records: readonly TeamListRecord[]): TeamListReco
   return deduped;
 }
 
+/** One step of a team import: a new Blueprint, or an update of the
+ * Blueprint at `index`. */
+type TeamImportStep =
+  | { kind: 'add'; record: TeamListRecord; slug: string }
+  | { kind: 'update'; index: number; record: TeamListRecord };
+
+/** The steps of a team import, by the Task 75 rule. A record whose slug
+ * matches a Blueprint updates it. A record with a new slug adds a
+ * Blueprint. A blank slug gets a unique slug from the name. */
+function planTeamImport(
+  blueprints: readonly TeamBlueprint[],
+  records: readonly TeamListRecord[]
+): TeamImportStep[] {
+  const deduped = lastRecordForEachSlug(records);
+  // A slug made for a blank record must not take a slug of the file.
+  const taken = new Set([
+    ...blueprints.map((blueprint) => blueprint.slug),
+    ...deduped.map((record) => record.slug).filter((slug) => slug !== ''),
+  ]);
+  return deduped.map((record): TeamImportStep => {
+    const index =
+      record.slug === '' ? -1 : blueprints.findIndex((b) => b.slug === record.slug);
+    if (index !== -1) return { kind: 'update', index, record };
+    const slug = record.slug === '' ? uniqueSlug(record.name, taken) : record.slug;
+    taken.add(slug);
+    return { kind: 'add', record, slug };
+  });
+}
+
+/** The changes of a matched record. A file with no Location or Trigrams
+ * column gives no such field, so the Blueprint keeps its own (Task 117). */
+function importChanges(record: TeamListRecord): TeamBlueprintChanges {
+  const { name, colour, tier, location, trigrams } = record;
+  return {
+    name,
+    colour,
+    tier,
+    ...(location === undefined ? {} : { location }),
+    ...(trigrams === undefined ? {} : { trigrams }),
+  };
+}
+
+function countSteps(steps: readonly TeamImportStep[]): {
+  added: number;
+  updated: number;
+} {
+  const added = steps.filter((step) => step.kind === 'add').length;
+  return { added, updated: steps.length - added };
+}
+
+/** The counts of a team import, for the confirm of Task 119: "4 new, 8
+ * updated. Continue?" (Task 75). It changes nothing. A matched record
+ * counts as updated, also when no field changes, as in
+ * `importTeamBlueprints`. Needs an open database. */
+export function previewTeamImport(records: readonly TeamListRecord[]): {
+  added: number;
+  updated: number;
+} {
+  const state = useDatabaseStore.getState();
+  requireOpenDatabase(state);
+  return countSteps(planTeamImport(state.blueprints, records));
+}
+
 /**
  * Imports a team list (CSV or JSON) into the Blueprints, by the Task 75
  * rule. A record whose slug matches a Blueprint updates its name, colour,
- * and tier, and keeps its location and trigrams. A record with a new slug
- * makes a Blueprint with a new UUID. A blank slug gets a unique slug from
- * the name. Returns the counts, for the confirm of Task 119.
+ * and tier. It also sets the location and the trigrams when the file has
+ * those columns (Task 117). A record with a new slug makes a Blueprint with
+ * a new UUID. A blank slug gets a unique slug from the name. Returns the
+ * counts that `previewTeamImport` gives.
  */
 export function importTeamBlueprints(
   records: readonly TeamListRecord[],
@@ -134,35 +198,23 @@ export function importTeamBlueprints(
   const state = useDatabaseStore.getState();
   const { installationUuid } = requireOpenDatabase(state);
   const blueprints = [...state.blueprints];
-  const deduped = lastRecordForEachSlug(records);
-  // A slug made for a blank record must not take a slug of the file.
-  const taken = new Set([
-    ...blueprints.map((blueprint) => blueprint.slug),
-    ...deduped.map((record) => record.slug).filter((slug) => slug !== ''),
-  ]);
-  let added = 0;
-  let updated = 0;
+  const steps = planTeamImport(state.blueprints, records);
 
-  for (const record of deduped) {
-    const index =
-      record.slug === '' ? -1 : blueprints.findIndex((b) => b.slug === record.slug);
-    if (index === -1) {
-      const slug = record.slug === '' ? uniqueSlug(record.name, taken) : record.slug;
-      taken.add(slug);
-      blueprints.push(newBlueprint(record, slug, installationUuid, randomBytes));
-      added++;
+  for (const step of steps) {
+    if (step.kind === 'add') {
+      blueprints.push(
+        newBlueprint(step.record, step.slug, installationUuid, randomBytes)
+      );
     } else {
-      const { name, colour, tier } = record;
-      blueprints[index] = applyChanges(
-        blueprints[index],
-        { name, colour, tier },
+      blueprints[step.index] = applyChanges(
+        blueprints[step.index],
+        importChanges(step.record),
         installationUuid
       );
-      updated++;
     }
   }
 
   const changed = blueprints.some((blueprint, i) => blueprint !== state.blueprints[i]);
   if (changed) useDatabaseStore.setState({ blueprints });
-  return { added, updated };
+  return countSteps(steps);
 }

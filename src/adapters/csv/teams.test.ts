@@ -187,3 +187,27 @@ describe('serializeTeamsCsv', () => {
     );
   });
 });
+
+describe('parseTeamsCsv, the Slug check (Task 173)', () => {
+  const row = (slug: string): string => `Slug,Name,Colour,Tier\n${slug},North FC,,B`;
+
+  it('stops the import for a slug with a space, with the row number', () => {
+    expect(() => parseTeamsCsv(`${row('north-fc')}\nnorth fc,North FC 2,,B`)).toThrow(
+      'Team CSV row 3 has an invalid Slug "north fc". Use only letters, digits, and hyphens.'
+    );
+  });
+
+  it('stops the import for another character', () => {
+    expect(() => parseTeamsCsv(row('north_fc'))).toThrow(
+      /row 2 has an invalid Slug "north_fc"/
+    );
+  });
+
+  it('changes a valid slug to lower case', () => {
+    expect(parseTeamsCsv(row('North-FC'))[0].slug).toBe('north-fc');
+  });
+
+  it('keeps an empty slug, so the import makes one from the name', () => {
+    expect(parseTeamsCsv(row(''))[0].slug).toBe('');
+  });
+});

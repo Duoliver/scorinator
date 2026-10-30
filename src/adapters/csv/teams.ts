@@ -1,4 +1,5 @@
 import {
+  isSlug,
   MAX_LOCATION_LENGTH,
   MAX_TRIGRAMS,
   parseTrigramList,
@@ -85,8 +86,17 @@ export function parseTeamsCsv(text: string): TeamListRecord[] {
       throw new Error(`Team CSV row ${rowNumber} has an invalid Tier "${tierValue}".`);
     }
 
+    // A slug from the file must match a `slug()` result, so a slug list can
+    // find the team (Task 173). Empty means "make one from the name".
+    const slug = cell('slug');
+    if (slug !== '' && !isSlug(slug)) {
+      throw new Error(
+        `Team CSV row ${rowNumber} has an invalid Slug "${slug}". Use only letters, digits, and hyphens.`
+      );
+    }
+
     const record: TeamListRecord = {
-      slug: cell('slug'),
+      slug: slug.toLowerCase(),
       name,
       colour: cell('colour'),
       tier: tierValue,

@@ -72,7 +72,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 119 | Teams screen: the Location and Trigrams columns and drawer fields, the `-2` slug preview | `features/teams`, `features/components` | ✅ Done | 2026-10-30 | 2026-10-30 | [119](/docs/tasks/119-teams-screen.md) | M2. US-09.1, 09.3, 09.6. Columns, fields, `-2` preview built. Split: 167, 168. |
 | 120 | Wizard Teams step, part 1: the add dialog, Load them all, empty states, Import slug list | `features/leagues` | ✅ Done | 2026-10-30 | 2026-10-30 | [120](/docs/tasks/120-wizard-teams-part-1.md) | M2. US-08.1, 08.2, 08.3, 08.7. Team list on Instances, add dialog, Load them all, empty states, slug list built. |
 | 121 | Wizard Teams step, part 2: Switch, the live trigram pick, "Create league" | `features/leagues` | ✅ Done | 2026-10-30 | 2026-10-30 | [121](/docs/tasks/121-wizard-teams-part-2.md) | M2. US-08.4 to 08.6, 08.8, 09.6 (league). Switch, live trigrams, create rules built. Split: Edit to 172. |
-| 122 | M2 smoke check | all | ⬜ Not started |  |  |  | M2. After 121, 168, 172. |
+| 122 | M2 smoke check | all | ⬜ Not started |  |  |  | M2. After 121, 168, 172, 173. |
 | 123 | `generateSingleDuels`, the shared pairing, the doc comment fix | `engine/round-robin` | ⬜ Not started |  |  |  | M3. US-06.1. After 122. |
 | 124 | Standings v2: fixed lots, the recursive mini-league, the cross-group order, best M | `engine/standings` | ⬜ Not started |  |  |  | M3. US-01.4, 01.6, 02.2, Task 78. After 122. |
 | 125 | The group draw: size or count, add to the smallest group, moves | `engine/round-robin` | ⬜ Not started |  |  |  | M3. US-02.1, 02.5. After 122. |
@@ -123,6 +123,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 170 | Drawer layout: its own scroll, and the shell scroll locked while it is open | `design-system/` | ✅ Done | 2026-10-30 | 2026-10-30 | [170](/docs/tasks/170-drawer-scroll.md) | Task created by User - 2026-10-30. Content scroll and page lock built. The user checked the real app. |
 | 171 | The league name on the wizard Teams step: one font step larger, and bold | `features/leagues` | ✅ Done | 2026-10-30 | 2026-10-30 | [171](/docs/tasks/171-teams-step-league-name.md) | Task created by User - 2026-10-30. Name at `--font-size-xl`, bold, `--color-fg`. |
 | 172 | Edit a team for this league, in the wizard: Original state, OVR, Tier roll, fixed trigram, unique name, Reset | `features/leagues`, `features/components` | ✅ Done | 2026-10-30 | 2026-10-30 | [172](/docs/tasks/172-wizard-edit-team.md) | Split from 121 - 2026-10-30. US-08.4, 09.6. Edit drawer built, with shared `TeamForm` fields. |
+| 173 | The slug check in the team CSV and JSON imports: letters, digits, and hyphens only | `engine/identity`, `adapters/` | ✅ Done | 2026-10-30 | 2026-10-30 | [173](/docs/tasks/173-import-slug-check.md) | Task created by User - 2026-10-30. From the Task 168 review. `isSlug` built, CSV and JSON stop on a bad slug. The user checked the real app. |
 
 **Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input, see Open Questions) · 🟩 Review · ✅ Done · ❌ Cancelled (the reason is in the Notes column)
 
@@ -170,6 +171,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-10-30 (Task 173 — the slug check in the imports):** The user agreed four choices. (1) A bad slug stops a CSV or JSON import with a row error. (2) Upper case is valid, and the parse changes it to lower case. (3) One `isSlug` in `engine/identity`, for the CSV, JSON, and slug list parsers. (4) No repair of a slug already in the database. Claude choice: the JSON parse trims the slug, as the CSV parse does. Detail in [`docs/tasks/173-import-slug-check.md`](/docs/tasks/173-import-slug-check.md).
 
 - **2026-10-30 (Task 169 — the `Input` slot and the lint fix):** The user agreed five choices. (1) `Input` gets a `trailing` slot. (2) The slot wrapper is the square. (3) `Button` `fill` replaces `fieldHeight`. (4) The field tokens and the fixed `Input` line height go. (5) The square is checked in a browser, not in jsdom. Claude choice: the row is a grid, because a stretched flex item gets no width from its `aspect-ratio` in WebKit or Chromium. Detail in [`docs/tasks/169-input-side-slot.md`](/docs/tasks/169-input-side-slot.md).
 

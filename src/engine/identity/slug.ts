@@ -14,6 +14,19 @@
  */
 const COMBINING_DIACRITICAL_MARKS = /\p{Diacritic}/gu;
 
+/** The characters of a slug in a file: `slug()` gives `a` to `z`, `0` to
+ * `9`, and hyphens. Any case is accepted, because a file can write a slug in
+ * upper case (Task 118 choice 1, Task 173 choice 2). */
+const SLUG_CHARACTERS = /^[A-Za-z0-9-]+$/;
+
+/** True when a slug read from a file has only letters, digits, and hyphens
+ * (Task 173). It checks the characters only: it does not check that the
+ * value is a `slug()` result, so `-a` passes. An empty value is not a
+ * slug. */
+export function isSlug(value: string): boolean {
+  return SLUG_CHARACTERS.test(value);
+}
+
 export function slug(name: string): string {
   const value = name
     .normalize('NFKD')

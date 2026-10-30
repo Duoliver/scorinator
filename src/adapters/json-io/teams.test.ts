@@ -65,3 +65,28 @@ describe('parseTeamsJson', () => {
     expect(() => parseTeamsJson('["not an object"]')).toThrow(/entry 1.*not an object/);
   });
 });
+
+describe('parseTeamsJson, the slug check (Task 173)', () => {
+  const entries = (...slugs: string[]): string =>
+    JSON.stringify(slugs.map((slug) => ({ slug, name: 'North FC', tier: 'B' })));
+
+  it('stops the import for a slug with a space, with the entry number', () => {
+    expect(() => parseTeamsJson(entries('north-fc', 'ashfield', 'north fc'))).toThrow(
+      'Team JSON entry 3 has an invalid slug "north fc". Use only letters, digits, and hyphens.'
+    );
+  });
+
+  it('stops the import for another character', () => {
+    expect(() => parseTeamsJson(entries('north_fc'))).toThrow(
+      /entry 1 has an invalid slug "north_fc"/
+    );
+  });
+
+  it('changes a valid slug to lower case, with no space around it', () => {
+    expect(parseTeamsJson(entries(' North-FC '))[0].slug).toBe('north-fc');
+  });
+
+  it('keeps an empty slug, so the import makes one from the name', () => {
+    expect(parseTeamsJson(entries(''))[0].slug).toBe('');
+  });
+});

@@ -394,6 +394,33 @@ describe('TeamsScreen', () => {
       expect(screen.getByText('0 teams')).toBeInTheDocument();
     });
 
+    it('reports a bad slug in the status line, with no confirm (Task 173)', async () => {
+      // The real read and parse, on a fake file system and dialog.
+      const { importTeamsFile } = teamsFile;
+      const csv = 'Slug,Name,Colour,Tier\nnorth fc,North FC,,B';
+      vi.spyOn(teamsFile, 'importTeamsFile').mockImplementation(() =>
+        importTeamsFile(
+          { readTextFile: () => Promise.resolve(csv) } as unknown as Parameters<
+            typeof importTeamsFile
+          >[0],
+          {
+            pickOpenPath: () => Promise.resolve('/teams.csv'),
+          } as unknown as Parameters<typeof importTeamsFile>[1]
+        )
+      );
+      render(<TeamsScreen />);
+
+      await userEvent.click(screen.getByRole('button', { name: 'Import teams...' }));
+
+      expect(useFileStore.getState().status).toEqual({
+        tone: 'error',
+        message:
+          'Team CSV row 2 has an invalid Slug "north fc". Use only letters, digits, and hyphens.',
+      });
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      expect(useDatabaseStore.getState().blueprints).toEqual([]);
+    });
+
     it('says the file has no teams, with no confirm (choice 10)', async () => {
       vi.spyOn(teamsFile, 'importTeamsFile').mockResolvedValue([]);
       render(<TeamsScreen />);

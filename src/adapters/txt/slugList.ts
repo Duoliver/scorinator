@@ -1,9 +1,6 @@
-const BYTE_ORDER_MARK = '﻿';
+import { isSlug } from '@/engine/identity';
 
-/** The characters of a slug: `slug()` gives `a` to `z`, `0` to `9`, and
- * hyphens. Any case is accepted, because the match with a Blueprint slug
- * ignores case (US-08.7, Task 118 choice 1). */
-const SLUG_LINE = /^[A-Za-z0-9-]+$/;
+const BYTE_ORDER_MARK = '﻿';
 
 /**
  * Reads a slug list file (US-08.7): one Blueprint slug on each line, in
@@ -21,7 +18,9 @@ export function parseSlugList(text: string): string[] {
   body.split(/\r\n|\r|\n/).forEach((rawLine, index) => {
     const line = rawLine.trim();
     if (line === '' || line.startsWith('#')) return;
-    if (!SLUG_LINE.test(line)) {
+    // Any case is a slug: the match with a Blueprint slug ignores case
+    // (US-08.7, Task 118 choice 1).
+    if (!isSlug(line)) {
       throw new Error(
         `Slug list line ${index + 1}, "${line}", is not a slug. Use only letters, digits, and hyphens, with no spaces or other characters.`
       );

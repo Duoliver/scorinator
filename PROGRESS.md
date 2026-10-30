@@ -68,7 +68,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 115 | Trigrams: the auto trigram, the format check, the league pick | `engine/identity` | ✅ Done | 2026-10-29 | 2026-10-29 | [115](/docs/tasks/115-trigrams.md) | M2. US-09.6. Trigram rules built in `engine/identity`. No screen uses them yet. |
 | 116 | The OVR override range check, and the roll on a Tier change | `engine/tier-ovr` | ✅ Done | 2026-10-30 | 2026-10-30 | [116](/docs/tasks/116-ovr-override-check.md) | M2. US-08.4, Task 81. `isOvrInTier` and `ovrAfterTierChange` built. No screen uses them yet. |
 | 117 | CSV v2: the Location and Trigrams columns, the counts for the confirm | `adapters/csv` | ✅ Done | 2026-10-30 | 2026-10-30 | [117](/docs/tasks/117-csv-v2.md) | M2. US-09.3, 09.6, 10.2, Task 75. Two CSV columns and `previewTeamImport` built. No confirm yet. |
-| 118 | The slug list parse | `adapters/txt` | ⬜ Not started |  |  |  | M2. US-08.7. After 110. |
+| 118 | The slug list parse | `adapters/txt` | ✅ Done | 2026-10-30 | 2026-10-30 | [118](/docs/tasks/118-slug-list-parse.md) | M2. US-08.7. `parseSlugList` built, with a line error. No screen uses it yet. |
 | 119 | Teams screen: the columns, the drawer fields, slug regenerate, Delete, the CSV confirm | `features/teams` | ⬜ Not started |  |  |  | M2. US-09.1, 09.3 to 09.7, 10.2 (CSV). After 111, 112, 114, 115, 117. |
 | 120 | Wizard Teams step, part 1: the add dialog, Load them all, empty states, Import slug list | `features/leagues` | ⬜ Not started |  |  |  | M2. US-08.1, 08.2, 08.3, 08.7. After 113, 118, 119. |
 | 121 | Wizard Teams step, part 2: Edit for this league, Switch, Remove, the live trigram pick, "Create league" | `features/leagues` | ⬜ Not started |  |  |  | M2. US-08.4 to 08.6, 08.8, 09.6 (league). After 116, 120. |
@@ -164,6 +164,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-10-30 (Task 118 — the slug list parse):** The user agreed five choices. (1) The parse keeps the case of each line, and Task 120 matches with no case. (2) The parse keeps the duplicates, and Task 120 skips a second copy. (3) Changed by the user: a line with a character outside A to Z, 0 to 9, and the hyphen is a file error, with its line number. (4) Only a full line is a comment. (5) The file read and the `.txt` filter go in Task 120. Detail in [`docs/tasks/118-slug-list-parse.md`](/docs/tasks/118-slug-list-parse.md).
 
 - **2026-10-30 (Task 117 — CSV v2):** The user agreed six choices. (1) The task also changes `app/state`, for the import and the counts. (2) A Location over 40 characters stops the import. (3) An empty cell in a present column clears the field. (4) `previewTeamImport(records)` shares one plan step with `importTeamBlueprints`, and a matched row counts as updated. (5) The 40 is a constant in `adapters/csv` until Task 119. (6) Four error texts with the row number. Detail in [`docs/tasks/117-csv-v2.md`](/docs/tasks/117-csv-v2.md).
 

@@ -28,13 +28,33 @@ export function isTier(value: unknown): value is Tier {
 }
 
 /**
- * Rolls a team's OVR from its Tier's range. This is the only supported way
- * to produce an OVR value — Tier is always the source of truth (spec §1),
- * so `engine/tier-ovr` deliberately exports no direct OVR setter. Call this
- * again whenever a team's Tier changes, not only at season start.
+ * Rolls a team's OVR from its Tier's range. Tier is always the source of
+ * truth (spec §1), so `engine/tier-ovr` exports no direct OVR setter. An
+ * OVR comes from this roll, or from a user override that `isOvrInTier`
+ * accepts (Task 81). For a Tier change, call `ovrAfterTierChange`.
  */
 export function rollOVR(tier: Tier, rng: Rng): number {
   const range = TIER_OVR_RANGES[tier];
   const span = range.max - range.min + 1;
   return range.min + Math.floor(rng() * span);
+}
+
+/** True for a whole number inside the Tier's range, both ends included.
+ * The Edit drawer checks an OVR override with it (Task 81, US-08.4). */
+export function isOvrInTier(ovr: number, tier: Tier): boolean {
+  const range = TIER_OVR_RANGES[tier];
+  return Number.isInteger(ovr) && ovr >= range.min && ovr <= range.max;
+}
+
+/**
+ * The OVR after the user picks `newTier` in the Edit drawer (Task 81). A
+ * different Tier rolls a new OVR from its range. The same Tier keeps the
+ * current OVR, so an override stays, and the `rng` is not used.
+ */
+export function ovrAfterTierChange(
+  current: { tier: Tier; ovr: number },
+  newTier: Tier,
+  rng: Rng
+): number {
+  return newTier === current.tier ? current.ovr : rollOVR(newTier, rng);
 }

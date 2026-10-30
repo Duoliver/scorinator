@@ -12,6 +12,7 @@ export function TeamsScreen(): JSX.Element {
     countText,
     drawer,
     editedTeam,
+    takenSlugs,
     openCreateDrawer,
     closeDrawer,
     handleSave,
@@ -38,6 +39,7 @@ export function TeamsScreen(): JSX.Element {
         <TeamFormDrawer
           isEdit={drawer.mode === 'edit'}
           initial={editedTeam}
+          takenSlugs={takenSlugs}
           onCancel={closeDrawer}
           onSave={handleSave}
         />

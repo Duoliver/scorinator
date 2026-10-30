@@ -17,6 +17,8 @@ describe('TeamFormDrawer', () => {
       name: 'FC United',
       colour: '#E53935',
       tier: 'B',
+      location: '',
+      trigrams: [],
     };
     render(
       <TeamFormDrawer isEdit initial={initial} onCancel={vi.fn()} onSave={vi.fn()} />

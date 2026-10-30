@@ -1,3 +1,4 @@
+export { MAX_LOCATION_LENGTH } from './location';
 export { slug, uniqueSlug } from './slug';
 export {
   isTrigram,

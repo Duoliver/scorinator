@@ -7,9 +7,19 @@ import styles from './TeamForm.module.css';
 
 export type { TeamFormProps };
 
+function FieldError({ message }: { message: string | null }): JSX.Element | null {
+  if (message === null) return null;
+  return (
+    <span role="alert" class={styles.error}>
+      {message}
+    </span>
+  );
+}
+
 export function TeamForm({
   saveLabel,
   initial,
+  takenSlugs,
   onCancel,
   onSave,
 }: TeamFormProps): JSX.Element {
@@ -18,11 +28,14 @@ export function TeamForm({
     slugRef,
     colourRef,
     tierRef,
+    locationRef,
+    trigramsRef,
     startValues,
-    error,
+    errors,
+    trigramsPlaceholder,
     handleNameChange,
     handleSave,
-  } = useTeamForm({ initial, onSave });
+  } = useTeamForm({ initial, takenSlugs, onSave });
 
   return (
     <div class={styles.form}>
@@ -33,11 +46,7 @@ export function TeamForm({
         onChange={handleNameChange}
         ref={nameRef}
       />
-      {error && (
-        <span role="alert" class={styles.error}>
-          {error}
-        </span>
-      )}
+      <FieldError message={errors.name} />
 
       <Input
         label="Slug (auto-generated)"
@@ -45,6 +54,22 @@ export function TeamForm({
         readOnly
         ref={slugRef}
       />
+
+      <Input
+        label="Location (optional)"
+        defaultValue={startValues.location}
+        placeholder="e.g. Ashfield"
+        ref={locationRef}
+      />
+      <FieldError message={errors.location} />
+
+      <Input
+        label="Trigrams (optional)"
+        defaultValue={startValues.trigrams}
+        placeholder={trigramsPlaceholder}
+        ref={trigramsRef}
+      />
+      <FieldError message={errors.trigrams} />
 
       <SwatchPicker
         label="Colour"

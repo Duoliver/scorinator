@@ -31,6 +31,8 @@ export interface TeamsStepState {
   handleSelectionButton: () => void;
   canGoNext: boolean;
   showCreateTeam: boolean;
+  /** The slugs of every Blueprint, for the `-2` slug preview (Task 75). */
+  takenSlugs: string[];
   openCreateTeam: () => void;
   closeCreateTeam: () => void;
   handleTeamCreated: (record: TeamFields) => void;

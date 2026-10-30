@@ -20,6 +20,8 @@ export interface Teams {
   drawer: TeamDrawerState;
   /** The team the edit drawer starts from, or `undefined` for a new team. */
   editedTeam: TeamFields | undefined;
+  /** The slugs of every Blueprint, for the `-2` slug preview (Task 75). */
+  takenSlugs: string[];
   openCreateDrawer: () => void;
   closeDrawer: () => void;
   handleSave: (record: TeamFields) => void;

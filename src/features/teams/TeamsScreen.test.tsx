@@ -5,6 +5,7 @@ import { TeamsScreen } from './TeamsScreen';
 import * as teamsFile from '@/app/data/teamsFile';
 import { useFileStore } from '@/app/state/fileStore';
 import { openTestDatabase } from '@/test/databaseRecords';
+import { useDatabaseStore } from '@/app/state/databaseStore';
 
 beforeEach(() => {
   vi.restoreAllMocks();
@@ -79,6 +80,105 @@ describe('TeamsScreen', () => {
     await userEvent.click(editButtons[1]);
     expect(screen.getByLabelText('Team name')).toHaveValue('Team Two');
   });
+  describe('the Location and Trigrams columns (Task 119)', () => {
+    beforeEach(() => {
+      openTestDatabase([
+        {
+          slug: 'ashfield-rovers',
+          name: 'Ashfield Rovers',
+          colour: '#E53935',
+          tier: 'B',
+          location: 'Ashfield',
+          trigrams: ['ASH', 'AFC'],
+        },
+        { slug: 'harborview-sc', name: 'Harborview SC', colour: '#1565C0', tier: 'C' },
+      ]);
+    });
+
+    it('shows the columns in order: Name, Location, Trigrams, Tier, Slug', () => {
+      render(<TeamsScreen />);
+      const headers = screen.getAllByRole('columnheader').map((th) => th.textContent);
+      expect(headers.filter((text) => text !== '')).toEqual([
+        'Name',
+        'Location',
+        'Trigrams',
+        'Tier',
+        'Slug',
+      ]);
+    });
+
+    it('shows the location, or "—" for an empty one', () => {
+      render(<TeamsScreen />);
+      const [ashfield, harborview] = screen.getAllByRole('row').slice(1);
+      expect(ashfield).toHaveTextContent('Ashfield');
+      expect(harborview).toHaveTextContent('—');
+    });
+
+    it('shows the trigrams split by a dot, or the name trigram for an empty list', () => {
+      render(<TeamsScreen />);
+      expect(screen.getByText('ASH · AFC')).toBeInTheDocument();
+      expect(screen.getByText('HAR')).toBeInTheDocument();
+    });
+  });
+
+  describe('the drawer fields (Task 119)', () => {
+    it('creates a team with a location and trigrams', async () => {
+      render(<TeamsScreen />);
+      await userEvent.click(screen.getByText('+ New team'));
+      await userEvent.type(screen.getByLabelText('Team name'), 'Ashfield Rovers');
+      await userEvent.type(screen.getByLabelText('Location (optional)'), 'Ashfield');
+      await userEvent.type(screen.getByLabelText('Trigrams (optional)'), 'ash afc');
+      await userEvent.click(screen.getByText('Create team'));
+
+      expect(useDatabaseStore.getState().blueprints[0]).toMatchObject({
+        location: 'Ashfield',
+        trigrams: ['ASH', 'AFC'],
+      });
+      expect(screen.getByText('ASH · AFC')).toBeInTheDocument();
+    });
+
+    it('edits the location and the trigrams of a team', async () => {
+      openTestDatabase([
+        {
+          slug: 'ashfield-rovers',
+          name: 'Ashfield Rovers',
+          colour: '#E53935',
+          tier: 'B',
+          location: 'Ashfield',
+          trigrams: ['ASH'],
+        },
+      ]);
+      render(<TeamsScreen />);
+      await userEvent.click(screen.getByText('Edit'));
+      await userEvent.clear(screen.getByLabelText('Location (optional)'));
+      await userEvent.clear(screen.getByLabelText('Trigrams (optional)'));
+      await userEvent.type(screen.getByLabelText('Trigrams (optional)'), 'ARO');
+      await userEvent.click(screen.getByText('Save changes'));
+
+      expect(useDatabaseStore.getState().blueprints[0]).toMatchObject({
+        location: '',
+        trigrams: ['ARO'],
+      });
+    });
+
+    it('previews a slug with the -2 rule for a second team with the same name', async () => {
+      openTestDatabase([
+        {
+          slug: 'salt-marsh-united',
+          name: 'Salt Marsh United',
+          colour: '#fff',
+          tier: 'C',
+        },
+      ]);
+      render(<TeamsScreen />);
+      await userEvent.click(screen.getByText('+ New team'));
+      await userEvent.type(screen.getByLabelText('Team name'), 'Salt Marsh United');
+      expect(screen.getByLabelText('Slug (auto-generated)')).toHaveValue(
+        'salt-marsh-united-2'
+      );
+    });
+  });
+
   describe('Import teams', () => {
     it('shows an Import teams button', () => {
       render(<TeamsScreen />);

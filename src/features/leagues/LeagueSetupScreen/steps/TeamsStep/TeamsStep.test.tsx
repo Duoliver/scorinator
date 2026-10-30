@@ -83,6 +83,28 @@ describe('TeamsStep', () => {
     );
   });
 
+  it('creates a team with a location and trigrams through the inline drawer (Task 119)', async () => {
+    render(<TeamsStep {...baseProps} />);
+    await userEvent.click(screen.getByText('+ Create new team'));
+    await userEvent.type(screen.getByLabelText('Team name'), 'Redbrick Athletic');
+    await userEvent.type(screen.getByLabelText('Location (optional)'), 'Redbrick');
+    await userEvent.type(screen.getByLabelText('Trigrams (optional)'), 'rba red');
+    await userEvent.click(screen.getByText('Create team'));
+
+    const { blueprints } = useDatabaseStore.getState();
+    expect(blueprints[blueprints.length - 1]).toMatchObject({
+      location: 'Redbrick',
+      trigrams: ['RBA', 'RED'],
+    });
+  });
+
+  it('previews the slug with the -2 rule in the inline drawer (Task 119)', async () => {
+    render(<TeamsStep {...baseProps} />);
+    await userEvent.click(screen.getByText('+ Create new team'));
+    await userEvent.type(screen.getByLabelText('Team name'), 'FC United');
+    expect(screen.getByLabelText('Slug (auto-generated)')).toHaveValue('fc-united-2');
+  });
+
   it('disables Next until at least one team is selected', () => {
     render(<TeamsStep {...baseProps} selectedSlugs={[]} />);
     expect(screen.getByText('Next: Review →')).toBeDisabled();

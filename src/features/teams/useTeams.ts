@@ -21,11 +21,12 @@ export function useTeams(): Teams {
   const [drawer, setDrawer] = useState<TeamDrawerState>(null);
 
   const handleSave = (record: TeamFields): void => {
-    const { name, colour, tier } = record;
+    const { name, colour, tier, location, trigrams } = record;
+    const fields = { name, colour, tier, location, trigrams };
     if (drawer?.mode === 'edit') {
-      updateTeamBlueprint(teams[drawer.index].uuid, { name, colour, tier });
+      updateTeamBlueprint(teams[drawer.index].uuid, fields);
     } else {
-      addTeamBlueprint({ name, colour, tier });
+      addTeamBlueprint(fields);
     }
     setDrawer(null);
   };
@@ -36,6 +37,7 @@ export function useTeams(): Teams {
     countText: formatTeamCount(teams.length),
     drawer,
     editedTeam: drawer?.mode === 'edit' ? teams[drawer.index] : undefined,
+    takenSlugs: teams.map((team) => team.slug),
     openCreateDrawer: () => setDrawer({ mode: 'create' }),
     closeDrawer: () => setDrawer(null),
     handleSave,

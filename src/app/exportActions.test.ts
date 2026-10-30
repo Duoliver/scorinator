@@ -17,6 +17,8 @@ const team: TeamFields = {
   name: 'FC United',
   colour: '#E53935',
   tier: 'B',
+  location: '',
+  trigrams: [],
 };
 
 beforeEach(() => {

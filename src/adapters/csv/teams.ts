@@ -1,4 +1,5 @@
 import {
+  MAX_LOCATION_LENGTH,
   MAX_TRIGRAMS,
   parseTrigramList,
   type TrigramListProblem,
@@ -20,10 +21,6 @@ const HEADER_LABELS: Record<ColumnKey, string> = {
 };
 
 const REQUIRED_COLUMNS: readonly ColumnKey[] = ['name', 'tier'];
-
-/** The Location limit of US-09.3. Task 119 moves it to a place that the
- * drawer can share (Task 117, choice 5). */
-const MAX_LOCATION_LENGTH = 40;
 
 function trigramProblemMessage(rowNumber: number, problem: TrigramListProblem): string {
   const row = `Team CSV row ${rowNumber}`;

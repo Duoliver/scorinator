@@ -56,8 +56,14 @@ export function useTeamsStep({
 
   // The Blueprint gets a unique slug (Task 75), which can differ from the
   // form preview, so the selection takes the slug of the new Blueprint.
-  const handleTeamCreated = ({ name, colour, tier }: TeamFields): void => {
-    const created = addTeamBlueprint({ name, colour, tier });
+  const handleTeamCreated = ({
+    name,
+    colour,
+    tier,
+    location,
+    trigrams,
+  }: TeamFields): void => {
+    const created = addTeamBlueprint({ name, colour, tier, location, trigrams });
     onTeamCreated(created.slug);
     setShowCreateTeam(false);
   };
@@ -74,6 +80,7 @@ export function useTeamsStep({
     handleSelectionButton,
     canGoNext: selectedSlugs.length > 0,
     showCreateTeam,
+    takenSlugs: teams.map((team) => team.slug),
     openCreateTeam: () => setShowCreateTeam(true),
     closeCreateTeam: () => setShowCreateTeam(false),
     handleTeamCreated,

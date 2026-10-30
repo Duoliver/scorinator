@@ -69,7 +69,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 116 | The OVR override range check, and the roll on a Tier change | `engine/tier-ovr` | ✅ Done | 2026-10-30 | 2026-10-30 | [116](/docs/tasks/116-ovr-override-check.md) | M2. US-08.4, Task 81. `isOvrInTier` and `ovrAfterTierChange` built. No screen uses them yet. |
 | 117 | CSV v2: the Location and Trigrams columns, the counts for the confirm | `adapters/csv` | ✅ Done | 2026-10-30 | 2026-10-30 | [117](/docs/tasks/117-csv-v2.md) | M2. US-09.3, 09.6, 10.2, Task 75. Two CSV columns and `previewTeamImport` built. No confirm yet. |
 | 118 | The slug list parse | `adapters/txt` | ✅ Done | 2026-10-30 | 2026-10-30 | [118](/docs/tasks/118-slug-list-parse.md) | M2. US-08.7. `parseSlugList` built, with a line error. No screen uses it yet. |
-| 119 | Teams screen: the columns, the drawer fields, slug regenerate, Delete, the CSV confirm | `features/teams` | ⬜ Not started |  |  |  | M2. US-09.1, 09.3 to 09.7, 10.2 (CSV). After 111, 112, 114, 115, 117. |
+| 119 | Teams screen: the Location and Trigrams columns and drawer fields, the `-2` slug preview | `features/teams`, `features/components` | ✅ Done | 2026-10-30 | 2026-10-30 | [119](/docs/tasks/119-teams-screen.md) | M2. US-09.1, 09.3, 09.6. Columns, fields, `-2` preview built. Split: 167, 168. |
 | 120 | Wizard Teams step, part 1: the add dialog, Load them all, empty states, Import slug list | `features/leagues` | ⬜ Not started |  |  |  | M2. US-08.1, 08.2, 08.3, 08.7. After 113, 118, 119. |
 | 121 | Wizard Teams step, part 2: Edit for this league, Switch, Remove, the live trigram pick, "Create league" | `features/leagues` | ⬜ Not started |  |  |  | M2. US-08.4 to 08.6, 08.8, 09.6 (league). After 116, 120. |
 | 122 | M2 smoke check | all | ⬜ Not started |  |  |  | M2. After 121. |
@@ -164,6 +164,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-10-30 (Task 119 — the Teams screen):** The user agreed ten choices. (1) Split: Task 119 keeps the columns and fields, new Task 167 the slug regenerate and Delete, new Task 168 the import confirm. (2) Field order: name, slug, Location, Trigrams, colour, Tier. (3) An empty list shows the name trigram, muted. (4) The Location limit is an error at Save. (5) `MAX_LOCATION_LENGTH` in `engine/identity`. (6) Three trigram error texts. (7, 8) for Task 167: the Delete count opens each league, and `updateTeamBlueprint` takes a slug. (9, 10) for Task 168: the confirm on all three import buttons, and no confirm for an empty file. Detail in [`docs/tasks/119-teams-screen.md`](/docs/tasks/119-teams-screen.md).
 
 - **2026-10-30 (Task 118 — the slug list parse):** The user agreed five choices. (1) The parse keeps the case of each line, and Task 120 matches with no case. (2) The parse keeps the duplicates, and Task 120 skips a second copy. (3) Changed by the user: a line with a character outside A to Z, 0 to 9, and the hyphen is a file error, with its line number. (4) Only a full line is a comment. (5) The file read and the `.txt` filter go in Task 120. Detail in [`docs/tasks/118-slug-list-parse.md`](/docs/tasks/118-slug-list-parse.md).
 

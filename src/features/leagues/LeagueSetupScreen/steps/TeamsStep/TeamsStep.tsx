@@ -52,6 +52,7 @@ export function TeamsStep({ onBack, onNext, ...props }: TeamsStepProps): JSX.Ele
 
         {step.showCreateTeam && (
           <TeamFormDrawer
+            takenSlugs={step.takenSlugs}
             onCancel={step.closeCreateTeam}
             onSave={step.handleTeamCreated}
           />

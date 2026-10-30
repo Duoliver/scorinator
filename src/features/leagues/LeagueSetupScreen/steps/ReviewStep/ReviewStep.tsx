@@ -9,6 +9,8 @@ import {
   FIXTURE_FORMAT_LABEL,
   formatLeagueName,
 } from '@/features/leagues/leagueSummary';
+import { TeamLabel } from '@/features/leagues/LeagueSetupScreen/steps/TeamLabel';
+import { useBlueprintLocation } from '@/features/leagues/LeagueSetupScreen/useBlueprintLocation';
 import type ReviewStepProps from './types';
 import styles from './ReviewStep.module.css';
 
@@ -18,10 +20,11 @@ export function ReviewStep({
   name,
   homeAdvantage,
   points,
-  selectedTeams,
+  teams,
   onBack,
   onCreate,
 }: ReviewStepProps): JSX.Element {
+  const locationOf = useBlueprintLocation();
   return (
     <Card padding="lg">
       <div class={styles.step}>
@@ -31,15 +34,19 @@ export function ReviewStep({
           labels={[
             FIXTURE_FORMAT_LABEL,
             ...settingsChipLabels(homeAdvantage, points),
-            formatTeamCount(selectedTeams.length),
+            formatTeamCount(teams.length),
           ]}
         />
 
         <ul class={styles.teamList}>
-          {selectedTeams.map((team) => (
-            <li key={team.slug} class={styles.teamRow}>
+          {teams.map((team) => (
+            <li key={team.blueprintUuid} class={styles.teamRow}>
               <TeamSwatch colour={team.colour} />
-              <span class={styles.teamName}>{team.name}</span>
+              <TeamLabel
+                name={team.name}
+                location={locationOf(team.blueprintUuid)}
+                inline
+              />
               <span class={styles.tier}>{team.tier}</span>
             </li>
           ))}
@@ -52,7 +59,7 @@ export function ReviewStep({
           {/* No name check here: the Details step turns off Next for an
               invalid name. A jump through the step tabs still reaches
               this button, and `useLeagueSetup`'s `handleCreate` reports it. */}
-          <Button onClick={onCreate} disabled={selectedTeams.length === 0}>
+          <Button onClick={onCreate} disabled={teams.length === 0}>
             Create league
           </Button>
         </div>

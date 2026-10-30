@@ -1,88 +1,125 @@
-import { useRef, useState } from 'preact/hooks';
-import type { FieldHandle } from '@/design-system';
+import { useState } from 'preact/hooks';
 import type { TeamFields } from '@/domain';
+import { getErrorMessage } from '@/app/getErrorMessage';
+import { importSlugListTxt } from '@/app/data/slugListTxt';
+import { useDatabaseStore } from '@/app/state/databaseStore';
+import { setFileStatus } from '@/app/state/fileActions';
+import { addTeamBlueprint } from '@/app/state/teamBlueprintActions';
+import { planSlugListImport } from '@/app/state/teamInstances';
 import { formatTeamCount } from '@/features/components';
 import { settingsChipLabels } from '@/features/leagues/LeagueSetupScreen/steps/SetupChips';
+import { useBlueprintLocation } from '@/features/leagues/LeagueSetupScreen/useBlueprintLocation';
 import { formatLeagueName } from '@/features/leagues/leagueSummary';
-import { addTeamBlueprint } from '@/app/state/teamBlueprintActions';
-import { useDatabaseStore } from '@/app/state/databaseStore';
-import { filterTeamsByName, getTeamsStepColumns } from './helpers';
 import type TeamsStepProps from './types';
-import type { TeamsStepState } from './types';
+import type { TeamsStepOverlay, TeamsStepState } from './types';
+import {
+  NO_SLUGS,
+  describeSlugListImport,
+  getTeamsStepColumns,
+  pickerConfirmLabel,
+  toPickerItem,
+} from './helpers';
 
+/** The Teams step (Task 120): the team list, the add dialog, "Load them
+ * all", the empty states, and "Import slug list". An available Blueprint
+ * has no Instance in the list. */
 export function useTeamsStep({
   name,
   homeAdvantage,
   points,
-  selectedSlugs,
-  onToggleTeam,
-  onSelectAll,
-  onClearSelection,
-  onTeamCreated,
+  teams,
+  onAddTeams,
+  onRemoveTeam,
 }: Omit<TeamsStepProps, 'onBack' | 'onNext'>): TeamsStepState {
-  const teams = useDatabaseStore((state) => state.blueprints);
-  const [query, setQuery] = useState('');
-  const [showCreateTeam, setShowCreateTeam] = useState(false);
-  const checkboxHandles = useRef(new Map<string, FieldHandle<boolean>>());
+  const blueprints = useDatabaseStore((state) => state.blueprints);
+  const locationOf = useBlueprintLocation();
+  const [overlay, setOverlay] = useState<TeamsStepOverlay>('none');
+  const [pickerSelected, setPickerSelected] = useState<string[]>([]);
+  const [notFound, setNotFound] = useState<string[] | null>(null);
 
-  const visibleTeams = filterTeamsByName(teams, query);
-  const visibleSlugs = visibleTeams.map((team) => team.slug);
-  const allVisibleSelected =
-    visibleSlugs.length > 0 &&
-    visibleSlugs.every((slug) => selectedSlugs.includes(slug));
+  const inList = new Set(teams.map((team) => team.blueprintUuid));
+  const available = blueprints.filter((blueprint) => !inList.has(blueprint.uuid));
 
-  const setVisibleChecked = (checked: boolean): void => {
-    visibleSlugs.forEach((slug) =>
-      checkboxHandles.current.get(slug)?.setValue(checked)
-    );
+  const closePicker = (): void => {
+    setPickerSelected([]);
+    setOverlay('none');
   };
 
-  const handleSelectionButton = (): void => {
-    if (allVisibleSelected) {
-      onClearSelection(visibleSlugs);
-      setVisibleChecked(false);
-    } else {
-      onSelectAll(visibleSlugs);
-      setVisibleChecked(true);
-    }
+  const confirmPicker = (): void => {
+    const byUuid = new Map(blueprints.map((b) => [b.uuid, b]));
+    onAddTeams(pickerSelected.flatMap((uuid) => byUuid.get(uuid) ?? []));
+    closePicker();
   };
 
-  const registerCheckbox =
-    (slug: string) =>
-    (handle: FieldHandle<boolean> | null): void => {
-      if (handle) checkboxHandles.current.set(slug, handle);
-      else checkboxHandles.current.delete(slug);
-    };
-
-  // The Blueprint gets a unique slug (Task 75), which can differ from the
-  // form preview, so the selection takes the slug of the new Blueprint.
+  // A team made over the add dialog joins its selection. A team made from
+  // the empty state joins the list at once (US-08.1, US-08.3).
   const handleTeamCreated = ({
-    name,
+    name: teamName,
     colour,
     tier,
     location,
     trigrams,
   }: TeamFields): void => {
-    const created = addTeamBlueprint({ name, colour, tier, location, trigrams });
-    onTeamCreated(created.slug);
-    setShowCreateTeam(false);
+    const created = addTeamBlueprint({
+      name: teamName,
+      colour,
+      tier,
+      location,
+      trigrams,
+    });
+    if (overlay === 'pickerTeam') {
+      setPickerSelected((current) => [...current, created.uuid]);
+      setOverlay('picker');
+    } else {
+      onAddTeams([created]);
+      setOverlay('none');
+    }
+  };
+
+  const importSlugList = async (): Promise<void> => {
+    try {
+      const slugs = await importSlugListTxt();
+      if (slugs === null) return;
+      if (slugs.length === 0) {
+        setFileStatus({ tone: 'error', message: NO_SLUGS });
+        return;
+      }
+      const plan = planSlugListImport(slugs, blueprints, teams);
+      onAddTeams(plan.add);
+      setFileStatus({
+        tone: 'info',
+        message: describeSlugListImport(plan.add.length, plan.alreadyInList),
+      });
+      setNotFound(plan.notFound.length > 0 ? plan.notFound : null);
+    } catch (error) {
+      setFileStatus({ tone: 'error', message: getErrorMessage(error) });
+    }
   };
 
   return {
     leagueName: formatLeagueName(name),
     chipLabels: settingsChipLabels(homeAdvantage, points),
-    handleSearchChange: setQuery,
-    rows: visibleTeams,
-    columns: getTeamsStepColumns(selectedSlugs, onToggleTeam, registerCheckbox),
-    selectedCountText: `${formatTeamCount(selectedSlugs.length)} selected`,
-    allVisibleSelected,
-    hasVisibleTeams: visibleSlugs.length > 0,
-    handleSelectionButton,
-    canGoNext: selectedSlugs.length > 0,
-    showCreateTeam,
-    takenSlugs: teams.map((team) => team.slug),
-    openCreateTeam: () => setShowCreateTeam(true),
-    closeCreateTeam: () => setShowCreateTeam(false),
+    hasNoBlueprints: blueprints.length === 0,
+    columns: getTeamsStepColumns(locationOf, onRemoveTeam),
+    countText: formatTeamCount(teams.length),
+    canLoadAll: available.length > 0,
+    canGoNext: teams.length > 0,
+    notFound,
+    closeNotFound: () => setNotFound(null),
+    overlay,
+    pickerItems: available.map(toPickerItem),
+    pickerSelected,
+    setPickerSelected,
+    pickerConfirmLabel: pickerConfirmLabel(pickerSelected.length),
+    takenSlugs: blueprints.map((blueprint) => blueprint.slug),
+    openPicker: () => setOverlay('picker'),
+    closePicker,
+    confirmPicker,
+    openFirstTeam: () => setOverlay('firstTeam'),
+    openPickerTeam: () => setOverlay('pickerTeam'),
+    closeTeamDrawer: () => setOverlay(overlay === 'pickerTeam' ? 'picker' : 'none'),
     handleTeamCreated,
+    loadAll: () => onAddTeams(available),
+    importSlugList,
   };
 }

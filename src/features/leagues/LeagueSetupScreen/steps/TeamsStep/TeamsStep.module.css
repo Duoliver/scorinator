@@ -17,14 +17,10 @@
   font-size: var(--font-size-md);
 }
 
-.toolbar {
+.actions {
   display: flex;
   gap: var(--space-3);
-  align-items: flex-end;
-}
-
-.toolbar > :first-child {
-  flex: 1;
+  flex-wrap: wrap;
 }
 
 .teamCell {
@@ -33,10 +29,53 @@
   gap: var(--space-3);
 }
 
-.selectionRow {
+/* An add dialog row fills its button or its "Selected" row, so the Tier
+   sits at the end, next to the ✕ (Task 120 review). */
+.pickRow {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+}
+
+/* The two empty states (US-08.3). */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-8) 0;
+  text-align: center;
+}
+
+.emptyTitle {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: var(--font-size-2xl);
+}
+
+/* The empty state centers the button row, so the row centers its buttons
+   too, also when they wrap on a small window (coding-standards.md). */
+.empty .actions {
+  justify-content: center;
+}
+
+.emptyText {
+  margin: 0;
+  color: var(--color-fg-muted);
+  font-size: var(--font-size-lg);
+}
+
+/* The slugs that a slug list import did not find (US-08.7). */
+.notice {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: var(--border-width) solid var(--color-warning);
+  background: var(--color-surface);
+  font-size: var(--font-size-lg);
 }
 
 .count {

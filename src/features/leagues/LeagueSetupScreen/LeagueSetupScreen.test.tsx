@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/preact';
+import { cleanup, render, screen, within } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { route } from 'preact-router';
 import { LeagueSetupScreen } from './LeagueSetupScreen';
@@ -19,10 +19,18 @@ beforeEach(() => {
   ]);
   useLeagueDraftStore.setState({
     details: { name: '', points: DEFAULT_POINTS_CONFIG, homeAdvantage: false },
-    selectedSlugs: [],
+    teams: [],
     step: 'details',
   });
 });
+
+/** Adds FC United through the "Add teams" dialog of the Teams step. */
+async function addFcUnited(): Promise<void> {
+  await userEvent.click(screen.getByRole('button', { name: '+ Add teams' }));
+  const dialog = screen.getByRole('dialog', { name: 'Add teams' });
+  await userEvent.click(within(dialog).getByRole('button', { name: 'FC United' }));
+  await userEvent.click(within(dialog).getByRole('button', { name: 'Add 1 team' }));
+}
 
 describe('LeagueSetupScreen', () => {
   it('walks through Details, Teams, and Review, and creates the league', async () => {
@@ -32,7 +40,7 @@ describe('LeagueSetupScreen', () => {
     await userEvent.click(screen.getByLabelText('Home advantage'));
     await userEvent.click(screen.getByText('Next: Teams →'));
 
-    await userEvent.click(screen.getByLabelText('FC United'));
+    await addFcUnited();
     await userEvent.click(screen.getByText('Next: Review →'));
 
     expect(screen.getByText('Coastal Premier')).toBeInTheDocument();
@@ -66,7 +74,7 @@ describe('LeagueSetupScreen', () => {
     expect(screen.getByText('Next: Teams →')).toBeDisabled();
     // The step tabs still allow a jump past the disabled Next.
     await userEvent.click(screen.getByRole('tab', { name: '2 · Teams' }));
-    await userEvent.click(screen.getByLabelText('FC United'));
+    await addFcUnited();
     await userEvent.click(screen.getByText('Next: Review →'));
     await userEvent.click(screen.getByText('Create league'));
 
@@ -85,12 +93,12 @@ describe('LeagueSetupScreen', () => {
 
     await userEvent.type(screen.getByLabelText('League name'), 'Coastal Premier');
     await userEvent.click(screen.getByText('Next: Teams →'));
-    await userEvent.click(screen.getByLabelText('FC United'));
+    await addFcUnited();
     await userEvent.click(screen.getByText('Next: Review →'));
     await userEvent.click(screen.getByText('Create league'));
 
     expect(useLeagueDraftStore.getState().details.name).toBe('');
-    expect(useLeagueDraftStore.getState().selectedSlugs).toEqual([]);
+    expect(useLeagueDraftStore.getState().teams).toEqual([]);
   });
 
   it('does not resurrect stale draft fields if the screen never actually unmounts after create', async () => {
@@ -106,14 +114,14 @@ describe('LeagueSetupScreen', () => {
 
     await userEvent.type(screen.getByLabelText('League name'), 'Coastal Premier');
     await userEvent.click(screen.getByText('Next: Teams →'));
-    await userEvent.click(screen.getByLabelText('FC United'));
+    await addFcUnited();
     await userEvent.click(screen.getByText('Next: Review →'));
     await userEvent.click(screen.getByText('Create league'));
 
     cleanup();
 
     expect(useLeagueDraftStore.getState().details.name).toBe('');
-    expect(useLeagueDraftStore.getState().selectedSlugs).toEqual([]);
+    expect(useLeagueDraftStore.getState().teams).toEqual([]);
   });
 
   it('scrolls the window to the top when Next changes the step', async () => {
@@ -131,7 +139,7 @@ describe('LeagueSetupScreen', () => {
     await userEvent.click(screen.getByText('Next: Teams →'));
     expect(screen.getByRole('tab', { name: '2 · Teams' })).toHaveFocus();
     // Next on the Teams step stays disabled until a team is selected.
-    await userEvent.click(screen.getByLabelText('FC United'));
+    await addFcUnited();
     await userEvent.click(screen.getByText('Next: Review →'));
     expect(screen.getByRole('tab', { name: '3 · Review' })).toHaveFocus();
   });
@@ -140,7 +148,7 @@ describe('LeagueSetupScreen', () => {
     render(<LeagueSetupScreen />);
     await userEvent.type(screen.getByLabelText('League name'), 'Coastal Premier');
     await userEvent.click(screen.getByText('Next: Teams →'));
-    await userEvent.click(screen.getByLabelText('FC United'));
+    await addFcUnited();
     await userEvent.click(screen.getByText('Next: Review →'));
     await userEvent.click(screen.getByRole('button', { name: 'Back' }));
     expect(screen.getByRole('tab', { name: '2 · Teams' })).toHaveFocus();
@@ -152,7 +160,7 @@ describe('LeagueSetupScreen', () => {
     render(<LeagueSetupScreen />);
 
     await userEvent.click(screen.getByRole('tab', { name: '2 · Teams' }));
-    await userEvent.click(screen.getByLabelText('FC United'));
+    await addFcUnited();
     await userEvent.click(screen.getByRole('tab', { name: '3 · Review' }));
     await userEvent.click(screen.getByText('Create league'));
 
@@ -168,7 +176,7 @@ describe('LeagueSetupScreen', () => {
       render(<LeagueSetupScreen />);
       await userEvent.type(screen.getByLabelText('League name'), 'Coastal Premier');
       await userEvent.click(screen.getByText('Next: Teams →'));
-      await userEvent.click(screen.getByLabelText('FC United'));
+      await addFcUnited();
       await userEvent.click(screen.getByText('Next: Review →'));
       await userEvent.click(screen.getByText('Create league'));
       cleanup();
@@ -203,20 +211,43 @@ describe('LeagueSetupScreen', () => {
   it('jumps directly to a step when its stepper button is clicked', async () => {
     render(<LeagueSetupScreen />);
     await userEvent.click(screen.getByText('2 · Teams'));
-    expect(screen.getByLabelText('Search teams')).toBeInTheDocument();
+    expect(screen.getByText('No teams added yet')).toBeInTheDocument();
   });
 
-  it('lets a team created inline in the Teams step reach Review pre-selected', async () => {
+  it('lets a team created inside the add dialog reach Review', async () => {
     render(<LeagueSetupScreen />);
     await userEvent.type(screen.getByLabelText('League name'), 'Coastal Premier');
     await userEvent.click(screen.getByText('Next: Teams →'));
 
-    await userEvent.click(screen.getByText('+ Create new team'));
+    await userEvent.click(screen.getByRole('button', { name: '+ Add teams' }));
+    const dialog = screen.getByRole('dialog', { name: 'Add teams' });
+    await userEvent.click(
+      within(dialog).getByRole('button', { name: '+ Create new team' })
+    );
     await userEvent.type(screen.getByLabelText('Team name'), 'Redbrick Athletic');
     await userEvent.click(screen.getByText('Create team'));
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Add 1 team' }));
 
-    expect(screen.getByLabelText('Redbrick Athletic')).toBeChecked();
     await userEvent.click(screen.getByText('Next: Review →'));
     expect(screen.getByText('Redbrick Athletic')).toBeInTheDocument();
+  });
+
+  it('keeps the team list and its OVRs in the draft, and creates the league with them (Task 81)', async () => {
+    render(<LeagueSetupScreen />);
+    await userEvent.type(screen.getByLabelText('League name'), 'Coastal Premier');
+    await userEvent.click(screen.getByText('Next: Teams →'));
+    await userEvent.click(screen.getByRole('button', { name: 'Load them all' }));
+    cleanup();
+
+    const { teams } = useLeagueDraftStore.getState();
+    expect(teams.map((team) => team.name)).toEqual(['FC United', 'Harborview SC']);
+
+    render(<LeagueSetupScreen />);
+    expect(screen.getByText('2 teams')).toBeInTheDocument();
+    await userEvent.click(screen.getByText('Next: Review →'));
+    await userEvent.click(screen.getByText('Create league'));
+
+    const [league] = Object.values(useDatabaseStore.getState().leagues);
+    expect(league.teams).toEqual(teams);
   });
 });

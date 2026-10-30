@@ -1,11 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Phase } from '@/domain';
 import { isUuidV4 } from '@/engine/identity';
-import { TIER_OVR_RANGES } from '@/engine/tier-ovr';
 import {
   blueprint,
   HARBORVIEW,
   INSTALLATION,
+  instance,
   leagueWrapper,
   LEAGUE,
   memoryFolder,
@@ -83,11 +83,29 @@ afterEach(() => {
 });
 
 describe('createLeague (US-09.2, US-11.1, Task 105)', () => {
+  const teams = [
+    instance(),
+    instance({
+      blueprintUuid: HARBORVIEW,
+      slug: 'harborview-sc',
+      name: 'Harborview SC',
+      tier: 'C',
+      ovr: 61,
+    }),
+    instance({
+      blueprintUuid: TOWN,
+      slug: 'old-town',
+      name: 'Old Town',
+      colour: '#000000',
+      tier: 'F',
+      ovr: 33,
+    }),
+  ];
   const input = {
     name: 'Coastal Premier',
     homeAdvantage: true,
     points: { win: 3, draw: 1, loss: 0 },
-    blueprintUuids: [SALT_MARSH, HARBORVIEW, TOWN],
+    teams,
   };
 
   it('makes a league wrapper with a new UUID and the local provenance', async () => {
@@ -107,23 +125,18 @@ describe('createLeague (US-09.2, US-11.1, Task 105)', () => {
     expect(isLeagueUnsaved(state(), wrapper.uuid)).toBe(true);
   });
 
-  it('makes one Instance for each Blueprint, with a copy of its fields and a rolled OVR', async () => {
+  it('stores the given Instances with their OVR, and rolls nothing (Task 81, Task 120)', async () => {
     await open();
-    const { teams } = createLeague(input);
+    const wrapper = createLeague(input);
+    expect(wrapper.teams).toEqual(teams);
+    expect(wrapper.teams).not.toBe(teams);
+  });
 
-    expect(teams.map((t) => t.blueprintUuid)).toEqual([SALT_MARSH, HARBORVIEW, TOWN]);
-    expect(teams[2]).toMatchObject({
-      slug: 'old-town',
-      name: 'Old Town',
-      colour: '#000000',
-      tier: 'F',
-    });
-    for (const team of teams) {
-      const range = TIER_OVR_RANGES[team.tier];
-      expect(team.ovr).toBeGreaterThanOrEqual(range.min);
-      expect(team.ovr).toBeLessThanOrEqual(range.max);
-    }
-    expect(teams[0]).not.toHaveProperty('location');
+  it('keeps an Instance whose Blueprint was deleted during the setup (US-09.4)', async () => {
+    await open();
+    const gone = instance({ blueprintUuid: LEAGUE, slug: 'gone-fc', name: 'Gone FC' });
+    const wrapper = createLeague({ ...input, teams: [teams[0], gone] });
+    expect(wrapper.teams.map((t) => t.blueprintUuid)).toEqual([SALT_MARSH, LEAGUE]);
   });
 
   it('builds phase 1 as a two-way round robin with fixture ids, teams by Blueprint UUID', async () => {
@@ -145,8 +158,7 @@ describe('createLeague (US-09.2, US-11.1, Task 105)', () => {
 
   it('gives a league with fewer than 2 teams an empty phase 1, as in MVP1', async () => {
     await open();
-    const [phase] = createLeague({ ...input, blueprintUuids: [SALT_MARSH] }).content
-      .phases;
+    const [phase] = createLeague({ ...input, teams: [teams[0]] }).content.phases;
     expect(phase.fixtures).toEqual([]);
     expect(phase.byes).toEqual([]);
   });
@@ -166,11 +178,11 @@ describe('createLeague (US-09.2, US-11.1, Task 105)', () => {
     expect(state().blueprints).toBe(before);
   });
 
-  it('throws a RangeError for an unknown Blueprint, and adds nothing', async () => {
+  it('throws a RangeError for a Blueprint UUID twice in the list, and adds nothing', async () => {
     await open();
     expect(() =>
-      createLeague({ ...input, blueprintUuids: [SALT_MARSH, LEAGUE] })
-    ).toThrow(`No Blueprint has the UUID ${LEAGUE}.`);
+      createLeague({ ...input, teams: [teams[0], teams[1], teams[0]] })
+    ).toThrow(`The team list has the Blueprint UUID ${SALT_MARSH} twice.`);
     expect(state().leagues).toEqual({});
   });
 

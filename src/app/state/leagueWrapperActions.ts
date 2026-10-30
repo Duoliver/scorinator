@@ -8,36 +8,30 @@ import {
 } from '@/engine/round-robin';
 import { playMatch } from '@/engine/scorination';
 import type { PointsConfig } from '@/engine/standings';
-import { rollOVR } from '@/engine/tier-ovr';
 import type { LeagueWrapper, Phase, PhaseResult, TeamInstance } from '@/domain';
-import { cryptoRandomBytes } from '@/app/random';
+import { cryptoRandomBytes, freshSeed } from '@/app/random';
 import { findCurrentPhase } from './currentPhase';
 import { requireOpenDatabase, useDatabaseStore } from './databaseStore';
 
-/** What it takes to create a league (US-08.8). The OVR rolls at create in
- * M1, as in MVP1. Task 121 moves the roll to the add (Task 81). */
+/** What it takes to create a league (US-08.8). `teams` is the team list of
+ * the wizard: each Instance got its OVR when it was added (Task 81). */
 export interface CreateLeagueInput {
   name: string;
   homeAdvantage: boolean;
   points: PointsConfig;
-  blueprintUuids: readonly string[];
-}
-
-/** A fresh, non-deterministic seed for each call. The engine itself takes a
- * deterministic `Rng` (`ENGINE.md`), so the randomness lives here. */
-function freshSeed(): number {
-  return Math.floor(Math.random() * 0xffffffff);
+  teams: readonly TeamInstance[];
 }
 
 /**
- * Creates a league and keeps it in the store, unsaved (Task 108). Each
- * Instance copies the name, colour, slug, and tier of its Blueprint, and
- * gets an OVR rolled from the tier (US-09.2). Phase 1 is a two-way round
- * robin with the shuffled match order (Task 30) and the fixture ids of
- * Task 105. Fixtures name teams by Blueprint UUID. A league with fewer than
- * 2 teams gets an empty phase 1, as in MVP1: Task 121 disables "Create
- * league" for that case. League names need not be unique: routes use the
- * UUID. Throws a `RangeError` for an unknown Blueprint, and adds nothing.
+ * Creates a league and keeps it in the store, unsaved (Task 108). It stores
+ * the Instances of the team list as they are, with their OVR (Task 81): an
+ * Instance whose Blueprint was deleted during the setup stays (US-09.4).
+ * Phase 1 is a two-way round robin with the shuffled match order (Task 30)
+ * and the fixture ids of Task 105. Fixtures name teams by Blueprint UUID. A
+ * league with fewer than 2 teams gets an empty phase 1, as in MVP1: Task 121
+ * disables "Create league" for that case. League names need not be unique:
+ * routes use the UUID. Throws a `RangeError` for a Blueprint UUID that is in
+ * the list twice, and adds nothing.
  */
 export function createLeague(
   input: CreateLeagueInput,
@@ -45,24 +39,18 @@ export function createLeague(
 ): LeagueWrapper {
   const state = useDatabaseStore.getState();
   const { installationUuid } = requireOpenDatabase(state);
-  const byUuid = new Map(
-    state.blueprints.map((blueprint) => [blueprint.uuid, blueprint])
-  );
-  const blueprints = input.blueprintUuids.map((uuid) => {
-    const blueprint = byUuid.get(uuid);
-    if (!blueprint) throw new RangeError(`No Blueprint has the UUID ${uuid}.`);
-    return blueprint;
-  });
+  const seen = new Set<string>();
+  for (const team of input.teams) {
+    if (seen.has(team.blueprintUuid)) {
+      throw new RangeError(
+        `The team list has the Blueprint UUID ${team.blueprintUuid} twice.`
+      );
+    }
+    seen.add(team.blueprintUuid);
+  }
 
   const rng = createSeededRng(freshSeed());
-  const teams: TeamInstance[] = blueprints.map((blueprint) => ({
-    blueprintUuid: blueprint.uuid,
-    slug: blueprint.slug,
-    name: blueprint.name,
-    colour: blueprint.colour,
-    tier: blueprint.tier,
-    ovr: rollOVR(blueprint.tier, rng),
-  }));
+  const teams: TeamInstance[] = input.teams.map((team) => ({ ...team }));
   const uuids = teams.map((team) => team.blueprintUuid);
   const schedule =
     uuids.length >= 2 ? generateRoundRobin(uuids, rng) : { fixtures: [], byes: [] };

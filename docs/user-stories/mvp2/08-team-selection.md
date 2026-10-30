@@ -27,7 +27,7 @@ As a user, I want to bulk-select teams for a new league from a searchable checkl
 - [ ] The confirm button says the count, for example "Add 4 teams". It is disabled with no selection. "Cancel" adds nothing.
 - [ ] The confirm adds one Instance for each selected Blueprint, in the order of selection. Each Instance gets a rolled OVR from its Tier (Task 81).
 - [ ] With a phase-1 Groups phase, each added team goes into the smallest group (US-02.1).
-- [ ] The team list shows each Instance: the colour swatch, the name, the Location in muted text, the Tier, the OVR, and the actions ✎ Edit, ⇄ Switch, ✕ Remove.
+- [ ] The team list shows each Instance: the colour swatch, the name, the Location in muted text, the Tier, and the actions ✎ Edit, ⇄ Switch, ✕ Remove. It shows no OVR: the Edit drawer shows it (US-08.4). *(Changed on 2026-10-30, Task 120: the user dropped the OVR column.)*
 - [ ] The team list shows the count, for example "12 teams".
 
 **Out of scope:** a location filter (MVP3). The group columns and moves (US-02.5).

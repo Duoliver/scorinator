@@ -3,6 +3,7 @@ import { saveDatabaseChanges } from './saveActions';
 import { isLeagueUnsaved, useDatabaseStore } from '@/app/state/databaseStore';
 import { useFileStore } from '@/app/state/fileStore';
 import { createLeague, scorinateMatchday } from '@/app/state/leagueWrapperActions';
+import { newTeamInstances } from '@/app/state/teamInstances';
 import { updateTeamBlueprint } from '@/app/state/teamBlueprintActions';
 import {
   LEAGUE,
@@ -49,7 +50,7 @@ describe('saveDatabaseChanges (Ctrl+S, Task 161)', () => {
       name: 'Fresh League',
       homeAdvantage: false,
       points: { win: 3, draw: 1, loss: 0 },
-      blueprintUuids: [testUuid(1), testUuid(2)],
+      teams: newTeamInstances(useDatabaseStore.getState().blueprints.slice(0, 2)),
     });
 
     await saveDatabaseChanges();

@@ -29,7 +29,7 @@ beforeEach(() => {
   openTestDatabase([]);
   useLeagueDraftStore.setState({
     details: { name: '', points: DEFAULT_POINTS_CONFIG, homeAdvantage: false },
-    selectedSlugs: [],
+    teams: [],
     step: 'details',
   });
 });

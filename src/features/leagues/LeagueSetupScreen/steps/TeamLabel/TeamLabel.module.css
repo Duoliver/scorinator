@@ -1,0 +1,19 @@
+.label {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* The name and the Location on one line, on the text baseline. The gap is
+   one character wide, as a space between two words. */
+.inline {
+  flex-direction: row;
+  align-items: baseline;
+  gap: 1ch;
+}
+
+.location {
+  color: var(--color-fg-muted);
+  font-size: var(--font-size-sm);
+}

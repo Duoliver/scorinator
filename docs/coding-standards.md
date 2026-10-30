@@ -226,6 +226,30 @@ import styles from './TeamsScreen.module.css';
 
 A `style` prop is acceptable only for a value your code computes at runtime from data. One example is a team's user-chosen hex colour swatch. Never use it for a static layout or token value.
 
+## A centered container centers its own children
+
+When a parent centers a container, and the content of that container must appear in the middle, the container centers its own children too. Do not rely on the parent alone. *(Added on 2026-10-30, Task 120.)*
+
+- A flex row of children sets `justify-content: center`, also when it wraps.
+- Text in the container sets `text-align: center`.
+
+**Why:** `align-items: center` on a column parent centers the container box only. On a narrow screen, a wrapping row grows to the full width of the parent. Its children then start at the left edge of the row, not in the middle. The empty state of the wizard Teams step had this fault: its three buttons moved to the left on a small window.
+
+```css
+/* The empty state centers its block. */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+/* Its button row centers its buttons too, also when they wrap. */
+.empty .actions {
+  justify-content: center;
+}
+```
+
 ## Start a function name with a verb in the imperative
 
 Name a function, or a method, for the action it does. Start the name with a verb in the imperative: `getErrorMessage`, `findCurrentPhase`, `addTeamBlueprint`, `saveDatabaseChanges`. A noun name such as `errorMessage` reads like a value, not a call.

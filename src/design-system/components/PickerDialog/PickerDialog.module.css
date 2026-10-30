@@ -51,7 +51,9 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  padding: var(--space-3);
+  /* A smaller vertical padding: half of --space-3 has no token, so the tie
+     rounds up to --space-2 (DESIGN_SYSTEM.md, Task 120 review). */
+  padding: var(--space-2) var(--space-3);
   border: none;
   /* No divider token exists: the light background colour gives a soft line. */
   border-bottom: var(--border-width) solid var(--color-bg);
@@ -79,6 +81,13 @@
   flex: none;
   width: 1.375rem;
   height: 1.375rem;
+  /* No browser padding: it pushed the glyph off the middle of the box
+     (Task 120 review). */
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
   border: var(--border-width) solid var(--color-fg);
   background: var(--color-surface);
   color: var(--color-fg);

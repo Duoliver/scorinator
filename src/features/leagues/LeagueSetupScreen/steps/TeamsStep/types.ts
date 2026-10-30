@@ -1,5 +1,5 @@
-import type { TableColumn } from '@/design-system';
-import type { TeamBlueprint, TeamFields } from '@/domain';
+import type { PickerItem, TableColumn } from '@/design-system';
+import type { TeamBlueprint, TeamFields, TeamInstance } from '@/domain';
 import type { PointsConfig } from '@/engine/standings';
 
 export default interface TeamsStepProps {
@@ -7,33 +7,46 @@ export default interface TeamsStepProps {
   name: string;
   homeAdvantage: boolean;
   points: PointsConfig;
-  selectedSlugs: readonly string[];
-  onToggleTeam: (slug: string) => void;
-  onSelectAll: (slugs: string[]) => void;
-  onClearSelection: (slugs: string[]) => void;
-  onTeamCreated: (slug: string) => void;
+  /** The team list: one Instance for each team of the new league. */
+  teams: readonly TeamInstance[];
+  /** Adds an Instance, with a rolled OVR, for each Blueprint (Task 81). */
+  onAddTeams: (blueprints: readonly TeamBlueprint[]) => void;
+  onRemoveTeam: (blueprintUuid: string) => void;
   onBack: () => void;
   onNext: () => void;
 }
+
+/** Which part of the step is open: nothing, the add dialog, the team drawer
+ * from the empty state, or the team drawer over the add dialog. */
+export type TeamsStepOverlay = 'none' | 'picker' | 'firstTeam' | 'pickerTeam';
 
 /** What `useTeamsStep` gives `TeamsStep`. */
 export interface TeamsStepState {
   leagueName: string;
   chipLabels: string[];
-  handleSearchChange: (query: string) => void;
-  rows: TeamBlueprint[];
-  columns: TableColumn<TeamBlueprint>[];
-  selectedCountText: string;
-  /** True when every team that the search shows is selected. The one
-   * selection button then clears them, or else it selects them all. */
-  allVisibleSelected: boolean;
-  hasVisibleTeams: boolean;
-  handleSelectionButton: () => void;
+  /** No Blueprint at all: the "first team" empty state (US-08.3). */
+  hasNoBlueprints: boolean;
+  columns: TableColumn<TeamInstance>[];
+  countText: string;
+  canLoadAll: boolean;
   canGoNext: boolean;
-  showCreateTeam: boolean;
+  /** The slugs that the last slug list import did not find, or `null`. */
+  notFound: string[] | null;
+  closeNotFound: () => void;
+  overlay: TeamsStepOverlay;
+  pickerItems: PickerItem[];
+  pickerSelected: string[];
+  setPickerSelected: (uuids: string[]) => void;
+  pickerConfirmLabel: string;
   /** The slugs of every Blueprint, for the `-2` slug preview (Task 75). */
   takenSlugs: string[];
-  openCreateTeam: () => void;
-  closeCreateTeam: () => void;
+  openPicker: () => void;
+  closePicker: () => void;
+  confirmPicker: () => void;
+  openFirstTeam: () => void;
+  openPickerTeam: () => void;
+  closeTeamDrawer: () => void;
   handleTeamCreated: (record: TeamFields) => void;
+  loadAll: () => void;
+  importSlugList: () => Promise<void>;
 }

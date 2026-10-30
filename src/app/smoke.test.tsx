@@ -62,7 +62,7 @@ function resetSession(): void {
   useFileStore.setState({ status: null });
   useLeagueDraftStore.setState({
     details: { name: '', points: DEFAULT_POINTS_CONFIG, homeAdvantage: false },
-    selectedSlugs: [],
+    teams: [],
     step: 'details',
   });
 }
@@ -124,7 +124,7 @@ describe('smoke: create, scorinate, save, and open a league again', () => {
     await user.click(screen.getByRole('link', { name: 'Create league' }));
     await user.type(screen.getByLabelText('League name'), 'Coastal Premier');
     await user.click(screen.getByRole('button', { name: 'Next: Teams →' }));
-    await user.click(screen.getByRole('button', { name: 'Select all' }));
+    await user.click(screen.getByRole('button', { name: 'Load them all' }));
     await user.click(screen.getByRole('button', { name: 'Next: Review →' }));
     await user.click(screen.getByRole('button', { name: 'Create league' }));
     expect(

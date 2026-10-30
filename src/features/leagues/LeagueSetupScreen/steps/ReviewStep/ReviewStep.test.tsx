@@ -2,10 +2,10 @@ import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { ReviewStep } from './ReviewStep';
-import { blueprint } from '@/test/databaseRecords';
+import { instance, openTestDatabase, testUuid } from '@/test/databaseRecords';
 
-const selectedTeams = [
-  blueprint({ slug: 'fc-united', name: 'FC United', colour: '#E53935', tier: 'B' }),
+const teams = [
+  instance({ slug: 'fc-united', name: 'FC United', colour: '#E53935', tier: 'B' }),
 ];
 
 describe('ReviewStep', () => {
@@ -15,7 +15,7 @@ describe('ReviewStep', () => {
         name="Coastal Premier"
         homeAdvantage
         points={{ win: 3, draw: 1, loss: 0 }}
-        selectedTeams={selectedTeams}
+        teams={teams}
         onBack={vi.fn()}
         onCreate={vi.fn()}
       />
@@ -34,7 +34,7 @@ describe('ReviewStep', () => {
         name="Coastal Premier"
         homeAdvantage={false}
         points={{ win: 3, draw: 1, loss: 0 }}
-        selectedTeams={selectedTeams}
+        teams={teams}
         onBack={vi.fn()}
         onCreate={onCreate}
       />
@@ -49,7 +49,7 @@ describe('ReviewStep', () => {
         name="Coastal Premier"
         homeAdvantage={false}
         points={{ win: 3, draw: 1, loss: 0 }}
-        selectedTeams={[]}
+        teams={[]}
         onBack={vi.fn()}
         onCreate={vi.fn()}
       />
@@ -63,7 +63,7 @@ describe('ReviewStep', () => {
         name=""
         homeAdvantage={false}
         points={{ win: 3, draw: 1, loss: 0 }}
-        selectedTeams={selectedTeams}
+        teams={teams}
         onBack={vi.fn()}
         onCreate={vi.fn()}
       />
@@ -77,7 +77,7 @@ describe('ReviewStep', () => {
         name="  "
         homeAdvantage={false}
         points={{ win: 3, draw: 1, loss: 0 }}
-        selectedTeams={selectedTeams}
+        teams={teams}
         onBack={vi.fn()}
         onCreate={vi.fn()}
       />
@@ -85,5 +85,30 @@ describe('ReviewStep', () => {
     expect(
       screen.getByRole('heading', { name: 'Untitled league' })
     ).toBeInTheDocument();
+  });
+
+  it('shows the Location of each team from its Blueprint (US-09.3)', () => {
+    openTestDatabase([
+      {
+        slug: 'fc-united',
+        name: 'FC United',
+        colour: '#E53935',
+        tier: 'B',
+        location: 'Unity',
+      },
+    ]);
+    render(
+      <ReviewStep
+        name="Coastal Premier"
+        homeAdvantage={false}
+        points={{ win: 3, draw: 1, loss: 0 }}
+        teams={[instance({ blueprintUuid: testUuid(1), name: 'FC United' })]}
+        onBack={vi.fn()}
+        onCreate={vi.fn()}
+      />
+    );
+    const row = screen.getByRole('listitem');
+    expect(row).toHaveTextContent('FC United');
+    expect(row).toHaveTextContent('Unity');
   });
 });

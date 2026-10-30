@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/preact';
+import { render, screen, within } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { FileScreen } from './FileScreen';
 import * as csvIO from '@/app/data/teamsCsv';
@@ -60,6 +60,9 @@ describe('FileScreen', () => {
       render(<FileScreen />);
 
       await userEvent.click(screen.getByRole('button', { name: 'Import CSV...' }));
+      const dialog = await screen.findByRole('dialog', { name: 'Import teams?' });
+      expect(dialog).toHaveAccessibleDescription('1 new, 0 updated. Continue?');
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Import' }));
 
       expect(
         await screen.findByText('Imported 1 team: 1 new, 0 updated.')
@@ -88,6 +91,9 @@ describe('FileScreen', () => {
       render(<FileScreen />);
 
       await userEvent.click(screen.getByRole('button', { name: 'Import JSON...' }));
+      const dialog = await screen.findByRole('dialog', { name: 'Import teams?' });
+      expect(dialog).toHaveAccessibleDescription('1 new, 0 updated. Continue?');
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Import' }));
 
       expect(
         await screen.findByText('Imported 1 team: 1 new, 0 updated.')
@@ -105,6 +111,23 @@ describe('FileScreen', () => {
 
       expect(await screen.findByText(/invalid tier/)).toBeInTheDocument();
       expect(teamFields(useDatabaseStore.getState().blueprints)).toEqual([]);
+    });
+
+    it('changes nothing on Cancel in the import confirm', async () => {
+      vi.spyOn(jsonIO, 'importTeamsJson').mockResolvedValue([
+        { slug: 'fc-united', name: 'FC United', colour: '#E53935', tier: 'B' },
+      ]);
+      render(<FileScreen />);
+
+      await userEvent.click(screen.getByRole('button', { name: 'Import JSON...' }));
+      const dialog = await screen.findByRole('dialog', { name: 'Import teams?' });
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+
+      expect(
+        screen.queryByRole('dialog', { name: 'Import teams?' })
+      ).not.toBeInTheDocument();
+      expect(teamFields(useDatabaseStore.getState().blueprints)).toEqual([]);
+      expect(useFileStore.getState().status).toBeNull();
     });
 
     it('does not change the roster when the import dialog is canceled', async () => {

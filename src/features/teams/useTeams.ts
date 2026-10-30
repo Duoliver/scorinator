@@ -1,8 +1,8 @@
 import { useState } from 'preact/hooks';
 import type { TeamFields } from '@/domain';
-import { formatTeamCount } from '@/features/components';
+import { formatTeamCount, useTeamImport } from '@/features/components';
 import { getErrorMessage } from '@/app/getErrorMessage';
-import { importTeamsFromFile } from '@/app/loadActions';
+import { readTeamsFromFile } from '@/app/loadActions';
 import { setFileStatus } from '@/app/state/fileActions';
 import {
   addTeamBlueprint,
@@ -16,7 +16,7 @@ import type { TeamDeleteConfirm, TeamDrawerState, Teams } from './types';
 
 /** The Blueprints, and the one drawer that creates or edits a team. The
  * import is the same one-dialog CSV-or-JSON import as the Leagues empty
- * state. Export stays on the File screen only (Task 27).
+ * state, and asks first with the counts (Task 168). Export stays on the File screen only (Task 27).
  *
  * A create takes no slug from the form: `addTeamBlueprint` makes a unique one
  * (Task 75). An edit keeps the slug, unless the user regenerates it in the
@@ -26,6 +26,7 @@ export function useTeams(): Teams {
   const [drawer, setDrawer] = useState<TeamDrawerState>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<TeamDeleteConfirm | null>(null);
   const editedTeam = drawer?.mode === 'edit' ? teams[drawer.index] : undefined;
+  const { startImport, importConfirm } = useTeamImport();
 
   const handleSave = (record: TeamFields): void => {
     const { name, colour, tier, location, trigrams } = record;
@@ -69,6 +70,7 @@ export function useTeams(): Teams {
     deleteConfirm,
     confirmDelete,
     cancelDelete: () => setDeleteConfirm(null),
-    handleImport: importTeamsFromFile,
+    handleImport: () => startImport(readTeamsFromFile),
+    importConfirm,
   };
 }

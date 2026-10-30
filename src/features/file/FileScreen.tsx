@@ -1,5 +1,5 @@
 import type { JSX } from 'preact';
-import { Button, Select } from '@/design-system';
+import { Button, ConfirmDialog, Select } from '@/design-system';
 import { StatusLine } from '@/features/components';
 import { FileCard } from './FileCard';
 import { useFileManager } from './useFileManager';
@@ -71,6 +71,8 @@ export function FileScreen(): JSX.Element {
           </Button>
         </FileCard>
       </div>
+
+      {file.importConfirm && <ConfirmDialog {...file.importConfirm} />}
     </div>
   );
 }

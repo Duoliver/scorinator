@@ -1,5 +1,5 @@
 import type { RefObject } from 'preact';
-import type { FieldHandle, SelectOption } from '@/design-system';
+import type { ConfirmDialogProps, FieldHandle, SelectOption } from '@/design-system';
 
 /** What `useFileManager` gives `FileScreen`. */
 export interface FileManager {
@@ -10,6 +10,7 @@ export interface FileManager {
   resultsSelect: RefObject<FieldHandle<string>>;
   handleImportCsv: () => Promise<void>;
   handleImportJson: () => Promise<void>;
+  importConfirm: ConfirmDialogProps | null;
   handleExportTeams: () => Promise<void>;
   handleExportResults: () => Promise<void>;
 }

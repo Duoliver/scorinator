@@ -88,6 +88,10 @@ describe('LeaguesDashboardScreen', () => {
       render(<LeaguesDashboardScreen />);
 
       await userEvent.click(screen.getByRole('button', { name: 'Load teams...' }));
+      const dialog = await screen.findByRole('dialog', { name: 'Import teams?' });
+      expect(dialog).toHaveAccessibleDescription('1 new, 0 updated. Continue?');
+      expect(useDatabaseStore.getState().blueprints).toEqual([]);
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Import' }));
 
       expect(useDatabaseStore.getState().blueprints.map((team) => team.slug)).toEqual([
         'fc-united',
@@ -96,6 +100,23 @@ describe('LeaguesDashboardScreen', () => {
         tone: 'info',
         message: 'Imported 1 team: 1 new, 0 updated.',
       });
+    });
+
+    it('changes nothing on Cancel in the import confirm', async () => {
+      vi.spyOn(teamsFile, 'importTeamsFile').mockResolvedValue([
+        { slug: 'fc-united', name: 'FC United', colour: '#E53935', tier: 'B' },
+      ]);
+      render(<LeaguesDashboardScreen />);
+
+      await userEvent.click(screen.getByRole('button', { name: 'Load teams...' }));
+      const dialog = await screen.findByRole('dialog', { name: 'Import teams?' });
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+
+      expect(
+        screen.queryByRole('dialog', { name: 'Import teams?' })
+      ).not.toBeInTheDocument();
+      expect(useDatabaseStore.getState().blueprints).toEqual([]);
+      expect(useFileStore.getState().status).toBeNull();
     });
 
     it('has no Load league button: leagues live in the database (Task 161)', () => {

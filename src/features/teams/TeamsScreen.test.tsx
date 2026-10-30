@@ -301,17 +301,46 @@ describe('TeamsScreen', () => {
       ).toBeInTheDocument();
     });
 
-    it('imports teams from one CSV-or-JSON dialog and lists them', async () => {
-      const importer = vi.spyOn(teamsFile, 'importTeamsFile').mockResolvedValue([
+    it('asks first, with the counts, and changes nothing before Import', async () => {
+      openTestDatabase([
         { slug: 'fc-united', name: 'FC United', colour: '#E53935', tier: 'B' },
+      ]);
+      const importer = vi.spyOn(teamsFile, 'importTeamsFile').mockResolvedValue([
+        { slug: 'fc-united', name: 'FC United Renamed', colour: '#E53935', tier: 'B' },
         { slug: 'harborview-sc', name: 'Harborview SC', colour: '#1E88E5', tier: 'A' },
       ]);
       render(<TeamsScreen />);
 
       await userEvent.click(screen.getByRole('button', { name: 'Import teams...' }));
 
+      const dialog = await screen.findByRole('dialog', { name: 'Import teams?' });
       expect(importer).toHaveBeenCalledTimes(1);
-      expect(await screen.findByText('FC United')).toBeInTheDocument();
+      expect(dialog).toHaveAccessibleDescription('1 new, 1 updated. Continue?');
+      expect(
+        within(dialog).getByRole('button', { name: 'Cancel' })
+      ).toBeInTheDocument();
+      expect(
+        within(dialog).getByRole('button', { name: 'Import' })
+      ).toBeInTheDocument();
+      expect(screen.getByText('1 team')).toBeInTheDocument();
+      expect(useFileStore.getState().status).toBeNull();
+    });
+
+    it('imports the teams on Import and lists them', async () => {
+      vi.spyOn(teamsFile, 'importTeamsFile').mockResolvedValue([
+        { slug: 'fc-united', name: 'FC United', colour: '#E53935', tier: 'B' },
+        { slug: 'harborview-sc', name: 'Harborview SC', colour: '#1E88E5', tier: 'A' },
+      ]);
+      render(<TeamsScreen />);
+
+      await userEvent.click(screen.getByRole('button', { name: 'Import teams...' }));
+      const dialog = await screen.findByRole('dialog', { name: 'Import teams?' });
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Import' }));
+
+      expect(
+        screen.queryByRole('dialog', { name: 'Import teams?' })
+      ).not.toBeInTheDocument();
+      expect(screen.getByText('FC United')).toBeInTheDocument();
       expect(screen.getByText('Harborview SC')).toBeInTheDocument();
       expect(screen.getByText('2 teams')).toBeInTheDocument();
       expect(useFileStore.getState().status).toEqual({
@@ -320,17 +349,36 @@ describe('TeamsScreen', () => {
       });
     });
 
-    it('changes nothing when the dialog is canceled', async () => {
+    it('changes nothing on Cancel in the confirm', async () => {
+      vi.spyOn(teamsFile, 'importTeamsFile').mockResolvedValue([
+        { slug: 'fc-united', name: 'FC United', colour: '#E53935', tier: 'B' },
+      ]);
+      render(<TeamsScreen />);
+
+      await userEvent.click(screen.getByRole('button', { name: 'Import teams...' }));
+      const dialog = await screen.findByRole('dialog', { name: 'Import teams?' });
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+
+      expect(
+        screen.queryByRole('dialog', { name: 'Import teams?' })
+      ).not.toBeInTheDocument();
+      expect(screen.getByText('0 teams')).toBeInTheDocument();
+      expect(useDatabaseStore.getState().blueprints).toEqual([]);
+      expect(useFileStore.getState().status).toBeNull();
+    });
+
+    it('changes nothing when the file dialog is canceled', async () => {
       vi.spyOn(teamsFile, 'importTeamsFile').mockResolvedValue(null);
       render(<TeamsScreen />);
 
       await userEvent.click(screen.getByRole('button', { name: 'Import teams...' }));
 
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
       expect(screen.getByText('0 teams')).toBeInTheDocument();
       expect(useFileStore.getState().status).toBeNull();
     });
 
-    it('reports an import error in the status line', async () => {
+    it('reports a read error in the status line, with no confirm', async () => {
       vi.spyOn(teamsFile, 'importTeamsFile').mockRejectedValue(
         new Error('Row 2: Tier is required.')
       );
@@ -342,7 +390,21 @@ describe('TeamsScreen', () => {
         tone: 'error',
         message: 'Row 2: Tier is required.',
       });
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
       expect(screen.getByText('0 teams')).toBeInTheDocument();
+    });
+
+    it('says the file has no teams, with no confirm (choice 10)', async () => {
+      vi.spyOn(teamsFile, 'importTeamsFile').mockResolvedValue([]);
+      render(<TeamsScreen />);
+
+      await userEvent.click(screen.getByRole('button', { name: 'Import teams...' }));
+
+      expect(useFileStore.getState().status).toEqual({
+        tone: 'info',
+        message: 'The file has no teams.',
+      });
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
   });
 });

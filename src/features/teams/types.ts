@@ -1,4 +1,4 @@
-import type { TableColumn } from '@/design-system';
+import type { ConfirmDialogProps, TableColumn } from '@/design-system';
 import type { TeamBlueprint, TeamFields } from '@/domain';
 
 /** Which drawer is open: none, a new team, or the team at `index`. */
@@ -38,4 +38,5 @@ export interface Teams {
   confirmDelete: () => void;
   cancelDelete: () => void;
   handleImport: () => Promise<void>;
+  importConfirm: ConfirmDialogProps | null;
 }

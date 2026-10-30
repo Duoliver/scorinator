@@ -21,6 +21,7 @@ export function TeamsScreen(): JSX.Element {
     confirmDelete,
     cancelDelete,
     handleImport,
+    importConfirm,
   } = useTeams();
 
   return (
@@ -60,6 +61,8 @@ export function TeamsScreen(): JSX.Element {
           onCancel={cancelDelete}
         />
       )}
+
+      {importConfirm && <ConfirmDialog {...importConfirm} />}
     </div>
   );
 }

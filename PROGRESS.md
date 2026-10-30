@@ -72,7 +72,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 119 | Teams screen: the Location and Trigrams columns and drawer fields, the `-2` slug preview | `features/teams`, `features/components` | ✅ Done | 2026-10-30 | 2026-10-30 | [119](/docs/tasks/119-teams-screen.md) | M2. US-09.1, 09.3, 09.6. Columns, fields, `-2` preview built. Split: 167, 168. |
 | 120 | Wizard Teams step, part 1: the add dialog, Load them all, empty states, Import slug list | `features/leagues` | ✅ Done | 2026-10-30 | 2026-10-30 | [120](/docs/tasks/120-wizard-teams-part-1.md) | M2. US-08.1, 08.2, 08.3, 08.7. Team list on Instances, add dialog, Load them all, empty states, slug list built. |
 | 121 | Wizard Teams step, part 2: Switch, the live trigram pick, "Create league" | `features/leagues` | ✅ Done | 2026-10-30 | 2026-10-30 | [121](/docs/tasks/121-wizard-teams-part-2.md) | M2. US-08.4 to 08.6, 08.8, 09.6 (league). Switch, live trigrams, create rules built. Split: Edit to 172. |
-| 122 | M2 smoke check | all | ⬜ Not started |  |  |  | M2. After 121, 168, 172, 173. |
+| 122 | M2 smoke check | all | ✅ Done | 2026-10-30 | 2026-10-30 | [122](/docs/tasks/122-m2-smoke-check.md) | M2 complete. M2 end-to-end test added. The user checked 11 rows in the real app. |
 | 123 | `generateSingleDuels`, the shared pairing, the doc comment fix | `engine/round-robin` | ⬜ Not started |  |  |  | M3. US-06.1. After 122. |
 | 124 | Standings v2: fixed lots, the recursive mini-league, the cross-group order, best M | `engine/standings` | ⬜ Not started |  |  |  | M3. US-01.4, 01.6, 02.2, Task 78. After 122. |
 | 125 | The group draw: size or count, add to the smallest group, moves | `engine/round-robin` | ⬜ Not started |  |  |  | M3. US-02.1, 02.5. After 122. |

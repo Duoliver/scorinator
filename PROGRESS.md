@@ -76,9 +76,9 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 123 | `generateSingleDuels`, the shared pairing, the doc comment fix | `engine/round-robin` | ✅ Done | 2026-11-01 | 2026-11-01 | [123](/docs/tasks/123-generate-single-duels.md) | M3. US-06.1. 12 new tests. No caller yet: Task 126 is the first. |
 | 124 | Standings v2: fixed lots, the recursive mini-league, the cross-group order, best M | `engine/standings`, `engine/identity` | ✅ Done | 2026-11-01 | 2026-11-01 | [124](/docs/tasks/124-standings-v2.md) | M3. US-01.4, 01.6, 02.2, Task 78. 24 new tests. Task 128 passes the lots. |
 | 125 | The group draw: size or count, add to the smallest group, moves | `engine/round-robin` | ✅ Done | 2026-11-01 | 2026-11-01 | [125](/docs/tasks/125-group-draw.md) | M3. US-02.1, 02.5. 35 new tests. Task 130 is the first caller. |
-| 126 | Phase chain rules: bracket last, fit checks, qualifier counts, build and start a phase, the lock | `engine/phases` | ⬜ Not started |  |  |  | M3. US-01.3, 01.4, 01.6, 07.1, 07.3. After 123, 124, 125. |
+| 126 | Phase chain rules: bracket last, fit checks, qualifier counts, the best M suggestion | `engine/phases` | ✅ Done | 2026-11-01 | 2026-11-01 | [126](/docs/tasks/126-phase-chain-rules.md) | M3. US-01.3, 01.4, 01.6. 27 new tests. Phase start split to 175. |
 | 127 | Dropdown menu | `design-system/` | ⬜ Not started |  |  |  | M3. US-02.5 (Move to group), US-10.1. After 122. |
-| 128 | League state with phases: scorinate in a phase, start the next phase, the progress text | `app/` | ⬜ Not started |  |  |  | M3. US-01.2, 07.1, 07.3. After 126. |
+| 128 | League state with phases: scorinate in a phase, start the next phase, the progress text | `app/`, `domain/` | ⬜ Not started |  |  |  | M3. US-01.2, 07.1, 07.3. After 175. Adds the domain phase types (Task 126 choice 6). |
 | 129 | Wizard Phases step: phases, formats, advancement, best M, warnings | `features/leagues` | ⬜ Not started |  |  |  | M3. US-01.1 to 01.6. After 128. |
 | 130 | Wizard Teams step with groups: group columns, Shuffle, drag, Move to group | `features/leagues` | ⬜ Not started |  |  |  | M3. US-02.1, 02.4, 02.5. After 127, 129. |
 | 131 | League Detail with phases: tabs, header, badge, group cards, group fixtures, dashboard card text | `features/leagues`, `features/standings` | ⬜ Not started |  |  |  | M3. US-01.2, 02.2, 02.4. After 128. |
@@ -124,6 +124,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 171 | The league name on the wizard Teams step: one font step larger, and bold | `features/leagues` | ✅ Done | 2026-10-30 | 2026-10-30 | [171](/docs/tasks/171-teams-step-league-name.md) | Task created by User - 2026-10-30. Name at `--font-size-xl`, bold, `--color-fg`. |
 | 172 | Edit a team for this league, in the wizard: Original state, OVR, Tier roll, fixed trigram, unique name, Reset | `features/leagues`, `features/components` | ✅ Done | 2026-10-30 | 2026-10-30 | [172](/docs/tasks/172-wizard-edit-team.md) | Split from 121 - 2026-10-30. US-08.4, 09.6. Edit drawer built, with shared `TeamForm` fields. |
 | 173 | The slug check in the team CSV and JSON imports: letters, digits, and hyphens only | `engine/identity`, `adapters/` | ✅ Done | 2026-10-30 | 2026-10-30 | [173](/docs/tasks/173-import-slug-check.md) | Task created by User - 2026-10-30. From the Task 168 review. `isSlug` built, CSV and JSON stop on a bad slug. The user checked the real app. |
+| 175 | The phase start: qualifiers in seed order, the phase build, the lock | `engine/phases` | ⬜ Not started |  |  | [175](/docs/tasks/175-phase-start.md) | M3. US-07.1, 07.3. Split from 126 (choice 1), 2026-11-01. After 126. |
 
 **Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input, see Open Questions) · 🟩 Review · ✅ Done · ❌ Cancelled (the reason is in the Notes column)
 
@@ -171,6 +172,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-11-01 (Task 126 — phase chain rules):** The user agreed six choices. (1) Split: Task 126 keeps the rules before the start, new Task 175 takes the phase start and the lock. Task 128 waits for 175. (2) `PhasePlan` lives in `engine/phases`, and Task 128 can reuse it in `domain/`. (3) The checks give problem codes, not messages. (4) `checkPhaseFit` takes the real phase-1 group sizes. (5) One group in size mode is not a problem. (6) Task 128 adds the domain phase types for single duels and Groups, and fixes the `domain/league.ts` comment. Detail in [`docs/tasks/126-phase-chain-rules.md`](/docs/tasks/126-phase-chain-rules.md).
 
 - **2026-11-01 (Task 125 — the group draw):** The user agreed six choices. (1) The groups are a `TeamId[][]`, index 0 is Group A. (2) The draw shuffles, then deals into the `groupSizes` sizes. (3) Spec gap, the user chose the resize: in size mode, more groups take random teams from the largest groups until sizes differ by 1 at most. Fewer groups: the last smallest group gives its teams to the smallest groups. (4) A resize also evens out sizes from manual moves. (5) A moved team goes to the end of its group. (6) Labels after `Z` are `AA`, `AB`. Detail in [`docs/tasks/125-group-draw.md`](/docs/tasks/125-group-draw.md).
 

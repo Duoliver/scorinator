@@ -17,7 +17,8 @@ import type { PhaseCardView } from './PhaseCard';
  * view for each card, with its counts, its problems, and its suggestion. */
 export function usePhasesStep(
   phaseList: PhaseList,
-  teamCount: number
+  teamCount: number,
+  firstGroupSizes?: readonly number[]
 ): {
   cards: PhaseCardView[];
   addable: boolean;
@@ -28,7 +29,7 @@ export function usePhasesStep(
 } {
   const { plans } = phaseList;
   return useMemo(() => {
-    const { counts, problems } = phaseChecks(plans, teamCount);
+    const { counts, problems } = phaseChecks(plans, teamCount, firstGroupSizes);
     const textsOf = (phase: number): string[] =>
       problems
         .filter((problem) => 'phase' in problem && problem.phase === phase)
@@ -52,5 +53,5 @@ export function usePhasesStep(
         .map((problem) => phaseProblemText(problem, plans)),
       groupsLast: endsWithGroups(plans),
     };
-  }, [plans, teamCount]);
+  }, [plans, teamCount, firstGroupSizes]);
 }

@@ -30,16 +30,18 @@ export const HOME_ADVANTAGE_NOTE =
 export const COUNTS_LATER_NOTE = 'The counts show when the league has 2 teams.';
 
 /** The fit check needs a team count: before 2 teams, only the chain
- * problems and no counts (choice 3). */
+ * problems and no counts (choice 3). `firstGroupSizes` are the sizes of the
+ * phase-1 draw of the Teams step, with its moves (Task 130). */
 export function phaseChecks(
   plans: readonly PhasePlan[],
-  teamCount: number
+  teamCount: number,
+  firstGroupSizes?: readonly number[]
 ): { counts: PhaseTeamCount[] | undefined; problems: PhaseProblem[] } {
   const chain = checkPhaseChain(plans);
   if (teamCount < 2) return { counts: undefined, problems: chain };
   return {
-    counts: phaseTeamCounts(plans, teamCount),
-    problems: [...chain, ...checkPhaseFit(plans, teamCount)],
+    counts: phaseTeamCounts(plans, teamCount, firstGroupSizes),
+    problems: [...chain, ...checkPhaseFit(plans, teamCount, firstGroupSizes)],
   };
 }
 

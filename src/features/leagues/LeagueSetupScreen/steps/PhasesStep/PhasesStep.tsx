@@ -22,10 +22,11 @@ export type { PhasesStepProps };
 export function PhasesStep({
   phaseList,
   teamCount,
+  firstGroupSizes,
   onBack,
   onNext,
 }: PhasesStepProps): JSX.Element {
-  const step = usePhasesStep(phaseList, teamCount);
+  const step = usePhasesStep(phaseList, teamCount, firstGroupSizes);
 
   return (
     <div class={styles.step}>

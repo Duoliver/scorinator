@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { JSX } from 'preact';
-import { render, screen, within } from '@testing-library/preact';
+import { fireEvent, render, screen, within } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import type { TeamInstance } from '@/domain';
 import { TIER_OVR_RANGES } from '@/engine/tier-ovr';
 import * as slugListTxt from '@/app/data/slugListTxt';
 import { useDatabaseStore } from '@/app/state/databaseStore';
 import { useFileStore } from '@/app/state/fileStore';
-import { openTestDatabase, testUuid } from '@/test/databaseRecords';
+import { instance, openTestDatabase, testUuid } from '@/test/databaseRecords';
 import { useTeamList } from '@/features/leagues/LeagueSetupScreen/useTeamList';
 import { TeamsStep } from './TeamsStep';
 
@@ -544,5 +544,136 @@ describe('TeamsStep, the league summary from the Details step', () => {
   it('shows Untitled league for a blank name, as the Review step does', () => {
     render(<Harness name="" />);
     expect(screen.getByText('Untitled league')).toBeInTheDocument();
+  });
+});
+
+describe('TeamsStep with a phase-1 draw (Task 130)', () => {
+  const A = '00000000-0000-4000-8000-0000000000d1';
+  const B = '00000000-0000-4000-8000-0000000000d2';
+  const C = '00000000-0000-4000-8000-0000000000d3';
+  const D = '00000000-0000-4000-8000-0000000000d4';
+  const fourTeams = [
+    instance({ blueprintUuid: A, slug: 'alpha', name: 'Alpha' }),
+    instance({ blueprintUuid: B, slug: 'bravo', name: 'Bravo' }),
+    instance({ blueprintUuid: C, slug: 'charlie', name: 'Charlie' }),
+    instance({ blueprintUuid: D, slug: 'delta', name: 'Delta' }),
+  ];
+  const draw = [
+    [A, C],
+    [B, D],
+  ];
+
+  function renderGroups(
+    overrides: Partial<{
+      onMoveTeam: (uuid: string, group: number) => void;
+      onShuffleGroups: () => void;
+      onRemoveTeam: (uuid: string) => void;
+    }> = {}
+  ): void {
+    render(
+      <TeamsStep
+        {...summary}
+        teams={fourTeams}
+        fixedTrigrams={{}}
+        onAddTeams={vi.fn()}
+        onRemoveTeam={overrides.onRemoveTeam ?? vi.fn()}
+        onSwitchTeam={vi.fn()}
+        onUpdateTeam={vi.fn()}
+        groups={draw}
+        groupsAdvanceText="Top 1 of each group advance to the Bracket."
+        onShuffleGroups={overrides.onShuffleGroups ?? vi.fn()}
+        onMoveTeam={overrides.onMoveTeam ?? vi.fn()}
+      />
+    );
+  }
+
+  const groupCard = (name: string): HTMLElement => screen.getByRole('region', { name });
+
+  it('shows one card for each group, with its teams, in place of the table', () => {
+    renderGroups();
+    expect(screen.queryByRole('table', { name: 'Teams' })).not.toBeInTheDocument();
+    expect(within(groupCard('Group A')).getByText('Alpha')).toBeInTheDocument();
+    expect(within(groupCard('Group A')).getByText('Charlie')).toBeInTheDocument();
+    expect(within(groupCard('Group B')).getByText('Bravo')).toBeInTheDocument();
+    expect(within(groupCard('Group B')).getByText('Delta')).toBeInTheDocument();
+  });
+
+  it('shows the advancement line under the cards', () => {
+    renderGroups();
+    expect(
+      screen.getByText('Top 1 of each group advance to the Bracket.')
+    ).toBeInTheDocument();
+  });
+
+  it('shuffles the groups', async () => {
+    const onShuffleGroups = vi.fn();
+    renderGroups({ onShuffleGroups });
+    await userEvent.click(screen.getByRole('button', { name: '⟲ Shuffle groups' }));
+    expect(onShuffleGroups).toHaveBeenCalledOnce();
+  });
+
+  it('has a row menu with Edit, Switch, Move to each other group, and Remove', async () => {
+    const onMoveTeam = vi.fn();
+    const onRemoveTeam = vi.fn();
+    renderGroups({ onMoveTeam, onRemoveTeam });
+    await userEvent.click(screen.getByRole('button', { name: 'Options for Alpha' }));
+    expect(screen.getAllByRole('menuitem').map((item) => item.textContent)).toEqual([
+      '✎Edit',
+      '⇄Switch',
+      'Move to Group B',
+      '✕Remove',
+    ]);
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Move to Group B' }));
+    expect(onMoveTeam).toHaveBeenCalledWith(A, 1);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Options for Delta' }));
+    await userEvent.click(screen.getByRole('menuitem', { name: /Remove/ }));
+    expect(onRemoveTeam).toHaveBeenCalledWith(D);
+  });
+
+  it('opens the Edit drawer from the row menu', async () => {
+    renderGroups();
+    await userEvent.click(screen.getByRole('button', { name: 'Options for Bravo' }));
+    await userEvent.click(screen.getByRole('menuitem', { name: /Edit/ }));
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+  });
+
+  it('moves a team on a drop onto another card', () => {
+    const onMoveTeam = vi.fn();
+    renderGroups({ onMoveTeam });
+    const data = new Map<string, string>();
+    const dataTransfer = {
+      setData: (type: string, value: string): void => {
+        data.set(type, value);
+      },
+      getData: (type: string): string => data.get(type) ?? '',
+      effectAllowed: 'move',
+      dropEffect: 'move',
+    };
+    const row = within(groupCard('Group A'))
+      .getByText('Charlie')
+      .closest('li') as HTMLElement;
+    fireEvent.dragStart(row, { dataTransfer });
+    fireEvent.dragOver(groupCard('Group B'), { dataTransfer });
+    fireEvent.drop(groupCard('Group B'), { dataTransfer });
+    expect(onMoveTeam).toHaveBeenCalledWith(C, 1);
+  });
+
+  it('does nothing on a drop onto the same card', () => {
+    const onMoveTeam = vi.fn();
+    renderGroups({ onMoveTeam });
+    const data = new Map<string, string>();
+    const dataTransfer = {
+      setData: (type: string, value: string): void => {
+        data.set(type, value);
+      },
+      getData: (type: string): string => data.get(type) ?? '',
+    };
+    const row = within(groupCard('Group A'))
+      .getByText('Alpha')
+      .closest('li') as HTMLElement;
+    fireEvent.dragStart(row, { dataTransfer });
+    fireEvent.drop(groupCard('Group A'), { dataTransfer });
+    expect(onMoveTeam).not.toHaveBeenCalled();
   });
 });

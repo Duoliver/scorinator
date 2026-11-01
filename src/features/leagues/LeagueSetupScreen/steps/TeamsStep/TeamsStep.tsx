@@ -5,6 +5,7 @@ import { SetupChips } from '@/features/leagues/LeagueSetupScreen/steps/SetupChip
 import type TeamsStepProps from './types';
 import type { TeamsStepState } from './types';
 import { EditTeamDrawer } from './EditTeamDrawer';
+import { GroupCards } from './GroupCards';
 import { describeNotFound, getRowKey } from './helpers';
 import { useTeamsStep } from './useTeamsStep';
 import styles from './TeamsStep.module.css';
@@ -12,10 +13,22 @@ import styles from './TeamsStep.module.css';
 export type { TeamsStepProps };
 
 /** "+ Add teams", "Load them all", and "Import slug list": in the empty
- * state and above the list (US-08.1, US-08.2, US-08.7). */
-function AddActions({ step }: { step: TeamsStepState }): JSX.Element {
+ * state and above the list (US-08.1, US-08.2, US-08.7). With a phase-1
+ * draw, also "⟲ Shuffle groups" (US-02.1). */
+function AddActions({
+  step,
+  onShuffleGroups,
+}: {
+  step: TeamsStepState;
+  onShuffleGroups?: () => void;
+}): JSX.Element {
   return (
     <div class={styles.actions}>
+      {onShuffleGroups && (
+        <Button size="sm" variant="secondary" onClick={onShuffleGroups}>
+          ⟲ Shuffle groups
+        </Button>
+      )}
       <Button size="sm" onClick={step.openPicker}>
         + Add teams
       </Button>
@@ -37,11 +50,12 @@ function AddActions({ step }: { step: TeamsStepState }): JSX.Element {
 /** The list, or one of the two empty states (US-08.3). */
 function TeamListArea({
   step,
-  teams,
+  props,
 }: {
   step: TeamsStepState;
-  teams: TeamsStepProps['teams'];
+  props: Omit<TeamsStepProps, 'onBack' | 'onNext'>;
 }): JSX.Element {
+  const { teams, groups } = props;
   const isEmpty = teams.length === 0;
   if (isEmpty && step.hasNoBlueprints) {
     return (
@@ -64,6 +78,27 @@ function TeamListArea({
         </p>
         <AddActions step={step} />
       </div>
+    );
+  }
+  if (groups) {
+    return (
+      <>
+        <AddActions step={step} onShuffleGroups={props.onShuffleGroups} />
+        <GroupCards
+          groups={groups}
+          teams={teams}
+          locationOf={step.locationOf}
+          onEdit={step.openEdit}
+          onSwitch={step.openSwitch}
+          onRemove={props.onRemoveTeam}
+          onMove={(uuid, groupIndex) => props.onMoveTeam?.(uuid, groupIndex)}
+        />
+        {props.groupsAdvanceText && (
+          <p class={styles.count}>{props.groupsAdvanceText}</p>
+        )}
+        <span class={styles.count}>{step.countText}</span>
+        {step.warning && <p class={styles.warning}>{step.warning}</p>}
+      </>
     );
   }
   return (
@@ -106,7 +141,7 @@ export function TeamsStep({ onBack, onNext, ...props }: TeamsStepProps): JSX.Ele
           </div>
         )}
 
-        <TeamListArea step={step} teams={props.teams} />
+        <TeamListArea step={step} props={props} />
 
         {(step.overlay === 'picker' || step.overlay === 'pickerTeam') && (
           <PickerDialog

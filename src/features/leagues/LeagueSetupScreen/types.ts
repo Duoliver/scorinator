@@ -57,6 +57,12 @@ export interface LeagueSetup extends TeamList {
   detailsStepRef: RefObject<DetailsStepHandle>;
   /** The phase chain of the Phases step (Task 129). */
   phaseList: PhaseList;
+  /** The phase-1 draw as Blueprint UUIDs, or `null` (Task 130). */
+  groups: string[][] | null;
+  /** The line under the phase-1 group cards, or `undefined`. */
+  groupsAdvanceText: string | undefined;
+  shuffleGroups: () => void;
+  moveTeam: (blueprintUuid: string, groupIndex: number) => void;
   goToDetails: () => void;
   goToPhases: () => void;
   goToTeams: () => void;

@@ -80,7 +80,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 127 | Dropdown menu | `design-system/` | ✅ Done | 2026-11-01 | 2026-11-01 | [127](/docs/tasks/127-dropdown-menu.md) | M3. US-02.5 (Move to group), US-10.1. 27 new tests. Task 130 and Task 150 use it. |
 | 128 | League state with phases: create with plans, start the next phase, the progress text | `app/`, `features/standings` | ✅ Done | 2026-11-01 | 2026-11-01 | [128](/docs/tasks/128-league-state-with-phases.md) | M3. US-01.2, 07.1, 07.3. 29 new tests. Tasks 129 to 132 call the actions. |
 | 129 | Wizard Phases step: phases, formats, groups setting, advancement | `features/leagues`, `app/state` | ✅ Done | 2026-11-01 | 2026-11-01 | [129](/docs/tasks/129-wizard-phases-step.md) | M3. US-01.1 to 01.4, 01.6. 43 new tests. Counts and warnings in 177. Layout polish in 178. |
-| 130 | Wizard Teams step with groups: group columns, Shuffle, drag, Move to group | `features/leagues` | ⬜ Not started |  |  |  | M3. US-02.1, 02.4, 02.5. After 127, 129. |
+| 130 | Wizard Teams step with groups: group columns, Shuffle, drag, Move to group | `features/leagues`, `app/state` | ✅ Done | 2026-11-01 | 2026-11-01 | [130](/docs/tasks/130-wizard-teams-step-groups.md) | M3. US-02.1, 02.4, 02.5. 27 new tests. The 22px ⋮ goes to the polish. |
 | 131 | League Detail with phases: tabs, header, badge, group cards, group fixtures, dashboard card text | `features/leagues`, `features/standings` | ⬜ Not started |  |  |  | M3. US-01.2, 02.2, 02.4. After 128. |
 | 132 | Phase transition: "Start phase N", the confirm, the lock, the empty tab, the qualifier highlight | `features/leagues` | ⬜ Not started |  |  |  | M3. US-07.1 to 07.3. After 131. |
 | 133 | M3 smoke check | all | ⬜ Not started |  |  |  | M3. After 130, 132. |
@@ -174,6 +174,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-11-01 (Task 130 — the Teams step with groups):** The user agreed six choices. (1) The draft keeps the phase-1 draw. Each team action changes it, and a phase-1 plan change draws, resizes, or drops it. (2) A group row: ⠿, swatch, name with Location, ⋮. No trigram or Tier. (3) 230px cards that wrap. (4) Browser drag events, the whole card takes the drop, and the ⋮ menu is the keyboard way. (5) The line "Top N of each group advance to the {next short name}.", with the best M form. (6) The wizard allows a group of 1, with the fit problem. Detail in [`docs/tasks/130-wizard-teams-step-groups.md`](/docs/tasks/130-wizard-teams-step-groups.md).
 
 - **2026-11-01 (Task 177 — Phases step counts and warnings):** The user agreed six choices and the problem texts. (1) A new `phaseTeamCounts` in `engine/phases`, which `checkPhaseFit` also uses. (2) One `phaseProblemText` with the texts in the task file. (3) With fewer than 2 teams, no counts and no fit problems on the Phases step. (4) A problem is an error-colour line under its card. The groups warning is muted. (5) The home-advantage note text. (6) "Create league" shows the first problem, and Review lists all of them. Detail in [`docs/tasks/177-phases-step-counts-and-warnings.md`](/docs/tasks/177-phases-step-counts-and-warnings.md).
 

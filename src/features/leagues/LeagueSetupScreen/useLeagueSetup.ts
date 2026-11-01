@@ -19,7 +19,9 @@ import type { LeagueSetup } from './types';
 import { phaseChecks, phaseProblemText } from './phaseChecks';
 import { hasBracketPhase } from './phasePlans';
 import { useLeagueDraftSync } from './useLeagueDraftSync';
+import { groupsAdvanceText } from './phaseOneGroups';
 import { usePhaseList } from './usePhaseList';
+import { usePhaseOneGroups } from './usePhaseOneGroups';
 import { useTeamList } from './useTeamList';
 
 /** The League Setup wizard: the draft, the step changes, and the create. */
@@ -34,6 +36,12 @@ export function useLeagueSetup(): LeagueSetup {
   const [step, setStep] = useState<LeagueSetupStep>(initialDraft.step);
   const teamList = useTeamList(initialDraft.teams, initialDraft.fixedTrigrams);
   const phaseList = usePhaseList(initialDraft.plans);
+  const phaseOne = usePhaseOneGroups(
+    teamList,
+    phaseList.plans,
+    initialDraft.groups ?? null
+  );
+  const firstGroupSizes = phaseOne.groups?.map((group) => group.length);
   const [status, setStatus] = useState<string | null>(null);
 
   const detailsStepRef = useRef<DetailsStepHandle>(null);
@@ -45,6 +53,7 @@ export function useLeagueSetup(): LeagueSetup {
       teams: teamList.teams,
       fixedTrigrams: teamList.fixedTrigrams,
       plans: phaseList.plans,
+      groups: phaseOne.groups,
       step,
     },
     detailsStepRef
@@ -70,7 +79,8 @@ export function useLeagueSetup(): LeagueSetup {
   // The phase problems need the team count (Task 177 choice 3).
   const phaseProblems = phaseChecks(
     phaseList.plans,
-    teamList.teams.length
+    teamList.teams.length,
+    firstGroupSizes
   ).problems.map((problem) => phaseProblemText(problem, phaseList.plans));
   // A bracket phase cannot start before Task 139, so "Create league" stays
   // off (Task 129 choice 2). A phase problem shows its first text (Task 177
@@ -105,6 +115,7 @@ export function useLeagueSetup(): LeagueSetup {
         teams: teamList.teams,
         fixedTrigrams: teamList.fixedTrigrams,
         plans: phaseList.plans,
+        groups: phaseOne.groups ?? undefined,
       });
     } catch (error) {
       // `createLeague` throws for a Blueprint twice in the list, a closed
@@ -131,7 +142,15 @@ export function useLeagueSetup(): LeagueSetup {
     status,
     stepsRef,
     detailsStepRef,
+    // The team actions that also change the phase-1 draw (Task 130).
+    addTeams: phaseOne.addTeams,
+    removeTeam: phaseOne.removeTeam,
+    switchTeam: phaseOne.switchTeam,
     phaseList,
+    groups: phaseOne.groups,
+    groupsAdvanceText: groupsAdvanceText(phaseList.plans),
+    shuffleGroups: phaseOne.shuffleGroups,
+    moveTeam: phaseOne.moveTeam,
     goToDetails: () => goToStep('details'),
     goToPhases: () => goToStep('phases'),
     goToTeams: () => goToStep('teams'),

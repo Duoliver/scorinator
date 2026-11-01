@@ -32,6 +32,7 @@ export function LeagueSetupScreen(): JSX.Element {
         <PhasesStep
           phaseList={setup.phaseList}
           teamCount={setup.teams.length}
+          firstGroupSizes={setup.groups?.map((group) => group.length)}
           onBack={setup.goToDetails}
           onNext={setup.goToTeams}
         />
@@ -51,6 +52,10 @@ export function LeagueSetupScreen(): JSX.Element {
           onRemoveTeam={setup.removeTeam}
           onSwitchTeam={setup.switchTeam}
           onUpdateTeam={setup.updateTeam}
+          groups={setup.groups}
+          groupsAdvanceText={setup.groupsAdvanceText}
+          onShuffleGroups={setup.shuffleGroups}
+          onMoveTeam={setup.moveTeam}
           onBack={setup.goToPhases}
           onNext={setup.goToReview}
         />

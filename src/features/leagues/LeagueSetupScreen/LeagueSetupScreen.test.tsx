@@ -22,6 +22,7 @@ beforeEach(() => {
     teams: [],
     fixedTrigrams: {},
     plans: [{ format: 'round-robin', legs: 'two-way' }],
+    groups: null,
     step: 'details',
   });
 });
@@ -424,6 +425,121 @@ describe('LeagueSetupScreen', () => {
         )
       ).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Create league' })).toBeEnabled();
+    });
+  });
+
+  describe('the Teams step with a phase-1 draw (Task 130)', () => {
+    const FOUR = [
+      { slug: 'alpha', name: 'Alpha', colour: '#E53935', tier: 'B' as const },
+      { slug: 'bravo', name: 'Bravo', colour: '#1E88E5', tier: 'A' as const },
+      { slug: 'charlie', name: 'Charlie', colour: '#43A047', tier: 'C' as const },
+      { slug: 'delta', name: 'Delta', colour: '#000000', tier: 'D' as const },
+    ];
+    const groupsThenRoundRobin = [
+      {
+        format: 'groups' as const,
+        legs: 'single-duels' as const,
+        grouping: { by: 'count' as const, count: 2 },
+        advance: { top: 1, bestOfNext: 0 },
+      },
+      { format: 'round-robin' as const, legs: 'two-way' as const },
+    ];
+
+    async function toTeamsWithAll(): Promise<void> {
+      openTestDatabase(FOUR);
+      useLeagueDraftStore.setState({ plans: groupsThenRoundRobin });
+      render(<LeagueSetupScreen />);
+      await userEvent.type(screen.getByLabelText('League name'), 'Group Cup');
+      await goToTeamsStep();
+      await userEvent.click(screen.getByRole('button', { name: 'Load them all' }));
+    }
+
+    const cardTeams = (name: string): string[] =>
+      within(screen.getByRole('region', { name }))
+        .getAllByRole('listitem')
+        .map((row) => row.textContent ?? '');
+
+    it('puts each added team into the smallest group', async () => {
+      await toTeamsWithAll();
+      expect(cardTeams('Group A')).toHaveLength(2);
+      expect(cardTeams('Group B')).toHaveLength(2);
+      expect(
+        screen.getByText('Top 1 of each group advance to the Round robin.')
+      ).toBeInTheDocument();
+    });
+
+    it('creates the league with the draw of the Teams step', async () => {
+      await toTeamsWithAll();
+      const namesIn = (card: string): string[] =>
+        FOUR.map((team) => team.name)
+          .filter((name) => cardTeams(card).some((row) => row.includes(name)))
+          .sort();
+      const drawn = [namesIn('Group A'), namesIn('Group B')];
+      await userEvent.click(screen.getByText('Next: Review →'));
+      await userEvent.click(screen.getByText('Create league'));
+
+      const [league] = Object.values(useDatabaseStore.getState().leagues);
+      const nameOf = new Map(
+        league.teams.map((team) => [team.blueprintUuid, team.name])
+      );
+      const [phase] = league.content.phases;
+      if (phase.format !== 'groups') throw new Error('expected a Groups phase');
+      expect(
+        phase.groups.map((group) => group.map((uuid) => nameOf.get(uuid)).sort())
+      ).toEqual(drawn);
+    });
+
+    it('moves a team with the row menu, and the fit problem keeps Create off', async () => {
+      await toTeamsWithAll();
+      const [first] = cardTeams('Group A');
+      const name = FOUR.find((team) => first.includes(team.name))?.name ?? '';
+      await userEvent.click(
+        screen.getByRole('button', { name: `Options for ${name}` })
+      );
+      await userEvent.click(screen.getByRole('menuitem', { name: 'Move to Group B' }));
+      expect(cardTeams('Group A')).toHaveLength(1);
+      expect(cardTeams('Group B')).toHaveLength(3);
+
+      await userEvent.click(screen.getByText('Next: Review →'));
+      const text = 'Phase 1: group A has 1 team. A group needs at least 2 teams.';
+      expect(
+        within(screen.getByRole('list', { name: 'Phase problems' })).getByText(text)
+      ).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Create league' })).toBeDisabled();
+    });
+
+    it('draws when phase 1 becomes Groups, and drops the draw when it stops', async () => {
+      openTestDatabase(FOUR);
+      render(<LeagueSetupScreen />);
+      await userEvent.type(screen.getByLabelText('League name'), 'Group Cup');
+      await goToTeamsStep();
+      await userEvent.click(screen.getByRole('button', { name: 'Load them all' }));
+      expect(screen.getByRole('table', { name: 'Teams' })).toBeInTheDocument();
+
+      await userEvent.click(screen.getByRole('tab', { name: '2 · Phases' }));
+      await userEvent.selectOptions(screen.getByLabelText('Format'), 'grp2');
+      await userEvent.click(screen.getByRole('tab', { name: '3 · Teams' }));
+      expect(screen.queryByRole('table', { name: 'Teams' })).not.toBeInTheDocument();
+      expect(screen.getByRole('region', { name: 'Group A' })).toBeInTheDocument();
+
+      await userEvent.click(screen.getByRole('tab', { name: '2 · Phases' }));
+      await userEvent.selectOptions(screen.getByLabelText('Format'), 'rr2');
+      await userEvent.click(screen.getByRole('tab', { name: '3 · Teams' }));
+      expect(screen.getByRole('table', { name: 'Teams' })).toBeInTheDocument();
+    });
+
+    it('keeps the draw in the draft across a remount', async () => {
+      await toTeamsWithAll();
+      cleanup();
+      expect(useLeagueDraftStore.getState().groups?.flat()).toHaveLength(4);
+      render(<LeagueSetupScreen />);
+      expect(cardTeams('Group A')).toHaveLength(2);
+    });
+
+    it('shuffles the draw, and keeps every team', async () => {
+      await toTeamsWithAll();
+      await userEvent.click(screen.getByRole('button', { name: '⟲ Shuffle groups' }));
+      expect([...cardTeams('Group A'), ...cardTeams('Group B')]).toHaveLength(4);
     });
   });
 });

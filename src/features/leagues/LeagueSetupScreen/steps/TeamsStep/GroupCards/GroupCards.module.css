@@ -1,0 +1,58 @@
+/* The group cards wrap to the next line (US-02.4). */
+.cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+/* The handoff group column: 230px wide (Task 130 choice 3). */
+.card {
+  flex: none;
+  width: 14.375rem;
+  display: flex;
+  flex-direction: column;
+  border: var(--border-width) solid var(--color-fg);
+}
+
+/* The dark band with the group name. */
+.name {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-fg);
+  color: var(--color-surface);
+  font-family: var(--font-condensed);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: var(--border-width) solid var(--color-fg);
+  font-size: var(--font-size-md);
+  cursor: grab;
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+.handle {
+  flex: none;
+  color: var(--color-fg-muted);
+}
+
+.label {
+  flex: 1;
+  min-width: 0;
+}

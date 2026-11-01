@@ -22,6 +22,9 @@ export interface LeagueDraft {
   fixedTrigrams: Record<string, string>;
   /** The phase chain of the Phases step (Task 129). */
   plans: PhasePlan[];
+  /** The phase-1 draw as Blueprint UUIDs, when phase 1 is Groups, or
+   * `null` (Task 130). */
+  groups: string[][] | null;
   step: LeagueSetupStep;
 }
 
@@ -31,6 +34,7 @@ export function emptyLeagueDraft(): LeagueDraft {
     teams: [],
     fixedTrigrams: {},
     plans: [{ format: 'round-robin', legs: 'two-way' }],
+    groups: null,
     step: 'details',
   };
 }

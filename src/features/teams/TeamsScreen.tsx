@@ -1,7 +1,7 @@
 import type { JSX } from 'preact';
-import { Button, Table } from '@/design-system';
+import { Button, ConfirmDialog, Table } from '@/design-system';
 import { TeamFormDrawer } from '@/features/components';
-import { getRowKey } from './helpers';
+import { deleteTeamMessage, getRowKey } from './helpers';
 import { useTeams } from './useTeams';
 import styles from './TeamsScreen.module.css';
 
@@ -12,10 +12,16 @@ export function TeamsScreen(): JSX.Element {
     countText,
     drawer,
     editedTeam,
+    takenSlugs,
     openCreateDrawer,
     closeDrawer,
     handleSave,
+    handleDelete,
+    deleteConfirm,
+    confirmDelete,
+    cancelDelete,
     handleImport,
+    importConfirm,
   } = useTeams();
 
   return (
@@ -38,10 +44,25 @@ export function TeamsScreen(): JSX.Element {
         <TeamFormDrawer
           isEdit={drawer.mode === 'edit'}
           initial={editedTeam}
+          takenSlugs={takenSlugs}
           onCancel={closeDrawer}
           onSave={handleSave}
+          onDelete={drawer.mode === 'edit' ? handleDelete : undefined}
         />
       )}
+
+      {deleteConfirm && (
+        <ConfirmDialog
+          title={`Delete ${deleteConfirm.name}?`}
+          message={deleteTeamMessage(deleteConfirm.leagueCount)}
+          confirmLabel="Delete"
+          tone="destructive"
+          onConfirm={confirmDelete}
+          onCancel={cancelDelete}
+        />
+      )}
+
+      {importConfirm && <ConfirmDialog {...importConfirm} />}
     </div>
   );
 }

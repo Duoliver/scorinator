@@ -1,0 +1,7 @@
+{
+  "name": "@design-system/modal",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./Modal.tsx",
+  "types": "./Modal.tsx"
+}

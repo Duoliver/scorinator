@@ -57,12 +57,23 @@ This module follows the general `types.ts`-per-component convention: a props int
 
 ## The team colour palette lives in `tokens/teamPalette.ts` only
 
-`TEAM_PALETTE` (16 `{ name, hex }` entries) and `DEFAULT_TEAM_COLOUR` hold the colours a team picks from (MVP1 spec §1, Team Colours). To change the palette, edit this one file. Nothing else holds a palette value: no CSS variable, and no mirror in `tokens.ts`, because a swatch gets its colour from data at runtime.
+`TEAM_PALETTE` (24 `{ name, hex }` entries, US-09.7) and `DEFAULT_TEAM_COLOUR` hold the colours a team picks from (MVP1 spec §1, Team Colours). The swatch grid has 8 columns, so the palette shows in 3 rows. To change the palette, edit this one file. Nothing else holds a palette value: no CSS variable, and no mirror in `tokens.ts`, because a swatch gets its colour from data at runtime.
 
-The values are placeholders, and a later design pass can change them. Their tests check rules only (16 entries, valid hex, unique names and values, the default is in the palette), so a palette change needs no test change.
+The values are placeholders, and a later design pass can change them. Their tests check rules only (24 entries, whole rows of 8, valid hex, unique names and values, the default is in the palette), so a palette change needs no test change.
 
 A team stores its hex value, not a palette entry. After a palette change, an old team keeps its old colour, and `SwatchPicker` shows no swatch as selected for it. The match against the palette ignores case.
 
 ## The body has no margin
 
 `tokens/elements.css` sets `margin: 0` and the `--color-bg` background on `body`. The browser default is an 8px margin on a white body. The app's background started inside that margin, so a white strip showed around the content area, and the page was 16px taller than the window (2026-10-05). The fixed sidebar ignored the margin, so only the content area showed the strip.
+
+## An overlay is a native `<dialog>`, mounted to open it
+
+`Drawer`, `Modal`, and `ConfirmDialog` render a native `<dialog>` and call `showModal()` on mount. The browser then gives the focus trap, the backdrop, and Escape, and it stacks a later dialog over an earlier one. The caller mounts the overlay to open it and unmounts it to close it. Do not add an `open` prop, and do not write a focus trap.
+
+Open a second overlay from inside the first one, after the first one is open, as a confirm from the team drawer does. Two overlays that mount in the same render open in the wrong order: the parent calls `showModal()` last and lands on top.
+
+While any dialog is open, one rule in `tokens/elements.css` locks the page scroll: `html:has(dialog[open]) { overflow: hidden }`. A `Drawer` scrolls its content inside itself, below a fixed title and close button (Task 170). jsdom has no layout, so only the real app shows a scroll.
+
+jsdom has no `<dialog>`. The polyfill in `src/test/setup.ts` keeps a stack of open dialogs, so a test sees Escape reach the top one only (Task 112).
+

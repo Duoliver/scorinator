@@ -9,7 +9,7 @@ import styles from './Checkbox.module.css';
 export type { CheckboxProps };
 
 export const Checkbox = forwardRef<FieldHandle<boolean>, CheckboxProps>(
-  ({ label, defaultChecked = false, onChange, id }, ref) => {
+  ({ label, defaultChecked = false, onChange, fullWidth = false, id }, ref) => {
     const generatedId = useId();
     const checkboxId = id ?? generatedId;
     const inputEl = useRef<HTMLInputElement>(null);
@@ -23,7 +23,11 @@ export const Checkbox = forwardRef<FieldHandle<boolean>, CheckboxProps>(
     });
 
     return (
-      <label class={styles.root} for={checkboxId}>
+      <label
+        class={fullWidth ? `${styles.root} ${styles.fullWidth}` : styles.root}
+        for={checkboxId}
+        data-full-width={fullWidth ? '' : undefined}
+      >
         <input
           ref={inputEl}
           id={checkboxId}

@@ -226,6 +226,30 @@ import styles from './TeamsScreen.module.css';
 
 A `style` prop is acceptable only for a value your code computes at runtime from data. One example is a team's user-chosen hex colour swatch. Never use it for a static layout or token value.
 
+## A centered container centers its own children
+
+When a parent centers a container, and the content of that container must appear in the middle, the container centers its own children too. Do not rely on the parent alone. *(Added on 2026-10-30, Task 120.)*
+
+- A flex row of children sets `justify-content: center`, also when it wraps.
+- Text in the container sets `text-align: center`.
+
+**Why:** `align-items: center` on a column parent centers the container box only. On a narrow screen, a wrapping row grows to the full width of the parent. Its children then start at the left edge of the row, not in the middle. The empty state of the wizard Teams step had this fault: its three buttons moved to the left on a small window.
+
+```css
+/* The empty state centers its block. */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+/* Its button row centers its buttons too, also when they wrap. */
+.empty .actions {
+  justify-content: center;
+}
+```
+
 ## Start a function name with a verb in the imperative
 
 Name a function, or a method, for the action it does. Start the name with a verb in the imperative: `getErrorMessage`, `findCurrentPhase`, `addTeamBlueprint`, `saveDatabaseChanges`. A noun name such as `errorMessage` reads like a value, not a call.
@@ -235,6 +259,20 @@ Name a function, or a method, for the action it does. Start the name with a verb
 - **A component** keeps its PascalCase noun name (`StandingsView`). **A hook** starts with `use` (`useStandings`).
 
 The rule applies to new functions. An existing name changes only when the user asks for it. The user set the rule at Task 57 (2026-10-19), and `errorMessage` became `getErrorMessage`.
+
+## A boolean prop is off by default
+
+A boolean prop of a component defaults to `false`. Name it for the behaviour that the caller turns on, so the caller writes the bare prop name (`<Modal showClose>`), never `={false}`. When the default behaviour is the "on" one, name the prop for its opposite: `notHoverable`, not `hoverable` with a `true` default.
+
+```tsx
+// Don't
+<Tooltip content="Gold" hoverable={false}>
+
+// Do
+<Tooltip content="Gold" notHoverable>
+```
+
+Examples in `design-system/`: `showClose`, `fullWidth`, `underline`, `disabled`, `focusableWhenDisabled`, `notHoverable`. The user set the rule at Task 114 (2026-10-29).
 
 ## In a `catch`, read the error with `getErrorMessage`
 

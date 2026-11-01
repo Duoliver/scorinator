@@ -21,6 +21,8 @@
 .swatch {
   position: relative;
   display: block;
+  /* The `Tooltip` wrapper is the grid item now: the swatch fills it. */
+  width: 100%;
   aspect-ratio: 1;
   cursor: pointer;
 }

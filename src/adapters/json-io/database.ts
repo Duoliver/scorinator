@@ -271,6 +271,9 @@ function readInstance(value: unknown, index: number): SavedInstance {
   if (typeof value.colour !== 'string') fail(`${label} has no colour.`);
   if (!isTier(value.tier)) fail(`${label} has no valid tier.`);
   if (!isFiniteNumber(value.ovr)) fail(`${label} has no valid OVR.`);
+  // A league file made before Task 121 has no trigram: it reads as empty.
+  const trigram = value.trigram ?? '';
+  if (typeof trigram !== 'string') fail(`${label} has a trigram that is not text.`);
 
   return {
     blueprintUuid: value.blueprintUuid,
@@ -279,6 +282,7 @@ function readInstance(value: unknown, index: number): SavedInstance {
     colour: value.colour,
     tier: value.tier,
     ovr: value.ovr,
+    trigram,
   };
 }
 

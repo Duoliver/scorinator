@@ -24,6 +24,15 @@
   color: var(--color-fg-muted);
 }
 
+.trigrams {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-md);
+}
+
+.muted {
+  color: var(--color-fg-muted);
+}
+
 .count {
   font-size: var(--font-size-md);
   color: var(--color-fg-muted);

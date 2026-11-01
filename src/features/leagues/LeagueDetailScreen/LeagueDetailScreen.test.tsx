@@ -5,6 +5,7 @@ import { serializeLeagueWrapper } from '@/app/data/databaseFile';
 import { saveDatabase } from '@/app/state/databaseActions';
 import { useDatabaseStore } from '@/app/state/databaseStore';
 import { createLeague } from '@/app/state/leagueWrapperActions';
+import { newTeamInstances } from '@/app/state/teamInstances';
 import { summarizeLeague } from '@/app/state/summarizeLeague';
 import type { LeagueWrapper } from '@/domain';
 import { LeagueDetailScreen } from './LeagueDetailScreen';
@@ -156,7 +157,7 @@ describe('LeagueDetailScreen', () => {
       name: 'Coastal Premier',
       homeAdvantage: true,
       points: { win: 3, draw: 1, loss: 0 },
-      blueprintUuids: blueprints.map((blueprint) => blueprint.uuid),
+      teams: newTeamInstances(blueprints),
     });
     render(<LeagueDetailScreen uuid={created.uuid} />);
     expect(screen.getByText('Unsaved')).toBeInTheDocument();

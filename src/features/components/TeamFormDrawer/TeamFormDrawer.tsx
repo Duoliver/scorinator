@@ -11,8 +11,10 @@ export type { TeamFormDrawerProps };
 export function TeamFormDrawer({
   isEdit = false,
   initial,
+  takenSlugs,
   onCancel,
   onSave,
+  onDelete,
 }: TeamFormDrawerProps): JSX.Element {
   return (
     <Drawer title={isEdit ? 'Edit team' : 'New team'} onClose={onCancel}>
@@ -20,8 +22,10 @@ export function TeamFormDrawer({
         key={isEdit ? `edit-${initial?.slug}` : 'create'}
         saveLabel={isEdit ? 'Save changes' : 'Create team'}
         initial={initial}
+        takenSlugs={takenSlugs}
         onCancel={onCancel}
         onSave={onSave}
+        onDelete={onDelete}
       />
     </Drawer>
   );

@@ -85,6 +85,7 @@ function buildWrapper(): SavedWrapper {
         colour: '#1565C0',
         tier: 'B',
         ovr: 74,
+        trigram: 'SMU',
       },
       {
         blueprintUuid: HARBORVIEW,
@@ -93,6 +94,7 @@ function buildWrapper(): SavedWrapper {
         colour: '#E53935',
         tier: 'C',
         ovr: 63,
+        trigram: 'HAR',
       },
     ],
     content: {
@@ -330,6 +332,18 @@ describe('parseWrapper', () => {
     expect(() =>
       parseWrapper(wrapperText((raw) => (raw.teams[0].blueprintUuid = 'x')))
     ).toThrow('team 1 has no valid Blueprint UUID.');
+  });
+
+  it('reads the trigram of each team, and an empty one when it is missing (Task 121)', () => {
+    const wrapper = parseWrapper(wrapperText((raw) => delete raw.teams[1].trigram));
+    expect(wrapper.teams[0].trigram).toBe('SMU');
+    expect(wrapper.teams[1].trigram).toBe('');
+  });
+
+  it('rejects a trigram that is not text', () => {
+    expect(() =>
+      parseWrapper(wrapperText((raw) => (raw.teams[0].trigram = 7)))
+    ).toThrow('team 1 has a trigram that is not text.');
   });
 
   it('rejects two teams with the same Blueprint UUID', () => {

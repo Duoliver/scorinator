@@ -88,6 +88,29 @@ describe('exportTeamsCsv', () => {
     expect(contents).toContain('FC United');
   });
 
+  it('writes the location and the trigrams of a record (Task 117)', async () => {
+    const records: TeamListRecord[] = [
+      {
+        slug: 'fc-united',
+        name: 'FC United',
+        colour: '#E53935',
+        tier: 'B',
+        location: 'Unity',
+        trigrams: ['FCU', 'UNI'],
+      },
+    ];
+    const writeTextFile = vi.fn();
+    const fs = fakeFs({ writeTextFile, exists: vi.fn().mockResolvedValue(false) });
+    const dialog = fakeDialog({
+      pickSavePath: vi.fn().mockResolvedValue('/teams.csv'),
+    });
+    await exportTeamsCsv(records, fs, dialog);
+    const [, contents] = writeTextFile.mock.calls[0];
+    expect(contents).toBe(
+      'Slug,Name,Colour,Tier,Location,Trigrams\nfc-united,FC United,#E53935,B,Unity,FCU UNI'
+    );
+  });
+
   it('opens the save dialog filtered to .csv, not .json', async () => {
     const pickSavePath = vi.fn().mockResolvedValue(null);
     await exportTeamsCsv([], fakeFs(), fakeDialog({ pickSavePath }));

@@ -1,4 +1,4 @@
-import type { TableColumn } from '@/design-system';
+import type { ConfirmDialogProps, TableColumn } from '@/design-system';
 import type { TeamBlueprint, TeamFields } from '@/domain';
 
 /** Which drawer is open: none, a new team, or the team at `index`. */
@@ -12,6 +12,13 @@ export interface TeamRow extends TeamBlueprint {
   index: number;
 }
 
+/** The open Delete confirm: the team, and how many leagues use it. */
+export interface TeamDeleteConfirm {
+  uuid: string;
+  name: string;
+  leagueCount: number;
+}
+
 /** What `useTeams` gives `TeamsScreen`. */
 export interface Teams {
   rows: TeamRow[];
@@ -20,8 +27,16 @@ export interface Teams {
   drawer: TeamDrawerState;
   /** The team the edit drawer starts from, or `undefined` for a new team. */
   editedTeam: TeamFields | undefined;
+  /** The slugs of every Blueprint, for the `-2` slug preview (Task 75). */
+  takenSlugs: string[];
   openCreateDrawer: () => void;
   closeDrawer: () => void;
   handleSave: (record: TeamFields) => void;
+  /** Counts the leagues that use the edited team, then opens the confirm. */
+  handleDelete: () => Promise<void>;
+  deleteConfirm: TeamDeleteConfirm | null;
+  confirmDelete: () => void;
+  cancelDelete: () => void;
   handleImport: () => Promise<void>;
+  importConfirm: ConfirmDialogProps | null;
 }

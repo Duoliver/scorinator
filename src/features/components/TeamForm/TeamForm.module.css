@@ -9,8 +9,16 @@
   font-size: var(--font-size-lg);
 }
 
+/* "Cancel" and "Save" in one row, and "Delete team" in a row below them,
+   all at the right (Task 167 review). */
 .actions {
   display: flex;
-  justify-content: flex-end;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-3);
+}
+
+.mainActions {
+  display: flex;
   gap: var(--space-3);
 }

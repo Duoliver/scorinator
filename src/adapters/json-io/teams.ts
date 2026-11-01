@@ -1,3 +1,4 @@
+import { isSlug } from '@/engine/identity';
 import { isTier } from '@/engine/tier-ovr';
 import type { TeamListRecord } from '@/persistence/types';
 
@@ -41,8 +42,17 @@ export function parseTeamsJson(text: string): TeamListRecord[] {
       throw new Error(`Team JSON entry ${entryNumber} has an invalid tier.`);
     }
 
+    // The same slug check as the CSV (Task 173). Empty means "make one
+    // from the name".
+    const slug = isString(record.slug) ? record.slug.trim() : '';
+    if (slug !== '' && !isSlug(slug)) {
+      throw new Error(
+        `Team JSON entry ${entryNumber} has an invalid slug "${slug}". Use only letters, digits, and hyphens.`
+      );
+    }
+
     return {
-      slug: isString(record.slug) ? record.slug : '',
+      slug: slug.toLowerCase(),
       name,
       colour: isString(record.colour) ? record.colour : '',
       tier,

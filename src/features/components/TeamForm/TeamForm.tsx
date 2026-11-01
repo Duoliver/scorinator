@@ -1,70 +1,134 @@
 import type { JSX } from 'preact';
-import { Button, Input, Select, SwatchPicker } from '@/design-system';
+import { Button, ConfirmDialog, Input, Tooltip } from '@/design-system';
 import type TeamFormProps from './types';
-import { COLOUR_OPTIONS, TIER_OPTIONS } from './helpers';
+import type { SlugRegenerate } from './types';
+import { REGENERATE_LABEL, regenerateMessage } from './helpers';
+import { FieldError, TeamColourField, TeamNameField, TeamTierField } from './fields';
 import { useTeamForm } from './useTeamForm';
 import styles from './TeamForm.module.css';
 
 export type { TeamFormProps };
 
+/** The icon button in the slot of an edited team's slug (US-09.5, Task
+ * 169). A disabled button stays focusable, so its hint gives the reason. */
+function RegenerateButton({ regenerate }: { regenerate: SlugRegenerate }): JSX.Element {
+  return (
+    <Tooltip content={regenerate.hint}>
+      {(describedBy) => (
+        <Button
+          size="icon"
+          fill
+          variant="secondary"
+          aria-label={REGENERATE_LABEL}
+          aria-describedby={describedBy}
+          disabled={regenerate.disabled}
+          focusableWhenDisabled
+          onClick={regenerate.open}
+        >
+          ↻
+        </Button>
+      )}
+    </Tooltip>
+  );
+}
+
+/** The confirm of a slug regenerate, with the old and the new slug. */
+function RegenerateConfirm({
+  regenerate,
+}: {
+  regenerate: SlugRegenerate;
+}): JSX.Element | null {
+  if (!regenerate.confirm) return null;
+  return (
+    <ConfirmDialog
+      title="Regenerate slug?"
+      message={regenerateMessage(regenerate.confirm.from, regenerate.confirm.to)}
+      confirmLabel="Regenerate"
+      onConfirm={regenerate.apply}
+      onCancel={regenerate.cancel}
+    />
+  );
+}
+
 export function TeamForm({
   saveLabel,
   initial,
+  takenSlugs,
   onCancel,
   onSave,
+  onDelete,
 }: TeamFormProps): JSX.Element {
   const {
     nameRef,
     slugRef,
     colourRef,
     tierRef,
+    locationRef,
+    trigramsRef,
     startValues,
-    error,
+    errors,
+    trigramsPlaceholder,
+    regenerate,
     handleNameChange,
     handleSave,
-  } = useTeamForm({ initial, onSave });
+  } = useTeamForm({ initial, takenSlugs, onSave });
 
   return (
     <div class={styles.form}>
-      <Input
-        label="Team name"
+      <TeamNameField
         defaultValue={startValues.name}
-        placeholder="e.g. Salt Marsh United"
+        fieldRef={nameRef}
+        error={errors.name}
         onChange={handleNameChange}
-        ref={nameRef}
       />
-      {error && (
-        <span role="alert" class={styles.error}>
-          {error}
-        </span>
-      )}
 
       <Input
         label="Slug (auto-generated)"
         defaultValue={startValues.slug}
         readOnly
         ref={slugRef}
+        trailing={regenerate && <RegenerateButton regenerate={regenerate} />}
       />
+      {regenerate && <RegenerateConfirm regenerate={regenerate} />}
 
-      <SwatchPicker
-        label="Colour"
-        options={COLOUR_OPTIONS}
-        defaultValue={startValues.colour}
-        ref={colourRef}
+      <Input
+        label="Location (optional)"
+        defaultValue={startValues.location}
+        placeholder="e.g. Ashfield"
+        ref={locationRef}
       />
+      <FieldError message={errors.location} />
 
-      <Select
-        label="Tier"
-        defaultValue={startValues.tier}
-        options={TIER_OPTIONS}
-        ref={tierRef}
+      <Input
+        label="Trigrams (optional)"
+        defaultValue={startValues.trigrams}
+        placeholder={trigramsPlaceholder}
+        ref={trigramsRef}
       />
+      <FieldError message={errors.trigrams} />
+
+      <TeamColourField defaultValue={startValues.colour} fieldRef={colourRef} />
+
+      <TeamTierField defaultValue={startValues.tier} fieldRef={tierRef} />
 
       <div class={styles.actions}>
-        <Button variant="secondary" onClick={onCancel}>
-          Cancel
-        </Button>
-        <Button onClick={handleSave}>{saveLabel}</Button>
+        <div class={styles.mainActions}>
+          <Button size="sm" variant="secondary" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button size="sm" onClick={handleSave}>
+            {saveLabel}
+          </Button>
+        </div>
+        {/* A quiet button in its own row: a delete is rare, and it asks
+            first (Task 167 review). */}
+        {onDelete && (
+          <div>
+            <Button size="sm" variant="destructive-outline" onClick={onDelete}>
+              Delete team
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

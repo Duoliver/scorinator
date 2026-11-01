@@ -1,5 +1,5 @@
 import type { JSX } from 'preact';
-import { Button, Card } from '@/design-system';
+import { Button, Card, ConfirmDialog } from '@/design-system';
 import { ROUTES } from '@/app/routes';
 import { useLeaguesEmptyState } from './useLeaguesEmptyState';
 import styles from './LeaguesEmptyState.module.css';
@@ -7,7 +7,7 @@ import styles from './LeaguesEmptyState.module.css';
 /** What the Leagues start screen shows with no leagues (Task 29): the ways
  * to begin, in a Teams group and a League group. */
 export function LeaguesEmptyState(): JSX.Element {
-  const { handleLoadTeams } = useLeaguesEmptyState();
+  const { handleLoadTeams, importConfirm } = useLeaguesEmptyState();
 
   return (
     <Card padding="lg">
@@ -38,6 +38,7 @@ export function LeaguesEmptyState(): JSX.Element {
           </div>
         </div>
       </div>
+      {importConfirm && <ConfirmDialog {...importConfirm} />}
     </Card>
   );
 }

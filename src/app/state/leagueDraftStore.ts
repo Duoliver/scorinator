@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { DEFAULT_POINTS_CONFIG, type PointsConfig } from '@/engine/standings';
+import type { TeamInstance } from '@/domain';
 
 /** The three steps of the League Setup wizard, by their `Tabs` id. */
 export type LeagueSetupStep = 'details' | 'teams' | 'review';
@@ -12,14 +13,20 @@ export interface LeagueDraftDetails {
 
 export interface LeagueDraft {
   details: LeagueDraftDetails;
-  selectedSlugs: string[];
+  /** The team list of the Teams step: each Instance has the OVR that it
+   * rolled when it was added (Task 81, Task 120). */
+  teams: TeamInstance[];
+  /** The trigrams fixed in the Edit drawer, by Blueprint UUID (US-09.6,
+   * Task 121 choice 2). A team with no entry takes the live pick. */
+  fixedTrigrams: Record<string, string>;
   step: LeagueSetupStep;
 }
 
 export function emptyLeagueDraft(): LeagueDraft {
   return {
     details: { name: '', points: DEFAULT_POINTS_CONFIG, homeAdvantage: false },
-    selectedSlugs: [],
+    teams: [],
+    fixedTrigrams: {},
     step: 'details',
   };
 }

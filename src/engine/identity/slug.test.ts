@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { slug, uniqueSlug } from './slug';
+import { isSlug, slug, uniqueSlug } from './slug';
 
 describe('slug', () => {
   it('lowercases and hyphenates a plain name', () => {
@@ -104,5 +104,32 @@ describe('uniqueSlug', () => {
     expect(() => uniqueSlug('!!!', ['ashfield'])).toThrow(
       'Cannot make a slug from the name "!!!". The name needs at least one letter or number.'
     );
+  });
+});
+
+describe('isSlug (Task 173)', () => {
+  it('accepts letters, digits, and hyphens, in any case', () => {
+    for (const value of ['fc-united', 'ashfield-2', 'FC-United', '1874', '-']) {
+      expect(isSlug(value)).toBe(true);
+    }
+  });
+
+  it('refuses a space, another character, and an empty value', () => {
+    for (const value of [
+      'north fc',
+      'north_fc',
+      'fc.united',
+      'fc/united',
+      'Ünited',
+      '',
+    ]) {
+      expect(isSlug(value)).toBe(false);
+    }
+  });
+
+  it('accepts every slug that slug() makes', () => {
+    for (const name of ['Salt Marsh United', 'Ünited 1874', 'A.F.C. Rovers!']) {
+      expect(isSlug(slug(name))).toBe(true);
+    }
   });
 });

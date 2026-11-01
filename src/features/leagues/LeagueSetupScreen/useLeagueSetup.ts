@@ -11,18 +11,16 @@ import {
   type LeagueSetupStep,
 } from '@/app/state/leagueDraftStore';
 import { createLeague } from '@/app/state/leagueWrapperActions';
+import { teamListProblem } from '@/app/state/teamInstances';
 import type { LeagueWrapper } from '@/domain';
-import { useDatabaseStore } from '@/app/state/databaseStore';
 import type { DetailsStepHandle } from '@/features/leagues/LeagueSetupScreen/steps/DetailsStep';
 import { leagueNameProblem } from './leagueName';
 import type { LeagueSetup } from './types';
 import { useLeagueDraftSync } from './useLeagueDraftSync';
-import { useTeamSelection } from './useTeamSelection';
+import { useTeamList } from './useTeamList';
 
 /** The League Setup wizard: the draft, the step changes, and the create. */
 export function useLeagueSetup(): LeagueSetup {
-  const teams = useDatabaseStore((state) => state.blueprints);
-
   // Read the persisted draft once, on mount — not a subscribed selector.
   // Nothing below ties this screen's render to `leagueDraftStore` while it
   // stays mounted; see that store's file for why. `useState`'s initial
@@ -31,19 +29,15 @@ export function useLeagueSetup(): LeagueSetup {
   const initialDraft = useLeagueDraftStore.getState();
   const [details, setDetails] = useState<LeagueDraftDetails>(initialDraft.details);
   const [step, setStep] = useState<LeagueSetupStep>(initialDraft.step);
-  const selection = useTeamSelection(initialDraft.selectedSlugs);
+  const teamList = useTeamList(initialDraft.teams, initialDraft.fixedTrigrams);
   const [status, setStatus] = useState<string | null>(null);
 
   const detailsStepRef = useRef<DetailsStepHandle>(null);
   const stepsRef: RefObject<FieldHandle<string>> = useRef(null);
 
   const skipDraftSync = useLeagueDraftSync(
-    { details, selectedSlugs: selection.selectedSlugs, step },
+    { details, teams: teamList.teams, fixedTrigrams: teamList.fixedTrigrams, step },
     detailsStepRef
-  );
-
-  const selectedTeams = teams.filter((team) =>
-    selection.selectedSlugs.includes(team.slug)
   );
 
   // Reads whatever is currently in the Details fields before a step change
@@ -63,6 +57,8 @@ export function useLeagueSetup(): LeagueSetup {
     setStep(next);
   };
 
+  const createProblem = teamListProblem(teamList.teams);
+
   const handleCreate = (): void => {
     // `DetailsStep` is unmounted by the time Review is reachable — `details`
     // already holds its final values, synced by `goToStep` on the way out.
@@ -73,18 +69,20 @@ export function useLeagueSetup(): LeagueSetup {
       setStatus(nameProblem);
       return;
     }
+    // The Review step disables "Create league" for a list that cannot start.
+    if (createProblem) return;
     let league: LeagueWrapper;
     try {
-      // The selection keeps slugs until Task 120: a Blueprint slug is
-      // unique and fixed, so it finds one UUID (Task 161).
+      // The Instances keep the OVR they rolled at the add (Task 81).
       league = createLeague({
         name: details.name.trim(),
         homeAdvantage: details.homeAdvantage,
         points: details.points,
-        blueprintUuids: selectedTeams.map((team) => team.uuid),
+        teams: teamList.teams,
+        fixedTrigrams: teamList.fixedTrigrams,
       });
     } catch (error) {
-      // `createLeague` throws for an unknown Blueprint or a closed
+      // `createLeague` throws for a Blueprint twice in the list or a closed
       // database. Neither can happen from this screen today. This only
       // keeps the screen up if a store change elsewhere ever adds another.
       setStatus(getErrorMessage(error));
@@ -100,10 +98,10 @@ export function useLeagueSetup(): LeagueSetup {
   };
 
   return {
-    ...selection,
+    ...teamList,
     step,
     details,
-    selectedTeams,
+    createProblem,
     status,
     stepsRef,
     detailsStepRef,

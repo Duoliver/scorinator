@@ -27,8 +27,29 @@ export type { CheckboxProps } from './components/Checkbox';
 export { Switch } from './components/Switch';
 export type { SwitchProps } from './components/Switch';
 
+export { Tooltip } from './components/Tooltip';
+export type { TooltipProps } from './components/Tooltip';
+
 export { Drawer } from './components/Drawer';
 export type { DrawerProps } from './components/Drawer';
+
+export { Modal } from './components/Modal';
+export type { ModalProps, ModalSize } from './components/Modal';
+
+export { ConfirmDialog } from './components/ConfirmDialog';
+export type { ConfirmDialogProps, ConfirmTone } from './components/ConfirmDialog';
+
+export { PickerDialog } from './components/PickerDialog';
+export type {
+  MultiPickerProps,
+  PickerAction,
+  PickerDialogProps,
+  PickerItem,
+  SinglePickerProps,
+} from './components/PickerDialog';
+
+export { ChecklistDialog } from './components/ChecklistDialog';
+export type { ChecklistDialogProps, ChecklistItem } from './components/ChecklistDialog';
 
 export { SwatchPicker } from './components/SwatchPicker';
 export type { SwatchPickerProps, SwatchOption } from './components/SwatchPicker';

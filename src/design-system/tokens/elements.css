@@ -25,6 +25,12 @@ body {
   background: var(--color-bg);
 }
 
+/* The page scroll locks while any dialog is open: a drawer, a modal, or a
+ * confirm. A long overlay scrolls inside itself instead (Task 170). */
+html:has(dialog[open]) {
+  overflow: hidden;
+}
+
 h1 {
   margin: 0;
   font-family: var(--font-heading);

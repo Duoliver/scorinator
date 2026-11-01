@@ -6,12 +6,20 @@ import {
   INSTALLATION,
   leagueWrapper,
   memoryFolder,
+  roundRobinLeague,
   SALT_MARSH,
 } from '@/test/databaseRecords';
-import { serializeManifestRecord } from '@/app/data/databaseFile';
+import {
+  serializeLeagueWrapper,
+  serializeManifestRecord,
+} from '@/app/data/databaseFile';
+import { summarizeLeague } from './summarizeLeague';
 import {
   addTeamBlueprint,
+  countLeaguesUsingBlueprint,
+  deleteTeamBlueprint,
   importTeamBlueprints,
+  previewTeamImport,
   updateTeamBlueprint,
 } from './teamBlueprintActions';
 import { openDatabase } from './databaseActions';
@@ -154,6 +162,120 @@ describe('updateTeamBlueprint (US-09.1, US-09.5)', () => {
   });
 });
 
+describe('updateTeamBlueprint, a new slug (US-09.5, Task 119 choice 8)', () => {
+  it('sets a new slug that no other Blueprint has', async () => {
+    await openWithBlueprint();
+    updateTeamBlueprint(SALT_MARSH, { slug: 'salt-marsh-fc' });
+    expect(state().blueprints[0]).toMatchObject({
+      uuid: SALT_MARSH,
+      slug: 'salt-marsh-fc',
+      lastModifiedByInstallation: INSTALLATION,
+    });
+  });
+
+  it('throws a RangeError for a slug of another Blueprint, and changes nothing', async () => {
+    await openWithBlueprint();
+    addTeamBlueprint({ name: 'Harborview SC', colour: '#E53935', tier: 'C' });
+    const before = state().blueprints;
+    expect(() => updateTeamBlueprint(SALT_MARSH, { slug: 'harborview-sc' })).toThrow(
+      'Another Blueprint has the slug harborview-sc.'
+    );
+    expect(state().blueprints).toBe(before);
+  });
+
+  it('changes no league Instance', async () => {
+    await openWithBlueprint();
+    const wrapper = leagueWrapper();
+    useDatabaseStore.setState({ leagues: { [wrapper.uuid]: wrapper } });
+    updateTeamBlueprint(SALT_MARSH, { slug: 'salt-marsh-fc' });
+    expect(state().leagues[wrapper.uuid]).toBe(wrapper);
+  });
+});
+
+describe('deleteTeamBlueprint (US-09.4)', () => {
+  it('removes the Blueprint, and leaves its slug free', async () => {
+    await openWithBlueprint();
+    deleteTeamBlueprint(SALT_MARSH);
+    expect(state().blueprints).toEqual([]);
+    expect(areBlueprintsUnsaved(state())).toBe(true);
+    const again = addTeamBlueprint({
+      name: 'Salt Marsh United',
+      colour: '#000',
+      tier: 'B',
+    });
+    expect(again.slug).toBe('salt-marsh-united');
+  });
+
+  it('keeps the Instances of the Blueprint in each league (US-09.2)', async () => {
+    await openWithBlueprint();
+    const wrapper = leagueWrapper();
+    useDatabaseStore.setState({ leagues: { [wrapper.uuid]: wrapper } });
+    deleteTeamBlueprint(SALT_MARSH);
+    expect(state().leagues[wrapper.uuid]).toBe(wrapper);
+  });
+
+  it('throws a RangeError for an unknown Blueprint', async () => {
+    await openWithBlueprint();
+    expect(() => deleteTeamBlueprint(HARBORVIEW)).toThrow(
+      `No Blueprint has the UUID ${HARBORVIEW}.`
+    );
+  });
+});
+
+describe('countLeaguesUsingBlueprint (US-09.4, Task 119 choice 7)', () => {
+  const SAVED = '00000000-0000-4000-8000-0000000000c1';
+  const OTHER = '00000000-0000-4000-8000-0000000000c2';
+  const NEW = '00000000-0000-4000-8000-0000000000c3';
+
+  /** Two saved leagues on disk, one with Salt Marsh and one without it,
+   * and one new league in memory with Salt Marsh. */
+  async function openWithLeagues(): Promise<void> {
+    const withSaltMarsh = leagueWrapper([], SAVED);
+    // Its teams have the Blueprint UUIDs testUuid(1) and testUuid(2).
+    const without = roundRobinLeague(
+      [
+        { name: 'Team One', colour: '#000' },
+        { name: 'Team Two', colour: '#fff' },
+      ],
+      { uuid: OTHER }
+    );
+    const manifest = serializeManifestRecord({
+      installationUuid: INSTALLATION,
+      blueprints: [blueprint()],
+      wrappers: [summarizeLeague(withSaltMarsh), summarizeLeague(without)],
+    });
+    await openDatabase(
+      memoryFolder({
+        manifest,
+        wrappers: {
+          [SAVED]: serializeLeagueWrapper(withSaltMarsh),
+          [OTHER]: serializeLeagueWrapper(without),
+        },
+      }).folder
+    );
+    const added = leagueWrapper([], NEW);
+    useDatabaseStore.setState({ leagues: { ...state().leagues, [NEW]: added } });
+  }
+
+  it('counts every league with an Instance of the Blueprint, saved or new', async () => {
+    await openWithLeagues();
+    expect(await countLeaguesUsingBlueprint(SALT_MARSH)).toBe(2);
+  });
+
+  it('opens the saved leagues that are not in memory yet', async () => {
+    await openWithLeagues();
+    await countLeaguesUsingBlueprint(SALT_MARSH);
+    expect(Object.keys(state().leagues).sort()).toEqual([NEW, SAVED, OTHER].sort());
+  });
+
+  it('gives 0 for a Blueprint that no league uses', async () => {
+    await openWithLeagues();
+    expect(
+      await countLeaguesUsingBlueprint('00000000-0000-4000-8000-0000000000d9')
+    ).toBe(0);
+  });
+});
+
 describe('importTeamBlueprints (Task 75)', () => {
   it('updates the name, colour, and tier of a matching slug, keeps the rest, and stamps it', async () => {
     await openWithBlueprint();
@@ -222,5 +344,104 @@ describe('importTeamBlueprints (Task 75)', () => {
     ]);
     expect(counts).toEqual({ added: 0, updated: 1 });
     expect(state().blueprints).toBe(before);
+  });
+
+  it('sets the location and the trigrams of a matching slug when the file has the columns (Task 117)', async () => {
+    await openWithBlueprint();
+    importTeamBlueprints([
+      {
+        slug: 'salt-marsh-united',
+        name: 'Salt Marsh United',
+        colour: '#1565C0',
+        tier: 'B',
+        location: 'Saltby',
+        trigrams: ['SAL', 'SMU'],
+      },
+    ]);
+    expect(state().blueprints[0]).toMatchObject({
+      location: 'Saltby',
+      trigrams: ['SAL', 'SMU'],
+      lastModifiedByInstallation: INSTALLATION,
+    });
+  });
+
+  it('clears the location and the trigrams for empty cells (Task 117, choice 3)', async () => {
+    await openWithBlueprint();
+    importTeamBlueprints([
+      {
+        slug: 'salt-marsh-united',
+        name: 'Salt Marsh United',
+        colour: '#1565C0',
+        tier: 'B',
+        location: '',
+        trigrams: [],
+      },
+    ]);
+    expect(state().blueprints[0]).toMatchObject({ location: '', trigrams: [] });
+  });
+
+  it('gives a new Blueprint the location and the trigrams of its record', async () => {
+    await openWithBlueprint();
+    importTeamBlueprints([
+      {
+        slug: 'harborview-sc',
+        name: 'Harborview SC',
+        colour: '#E53935',
+        tier: 'C',
+        location: 'Harborview',
+        trigrams: ['HSC'],
+      },
+    ]);
+    expect(state().blueprints[1]).toMatchObject({
+      location: 'Harborview',
+      trigrams: ['HSC'],
+    });
+  });
+});
+
+describe('previewTeamImport (Task 75, Task 117)', () => {
+  it('gives the counts that importTeamBlueprints gives, and changes nothing', async () => {
+    await openWithBlueprint();
+    const before = state().blueprints;
+    const records = [
+      {
+        slug: 'salt-marsh-united',
+        name: 'Salt Marsh FC',
+        colour: '#000',
+        tier: 'A' as const,
+      },
+      {
+        slug: 'harborview-sc',
+        name: 'Harborview SC',
+        colour: '#E53935',
+        tier: 'C' as const,
+      },
+      { slug: '', name: 'Salt Marsh United', colour: '#111', tier: 'E' as const },
+      {
+        slug: 'harborview-sc',
+        name: 'Harborview SC 2',
+        colour: '#E53935',
+        tier: 'C' as const,
+      },
+    ];
+
+    expect(previewTeamImport(records)).toEqual({ added: 2, updated: 1 });
+    expect(state().blueprints).toBe(before);
+    expect(areBlueprintsUnsaved(state())).toBe(false);
+    expect(importTeamBlueprints(records)).toEqual({ added: 2, updated: 1 });
+  });
+
+  it('counts an unchanged record as updated', async () => {
+    await openWithBlueprint();
+    expect(
+      previewTeamImport([
+        {
+          slug: 'salt-marsh-united',
+          name: 'Salt Marsh United',
+          colour: '#1565C0',
+          tier: 'B',
+        },
+      ])
+    ).toEqual({ added: 0, updated: 1 });
   });
 });

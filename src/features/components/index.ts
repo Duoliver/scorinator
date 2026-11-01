@@ -1,8 +1,16 @@
 export { TeamForm } from './TeamForm';
 export type { TeamFormProps } from './TeamForm';
+export {
+  FieldError,
+  TeamColourField,
+  TeamNameField,
+  TeamTierField,
+  checkTeamName,
+} from './TeamForm';
 export { TeamFormDrawer } from './TeamFormDrawer';
 export type { TeamFormDrawerProps } from './TeamFormDrawer';
 export { useTeamLookup, type TeamDisplay } from './useTeamLookup';
+export { useTeamImport, type TeamImport } from './useTeamImport';
 export { formatTeamCount } from './formatTeamCount';
 export { StatusLine } from './StatusLine';
 export type { StatusLineProps, StatusLinePlacement } from './StatusLine';

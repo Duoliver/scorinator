@@ -2,7 +2,8 @@ import { uniqueSlug, uuidV4, type RandomBytes } from '@/engine/identity';
 import type { TeamBlueprint } from '@/domain';
 import type { TeamListRecord } from '@/persistence/types';
 import { cryptoRandomBytes } from '@/app/random';
-import { requireOpenDatabase, useDatabaseStore } from './databaseStore';
+import { openLeague } from './databaseActions';
+import { currentRows, requireOpenDatabase, useDatabaseStore } from './databaseStore';
 
 /** What the user gives to create a Blueprint (US-09.1). The slug, the UUID,
  * and the provenance come from the action. */
@@ -14,13 +15,13 @@ export interface TeamBlueprintInput {
   trigrams?: string[];
 }
 
-/** The fields an edit can change. The slug stays fixed after create
- * (US-09.5): Task 119 adds the regenerate button. */
+/** The fields an edit can change. The slug changes only through the
+ * regenerate button of the edit drawer (US-09.5, Task 167). */
 export type TeamBlueprintChanges = Partial<
-  Pick<TeamBlueprint, 'name' | 'colour' | 'tier' | 'location' | 'trigrams'>
+  Pick<TeamBlueprint, 'slug' | 'name' | 'colour' | 'tier' | 'location' | 'trigrams'>
 >;
 
-const CHANGEABLE = ['name', 'colour', 'tier', 'location', 'trigrams'] as const;
+const CHANGEABLE = ['slug', 'name', 'colour', 'tier', 'location', 'trigrams'] as const;
 
 function sameValue(a: unknown, b: unknown): boolean {
   return Array.isArray(a) && Array.isArray(b)
@@ -86,20 +87,60 @@ export function addTeamBlueprint(
   return blueprint;
 }
 
-/** Edits a Blueprint. The slug and the UUID stay the same (US-09.5). No
- * league Instance changes (US-09.2). Throws a `RangeError` for an unknown
- * UUID. */
+function requireBlueprintIndex(
+  blueprints: readonly TeamBlueprint[],
+  uuid: string
+): number {
+  const index = blueprints.findIndex((blueprint) => blueprint.uuid === uuid);
+  if (index === -1) throw new RangeError(`No Blueprint has the UUID ${uuid}.`);
+  return index;
+}
+
+/** Edits a Blueprint. The UUID stays the same. A new slug must be free:
+ * no other Blueprint has it (Task 75, US-09.5). No league Instance changes
+ * (US-09.2). Throws a `RangeError` for an unknown UUID or a taken slug, and
+ * changes nothing. */
 export function updateTeamBlueprint(uuid: string, changes: TeamBlueprintChanges): void {
   const state = useDatabaseStore.getState();
   const { installationUuid } = requireOpenDatabase(state);
-  const index = state.blueprints.findIndex((blueprint) => blueprint.uuid === uuid);
-  if (index === -1) throw new RangeError(`No Blueprint has the UUID ${uuid}.`);
+  const index = requireBlueprintIndex(state.blueprints, uuid);
+  const { slug } = changes;
+  if (
+    slug !== undefined &&
+    state.blueprints.some((b, i) => i !== index && b.slug === slug)
+  ) {
+    throw new RangeError(`Another Blueprint has the slug ${slug}.`);
+  }
 
   const updated = applyChanges(state.blueprints[index], changes, installationUuid);
   if (updated === state.blueprints[index]) return;
   const blueprints = [...state.blueprints];
   blueprints[index] = updated;
   useDatabaseStore.setState({ blueprints });
+}
+
+/** Deletes a Blueprint (US-09.4). Each league keeps its Instances, and the
+ * slug is free again. There is no undo. Throws a `RangeError` for an
+ * unknown UUID. */
+export function deleteTeamBlueprint(uuid: string): void {
+  const state = useDatabaseStore.getState();
+  requireOpenDatabase(state);
+  const index = requireBlueprintIndex(state.blueprints, uuid);
+  useDatabaseStore.setState({
+    blueprints: state.blueprints.filter((_, i) => i !== index),
+  });
+}
+
+/** How many leagues have an Instance of the Blueprint, for the Delete
+ * confirm (US-09.4). A manifest row has no team list, so it opens each
+ * league that is not in memory yet (Task 119, choice 7). Rejects with the
+ * message of a missing or bad league file. */
+export async function countLeaguesUsingBlueprint(uuid: string): Promise<number> {
+  const rows = currentRows(useDatabaseStore.getState());
+  const leagues = await Promise.all(rows.map((row) => openLeague(row.uuid)));
+  return leagues.filter((league) =>
+    league.teams.some((team) => team.blueprintUuid === uuid)
+  ).length;
 }
 
 /** The records of one file, one for each slug: a later record with the same
@@ -120,12 +161,76 @@ function lastRecordForEachSlug(records: readonly TeamListRecord[]): TeamListReco
   return deduped;
 }
 
+/** One step of a team import: a new Blueprint, or an update of the
+ * Blueprint at `index`. */
+type TeamImportStep =
+  | { kind: 'add'; record: TeamListRecord; slug: string }
+  | { kind: 'update'; index: number; record: TeamListRecord };
+
+/** The steps of a team import, by the Task 75 rule. A record whose slug
+ * matches a Blueprint updates it. A record with a new slug adds a
+ * Blueprint. A blank slug gets a unique slug from the name. */
+function planTeamImport(
+  blueprints: readonly TeamBlueprint[],
+  records: readonly TeamListRecord[]
+): TeamImportStep[] {
+  const deduped = lastRecordForEachSlug(records);
+  // A slug made for a blank record must not take a slug of the file.
+  const taken = new Set([
+    ...blueprints.map((blueprint) => blueprint.slug),
+    ...deduped.map((record) => record.slug).filter((slug) => slug !== ''),
+  ]);
+  return deduped.map((record): TeamImportStep => {
+    const index =
+      record.slug === '' ? -1 : blueprints.findIndex((b) => b.slug === record.slug);
+    if (index !== -1) return { kind: 'update', index, record };
+    const slug = record.slug === '' ? uniqueSlug(record.name, taken) : record.slug;
+    taken.add(slug);
+    return { kind: 'add', record, slug };
+  });
+}
+
+/** The changes of a matched record. A file with no Location or Trigrams
+ * column gives no such field, so the Blueprint keeps its own (Task 117). */
+function importChanges(record: TeamListRecord): TeamBlueprintChanges {
+  const { name, colour, tier, location, trigrams } = record;
+  return {
+    name,
+    colour,
+    tier,
+    ...(location === undefined ? {} : { location }),
+    ...(trigrams === undefined ? {} : { trigrams }),
+  };
+}
+
+function countSteps(steps: readonly TeamImportStep[]): {
+  added: number;
+  updated: number;
+} {
+  const added = steps.filter((step) => step.kind === 'add').length;
+  return { added, updated: steps.length - added };
+}
+
+/** The counts of a team import, for the confirm of Task 119: "4 new, 8
+ * updated. Continue?" (Task 75). It changes nothing. A matched record
+ * counts as updated, also when no field changes, as in
+ * `importTeamBlueprints`. Needs an open database. */
+export function previewTeamImport(records: readonly TeamListRecord[]): {
+  added: number;
+  updated: number;
+} {
+  const state = useDatabaseStore.getState();
+  requireOpenDatabase(state);
+  return countSteps(planTeamImport(state.blueprints, records));
+}
+
 /**
  * Imports a team list (CSV or JSON) into the Blueprints, by the Task 75
  * rule. A record whose slug matches a Blueprint updates its name, colour,
- * and tier, and keeps its location and trigrams. A record with a new slug
- * makes a Blueprint with a new UUID. A blank slug gets a unique slug from
- * the name. Returns the counts, for the confirm of Task 119.
+ * and tier. It also sets the location and the trigrams when the file has
+ * those columns (Task 117). A record with a new slug makes a Blueprint with
+ * a new UUID. A blank slug gets a unique slug from the name. Returns the
+ * counts that `previewTeamImport` gives.
  */
 export function importTeamBlueprints(
   records: readonly TeamListRecord[],
@@ -134,35 +239,23 @@ export function importTeamBlueprints(
   const state = useDatabaseStore.getState();
   const { installationUuid } = requireOpenDatabase(state);
   const blueprints = [...state.blueprints];
-  const deduped = lastRecordForEachSlug(records);
-  // A slug made for a blank record must not take a slug of the file.
-  const taken = new Set([
-    ...blueprints.map((blueprint) => blueprint.slug),
-    ...deduped.map((record) => record.slug).filter((slug) => slug !== ''),
-  ]);
-  let added = 0;
-  let updated = 0;
+  const steps = planTeamImport(state.blueprints, records);
 
-  for (const record of deduped) {
-    const index =
-      record.slug === '' ? -1 : blueprints.findIndex((b) => b.slug === record.slug);
-    if (index === -1) {
-      const slug = record.slug === '' ? uniqueSlug(record.name, taken) : record.slug;
-      taken.add(slug);
-      blueprints.push(newBlueprint(record, slug, installationUuid, randomBytes));
-      added++;
+  for (const step of steps) {
+    if (step.kind === 'add') {
+      blueprints.push(
+        newBlueprint(step.record, step.slug, installationUuid, randomBytes)
+      );
     } else {
-      const { name, colour, tier } = record;
-      blueprints[index] = applyChanges(
-        blueprints[index],
-        { name, colour, tier },
+      blueprints[step.index] = applyChanges(
+        blueprints[step.index],
+        importChanges(step.record),
         installationUuid
       );
-      updated++;
     }
   }
 
   const changed = blueprints.some((blueprint, i) => blueprint !== state.blueprints[i]);
   if (changed) useDatabaseStore.setState({ blueprints });
-  return { added, updated };
+  return countSteps(steps);
 }

@@ -109,4 +109,42 @@ describe('Input', () => {
     await userEvent.type(screen.getByLabelText('Slug'), 'x');
     expect(screen.getByLabelText('Slug')).toHaveValue('fc-united');
   });
+
+  describe('the trailing slot (Task 169)', () => {
+    it('shows the slot content in a row with the input box, below the label', () => {
+      render(
+        <Input
+          label="Slug"
+          defaultValue="ashfield"
+          trailing={<button type="button">Regenerate</button>}
+        />
+      );
+      const input = screen.getByLabelText('Slug');
+      const button = screen.getByRole('button', { name: 'Regenerate' });
+      const row = input.parentElement;
+
+      expect(row?.className).toMatch(/row/);
+      expect(row?.contains(button)).toBe(true);
+      expect(row?.contains(screen.getByText('Slug'))).toBe(false);
+    });
+
+    it('keeps the label on the input box, not on the slot content', () => {
+      render(
+        <Input
+          label="Slug"
+          defaultValue="ashfield"
+          trailing={<button type="button">Regenerate</button>}
+        />
+      );
+      expect(screen.getByLabelText('Slug')).toHaveValue('ashfield');
+      expect(
+        screen.getByRole('button', { name: 'Regenerate' })
+      ).not.toHaveAccessibleName('Slug');
+    });
+
+    it('renders no slot when trailing is not set', () => {
+      const { container } = render(<Input label="Slug" defaultValue="ashfield" />);
+      expect(container.querySelector('[class*="trailing"]')).toBeNull();
+    });
+  });
 });

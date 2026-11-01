@@ -40,6 +40,7 @@ export function instance(overrides: Partial<TeamInstance> = {}): TeamInstance {
     colour: '#1565C0',
     tier: 'B',
     ovr: 74,
+    trigram: 'SMU',
     ...overrides,
   };
 }
@@ -129,14 +130,15 @@ export function testUuid(n: number): string {
  * Each Blueprint gets the UUID `testUuid(1)`, `testUuid(2)`, and so on.
  */
 export function openTestDatabase(
-  teams: readonly Pick<TeamBlueprint, 'slug' | 'name' | 'colour' | 'tier'>[] = []
+  teams: readonly (Pick<TeamBlueprint, 'slug' | 'name' | 'colour' | 'tier'> &
+    Partial<Pick<TeamBlueprint, 'location' | 'trigrams'>>)[] = []
 ): ReturnType<typeof memoryFolder> {
   const memory = memoryFolder();
   const blueprints = teams.map((team, index) =>
     blueprint({
       uuid: testUuid(index + 1),
-      location: '',
-      trigrams: [],
+      location: team.location ?? '',
+      trigrams: team.trigrams ?? [],
       slug: team.slug,
       name: team.name,
       colour: team.colour,
@@ -192,6 +194,7 @@ export function roundRobinLeague(
     colour: team.colour,
     tier: 'B',
     ovr: 70,
+    trigram: '',
   }));
   const uuids = instances.map((team) => team.blueprintUuid);
   const schedule =

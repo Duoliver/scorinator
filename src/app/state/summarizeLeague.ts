@@ -31,7 +31,11 @@ export function summarizeLeague(wrapper: LeagueWrapper): WrapperSummary {
     teamCount: wrapper.teams.length,
     homeAdvantage: league.homeAdvantage,
     points: { ...league.points },
-    phaseFormats: league.phases.map((phase) => phase.format),
+    phases: league.plans.map((plan) =>
+      plan.format === 'bracket'
+        ? { format: 'bracket' }
+        : { format: plan.format, legs: plan.legs }
+    ),
     progress: progressOf(wrapper),
   };
 }

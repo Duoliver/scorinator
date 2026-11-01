@@ -74,9 +74,11 @@ export function leagueWrapper(
       homeAdvantage: true,
       points: { win: 3, draw: 1, loss: 0 },
       ...provenance,
+      plans: [{ format: 'round-robin', legs: 'two-way' }],
       phases: [
         {
           format: 'round-robin',
+          legs: 'two-way',
           fixtures: [
             { id: 'p1.g1.md1.m1', matchday: 1, home: SALT_MARSH, away: HARBORVIEW },
             { id: 'p1.g1.md2.m1', matchday: 2, home: HARBORVIEW, away: SALT_MARSH },
@@ -209,9 +211,11 @@ export function roundRobinLeague(
       points: { win: 3, draw: 1, loss: 0 },
       ...provenance,
       ...details,
+      plans: [{ format: 'round-robin', legs: 'two-way' }],
       phases: [
         {
           format: 'round-robin',
+          legs: 'two-way',
           fixtures: assignFixtureIds(schedule.fixtures, { phase: 1, group: 1 }),
           byes: schedule.byes,
           results: [],

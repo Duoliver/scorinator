@@ -78,7 +78,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 125 | The group draw: size or count, add to the smallest group, moves | `engine/round-robin` | ✅ Done | 2026-11-01 | 2026-11-01 | [125](/docs/tasks/125-group-draw.md) | M3. US-02.1, 02.5. 35 new tests. Task 130 is the first caller. |
 | 126 | Phase chain rules: bracket last, fit checks, qualifier counts, the best M suggestion | `engine/phases` | ✅ Done | 2026-11-01 | 2026-11-01 | [126](/docs/tasks/126-phase-chain-rules.md) | M3. US-01.3, 01.4, 01.6. 27 new tests. Phase start split to 175. |
 | 127 | Dropdown menu | `design-system/` | ✅ Done | 2026-11-01 | 2026-11-01 | [127](/docs/tasks/127-dropdown-menu.md) | M3. US-02.5 (Move to group), US-10.1. 27 new tests. Task 130 and Task 150 use it. |
-| 128 | League state with phases: scorinate in a phase, start the next phase, the progress text | `app/`, `domain/` | ⬜ Not started |  |  |  | M3. US-01.2, 07.1, 07.3. After 175. Adds the domain phase types (Task 126 choice 6). |
+| 128 | League state with phases: scorinate in a phase, start the next phase, the progress text | `app/`, `domain/` | ⬜ Not started |  |  |  | M3. US-01.2, 07.1, 07.3. After 176 (split: domain and files in 176). Adds create with plans, phase start, progress, lots. |
 | 129 | Wizard Phases step: phases, formats, advancement, best M, warnings | `features/leagues` | ⬜ Not started |  |  |  | M3. US-01.1 to 01.6. After 128. |
 | 130 | Wizard Teams step with groups: group columns, Shuffle, drag, Move to group | `features/leagues` | ⬜ Not started |  |  |  | M3. US-02.1, 02.4, 02.5. After 127, 129. |
 | 131 | League Detail with phases: tabs, header, badge, group cards, group fixtures, dashboard card text | `features/leagues`, `features/standings` | ⬜ Not started |  |  |  | M3. US-01.2, 02.2, 02.4. After 128. |
@@ -125,6 +125,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 172 | Edit a team for this league, in the wizard: Original state, OVR, Tier roll, fixed trigram, unique name, Reset | `features/leagues`, `features/components` | ✅ Done | 2026-10-30 | 2026-10-30 | [172](/docs/tasks/172-wizard-edit-team.md) | Split from 121 - 2026-10-30. US-08.4, 09.6. Edit drawer built, with shared `TeamForm` fields. |
 | 173 | The slug check in the team CSV and JSON imports: letters, digits, and hyphens only | `engine/identity`, `adapters/` | ✅ Done | 2026-10-30 | 2026-10-30 | [173](/docs/tasks/173-import-slug-check.md) | Task created by User - 2026-10-30. From the Task 168 review. `isSlug` built, CSV and JSON stop on a bad slug. The user checked the real app. |
 | 175 | The phase start: qualifiers in seed order, the phase build, the lock | `engine/phases` | ✅ Done | 2026-11-01 | 2026-11-01 | [175](/docs/tasks/175-phase-start.md) | M3. US-07.1, 07.3. Split from 126. 15 new tests. Task 128 is the first caller. |
+| 176 | Phases in the domain and the database files: plans, legs, the Groups phase, format version 3 | `domain/`, `adapters/json-io`, `app/data` | ✅ Done | 2026-11-01 | 2026-11-01 | [176](/docs/tasks/176-phase-domain-and-files.md) | M3. Split from 128. 13 new tests. Format version 3, reads version 2. |
 
 **Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input, see Open Questions) · 🟩 Review · ✅ Done · ❌ Cancelled (the reason is in the Notes column)
 
@@ -172,6 +173,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-11-01 (Task 176 — phases in the domain and the files):** The user agreed six choices. (1) Split Task 128: Task 176 does the domain and the files first. (2) `League.plans` holds the whole chain, `phases` only the started ones. (3) `DATABASE_FORMAT_VERSION` 3: the parser reads 2 and 3, and writes 3. (4) The manifest row has `phases: { format, legs }[]` from the plans, in place of `phaseFormats`. (5) A plan can be a bracket. A started bracket comes in Task 139. (6) Four parse checks: bracket not last, more phases than plans, a format unlike its plan, a team in two groups. Detail in [`docs/tasks/176-phase-domain-and-files.md`](/docs/tasks/176-phase-domain-and-files.md).
 
 - **2026-11-01 (Task 127 — dropdown menu):** The user agreed six choices. (1) The trigger is the `Button` primitive: an icon button with `icon`, else `label ▾`. (2) Flat items, no submenu: Task 130 shows "Move to Group B" and so on (changes the US-02.5 wording). (3) `position: fixed` from the trigger box, as `Tooltip`. (4) The WAI-ARIA menu button keyboard. (5) `Button` gets `aria-haspopup` and `aria-expanded`. (6) The placement is checked in the real app at review. Detail in [`docs/tasks/127-dropdown-menu.md`](/docs/tasks/127-dropdown-menu.md).
 

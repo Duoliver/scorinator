@@ -5,6 +5,7 @@ import {
   parseWrapper,
   serializeManifest,
   serializeWrapper,
+  type SavedInstance,
   type SavedManifest,
   type SavedWrapper,
 } from './index';
@@ -55,7 +56,7 @@ function buildManifest(): SavedManifest {
         teamCount: 2,
         homeAdvantage: true,
         points: { win: 3, draw: 1, loss: 0 },
-        phaseFormats: ['round-robin'],
+        phases: [{ format: 'round-robin', legs: 'two-way' }],
         progress: { kind: 'phase', phase: 1, matchday: 2, matchdays: 2 },
       },
       {
@@ -65,7 +66,7 @@ function buildManifest(): SavedManifest {
         teamCount: 2,
         homeAdvantage: false,
         points: { win: 2, draw: 1, loss: 0 },
-        phaseFormats: ['round-robin'],
+        phases: [{ format: 'round-robin', legs: 'two-way' }],
         progress: { kind: 'completed' },
       },
     ],
@@ -103,9 +104,11 @@ function buildWrapper(): SavedWrapper {
       homeAdvantage: true,
       points: { win: 3, draw: 1, loss: 0 },
       ...provenance,
+      plans: [{ format: 'round-robin', legs: 'two-way' }],
       phases: [
         {
           format: 'round-robin',
+          legs: 'two-way',
           fixtures: [
             { id: 'p1.g1.md1.m1', matchday: 1, home: SALT_MARSH, away: HARBORVIEW },
             { id: 'p1.g1.md2.m1', matchday: 2, home: HARBORVIEW, away: SALT_MARSH },
@@ -143,8 +146,8 @@ function wrapperText(change: (raw: RawFile) => void = () => {}): string {
 }
 
 describe('the format version', () => {
-  it('is 2 for each MVP2 database file', () => {
-    expect(DATABASE_FORMAT_VERSION).toBe(2);
+  it('is 3 for each MVP2 database file (Task 176)', () => {
+    expect(DATABASE_FORMAT_VERSION).toBe(3);
   });
 });
 
@@ -193,14 +196,14 @@ describe('parseManifest', () => {
   });
 
   it('rejects a newer format version, and says that a newer Scorinator made it', () => {
-    expect(() => parseManifest(manifestText((raw) => (raw.formatVersion = 3)))).toThrow(
-      'manifest.json is not valid: a newer version of Scorinator made this file (format version 3). This version reads format version 2.'
+    expect(() => parseManifest(manifestText((raw) => (raw.formatVersion = 4)))).toThrow(
+      'manifest.json is not valid: a newer version of Scorinator made this file (format version 4). This version reads format versions 2 and 3.'
     );
   });
 
   it('rejects an older or missing format version', () => {
     expect(() => parseManifest(manifestText((raw) => (raw.formatVersion = 1)))).toThrow(
-      'manifest.json is not valid: the format version is "1". This version reads format version 2.'
+      'manifest.json is not valid: the format version is "1". This version reads format versions 2 and 3.'
     );
     expect(() =>
       parseManifest(manifestText((raw) => delete raw.formatVersion))
@@ -260,8 +263,17 @@ describe('parseManifest', () => {
       parseManifest(manifestText((raw) => (raw.wrappers[0].contentType = 'season')))
     ).toThrow('league row 1 has no valid content type.');
     expect(() =>
-      parseManifest(manifestText((raw) => (raw.wrappers[0].phaseFormats = ['bracket'])))
-    ).toThrow('league row 1 has a phase format that is not known.');
+      parseManifest(
+        manifestText((raw) => (raw.wrappers[0].phases = [{ format: 'knockout' }]))
+      )
+    ).toThrow('league row 1 has a phase that is not valid.');
+    expect(() =>
+      parseManifest(
+        manifestText(
+          (raw) => (raw.wrappers[0].phases = [{ format: 'round-robin', legs: 'three' }])
+        )
+      )
+    ).toThrow('league row 1 has a phase that is not valid.');
     expect(() =>
       parseManifest(manifestText((raw) => (raw.wrappers[0].teamCount = -1)))
     ).toThrow('league row 1 has no valid team count.');
@@ -374,6 +386,10 @@ describe('parseWrapper', () => {
 
   it('rejects a fixture id that a fixture of another phase uses', () => {
     const twoPhases = wrapperText((raw) => {
+      raw.content.plans = [
+        { format: 'round-robin', legs: 'two-way', advance: { top: 2 } },
+        { format: 'round-robin', legs: 'two-way' },
+      ];
       raw.content.phases.push(structuredClone(raw.content.phases[0]));
       raw.content.phases[1].results = [];
     });
@@ -444,5 +460,210 @@ describe('parseWrapper', () => {
     expect(
       parseWrapper(wrapperText((raw) => (raw.content.phases = []))).content.phases
     ).toEqual([]);
+  });
+});
+
+const NORTH = '00000000-0000-4000-8000-0000000000a3';
+const EAST = '00000000-0000-4000-8000-0000000000a4';
+
+/** A four-team league: phase 1 is Groups (2 groups of 2, single duels, top
+ * 1), phase 2 a bracket that has not started. */
+function buildGroupsWrapper(): SavedWrapper {
+  const wrapper = buildWrapper();
+  const extra = (blueprintUuid: string, name: string): SavedInstance => ({
+    ...wrapper.teams[0],
+    blueprintUuid,
+    slug: name.toLowerCase(),
+    name,
+  });
+  return {
+    ...wrapper,
+    teams: [...wrapper.teams, extra(NORTH, 'North'), extra(EAST, 'East')],
+    content: {
+      ...wrapper.content,
+      plans: [
+        {
+          format: 'groups',
+          legs: 'single-duels',
+          grouping: { by: 'count', count: 2 },
+          advance: { top: 1, bestOfNext: 0 },
+        },
+        { format: 'bracket' },
+      ],
+      phases: [
+        {
+          format: 'groups',
+          legs: 'single-duels',
+          groups: [
+            [SALT_MARSH, HARBORVIEW],
+            [NORTH, EAST],
+          ],
+          fixtures: [
+            { id: 'p1.g1.md1.m1', matchday: 1, home: SALT_MARSH, away: HARBORVIEW },
+            { id: 'p1.g2.md1.m1', matchday: 1, home: EAST, away: NORTH },
+          ],
+          byes: [],
+          results: [
+            {
+              fixtureId: 'p1.g2.md1.m1',
+              home: EAST,
+              away: NORTH,
+              homeGoals: 0,
+              awayGoals: 0,
+            },
+          ],
+        },
+      ],
+    },
+  };
+}
+
+function groupsText(change: (raw: RawFile) => void = () => {}): string {
+  const raw = structuredClone(buildGroupsWrapper()) as RawFile;
+  change(raw);
+  return JSON.stringify(raw);
+}
+
+describe('phases, plans, and legs (Task 176)', () => {
+  it('gives the same Groups league after a round trip, with its plans and draw', () => {
+    expect(parseWrapper(serializeWrapper(buildGroupsWrapper()))).toEqual(
+      buildGroupsWrapper()
+    );
+  });
+
+  it('reads a version-2 wrapper: legs two-way, one round-robin plan for each phase', () => {
+    const v2 = wrapperText((raw) => {
+      raw.formatVersion = 2;
+      delete raw.content.plans;
+      delete raw.content.phases[0].legs;
+    });
+    expect(parseWrapper(v2)).toEqual(buildWrapper());
+  });
+
+  it('reads a version-2 manifest: each phase format becomes a two-way phase', () => {
+    const v2 = manifestText((raw) => {
+      raw.formatVersion = 2;
+      for (const row of raw.wrappers) {
+        delete row.phases;
+        row.phaseFormats = ['round-robin'];
+      }
+    });
+    expect(parseManifest(v2)).toEqual(buildManifest());
+  });
+
+  it('reads a bracket summary with no legs', () => {
+    const manifest = parseManifest(
+      manifestText(
+        (raw) =>
+          (raw.wrappers[1].phases = [
+            { format: 'groups', legs: 'two-way' },
+            { format: 'bracket' },
+          ])
+      )
+    );
+    expect(manifest.wrappers[1].phases).toEqual([
+      { format: 'groups', legs: 'two-way' },
+      { format: 'bracket' },
+    ]);
+  });
+
+  it('rejects a bracket before the last phase (US-01.3)', () => {
+    expect(() =>
+      parseWrapper(
+        groupsText(
+          (raw) => (raw.content.plans = [{ format: 'bracket' }, raw.content.plans[0]])
+        )
+      )
+    ).toThrow(
+      'A league file is not valid: phase 1 is a bracket, but a bracket must be the last phase.'
+    );
+  });
+
+  it('rejects a missing advancement, an advancement on the last phase, and no plans', () => {
+    expect(() =>
+      parseWrapper(groupsText((raw) => delete raw.content.plans[0].advance))
+    ).toThrow('phase 1 has no advancement, but it is not the last phase.');
+    expect(() =>
+      parseWrapper(wrapperText((raw) => (raw.content.plans[0].advance = { top: 1 })))
+    ).toThrow('phase 1 is the last phase, but it has an advancement.');
+    expect(() => parseWrapper(wrapperText((raw) => (raw.content.plans = [])))).toThrow(
+      'the league has no phase plan.'
+    );
+  });
+
+  it('rejects a plan with a bad field', () => {
+    expect(() =>
+      parseWrapper(wrapperText((raw) => (raw.content.plans[0].format = 'knockout')))
+    ).toThrow('plan 1 has a format that is not known.');
+    expect(() =>
+      parseWrapper(wrapperText((raw) => (raw.content.plans[0].legs = 'three')))
+    ).toThrow('plan 1 has no valid legs.');
+    expect(() =>
+      parseWrapper(
+        groupsText((raw) => (raw.content.plans[0].grouping = { by: 'size' }))
+      )
+    ).toThrow('plan 1 has no valid group setting.');
+    expect(() =>
+      parseWrapper(groupsText((raw) => (raw.content.plans[0].advance.top = 0)))
+    ).toThrow('plan 1 has no valid advancement.');
+    expect(() =>
+      parseWrapper(groupsText((raw) => delete raw.content.plans[0].advance.bestOfNext))
+    ).toThrow('plan 1 has no valid advancement.');
+  });
+
+  it('rejects more started phases than plans', () => {
+    expect(() =>
+      parseWrapper(
+        wrapperText((raw) => {
+          raw.content.phases.push(structuredClone(raw.content.phases[0]));
+          raw.content.phases[1].fixtures = [];
+          raw.content.phases[1].results = [];
+        })
+      )
+    ).toThrow('the league has 2 started phases, but only 1 phase plan.');
+  });
+
+  it('rejects a phase with another format or other legs than its plan', () => {
+    expect(() =>
+      parseWrapper(wrapperText((raw) => (raw.content.plans[0] = { format: 'bracket' })))
+    ).toThrow('phase 1 is a round robin, but its plan is a bracket.');
+    expect(() =>
+      parseWrapper(wrapperText((raw) => (raw.content.phases[0].legs = 'single-duels')))
+    ).toThrow('phase 1 has other legs than its plan.');
+  });
+
+  it('rejects a team in two groups, or a group team outside the league', () => {
+    expect(() =>
+      parseWrapper(
+        groupsText((raw) => raw.content.phases[0].groups[1].push(SALT_MARSH))
+      )
+    ).toThrow('phase 1 has a team in two groups.');
+    expect(() =>
+      parseWrapper(
+        groupsText((raw) => (raw.content.phases[0].groups[1][0] = OTHER_LEAGUE))
+      )
+    ).toThrow('phase 1, group 2 names a team that is not in the league.');
+  });
+
+  it('rejects a Groups bye with no valid group number', () => {
+    expect(() =>
+      parseWrapper(
+        groupsText(
+          (raw) =>
+            (raw.content.phases[0].byes = [{ matchday: 2, team: NORTH, group: 3 }])
+        )
+      )
+    ).toThrow('phase 1, bye 1 has no valid group.');
+  });
+
+  it('reads the group number of a Groups bye', () => {
+    const wrapper = parseWrapper(
+      groupsText(
+        (raw) => (raw.content.phases[0].byes = [{ matchday: 2, team: NORTH, group: 2 }])
+      )
+    );
+    expect(wrapper.content.phases[0].byes).toEqual([
+      { matchday: 2, team: NORTH, group: 2 },
+    ]);
   });
 });

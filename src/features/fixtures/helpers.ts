@@ -3,6 +3,7 @@ import type { Phase, PhaseResult } from '@/domain';
 /** What the view reads for a league with no phase: nothing to play. */
 export const EMPTY_PHASE: Phase = {
   format: 'round-robin',
+  legs: 'two-way',
   fixtures: [],
   byes: [],
   results: [],

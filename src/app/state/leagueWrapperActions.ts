@@ -79,9 +79,13 @@ export function createLeague(
       points: input.points,
       createdByInstallation: installationUuid,
       lastModifiedByInstallation: installationUuid,
+      // One two-way round robin: an MVP1-style league. Task 128 adds the
+      // plans of the wizard.
+      plans: [{ format: 'round-robin', legs: 'two-way' }],
       phases: [
         {
           format: 'round-robin',
+          legs: 'two-way',
           fixtures: assignFixtureIds(schedule.fixtures, { phase: 1, group: 1 }),
           byes: schedule.byes,
           results: [],

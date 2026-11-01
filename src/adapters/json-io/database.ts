@@ -1,16 +1,25 @@
 import { isUuidV4 } from '@/engine/identity';
-import type { Bye, PhaseFixture } from '@/engine/round-robin';
+import {
+  checkPhaseChain,
+  type GroupBye,
+  type Legs,
+  type PhaseChainProblem,
+} from '@/engine/phases';
+import type { Bye, GroupSetting, PhaseFixture } from '@/engine/round-robin';
 import type { PointsConfig } from '@/engine/standings';
 import { isTier } from '@/engine/tier-ovr';
 import {
   DATABASE_FORMAT_VERSION,
+  OLDEST_DATABASE_FORMAT_VERSION,
   type SavedBlueprint,
   type SavedInstance,
   type SavedLeagueProgress,
   type SavedManifest,
   type SavedPhase,
   type SavedPhaseFormat,
+  type SavedPhasePlan,
   type SavedPhaseResult,
+  type SavedPhaseSummary,
   type SavedProvenance,
   type SavedWrapper,
   type SavedWrapperLeague,
@@ -28,7 +37,14 @@ import {
 type Fail = (message: string) => never;
 type Raw = Record<string, unknown>;
 
-const PHASE_FORMATS: readonly SavedPhaseFormat[] = ['round-robin'];
+const PHASE_FORMATS: readonly SavedPhaseFormat[] = ['round-robin', 'groups'];
+const LEGS: readonly Legs[] = ['two-way', 'single-duels'];
+
+/** The format version of the file being read: 2 or 3 (Task 176). A version-2
+ * file gets the defaults of version 3. */
+type Version = 2 | 3;
+
+const READ_VERSIONS = `This version reads format versions ${OLDEST_DATABASE_FORMAT_VERSION} and ${DATABASE_FORMAT_VERSION}.`;
 
 function failFor(file: string): Fail {
   return (message) => {
@@ -63,6 +79,10 @@ function isPhaseFormat(value: unknown): value is SavedPhaseFormat {
   return (PHASE_FORMATS as readonly unknown[]).includes(value);
 }
 
+function isLegs(value: unknown): value is Legs {
+  return (LEGS as readonly unknown[]).includes(value);
+}
+
 function readList(value: unknown, name: string, fail: Fail): unknown[] {
   if (!Array.isArray(value)) fail(`"${name}" is missing or not a list.`);
   return value;
@@ -83,7 +103,11 @@ function checkUnique<T>(
   });
 }
 
-function readFileHeader(text: string, kind: 'manifest' | 'wrapper', fail: Fail): Raw {
+function readFileHeader(
+  text: string,
+  kind: 'manifest' | 'wrapper',
+  fail: Fail
+): { raw: Raw; version: Version } {
   let raw: unknown;
   try {
     raw = JSON.parse(text);
@@ -97,15 +121,13 @@ function readFileHeader(text: string, kind: 'manifest' | 'wrapper', fail: Fail):
   const version = raw.formatVersion;
   if (typeof version === 'number' && version > DATABASE_FORMAT_VERSION) {
     fail(
-      `a newer version of Scorinator made this file (format version ${version}). This version reads format version ${DATABASE_FORMAT_VERSION}.`
+      `a newer version of Scorinator made this file (format version ${version}). ${READ_VERSIONS}`
     );
   }
-  if (version !== DATABASE_FORMAT_VERSION) {
-    fail(
-      `the format version is "${String(version)}". This version reads format version ${DATABASE_FORMAT_VERSION}.`
-    );
+  if (version !== 2 && version !== 3) {
+    fail(`the format version is "${String(version)}". ${READ_VERSIONS}`);
   }
-  return raw;
+  return { raw, version };
 }
 
 function readProvenance(value: Raw, label: string, fail: Fail): SavedProvenance {
@@ -190,7 +212,40 @@ function readProgress(
   };
 }
 
-function readSummary(value: unknown, index: number): SavedWrapperSummary {
+/** One phase of a manifest row (Task 176 choice 4). */
+function readPhaseSummary(value: unknown, label: string): SavedPhaseSummary {
+  if (isRecord(value) && value.format === 'bracket') return { format: 'bracket' };
+  if (!isRecord(value) || !isPhaseFormat(value.format) || !isLegs(value.legs)) {
+    failManifest(`${label} has a phase that is not valid.`);
+  }
+  return { format: value.format, legs: value.legs };
+}
+
+/** The phases of a manifest row. A version-2 row has `phaseFormats`: each
+ * one becomes a two-way phase. */
+function readSummaryPhases(
+  value: Raw,
+  version: Version,
+  label: string
+): SavedPhaseSummary[] {
+  const fail: Fail = failManifest;
+  if (version === 2) {
+    const formats = readList(value.phaseFormats, 'phaseFormats', fail);
+    if (!formats.every(isPhaseFormat)) {
+      fail(`${label} has a phase format that is not known.`);
+    }
+    return formats.map((format) => ({ format, legs: 'two-way' }));
+  }
+  return readList(value.phases, 'phases', fail).map((phase) =>
+    readPhaseSummary(phase, label)
+  );
+}
+
+function readSummary(
+  value: unknown,
+  index: number,
+  version: Version
+): SavedWrapperSummary {
   const label = `league row ${index + 1}`;
   const fail: Fail = failManifest;
   if (!isRecord(value)) fail(`${label} is not an object.`);
@@ -201,9 +256,7 @@ function readSummary(value: unknown, index: number): SavedWrapperSummary {
   if (typeof value.homeAdvantage !== 'boolean') {
     fail(`${label} has no valid "homeAdvantage" flag.`);
   }
-  const formats = readList(value.phaseFormats, 'phaseFormats', fail);
-  if (!formats.every(isPhaseFormat))
-    fail(`${label} has a phase format that is not known.`);
+  const phases = readSummaryPhases(value, version, label);
 
   return {
     uuid: value.uuid,
@@ -212,8 +265,8 @@ function readSummary(value: unknown, index: number): SavedWrapperSummary {
     teamCount: value.teamCount,
     homeAdvantage: value.homeAdvantage,
     points: readPoints(value.points, label, fail),
-    phaseFormats: [...formats],
-    progress: readProgress(value.progress, formats.length, label),
+    phases,
+    progress: readProgress(value.progress, phases.length, label),
   };
 }
 
@@ -225,7 +278,7 @@ export function serializeManifest(manifest: SavedManifest): string {
  * `manifest.json is not valid:` and says what is wrong. */
 export function parseManifest(text: string): SavedManifest {
   const fail: Fail = failManifest;
-  const raw = readFileHeader(text, 'manifest', fail);
+  const { raw, version } = readFileHeader(text, 'manifest', fail);
   if (!isUuidV4(raw.installationUuid)) fail('the installation UUID is not a UUID v4.');
 
   const blueprints = readList(raw.blueprints, 'blueprints', fail).map(readBlueprint);
@@ -242,7 +295,9 @@ export function parseManifest(text: string): SavedManifest {
     fail
   );
 
-  const wrappers = readList(raw.wrappers, 'wrappers', fail).map(readSummary);
+  const wrappers = readList(raw.wrappers, 'wrappers', fail).map((row, index) =>
+    readSummary(row, index, version)
+  );
   checkUnique(
     wrappers,
     (w) => w.uuid,
@@ -304,6 +359,41 @@ function readBye(value: unknown, label: string): Bye<string> {
   return { matchday: value.matchday, team: value.team };
 }
 
+function readGroupBye(
+  value: unknown,
+  label: string,
+  groupCount: number
+): GroupBye<string> {
+  const bye = readBye(value, label);
+  const group = isRecord(value) ? value.group : undefined;
+  if (!isPositiveInteger(group) || group > groupCount) {
+    failWrapper(`${label} has no valid group.`);
+  }
+  return { ...bye, group };
+}
+
+/** The draw of a Groups phase: each team of the league once at most. */
+function readGroups(
+  value: unknown,
+  label: string,
+  teams: ReadonlySet<string>
+): string[][] {
+  const fail: Fail = failWrapper;
+  const groups = readList(value, 'groups', fail);
+  const seen = new Set<string>();
+  return groups.map((group, i) => {
+    const members = readList(group, 'groups', fail);
+    return members.map((team) => {
+      if (typeof team !== 'string' || !teams.has(team)) {
+        fail(`${label}, group ${i + 1} names a team that is not in the league.`);
+      }
+      if (seen.has(team)) fail(`${label} has a team in two groups.`);
+      seen.add(team);
+      return team;
+    });
+  });
+}
+
 function readResult(value: unknown, label: string): SavedPhaseResult {
   const fail: Fail = failWrapper;
   if (!isRecord(value)) fail(`${label} is not an object.`);
@@ -328,18 +418,26 @@ function readPhase(
   value: unknown,
   index: number,
   teams: ReadonlySet<string>,
-  leagueFixtureIds: Set<string>
+  leagueFixtureIds: Set<string>,
+  version: Version
 ): SavedPhase {
   const label = `phase ${index + 1}`;
   const fail: Fail = failWrapper;
   if (!isRecord(value)) fail(`${label} is not an object.`);
   if (!isPhaseFormat(value.format)) fail(`${label} has a format that is not known.`);
+  // A version-2 phase has no legs: it is a two-way round robin.
+  const legs = version === 2 ? (value.legs ?? 'two-way') : value.legs;
+  if (!isLegs(legs)) fail(`${label} has no valid legs.`);
+  const groups =
+    value.format === 'groups' ? readGroups(value.groups, label, teams) : undefined;
 
   const fixtures = readList(value.fixtures, 'fixtures', fail).map((item, i) =>
     readFixture(item, `${label}, fixture ${i + 1}`)
   );
   const byes = readList(value.byes, 'byes', fail).map((item, i) =>
-    readBye(item, `${label}, bye ${i + 1}`)
+    groups
+      ? readGroupBye(item, `${label}, bye ${i + 1}`, groups.length)
+      : readBye(item, `${label}, bye ${i + 1}`)
   );
   const results = readList(value.results, 'results', fail).map((item, i) =>
     readResult(item, `${label}, result ${i + 1}`)
@@ -377,10 +475,135 @@ function readPhase(
     played.add(result.fixtureId);
   });
 
-  return { format: value.format, fixtures, byes, results };
+  if (groups) {
+    return {
+      format: 'groups',
+      legs,
+      groups,
+      fixtures,
+      byes: byes as GroupBye<string>[],
+      results,
+    };
+  }
+  return { format: 'round-robin', legs, fixtures, byes, results };
 }
 
-function readLeague(value: unknown, teams: ReadonlySet<string>): SavedWrapperLeague {
+// --- Plans --------------------------------------------------------------
+
+function readGrouping(value: unknown, label: string): GroupSetting {
+  if (isRecord(value) && value.by === 'size' && isPositiveInteger(value.size)) {
+    return { by: 'size', size: value.size };
+  }
+  if (isRecord(value) && value.by === 'count' && isPositiveInteger(value.count)) {
+    return { by: 'count', count: value.count };
+  }
+  return failWrapper(`${label} has no valid group setting.`);
+}
+
+/** One phase plan (Task 126). The numbers must be whole. The fit rules
+ * (Task 126 `checkPhaseFit`) are the wizard's: a file keeps what the
+ * wizard made. */
+function readPlan(value: unknown, index: number): SavedPhasePlan {
+  const label = `plan ${index + 1}`;
+  const fail: Fail = failWrapper;
+  if (!isRecord(value)) fail(`${label} is not an object.`);
+  if (value.format === 'bracket') return { format: 'bracket' };
+  if (!isPhaseFormat(value.format)) fail(`${label} has a format that is not known.`);
+  if (!isLegs(value.legs)) fail(`${label} has no valid legs.`);
+  const advance = value.advance;
+  if (advance !== undefined) {
+    const valid =
+      isRecord(advance) &&
+      isPositiveInteger(advance.top) &&
+      (value.format === 'round-robin' || isNonNegativeInteger(advance.bestOfNext));
+    if (!valid) fail(`${label} has no valid advancement.`);
+  }
+
+  if (value.format === 'round-robin') {
+    return {
+      format: 'round-robin',
+      legs: value.legs,
+      ...(isRecord(advance) ? { advance: { top: advance.top as number } } : {}),
+    };
+  }
+  return {
+    format: 'groups',
+    legs: value.legs,
+    grouping: readGrouping(value.grouping, label),
+    ...(isRecord(advance)
+      ? {
+          advance: {
+            top: advance.top as number,
+            bestOfNext: advance.bestOfNext as number,
+          },
+        }
+      : {}),
+  };
+}
+
+/** The text of a chain problem (US-01.3): the import error. */
+function chainProblemText(problem: PhaseChainProblem): string {
+  switch (problem.code) {
+    case 'no-phases':
+      return 'the league has no phase plan.';
+    case 'bracket-not-last':
+      return `phase ${problem.phase} is a bracket, but a bracket must be the last phase.`;
+    case 'missing-advancement':
+      return `phase ${problem.phase} has no advancement, but it is not the last phase.`;
+    case 'advancement-on-last':
+      return `phase ${problem.phase} is the last phase, but it has an advancement.`;
+  }
+}
+
+const FORMAT_NAMES: Record<SavedPhasePlan['format'], string> = {
+  'round-robin': 'a round robin',
+  groups: 'a Groups phase',
+  bracket: 'a bracket',
+};
+
+/** The plans of a league (Task 176 choice 6). A version-2 league has none:
+ * each phase gets a two-way round-robin plan with no advancement. */
+function readPlans(value: Raw, phaseCount: number, version: Version): SavedPhasePlan[] {
+  if (version === 2 && value.plans === undefined) {
+    return Array.from({ length: phaseCount }, () => ({
+      format: 'round-robin',
+      legs: 'two-way',
+    }));
+  }
+  return readList(value.plans, 'plans', failWrapper).map(readPlan);
+}
+
+/** The plan and phase checks of Task 176 choice 6. */
+function checkPlansAndPhases(
+  plans: readonly SavedPhasePlan[],
+  phases: readonly SavedPhase[]
+): void {
+  const fail: Fail = failWrapper;
+  const [problem] = checkPhaseChain(plans);
+  if (problem) fail(chainProblemText(problem));
+  if (phases.length > plans.length) {
+    fail(
+      `the league has ${phases.length} started phases, but only ${plans.length} phase plan${plans.length === 1 ? '' : 's'}.`
+    );
+  }
+  phases.forEach((phase, index) => {
+    const plan = plans[index];
+    if (plan.format !== phase.format) {
+      fail(
+        `phase ${index + 1} is ${FORMAT_NAMES[phase.format]}, but its plan is ${FORMAT_NAMES[plan.format]}.`
+      );
+    }
+    if ('legs' in plan && plan.legs !== phase.legs) {
+      fail(`phase ${index + 1} has other legs than its plan.`);
+    }
+  });
+}
+
+function readLeague(
+  value: unknown,
+  teams: ReadonlySet<string>,
+  version: Version
+): SavedWrapperLeague {
   const label = 'the league';
   const fail: Fail = failWrapper;
   if (!isRecord(value)) fail('the "content" section is missing or not an object.');
@@ -393,8 +616,10 @@ function readLeague(value: unknown, teams: ReadonlySet<string>): SavedWrapperLea
   const provenance = readProvenance(value, label, fail);
   const leagueFixtureIds = new Set<string>();
   const phases = readList(value.phases, 'phases', fail).map((phase, index) =>
-    readPhase(phase, index, teams, leagueFixtureIds)
+    readPhase(phase, index, teams, leagueFixtureIds, version)
   );
+  const plans = readPlans(value, phases.length, version);
+  checkPlansAndPhases(plans, phases);
 
   return {
     uuid: value.uuid,
@@ -402,6 +627,7 @@ function readLeague(value: unknown, teams: ReadonlySet<string>): SavedWrapperLea
     homeAdvantage: value.homeAdvantage,
     points,
     ...provenance,
+    plans,
     phases,
   };
 }
@@ -414,7 +640,7 @@ export function serializeWrapper(wrapper: SavedWrapper): string {
  * starts with `A league file is not valid:` and says what is wrong. */
 export function parseWrapper(text: string): SavedWrapper {
   const fail: Fail = failWrapper;
-  const raw = readFileHeader(text, 'wrapper', fail);
+  const { raw, version } = readFileHeader(text, 'wrapper', fail);
   if (!isUuidV4(raw.uuid)) fail('the file has no valid UUID.');
 
   const teams = readList(raw.teams, 'teams', fail).map(readInstance);
@@ -425,7 +651,11 @@ export function parseWrapper(text: string): SavedWrapper {
     fail
   );
 
-  const content = readLeague(raw.content, new Set(teams.map((t) => t.blueprintUuid)));
+  const content = readLeague(
+    raw.content,
+    new Set(teams.map((t) => t.blueprintUuid)),
+    version
+  );
   if (content.uuid !== raw.uuid) fail('the file UUID is not the league UUID.');
 
   return {

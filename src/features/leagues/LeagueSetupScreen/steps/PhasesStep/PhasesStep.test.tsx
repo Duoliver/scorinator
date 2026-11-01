@@ -12,15 +12,22 @@ function Harness({
   initial = [{ format: 'round-robin', legs: 'two-way' }],
   onBack = vi.fn(),
   onNext = vi.fn(),
+  teamCount = 0,
 }: {
   initial?: PhasePlan[];
+  teamCount?: number;
   onBack?: () => void;
   onNext?: () => void;
 }): JSX.Element {
   const phaseList = usePhaseList(initial);
   return (
     <>
-      <PhasesStep phaseList={phaseList} onBack={onBack} onNext={onNext} />
+      <PhasesStep
+        phaseList={phaseList}
+        teamCount={teamCount}
+        onBack={onBack}
+        onNext={onNext}
+      />
       <output data-testid="plans">{JSON.stringify(phaseList.plans)}</output>
     </>
   );
@@ -202,5 +209,90 @@ describe('PhasesStep', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Next: Teams →' }));
     expect(onBack).toHaveBeenCalledOnce();
     expect(onNext).toHaveBeenCalledOnce();
+  });
+
+  describe('the counts and the warnings (Task 177)', () => {
+    it('shows the notes, and no counts before the league has 2 teams', () => {
+      render(<Harness initial={groupsThenBracket} teamCount={1} />);
+      expect(
+        screen.getByText('The counts show when the league has 2 teams.')
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          "The league's home advantage applies to round-robin and group phases, and to two-legged ties only."
+        )
+      ).toBeInTheDocument();
+      expect(
+        within(card(1)).queryByText(/teams go to phase 2/)
+      ).not.toBeInTheDocument();
+    });
+
+    it('shows the group sizes and the qualifiers of a Groups phase', () => {
+      render(<Harness initial={groupsThenBracket} teamCount={18} />);
+      expect(within(card(1)).getByText('5 groups: 4, 4, 4, 3, 3')).toBeInTheDocument();
+      expect(
+        within(card(1)).getByText('5 groups × top 2 = 10 teams go to phase 2')
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByText('The counts show when the league has 2 teams.')
+      ).not.toBeInTheDocument();
+    });
+
+    it('suggests the best M before a bracket, and applies it on a click (US-01.6)', async () => {
+      render(<Harness initial={groupsThenBracket} teamCount={24} />);
+      expect(
+        within(card(1)).getByText('6 groups × top 2 = 12. Best 4 of place 3 give 16.')
+      ).toBeInTheDocument();
+      await userEvent.click(
+        within(card(1)).getByRole('button', { name: 'Use best 4' })
+      );
+      expect(plans()[0]).toMatchObject({ advance: { top: 2, bestOfNext: 4 } });
+      expect(within(card(1)).getByLabelText('Best of place 3')).toHaveValue('4');
+      expect(
+        within(card(1)).getByText(
+          '6 groups × top 2 + best 4 of place 3 = 16 teams go to phase 2'
+        )
+      ).toBeInTheDocument();
+      expect(
+        within(card(1)).queryByRole('button', { name: 'Use best 4' })
+      ).not.toBeInTheDocument();
+    });
+
+    it('shows a problem under the card of its phase, and updates it on a change', async () => {
+      const topThree: PhasePlan[] = [
+        {
+          format: 'groups',
+          legs: 'two-way',
+          grouping: { by: 'size', size: 4 },
+          advance: { top: 3, bestOfNext: 0 },
+        },
+        { format: 'bracket' },
+      ];
+      render(<Harness initial={topThree} teamCount={6} />);
+      expect(
+        within(card(1)).getByText('Phase 1: Top must be a whole number from 1 to 2.')
+      ).toBeInTheDocument();
+      const top = within(card(1)).getByLabelText('Top');
+      await userEvent.clear(top);
+      await userEvent.type(top, '1');
+      expect(
+        within(card(1)).queryByText('Phase 1: Top must be a whole number from 1 to 2.')
+      ).not.toBeInTheDocument();
+    });
+
+    it('warns when the league ends with groups (US-01.5)', () => {
+      render(
+        <Harness
+          initial={[
+            { format: 'groups', legs: 'two-way', grouping: { by: 'size', size: 4 } },
+          ]}
+        />
+      );
+      expect(
+        screen.getByText(
+          'This league ends with groups. Each group winner is a champion. There is no single league winner.'
+        )
+      ).toBeInTheDocument();
+    });
   });
 });

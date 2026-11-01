@@ -1,5 +1,6 @@
+import { useRef } from 'preact/hooks';
 import type { JSX } from 'preact';
-import { Button, Card, Input, Select } from '@/design-system';
+import { Button, Card, Input, Select, type FieldHandle } from '@/design-system';
 import {
   FORMAT_OPTIONS,
   formatKeyOf,
@@ -8,9 +9,10 @@ import {
 } from '@/features/leagues/LeagueSetupScreen/phasePlans';
 import { phaseShortName } from '@/features/leagues/leagueSummary';
 import type PhaseCardProps from './types';
+import type { PhaseCardView } from './types';
 import styles from './PhaseCard.module.css';
 
-export type { PhaseCardProps };
+export type { PhaseCardProps, PhaseCardView };
 
 const SET_BY_OPTIONS = [
   { value: 'size', label: 'Group size' },
@@ -27,16 +29,26 @@ const numberText = (value: number): string =>
  * advancement. Bracket is in the format field of the last phase only
  * (US-01.3).
  */
-export function PhaseCard({
-  plan,
-  index,
-  isLast,
-  canRemove,
-  canMoveUp,
-  canMoveDown,
-  phaseList,
-}: PhaseCardProps): JSX.Element {
+export function PhaseCard({ view, phaseList }: PhaseCardProps): JSX.Element {
+  const {
+    plan,
+    index,
+    isLast,
+    canRemove,
+    canMoveUp,
+    canMoveDown,
+    lines,
+    problems,
+    suggestion,
+  } = view;
+  const bestRef = useRef<FieldHandle<string>>(null);
   const number = index + 1;
+  // The suggestion sets the plan, and the field through its handle: the
+  // field is uncontrolled (Task 177).
+  const applySuggestion = (m: number): void => {
+    phaseList.setBestOfNext(index, m);
+    bestRef.current?.setValue(String(m));
+  };
   const formatOptions = isLast
     ? FORMAT_OPTIONS
     : FORMAT_OPTIONS.filter((option) => option.value !== 'bracket');
@@ -145,6 +157,7 @@ export function PhaseCard({
               {bestOfNext !== undefined && (
                 <div class={styles['number-field']}>
                   <Input
+                    ref={bestRef}
                     label={`Best of ${nextPlace}`}
                     inputMode="numeric"
                     defaultValue={numberText(bestOfNext)}
@@ -156,6 +169,26 @@ export function PhaseCard({
               )}
             </div>
           )}
+
+          {lines.sizes && <p class={styles.line}>{lines.sizes}</p>}
+          {lines.qualifiers && <p class={styles.line}>{lines.qualifiers}</p>}
+          {suggestion && (
+            <div class={styles.suggestion}>
+              <p class={styles.line}>{suggestion.text}</p>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => applySuggestion(suggestion.m)}
+              >
+                {`Use best ${suggestion.m}`}
+              </Button>
+            </div>
+          )}
+          {problems.map((text) => (
+            <p key={text} class={styles.problem}>
+              {text}
+            </p>
+          ))}
         </div>
       </Card>
     </section>

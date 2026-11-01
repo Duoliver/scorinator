@@ -383,4 +383,47 @@ describe('LeagueSetupScreen', () => {
       expect(screen.getAllByRole('region', { name: /^Phase \d+$/ })).toHaveLength(2);
     });
   });
+
+  describe('the phase problems on Review (Task 177)', () => {
+    it('keeps "Create league" off with the first problem, and lists every problem', async () => {
+      useLeagueDraftStore.setState({
+        plans: [
+          { format: 'round-robin', legs: 'two-way', advance: { top: 2 } },
+          { format: 'round-robin', legs: 'two-way' },
+        ],
+      });
+      render(<LeagueSetupScreen />);
+      await userEvent.type(screen.getByLabelText('League name'), 'Coastal Premier');
+      await goToTeamsStep();
+      await addTwoTeams();
+      await userEvent.click(screen.getByText('Next: Review →'));
+
+      const text = 'Phase 1: Top must be a whole number from 1 to 1.';
+      expect(screen.getByRole('button', { name: 'Create league' })).toBeDisabled();
+      expect(
+        within(screen.getByRole('list', { name: 'Phase problems' })).getByText(text)
+      ).toBeInTheDocument();
+      expect(screen.getAllByText(text)).toHaveLength(2);
+    });
+
+    it('shows the groups-last warning, and lets the league start', async () => {
+      useLeagueDraftStore.setState({
+        plans: [
+          { format: 'groups', legs: 'two-way', grouping: { by: 'size', size: 4 } },
+        ],
+      });
+      render(<LeagueSetupScreen />);
+      await userEvent.type(screen.getByLabelText('League name'), 'Coastal Premier');
+      await goToTeamsStep();
+      await addTwoTeams();
+      await userEvent.click(screen.getByText('Next: Review →'));
+
+      expect(
+        screen.getByText(
+          'This league ends with groups. Each group winner is a champion. There is no single league winner.'
+        )
+      ).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Create league' })).toBeEnabled();
+    });
+  });
 });

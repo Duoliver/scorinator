@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   checkPhaseChain,
   checkPhaseFit,
+  phaseTeamCounts,
   qualifierCount,
   suggestBestM,
   type BracketPlan,
@@ -250,5 +251,54 @@ describe('checkPhaseFit (US-01.4, US-01.6, US-02.1)', () => {
 
   it('stops at a phase with no advancement, since the next count is not known', () => {
     expect(checkPhaseFit([roundRobin(), roundRobin(2)], 8)).toEqual([]);
+  });
+});
+
+describe('phaseTeamCounts (Task 177)', () => {
+  it('gives the team count and the group sizes of each phase', () => {
+    expect(
+      phaseTeamCounts([groups({ by: 'size', size: 4 }, 2), roundRobin(4), bracket], 18)
+    ).toEqual([
+      { teams: 18, groupSizes: [4, 4, 4, 3, 3] },
+      { teams: 10 },
+      { teams: 4 },
+    ]);
+  });
+
+  it('adds the best M to the qualifiers of a Groups phase', () => {
+    expect(
+      phaseTeamCounts([groups({ by: 'count', count: 6 }, 2, 4), bracket], 24)
+    ).toEqual([{ teams: 24, groupSizes: [4, 4, 4, 4, 4, 4] }, { teams: 16 }]);
+  });
+
+  it('uses the real phase-1 sizes when it has them', () => {
+    expect(
+      phaseTeamCounts([groups({ by: 'size', size: 4 }, 1), bracket], 8, [5, 3])[0]
+    ).toEqual({ teams: 8, groupSizes: [5, 3] });
+  });
+
+  it('stops after a phase with no advancement, a bad group setting, or a count that is not whole', () => {
+    expect(phaseTeamCounts([roundRobin(), roundRobin(2)], 8)).toEqual([{ teams: 8 }]);
+    expect(phaseTeamCounts([groups({ by: 'size', size: 1 }, 2), bracket], 8)).toEqual([
+      { teams: 8 },
+    ]);
+    expect(phaseTeamCounts([roundRobin(Number.NaN), bracket], 8)).toEqual([
+      { teams: 8 },
+    ]);
+  });
+
+  it('stops after a phase with fewer than 2 teams', () => {
+    expect(phaseTeamCounts([roundRobin(1), roundRobin(1), bracket], 8)).toEqual([
+      { teams: 8 },
+      { teams: 1 },
+    ]);
+  });
+});
+
+describe('checkPhaseFit with a count that is not whole (Task 177)', () => {
+  it('stops at the phase with the bad Top, and gives no problem for the next phase', () => {
+    expect(checkPhaseFit([roundRobin(Number.NaN), bracket], 8)).toEqual([
+      { code: 'top-out-of-range', phase: 1, top: Number.NaN, max: 7 },
+    ]);
   });
 });

@@ -49,6 +49,8 @@ export interface LeagueSetup extends TeamList {
   details: LeagueDraftDetails;
   /** Why the list cannot start a league, or `null` (US-08.8). */
   createProblem: string | null;
+  /** The texts of the phase chain and fit problems (Task 177). */
+  phaseProblems: string[];
   /** The message of the last failed create, shown under the steps. */
   status: string | null;
   stepsRef: RefObject<FieldHandle<string>>;

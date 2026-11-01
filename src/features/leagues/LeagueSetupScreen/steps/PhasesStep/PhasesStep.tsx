@@ -1,28 +1,31 @@
 import type { JSX } from 'preact';
 import { Button } from '@/design-system';
 import {
-  canAddPhase,
-  canMovePhase,
-} from '@/features/leagues/LeagueSetupScreen/phasePlans';
+  COUNTS_LATER_NOTE,
+  GROUPS_LAST_WARNING,
+  HOME_ADVANTAGE_NOTE,
+} from '@/features/leagues/LeagueSetupScreen/phaseChecks';
 import { PhaseCard } from './PhaseCard';
 import type PhasesStepProps from './types';
+import { usePhasesStep } from './usePhasesStep';
 import styles from './PhasesStep.module.css';
 
 export type { PhasesStepProps };
 
 /**
- * Step 2 of League Setup (Task 129, US-01.1 to US-01.4, US-01.6): the
- * phase chain, one card for each phase, and "+ Add phase". After a bracket,
- * "+ Add phase" is off, with a hint (US-01.3). Task 177 adds the counts and
- * the warnings.
+ * Step 2 of League Setup (Task 129, US-01.1 to US-01.6): the phase chain,
+ * one card for each phase, and "+ Add phase". After a bracket, "+ Add
+ * phase" is off, with a hint (US-01.3). The cards show the counts, the
+ * problems, and the best M suggestion once the team list has 2 teams
+ * (Task 177).
  */
 export function PhasesStep({
   phaseList,
+  teamCount,
   onBack,
   onNext,
 }: PhasesStepProps): JSX.Element {
-  const { plans, phaseKeys } = phaseList;
-  const addable = canAddPhase(plans);
+  const step = usePhasesStep(phaseList, teamCount);
 
   return (
     <div class={styles.step}>
@@ -30,25 +33,33 @@ export function PhasesStep({
         A league runs as a sequence of phases. Stats reset to zero between phases.
         Bracket may only be the final phase.
       </p>
+      <p class={styles.intro}>{HOME_ADVANTAGE_NOTE}</p>
+      {!step.countsKnown && <p class={styles.intro}>{COUNTS_LATER_NOTE}</p>}
+      {step.otherProblems.map((text) => (
+        <p key={text} class={styles.problem}>
+          {text}
+        </p>
+      ))}
 
-      {plans.map((plan, index) => (
+      {step.cards.map((card) => (
         <PhaseCard
-          key={phaseKeys[index]}
-          plan={plan}
-          index={index}
-          isLast={index === plans.length - 1}
-          canRemove={plans.length > 1}
-          canMoveUp={canMovePhase(plans, index, -1)}
-          canMoveDown={canMovePhase(plans, index, 1)}
+          key={phaseList.phaseKeys[card.index]}
+          view={card}
           phaseList={phaseList}
         />
       ))}
 
+      {step.groupsLast && <p class={styles.warning}>{GROUPS_LAST_WARNING}</p>}
+
       <div class={styles.add}>
-        <Button variant="secondary" disabled={!addable} onClick={phaseList.addPhase}>
+        <Button
+          variant="secondary"
+          disabled={!step.addable}
+          onClick={phaseList.addPhase}
+        >
           + Add phase
         </Button>
-        {!addable && <p class={styles.hint}>A bracket must be the last phase.</p>}
+        {!step.addable && <p class={styles.hint}>A bracket must be the last phase.</p>}
       </div>
 
       <div class={styles.footer}>

@@ -16,6 +16,7 @@ import type { LeagueWrapper } from '@/domain';
 import type { DetailsStepHandle } from '@/features/leagues/LeagueSetupScreen/steps/DetailsStep';
 import { leagueNameProblem } from './leagueName';
 import type { LeagueSetup } from './types';
+import { phaseChecks, phaseProblemText } from './phaseChecks';
 import { hasBracketPhase } from './phasePlans';
 import { useLeagueDraftSync } from './useLeagueDraftSync';
 import { usePhaseList } from './usePhaseList';
@@ -66,13 +67,21 @@ export function useLeagueSetup(): LeagueSetup {
     setStep(next);
   };
 
+  // The phase problems need the team count (Task 177 choice 3).
+  const phaseProblems = phaseChecks(
+    phaseList.plans,
+    teamList.teams.length
+  ).problems.map((problem) => phaseProblemText(problem, phaseList.plans));
   // A bracket phase cannot start before Task 139, so "Create league" stays
-  // off (Task 129 choice 2). Task 177 adds the fit problems.
+  // off (Task 129 choice 2). A phase problem shows its first text (Task 177
+  // choice 6).
   const createProblem =
     teamListProblem(teamList.teams) ??
     (hasBracketPhase(phaseList.plans)
       ? 'Bracket phases come in a later update.'
-      : null);
+      : null) ??
+    phaseProblems[0] ??
+    null;
 
   const handleCreate = (): void => {
     // `DetailsStep` is unmounted by the time Review is reachable — `details`
@@ -118,6 +127,7 @@ export function useLeagueSetup(): LeagueSetup {
     step,
     details,
     createProblem,
+    phaseProblems,
     status,
     stepsRef,
     detailsStepRef,

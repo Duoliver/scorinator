@@ -59,19 +59,64 @@ export function suggestBestM(
   return undefined;
 }
 
+/** The team count of one phase, and the group sizes of a Groups phase
+ * with a valid group setting (Task 177). */
+export interface PhaseTeamCount {
+  teams: number;
+  groupSizes?: number[];
+}
+
 /**
- * Checks the team counts of each phase (US-01.4, US-01.6, US-02.1), from
- * the team count of phase 1. Each later phase gets the qualifier count of
- * the phase before it. Gives an empty list when every count fits.
+ * The team count of each phase, from the team count of phase 1 (Task 177):
+ * each later phase gets the qualifier count of the phase before it
+ * (`qualifierCount`). A Groups phase also gets its group sizes.
  *
  * `firstGroupSizes` are the real sizes of a phase-1 draw, because manual
  * moves can make them uneven (Task 126 choice 4). Without them, and for a
- * later phase, the sizes come from `groupSizes`. One group in size mode is
- * not a problem (choice 5).
+ * later phase, the sizes come from `groupSizes`.
  *
- * The check stops at a phase with no advancement, or with a team count or
- * group setting that gives no next count: `checkPhaseChain` reports a
- * missing advancement.
+ * The list stops after a phase with fewer than 2 teams, a bracket, no
+ * advancement, a group setting that is not valid, or a next count that is
+ * not a whole number (a Top that is not a number). The wizard shows these
+ * counts, and `checkPhaseFit` checks them, so the two never differ.
+ */
+export function phaseTeamCounts(
+  plans: readonly PhasePlan[],
+  teamCount: number,
+  firstGroupSizes?: readonly number[]
+): PhaseTeamCount[] {
+  const counts: PhaseTeamCount[] = [];
+  let teams = teamCount;
+
+  for (const [index, plan] of plans.entries()) {
+    let groupCount = 1;
+    if (plan.format === 'groups') {
+      const sizes =
+        teams >= 2
+          ? groupSizesOf(plan, teams, index === 0 ? firstGroupSizes : undefined)
+          : undefined;
+      counts.push(sizes ? { teams, groupSizes: sizes } : { teams });
+      if (!sizes) return counts;
+      groupCount = sizes.length;
+    } else {
+      counts.push({ teams });
+    }
+    if (teams < 2 || plan.format === 'bracket' || !plan.advance) return counts;
+    const next = qualifierCount(plan, groupCount);
+    if (!Number.isInteger(next)) return counts;
+    teams = next;
+  }
+
+  return counts;
+}
+
+/**
+ * Checks the team counts of each phase (US-01.4, US-01.6, US-02.1), from
+ * `phaseTeamCounts`. Gives an empty list when every count fits. One group
+ * in size mode is not a problem (Task 126 choice 5).
+ *
+ * The check stops where `phaseTeamCounts` stops. A missing advancement is a
+ * `checkPhaseChain` problem.
  */
 export function checkPhaseFit(
   plans: readonly PhasePlan[],
@@ -79,36 +124,37 @@ export function checkPhaseFit(
   firstGroupSizes?: readonly number[]
 ): PhaseFitProblem[] {
   const problems: PhaseFitProblem[] = [];
-  let teams = teamCount;
 
-  for (const [index, plan] of plans.entries()) {
+  for (const [index, { teams, groupSizes: sizes }] of phaseTeamCounts(
+    plans,
+    teamCount,
+    firstGroupSizes
+  ).entries()) {
     const phase = index + 1;
+    const plan = plans[index];
     if (teams < 2) {
       problems.push({ code: 'too-few-teams', phase, teams });
-      return problems;
+      break;
     }
-    if (plan.format === 'bracket') return problems;
+    if (plan.format === 'bracket') break;
 
     if (plan.format === 'round-robin') {
-      if (!plan.advance) return problems;
-      const { top } = plan.advance;
-      if (!isWholeInRange(top, 1, teams - 1)) {
+      const top = plan.advance?.top;
+      if (top !== undefined && !isWholeInRange(top, 1, teams - 1)) {
         problems.push({ code: 'top-out-of-range', phase, top, max: teams - 1 });
       }
-      teams = qualifierCount(plan, 1);
       continue;
     }
 
-    const sizes = groupSizesOf(plan, teams, phase === 1 ? firstGroupSizes : undefined);
     if (!sizes) {
       problems.push({ code: 'grouping-out-of-range', phase });
-      return problems;
+      break;
     }
     sizes.forEach((size, i) => {
       if (size < 2)
         problems.push({ code: 'group-too-small', phase, group: i + 1, teams: size });
     });
-    if (!plan.advance) return problems;
+    if (!plan.advance) break;
 
     const smallest = Math.min(...sizes);
     const { top, bestOfNext } = plan.advance;
@@ -126,7 +172,6 @@ export function checkPhaseFit(
     if (bestOfNext > 0 && top + 1 > smallest) {
       problems.push({ code: 'best-m-place-missing', phase, place: top + 1 });
     }
-    teams = qualifierCount(plan, sizes.length);
   }
 
   return problems;

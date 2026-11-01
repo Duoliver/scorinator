@@ -11,6 +11,10 @@ import {
   phaseShortName,
 } from '@/features/leagues/leagueSummary';
 import { describePhasePlan } from '@/features/leagues/LeagueSetupScreen/phasePlans';
+import {
+  endsWithGroups,
+  GROUPS_LAST_WARNING,
+} from '@/features/leagues/LeagueSetupScreen/phaseChecks';
 import { TeamLabel } from '@/features/leagues/LeagueSetupScreen/steps/TeamLabel';
 import { useBlueprintLocation } from '@/features/leagues/LeagueSetupScreen/useBlueprintLocation';
 import type ReviewStepProps from './types';
@@ -24,6 +28,7 @@ export function ReviewStep({
   points,
   teams,
   plans,
+  phaseProblems,
   createProblem,
   onBack,
   onCreate,
@@ -49,6 +54,15 @@ export function ReviewStep({
             </li>
           ))}
         </ol>
+
+        {phaseProblems.length > 0 && (
+          <ul class={styles.phaseProblems} aria-label="Phase problems">
+            {phaseProblems.map((text) => (
+              <li key={text}>{text}</li>
+            ))}
+          </ul>
+        )}
+        {endsWithGroups(plans) && <p class={styles.warning}>{GROUPS_LAST_WARNING}</p>}
 
         <ul class={styles.teamList}>
           {teams.map((team) => (

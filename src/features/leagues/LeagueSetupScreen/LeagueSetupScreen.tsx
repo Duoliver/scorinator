@@ -31,6 +31,7 @@ export function LeagueSetupScreen(): JSX.Element {
       content: (
         <PhasesStep
           phaseList={setup.phaseList}
+          teamCount={setup.teams.length}
           onBack={setup.goToDetails}
           onNext={setup.goToTeams}
         />
@@ -65,6 +66,7 @@ export function LeagueSetupScreen(): JSX.Element {
           points={details.points}
           teams={setup.teams}
           plans={setup.phaseList.plans}
+          phaseProblems={setup.phaseProblems}
           createProblem={setup.createProblem}
           onBack={setup.goToTeams}
           onCreate={setup.handleCreate}

@@ -64,3 +64,24 @@
   padding-bottom: var(--space-3);
   font-size: var(--font-size-md);
 }
+
+/* A count line or the suggestion text (Task 177). */
+.line {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-md);
+}
+
+.suggestion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+/* A fit problem of this phase (Task 177 choice 4). */
+.problem {
+  margin: 0;
+  font-size: var(--font-size-md);
+  color: var(--color-error);
+}

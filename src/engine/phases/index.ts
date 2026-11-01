@@ -1,9 +1,11 @@
 export {
   checkPhaseChain,
   checkPhaseFit,
+  phaseTeamCounts,
   qualifierCount,
   suggestBestM,
 } from './phaseRules';
+export type { PhaseTeamCount } from './phaseRules';
 export {
   buildPhase,
   canChangeDraw,

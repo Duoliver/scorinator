@@ -126,7 +126,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 173 | The slug check in the team CSV and JSON imports: letters, digits, and hyphens only | `engine/identity`, `adapters/` | ✅ Done | 2026-10-30 | 2026-10-30 | [173](/docs/tasks/173-import-slug-check.md) | Task created by User - 2026-10-30. From the Task 168 review. `isSlug` built, CSV and JSON stop on a bad slug. The user checked the real app. |
 | 175 | The phase start: qualifiers in seed order, the phase build, the lock | `engine/phases` | ✅ Done | 2026-11-01 | 2026-11-01 | [175](/docs/tasks/175-phase-start.md) | M3. US-07.1, 07.3. Split from 126. 15 new tests. Task 128 is the first caller. |
 | 176 | Phases in the domain and the database files: plans, legs, the Groups phase, format version 3 | `domain/`, `adapters/json-io`, `app/data` | ✅ Done | 2026-11-01 | 2026-11-01 | [176](/docs/tasks/176-phase-domain-and-files.md) | M3. Split from 128. 13 new tests. Format version 3, reads version 2. |
-| 177 | Phases step counts, best M suggestion, and warnings | `features/leagues` | ⬜ Not started |  |  | [177](/docs/tasks/177-phases-step-counts-and-warnings.md) | M3. US-01.2, 01.4 to 01.6. Split from 129 (choice 1), 2026-11-01. After 129. |
+| 177 | Phases step counts, best M suggestion, and warnings | `features/leagues`, `engine/phases` | ✅ Done | 2026-11-01 | 2026-11-01 | [177](/docs/tasks/177-phases-step-counts-and-warnings.md) | M3. US-01.2, 01.4 to 01.6. 25 new tests. Task 130 gives the real phase-1 sizes. |
 
 **Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input, see Open Questions) · 🟩 Review · ✅ Done · ❌ Cancelled (the reason is in the Notes column)
 
@@ -174,6 +174,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-11-01 (Task 177 — Phases step counts and warnings):** The user agreed six choices and the problem texts. (1) A new `phaseTeamCounts` in `engine/phases`, which `checkPhaseFit` also uses. (2) One `phaseProblemText` with the texts in the task file. (3) With fewer than 2 teams, no counts and no fit problems on the Phases step. (4) A problem is an error-colour line under its card. The groups warning is muted. (5) The home-advantage note text. (6) "Create league" shows the first problem, and Review lists all of them. Detail in [`docs/tasks/177-phases-step-counts-and-warnings.md`](/docs/tasks/177-phases-step-counts-and-warnings.md).
 
 - **2026-11-01 (Task 129 — the wizard Phases step):** The user agreed six choices. (1) Split: new Task 177 takes the counts, the best M suggestion, and the warnings. (2) Bracket is in the format list, but "Create league" stays disabled while a phase is a bracket, until M4. (3) "Set by" is a `Select` and a number `Input` until Task 138. (4) A number that is not whole gives `NaN` in the plan, and the fit check reports it. (5) "+ Add phase" adds a Round robin (two-way). The phase before it gets Top 2. (6) Numeric `Input` fields. Detail in [`docs/tasks/129-wizard-phases-step.md`](/docs/tasks/129-wizard-phases-step.md).
 

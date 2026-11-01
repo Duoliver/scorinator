@@ -15,6 +15,25 @@
   font-size: var(--font-size-lg);
 }
 
+/* The phase problems (Task 177), in the error colour. */
+.phaseProblems {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--font-size-md);
+  color: var(--color-error);
+}
+
+/* The "ends with groups" warning (US-01.5): it blocks nothing. */
+.warning {
+  margin: 0;
+  font-size: var(--font-size-md);
+  color: var(--color-fg-muted);
+}
+
 .teamList {
   border-top: var(--border-width) solid var(--color-fg);
   padding: var(--space-4) 0 0 0;

@@ -6,6 +6,7 @@ import {
 import { serializeResultsTxt, type ResultsTxtInput } from '@/adapters/txt';
 import { slug } from '@/engine/identity';
 import { findCurrentPhase } from '@/app/state/currentPhase';
+import { leagueLotOf } from '@/app/state/phases';
 import type { FileFilter, FileSystem, SaveFileDialog } from '@/persistence/types';
 import type { LeagueWrapper } from '@/domain';
 
@@ -20,8 +21,8 @@ import type { LeagueWrapper } from '@/domain';
 const TXT_FILTERS: readonly FileFilter[] = [{ name: 'Text file', extensions: ['txt'] }];
 
 /** The current phase of a league, in the MVP1 text layout (Task 161).
- * Fixtures name teams by Blueprint UUID, so that is the team id. Task 148
- * writes every phase. */
+ * Fixtures name teams by Blueprint UUID, so that is the team id. The fixed
+ * lots order a joint place (Task 128). Task 148 writes every phase. */
 function toResultsTxtInput(wrapper: LeagueWrapper): ResultsTxtInput {
   const { name, homeAdvantage, points } = wrapper.content;
   const phase = findCurrentPhase(wrapper);
@@ -31,6 +32,7 @@ function toResultsTxtInput(wrapper: LeagueWrapper): ResultsTxtInput {
     fixtures: phase?.fixtures ?? [],
     byes: phase?.byes ?? [],
     results: phase?.results ?? [],
+    lotOf: leagueLotOf(wrapper),
   };
 }
 

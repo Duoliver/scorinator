@@ -1,16 +1,21 @@
 import { uuidV4, type RandomBytes } from '@/engine/identity';
-import { createSeededRng } from '@/engine/rng';
 import {
-  assignFixtureIds,
-  findPhaseResult,
-  generateRoundRobin,
-  type PhaseFixture,
-} from '@/engine/round-robin';
+  buildPhase,
+  canChangeDraw,
+  checkPhaseChain,
+  checkPhaseFit,
+  pickQualifiers,
+  type BuiltPhase,
+  type PhasePlan,
+} from '@/engine/phases';
+import { createSeededRng } from '@/engine/rng';
+import { findPhaseResult, moveToGroup, type PhaseFixture } from '@/engine/round-robin';
 import { playMatch } from '@/engine/scorination';
 import type { PointsConfig } from '@/engine/standings';
 import type { LeagueWrapper, Phase, PhaseResult, TeamInstance } from '@/domain';
 import { cryptoRandomBytes, freshSeed } from '@/app/random';
 import { findCurrentPhase } from './currentPhase';
+import { canStartNextPhase, leagueLotOf, phaseStandings } from './phases';
 import { pickTeamTrigrams } from './teamInstances';
 import { requireOpenDatabase, useDatabaseStore } from './databaseStore';
 
@@ -23,6 +28,59 @@ export interface CreateLeagueInput {
   teams: readonly TeamInstance[];
   /** The trigrams fixed in the Edit drawer, by Blueprint UUID (US-09.6). */
   fixedTrigrams?: Readonly<Record<string, string>>;
+  /** The phase chain of the wizard (Task 128). Without it, one two-way round
+   * robin: an MVP1-style league. */
+  plans?: readonly PhasePlan[];
+  /** The phase-1 draw of a Groups plan, as Blueprint UUIDs (US-02.1). Each
+   * team of `teams` is in one group. Without it, a Groups phase 1 draws. */
+  groups?: readonly (readonly string[])[];
+}
+
+const DEFAULT_PLANS: readonly PhasePlan[] = [
+  { format: 'round-robin', legs: 'two-way' },
+];
+
+/** A built phase of the engine, as a domain phase with no results yet. */
+function startedPhase(built: BuiltPhase<string>): Phase {
+  return { ...built, results: [] };
+}
+
+/** Throws a `RangeError` for a chain or fit problem of the plans (Task 128
+ * choice 2). The wizard shows the problems before the create (Task 129), so
+ * this is a guard, and the message names the problem codes. */
+function checkPlans(
+  plans: readonly PhasePlan[],
+  teamCount: number,
+  groups: readonly (readonly string[])[] | undefined
+): void {
+  const problems = [
+    ...checkPhaseChain(plans),
+    ...checkPhaseFit(
+      plans,
+      teamCount,
+      groups?.map((group) => group.length)
+    ),
+  ];
+  if (problems.length > 0) {
+    throw new RangeError(
+      `The phases of the league do not fit: ${problems.map((problem) => problem.code).join(', ')}.`
+    );
+  }
+}
+
+/** Throws a `RangeError` unless each team is in exactly one group. */
+function checkDraw(
+  groups: readonly (readonly string[])[],
+  uuids: readonly string[]
+): void {
+  const drawn = groups.flat();
+  const sameTeams =
+    drawn.length === uuids.length &&
+    new Set(drawn).size === drawn.length &&
+    uuids.every((uuid) => drawn.includes(uuid));
+  if (!sameTeams) {
+    throw new RangeError('The phase-1 groups do not hold each team once.');
+  }
 }
 
 /**
@@ -30,12 +88,17 @@ export interface CreateLeagueInput {
  * the Instances of the team list with their OVR (Task 81), and the trigram
  * that `pickTeamTrigrams` gives each one (Task 121). An Instance whose
  * Blueprint was deleted during the setup stays (US-09.4).
- * Phase 1 is a two-way round robin with the shuffled match order (Task 30)
- * and the fixture ids of Task 105. Fixtures name teams by Blueprint UUID. A
- * league with fewer than 2 teams gets an empty phase 1, as in MVP1: Task 121
- * disables "Create league" for that case. League names need not be unique:
- * routes use the UUID. Throws a `RangeError` for a Blueprint UUID that is in
- * the list twice, and adds nothing.
+ *
+ * The league stores its `plans` (Task 128), and builds phase 1 from the
+ * first plan with `buildPhase`: a round robin in the team list order, or
+ * Groups from `groups`. The match order is shuffled (Task 30), and the
+ * fixtures have the ids of Task 77. Fixtures name teams by Blueprint UUID.
+ * League names need not be unique: routes use the UUID.
+ *
+ * Throws a `RangeError`, and adds nothing, for a Blueprint UUID that is in
+ * the list twice, for a chain or fit problem of the plans (fewer than 2
+ * teams too, Task 128 choice 2), for `groups` that do not hold each team
+ * once, and for a bracket phase 1 until Task 139.
  */
 export function createLeague(
   input: CreateLeagueInput,
@@ -65,8 +128,12 @@ export function createLeague(
     trigram: picks.get(team.blueprintUuid)?.trigram ?? '',
   }));
   const uuids = teams.map((team) => team.blueprintUuid);
-  const schedule =
-    uuids.length >= 2 ? generateRoundRobin(uuids, rng) : { fixtures: [], byes: [] };
+  const plans = input.plans ?? DEFAULT_PLANS;
+  const [firstPlan] = plans;
+  const groups = firstPlan?.format === 'groups' ? input.groups : undefined;
+  checkPlans(plans, uuids.length, groups);
+  if (groups) checkDraw(groups, uuids);
+  const phaseOne = startedPhase(buildPhase(firstPlan, 1, uuids, rng, groups));
 
   const uuid = uuidV4(randomBytes);
   const wrapper: LeagueWrapper = {
@@ -79,18 +146,8 @@ export function createLeague(
       points: input.points,
       createdByInstallation: installationUuid,
       lastModifiedByInstallation: installationUuid,
-      // One two-way round robin: an MVP1-style league. Task 128 adds the
-      // plans of the wizard.
-      plans: [{ format: 'round-robin', legs: 'two-way' }],
-      phases: [
-        {
-          format: 'round-robin',
-          legs: 'two-way',
-          fixtures: assignFixtureIds(schedule.fixtures, { phase: 1, group: 1 }),
-          byes: schedule.byes,
-          results: [],
-        },
-      ],
+      plans: structuredClone([...plans]),
+      phases: [phaseOne],
     },
   };
   useDatabaseStore.setState((now) => ({
@@ -204,4 +261,113 @@ export function scorinateMatchday(leagueUuid: string, matchday: number): void {
       ],
     };
   });
+}
+
+/**
+ * Replaces the phase list of an open league with `change`, and stamps the
+ * league with the local installation (Task 108).
+ */
+function replacePhases(
+  leagueUuid: string,
+  change: (wrapper: LeagueWrapper) => Phase[]
+): void {
+  const state = useDatabaseStore.getState();
+  const { installationUuid } = requireOpenDatabase(state);
+  const wrapper = state.leagues[leagueUuid];
+  if (!wrapper) throw new RangeError(`No open league has the UUID ${leagueUuid}.`);
+  const changed: LeagueWrapper = {
+    ...wrapper,
+    content: {
+      ...wrapper.content,
+      lastModifiedByInstallation: installationUuid,
+      phases: change(wrapper),
+    },
+  };
+  useDatabaseStore.setState((now) => ({
+    leagues: { ...now.leagues, [leagueUuid]: changed },
+  }));
+}
+
+/**
+ * Starts the next phase of a league (US-07.3): picks the qualifiers of the
+ * complete current phase in seed order (`pickQualifiers`, with the fixed
+ * lots), builds the next phase from its plan (`buildPhase`), and adds it.
+ * The earlier phases do not change, and the scorinate actions play the new
+ * phase only, so the earlier phases are locked.
+ *
+ * Throws a `RangeError` when `canStartNextPhase` is false (Task 128 choice
+ * 4), and for a bracket next phase until Task 139.
+ */
+export function startNextPhase(leagueUuid: string): void {
+  replacePhases(leagueUuid, (wrapper) => {
+    if (!canStartNextPhase(wrapper)) {
+      throw new RangeError('The league cannot start its next phase now.');
+    }
+    const { phases, plans } = wrapper.content;
+    const index = phases.length - 1;
+    const qualifiers = pickQualifiers(
+      plans[index],
+      phaseStandings(wrapper, index),
+      leagueLotOf(wrapper)
+    );
+    const rng = createSeededRng(freshSeed());
+    return [
+      ...phases,
+      startedPhase(buildPhase(plans[index + 1], index + 2, qualifiers, rng)),
+    ];
+  });
+}
+
+/**
+ * Builds the current Groups phase again from a new draw (Task 128 choice
+ * 5). Only for a Groups phase after phase 1, while it has no result
+ * (`canChangeDraw`, US-02.1): phase 1 draws in the wizard. Throws a
+ * `RangeError` otherwise.
+ */
+function redrawCurrentGroups(
+  leagueUuid: string,
+  newGroups: (groups: readonly (readonly string[])[]) => string[][] | undefined
+): void {
+  replacePhases(leagueUuid, (wrapper) => {
+    const { phases, plans } = wrapper.content;
+    const index = phases.length - 1;
+    const current = phases[index];
+    if (index < 1 || current?.format !== 'groups' || !canChangeDraw(current.results)) {
+      throw new RangeError(
+        'Only a later Groups phase with no result can change its draw.'
+      );
+    }
+    const groups = newGroups(current.groups);
+    // A group of 1 has no schedule. The screen keeps such a move off.
+    if (groups?.some((group) => group.length < 2)) {
+      throw new RangeError('A group needs at least 2 teams.');
+    }
+    const rng = createSeededRng(freshSeed());
+    const rebuilt = buildPhase(
+      plans[index],
+      index + 1,
+      current.groups.flat(),
+      rng,
+      groups
+    );
+    return phases.map((phase, i) => (i === index ? startedPhase(rebuilt) : phase));
+  });
+}
+
+/** "Shuffle groups" for a later Groups phase (US-02.1): a new draw of its
+ * teams, and new fixtures. */
+export function shuffleCurrentGroups(leagueUuid: string): void {
+  redrawCurrentGroups(leagueUuid, () => undefined);
+}
+
+/** "Move to group" for a later Groups phase (US-02.5): `moveToGroup`, and
+ * new fixtures. Throws the `moveToGroup` `RangeError` for an unknown team or
+ * group, and a `RangeError` for a move that leaves a group with fewer than
+ * 2 teams: that group has no schedule. */
+export function moveTeamInCurrentGroups(
+  leagueUuid: string,
+  team: string,
+  groupIndex: number
+): void {
+  redrawCurrentGroups(leagueUuid, (groups) => moveToGroup(groups, team, groupIndex));
 }

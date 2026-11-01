@@ -108,6 +108,18 @@ describe('serializeResultsTxt', () => {
     expect(rows[1]).toMatch(/^ {2}- {2}Bravo/);
   });
 
+  it('orders a joint place by the lot when it has one (Task 128)', () => {
+    const input = {
+      ...twoTeamLeague(1, 1),
+      lotOf: (team: string): number => (team === 'b' ? 1 : 2),
+    };
+    const lines = serializeResultsTxt(input).split('\n');
+    const rows = lines.filter((line) => /^ +[1-9-] {2}(Alpha|Bravo)/.test(line));
+
+    expect(rows[0]).toMatch(/^ {2}1 {2}Bravo/);
+    expect(rows[1]).toMatch(/^ {2}- {2}Alpha/);
+  });
+
   it('shows "Untitled league" for a blank name', () => {
     const input = twoTeamLeague(1, 0);
     input.league.name = '   ';

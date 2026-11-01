@@ -108,6 +108,41 @@ describe('summarizeLeague (Task 76 d)', () => {
     ]);
   });
 
+  it('keeps the last progress of a complete phase until the next phase starts (US-07.3)', () => {
+    const wrapper = leagueWrapper([
+      result('p1.g1.md1.m1', SALT_MARSH, HARBORVIEW),
+      result('p1.g1.md2.m1', HARBORVIEW, SALT_MARSH),
+    ]);
+    const twoPlans = {
+      ...wrapper,
+      content: {
+        ...wrapper.content,
+        plans: [
+          {
+            format: 'round-robin' as const,
+            legs: 'two-way' as const,
+            advance: { top: 2 },
+          },
+          { format: 'round-robin' as const, legs: 'two-way' as const },
+        ],
+      },
+    };
+    expect(summarizeLeague(twoPlans).progress).toEqual({
+      kind: 'phase',
+      phase: 1,
+      matchday: 2,
+      matchdays: 2,
+    });
+  });
+
+  it('gives completed only when the last planned phase is complete', () => {
+    const wrapper = leagueWrapper([
+      result('p1.g1.md1.m1', SALT_MARSH, HARBORVIEW),
+      result('p1.g1.md2.m1', HARBORVIEW, SALT_MARSH),
+    ]);
+    expect(summarizeLeague(wrapper).progress).toEqual({ kind: 'completed' });
+  });
+
   it('gives completed for a league with no phase or no fixture', () => {
     const wrapper = leagueWrapper();
     const noPhase = { ...wrapper, content: { ...wrapper.content, phases: [] } };

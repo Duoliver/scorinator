@@ -17,10 +17,16 @@ import { openDatabase } from './databaseActions';
 import { isLeagueUnsaved, useDatabaseStore, type DatabaseState } from './databaseStore';
 import {
   createLeague,
+  moveTeamInCurrentGroups,
+  type CreateLeagueInput,
   rescorinateFixture,
   scorinateFixture,
   scorinateMatchday,
+  shuffleCurrentGroups,
+  startNextPhase,
 } from './leagueWrapperActions';
+import { canStartNextPhase, phaseStandings } from './phases';
+import type { PhasePlan } from '@/engine/phases';
 
 const OTHER_INSTALLATION = '00000000-0000-4000-8000-0000000000ff';
 const TOWN = '00000000-0000-4000-8000-0000000000a3';
@@ -166,11 +172,10 @@ describe('createLeague (US-09.2, US-11.1, Task 105)', () => {
     expect(new Set(phase.fixtures.map((f) => f.id)).size).toBe(6);
   });
 
-  it('gives a league with fewer than 2 teams an empty phase 1, as in MVP1', async () => {
+  it('throws a RangeError for fewer than 2 teams, and adds nothing (Task 128 choice 2)', async () => {
     await open();
-    const [phase] = createLeague({ ...input, teams: [teams[0]] }).content.phases;
-    expect(phase.fixtures).toEqual([]);
-    expect(phase.byes).toEqual([]);
+    expect(() => createLeague({ ...input, teams: [teams[0]] })).toThrow(RangeError);
+    expect(state().leagues).toEqual({});
   });
 
   it('allows two leagues with the same name', async () => {
@@ -295,5 +300,278 @@ describe('scorinateMatchday', () => {
     useDatabaseStore.setState({ leagues: { [LEAGUE]: leagueWrapper([kept]) } });
     scorinateMatchday(LEAGUE, 1);
     expect(phaseOf().results).toEqual([kept]);
+  });
+});
+
+// --- Phases (Task 128) ---------------------------------------------------
+
+const NORTH = '00000000-0000-4000-8000-0000000000c1';
+const EAST = '00000000-0000-4000-8000-0000000000c2';
+
+const fourTeams = [
+  instance(),
+  instance({ blueprintUuid: HARBORVIEW, slug: 'harborview-sc', name: 'Harborview SC' }),
+  instance({ blueprintUuid: NORTH, slug: 'north', name: 'North' }),
+  instance({ blueprintUuid: EAST, slug: 'east', name: 'East' }),
+];
+
+const WEST = '00000000-0000-4000-8000-0000000000c3';
+const SOUTH = '00000000-0000-4000-8000-0000000000c4';
+const sixTeams = [
+  ...fourTeams,
+  instance({ blueprintUuid: WEST, slug: 'west', name: 'West' }),
+  instance({ blueprintUuid: SOUTH, slug: 'south', name: 'South' }),
+];
+
+const groupsThenRoundRobin: PhasePlan[] = [
+  {
+    format: 'groups',
+    legs: 'single-duels',
+    grouping: { by: 'count', count: 2 },
+    advance: { top: 1, bestOfNext: 0 },
+  },
+  { format: 'round-robin', legs: 'two-way' },
+];
+
+const roundRobinThenGroups: PhasePlan[] = [
+  { format: 'round-robin', legs: 'single-duels', advance: { top: 5 } },
+  { format: 'groups', legs: 'single-duels', grouping: { by: 'count', count: 2 } },
+];
+
+/** The create input of a phase test. `roundRobinThenGroups` needs 6 teams:
+ * its top 5 must be less than the team count. */
+function phaseInput(
+  plans: PhasePlan[] | undefined,
+  groups?: string[][]
+): CreateLeagueInput {
+  return {
+    name: 'Phase Cup',
+    homeAdvantage: false,
+    points: { win: 3, draw: 1, loss: 0 },
+    teams: plans === roundRobinThenGroups ? sixTeams : fourTeams,
+    plans,
+    ...(groups ? { groups } : {}),
+  };
+}
+
+/** Plays every fixture of the current phase of a league. */
+function playCurrentPhase(uuid: string): void {
+  const { phases } = state().leagues[uuid].content;
+  const matchdays = new Set(phases[phases.length - 1].fixtures.map((f) => f.matchday));
+  for (const matchday of matchdays) scorinateMatchday(uuid, matchday);
+}
+
+const phasesOf = (uuid: string): Phase[] => state().leagues[uuid].content.phases;
+
+describe('createLeague with plans (Task 128)', () => {
+  it('stores one two-way round-robin plan by default', async () => {
+    await open();
+    const league = createLeague(phaseInput(undefined));
+    expect(league.content.plans).toEqual([{ format: 'round-robin', legs: 'two-way' }]);
+  });
+
+  it('stores the plans, and builds phase 1 as Groups from the given draw', async () => {
+    await open();
+    const groups = [
+      [SALT_MARSH, NORTH],
+      [HARBORVIEW, EAST],
+    ];
+    const league = createLeague(phaseInput(groupsThenRoundRobin, groups));
+    expect(league.content.plans).toEqual(groupsThenRoundRobin);
+    const [phase] = league.content.phases;
+    expect(phase.format).toBe('groups');
+    if (phase.format !== 'groups') return;
+    expect(phase.groups).toEqual(groups);
+    expect(phase.legs).toBe('single-duels');
+    expect(phase.fixtures.map((f) => f.id).sort()).toEqual([
+      'p1.g1.md1.m1',
+      'p1.g2.md1.m1',
+    ]);
+  });
+
+  it('builds a single-duels round robin: each pair once', async () => {
+    await open();
+    const [phase] = createLeague(phaseInput(roundRobinThenGroups)).content.phases;
+    expect(phase.fixtures).toHaveLength(15);
+  });
+
+  it('throws a RangeError for a chain problem, and adds nothing', async () => {
+    await open();
+    const bracketFirst: PhasePlan[] = [{ format: 'bracket' }, roundRobinThenGroups[1]];
+    expect(() => createLeague(phaseInput(bracketFirst))).toThrow(RangeError);
+    expect(state().leagues).toEqual({});
+  });
+
+  it('throws a RangeError for a fit problem, with the real group sizes', async () => {
+    await open();
+    const tooMany: PhasePlan[] = [
+      { format: 'round-robin', legs: 'two-way', advance: { top: 4 } },
+      { format: 'round-robin', legs: 'two-way' },
+    ];
+    expect(() => createLeague(phaseInput(tooMany))).toThrow(RangeError);
+    // A move left a group with one team.
+    expect(() =>
+      createLeague(
+        phaseInput(groupsThenRoundRobin, [[SALT_MARSH], [HARBORVIEW, NORTH, EAST]])
+      )
+    ).toThrow(RangeError);
+    expect(state().leagues).toEqual({});
+  });
+});
+
+describe('startNextPhase (Task 128, US-07.3)', () => {
+  it('throws a RangeError while the current phase is not complete', async () => {
+    await open();
+    const { uuid } = createLeague(phaseInput(roundRobinThenGroups));
+    expect(canStartNextPhase(state().leagues[uuid])).toBe(false);
+    expect(() => startNextPhase(uuid)).toThrow(RangeError);
+  });
+
+  it('throws a RangeError on the last planned phase', async () => {
+    await open();
+    const { uuid } = createLeague(phaseInput(undefined));
+    playCurrentPhase(uuid);
+    expect(() => startNextPhase(uuid)).toThrow(RangeError);
+  });
+
+  it('sends the group winners into the next phase, in seed order', async () => {
+    await open();
+    const groups = [
+      [SALT_MARSH, NORTH],
+      [HARBORVIEW, EAST],
+    ];
+    const { uuid } = createLeague(phaseInput(groupsThenRoundRobin, groups));
+    playCurrentPhase(uuid);
+    const winners = phaseStandings(state().leagues[uuid], 0).map(
+      (table) => table[0].team
+    );
+
+    startNextPhase(uuid);
+
+    const phases = phasesOf(uuid);
+    expect(phases).toHaveLength(2);
+    expect(phases[1].format).toBe('round-robin');
+    const teamsInPhaseTwo = new Set(
+      phases[1].fixtures.flatMap((f) => [f.home, f.away])
+    );
+    expect([...teamsInPhaseTwo].sort()).toEqual([...winners].sort());
+    expect(phases[1].fixtures.every((f) => f.id.startsWith('p2.g1.'))).toBe(true);
+    expect(phases[1].results).toEqual([]);
+    expect(isLeagueUnsaved(state(), uuid)).toBe(true);
+  });
+
+  it('keeps phase 1 as it was, and plays only phase 2 after the start (the lock)', async () => {
+    await open();
+    const groups = [
+      [SALT_MARSH, NORTH],
+      [HARBORVIEW, EAST],
+    ];
+    const { uuid } = createLeague(phaseInput(groupsThenRoundRobin, groups));
+    playCurrentPhase(uuid);
+    const phaseOne = phasesOf(uuid)[0];
+
+    startNextPhase(uuid);
+    scorinateMatchday(uuid, 1);
+
+    expect(phasesOf(uuid)[0]).toBe(phaseOne);
+    expect(phasesOf(uuid)[1].results.length).toBeGreaterThan(0);
+  });
+
+  it('draws a later Groups phase from the qualifiers', async () => {
+    await open();
+    const { uuid } = createLeague(phaseInput(roundRobinThenGroups));
+    playCurrentPhase(uuid);
+    startNextPhase(uuid);
+    const phase = phasesOf(uuid)[1];
+    expect(phase.format).toBe('groups');
+    if (phase.format !== 'groups') return;
+    expect(phase.groups.map((group) => group.length)).toEqual([3, 2]);
+    const topFive = phaseStandings(state().leagues[uuid], 0)[0]
+      .slice(0, 5)
+      .map((row) => row.team);
+    expect(phase.groups.flat().sort()).toEqual([...topFive].sort());
+  });
+});
+
+describe('shuffle and move in a later Groups phase (Task 128 choice 5)', () => {
+  async function leagueInPhaseTwo(): Promise<string> {
+    await open();
+    const { uuid } = createLeague(phaseInput(roundRobinThenGroups));
+    playCurrentPhase(uuid);
+    startNextPhase(uuid);
+    return uuid;
+  }
+
+  /** Each fixture of a Groups phase is inside the group of its id. */
+  function fixturesMatchGroups(uuid: string): boolean {
+    const phase = phasesOf(uuid)[1];
+    if (phase.format !== 'groups') return false;
+    return phase.fixtures.every((fixture) => {
+      const group = Number(fixture.id.split('.')[1].slice(1)) - 1;
+      return (
+        phase.groups[group].includes(fixture.home) &&
+        phase.groups[group].includes(fixture.away)
+      );
+    });
+  }
+
+  it('shuffles the draw, keeps the teams, and builds the fixtures again', async () => {
+    const uuid = await leagueInPhaseTwo();
+    shuffleCurrentGroups(uuid);
+    const phase = phasesOf(uuid)[1];
+    if (phase.format !== 'groups') throw new Error('expected Groups');
+    const topFive = phaseStandings(state().leagues[uuid], 0)[0]
+      .slice(0, 5)
+      .map((row) => row.team);
+    expect(phase.groups.flat().sort()).toEqual([...topFive].sort());
+    expect(fixturesMatchGroups(uuid)).toBe(true);
+  });
+
+  it('moves one team to another group, and builds the fixtures again', async () => {
+    const uuid = await leagueInPhaseTwo();
+    const before = phasesOf(uuid)[1];
+    if (before.format !== 'groups') throw new Error('expected Groups');
+    // Group A has 3 teams, so a move keeps 2 in it.
+    const team = before.groups[0][0];
+    moveTeamInCurrentGroups(uuid, team, 1);
+    const after = phasesOf(uuid)[1];
+    if (after.format !== 'groups') throw new Error('expected Groups');
+    expect(after.groups[0]).not.toContain(team);
+    expect(after.groups[1]).toContain(team);
+    expect(fixturesMatchGroups(uuid)).toBe(true);
+  });
+
+  it('throws a RangeError for a move that leaves a group with fewer than 2 teams', async () => {
+    const uuid = await leagueInPhaseTwo();
+    const phase = phasesOf(uuid)[1];
+    if (phase.format !== 'groups') throw new Error('expected Groups');
+    // Group B has 2 teams.
+    expect(() => moveTeamInCurrentGroups(uuid, phase.groups[1][0], 0)).toThrow(
+      'A group needs at least 2 teams.'
+    );
+    expect(phasesOf(uuid)[1]).toBe(phase);
+  });
+
+  it('throws a RangeError once the phase has a result', async () => {
+    const uuid = await leagueInPhaseTwo();
+    scorinateMatchday(uuid, 1);
+    expect(() => shuffleCurrentGroups(uuid)).toThrow(RangeError);
+    const phase = phasesOf(uuid)[1];
+    if (phase.format !== 'groups') throw new Error('expected Groups');
+    expect(() => moveTeamInCurrentGroups(uuid, phase.groups[0][0], 1)).toThrow(
+      RangeError
+    );
+  });
+
+  it('throws a RangeError for phase 1 Groups, and for a round-robin phase', async () => {
+    await open();
+    const groups = [
+      [SALT_MARSH, NORTH],
+      [HARBORVIEW, EAST],
+    ];
+    const groupsLeague = createLeague(phaseInput(groupsThenRoundRobin, groups));
+    expect(() => shuffleCurrentGroups(groupsLeague.uuid)).toThrow(RangeError);
+    const roundRobin = createLeague(phaseInput(roundRobinThenGroups));
+    expect(() => shuffleCurrentGroups(roundRobin.uuid)).toThrow(RangeError);
   });
 });

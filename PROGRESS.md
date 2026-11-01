@@ -78,7 +78,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 125 | The group draw: size or count, add to the smallest group, moves | `engine/round-robin` | ✅ Done | 2026-11-01 | 2026-11-01 | [125](/docs/tasks/125-group-draw.md) | M3. US-02.1, 02.5. 35 new tests. Task 130 is the first caller. |
 | 126 | Phase chain rules: bracket last, fit checks, qualifier counts, the best M suggestion | `engine/phases` | ✅ Done | 2026-11-01 | 2026-11-01 | [126](/docs/tasks/126-phase-chain-rules.md) | M3. US-01.3, 01.4, 01.6. 27 new tests. Phase start split to 175. |
 | 127 | Dropdown menu | `design-system/` | ✅ Done | 2026-11-01 | 2026-11-01 | [127](/docs/tasks/127-dropdown-menu.md) | M3. US-02.5 (Move to group), US-10.1. 27 new tests. Task 130 and Task 150 use it. |
-| 128 | League state with phases: scorinate in a phase, start the next phase, the progress text | `app/`, `domain/` | ⬜ Not started |  |  |  | M3. US-01.2, 07.1, 07.3. After 176 (split: domain and files in 176). Adds create with plans, phase start, progress, lots. |
+| 128 | League state with phases: create with plans, start the next phase, the progress text | `app/`, `features/standings` | ✅ Done | 2026-11-01 | 2026-11-01 | [128](/docs/tasks/128-league-state-with-phases.md) | M3. US-01.2, 07.1, 07.3. 29 new tests. Tasks 129 to 132 call the actions. |
 | 129 | Wizard Phases step: phases, formats, advancement, best M, warnings | `features/leagues` | ⬜ Not started |  |  |  | M3. US-01.1 to 01.6. After 128. |
 | 130 | Wizard Teams step with groups: group columns, Shuffle, drag, Move to group | `features/leagues` | ⬜ Not started |  |  |  | M3. US-02.1, 02.4, 02.5. After 127, 129. |
 | 131 | League Detail with phases: tabs, header, badge, group cards, group fixtures, dashboard card text | `features/leagues`, `features/standings` | ⬜ Not started |  |  |  | M3. US-01.2, 02.2, 02.4. After 128. |
@@ -173,6 +173,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-11-01 (Task 128 — league state with phases):** The user agreed six choices. (1) `CreateLeagueInput` gets `plans` and `groups`. (2) `createLeague` throws for a chain or fit problem: the MVP1 empty phase for fewer than 2 teams goes. (3) A later round robin takes its team order from its fixtures and byes, no new field. (4) `startNextPhase` throws when `canStartNextPhase` is false. (5) Shuffle and move actions for a later Groups phase. (6) Until Task 131, `useStandings` shows the first table of the current phase. Detail in [`docs/tasks/128-league-state-with-phases.md`](/docs/tasks/128-league-state-with-phases.md).
 
 - **2026-11-01 (Task 176 — phases in the domain and the files):** The user agreed six choices. (1) Split Task 128: Task 176 does the domain and the files first. (2) `League.plans` holds the whole chain, `phases` only the started ones. (3) `DATABASE_FORMAT_VERSION` 3: the parser reads 2 and 3, and writes 3. (4) The manifest row has `phases: { format, legs }[]` from the plans, in place of `phaseFormats`. (5) A plan can be a bracket. A started bracket comes in Task 139. (6) Four parse checks: bracket not last, more phases than plans, a format unlike its plan, a team in two groups. Detail in [`docs/tasks/176-phase-domain-and-files.md`](/docs/tasks/176-phase-domain-and-files.md).
 

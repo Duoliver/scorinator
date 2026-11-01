@@ -2,20 +2,25 @@ import { findPhaseCurrentMatchday } from '@/engine/round-robin';
 import type { LeagueProgress, LeagueWrapper, WrapperSummary } from '@/domain';
 import { findCurrentPhase } from './currentPhase';
 
-/** Where a league stands, in its current phase (`findCurrentPhase`). A
- * phase with no unplayed fixture, or no phase at all, counts as completed. */
+/** Where a league stands, in its current phase (`findCurrentPhase`). Between
+ * the end of a phase and the next start, the progress stays on the last
+ * matchday of the complete phase, for example MD 6/6 (US-07.3). The league
+ * is completed when the last planned phase is complete, or when it has no
+ * phase or no fixture. */
 function progressOf(wrapper: LeagueWrapper): LeagueProgress {
   const current = findCurrentPhase(wrapper);
-  if (!current) return { kind: 'completed' };
+  if (!current || current.fixtures.length === 0) return { kind: 'completed' };
 
-  const matchday = findPhaseCurrentMatchday(current.fixtures, current.results);
-  if (matchday === undefined) return { kind: 'completed' };
-
+  const { phases, plans } = wrapper.content;
   const matchdays = Math.max(...current.fixtures.map((fixture) => fixture.matchday));
+  const matchday = findPhaseCurrentMatchday(current.fixtures, current.results);
+  if (matchday === undefined && phases.length >= plans.length) {
+    return { kind: 'completed' };
+  }
   return {
     kind: 'phase',
-    phase: wrapper.content.phases.indexOf(current) + 1,
-    matchday,
+    phase: phases.indexOf(current) + 1,
+    matchday: matchday ?? matchdays,
     matchdays,
   };
 }

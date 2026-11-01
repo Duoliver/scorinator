@@ -1,5 +1,6 @@
 import {
   calculateStandings,
+  type LotOf,
   type MatchResult,
   type PointsConfig,
 } from '@/engine/standings';
@@ -16,6 +17,9 @@ export interface ResultsTxtInput {
   fixtures: readonly PhaseFixture<string>[];
   byes: readonly Bye<string>[];
   results: readonly (MatchResult<string> & { fixtureId: string })[];
+  /** The fixed lots of the league (Task 124): they order a joint place.
+   * Without them, the roster order does. */
+  lotOf?: LotOf<string>;
 }
 
 type Align = 'left' | 'right';
@@ -104,7 +108,8 @@ export function serializeResultsTxt(input: ResultsTxtInput): string {
   const standings = calculateStandings(
     teams.map((team) => team.id),
     results,
-    league.points
+    league.points,
+    input.lotOf
   );
   lines.push(
     ...renderTable(

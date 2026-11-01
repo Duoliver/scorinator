@@ -1,4 +1,4 @@
-import type { WrapperSummary } from '@/domain';
+import type { PhaseSummary, WrapperSummary } from '@/domain';
 import type { PointsConfig } from '@/engine/standings';
 import { formatTeamCount } from '@/features/components';
 
@@ -36,4 +36,28 @@ export function describeLeague(
     formatTeamCount(league.teamCount),
     formatHomeAdvantageLabel(league.homeAdvantage),
   ].join(' · ');
+}
+
+/** The full label of a phase format (US-01.2), from a manifest phase or a
+ * phase plan: both have the format and, but for a bracket, the legs. */
+export function formatPhaseLabel(phase: PhaseSummary): string {
+  if (phase.format === 'bracket') return 'Bracket';
+  const legs = phase.legs === 'two-way' ? '(two-way)' : '(single duels)';
+  return phase.format === 'groups'
+    ? `Groups round robin ${legs}`
+    : `Round robin ${legs}`;
+}
+
+/** The fixed short name of a phase format family (US-01.2): "Round robin",
+ * "Group Stage", or "Bracket". */
+export function phaseShortName(phase: PhaseSummary): string {
+  if (phase.format === 'bracket') return 'Bracket';
+  return phase.format === 'groups' ? 'Group Stage' : 'Round robin';
+}
+
+/** The format text of a league (US-01.2): the full label of a one-phase
+ * league, or the short names joined with " → ". */
+export function formatPhasesLabel(phases: readonly PhaseSummary[]): string {
+  if (phases.length === 1) return formatPhaseLabel(phases[0]);
+  return phases.map(phaseShortName).join(' → ');
 }

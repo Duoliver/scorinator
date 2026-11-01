@@ -21,6 +21,7 @@ beforeEach(() => {
     details: { name: '', points: DEFAULT_POINTS_CONFIG, homeAdvantage: false },
     teams: [],
     fixedTrigrams: {},
+    plans: [{ format: 'round-robin', legs: 'two-way' }],
     step: 'details',
   });
 });
@@ -35,13 +36,19 @@ async function addTwoTeams(): Promise<void> {
   await userEvent.click(within(dialog).getByRole('button', { name: 'Add 2 teams' }));
 }
 
+/** Details → Phases → Teams, with the default single phase. */
+async function goToTeamsStep(): Promise<void> {
+  await userEvent.click(screen.getByText('Next: Phases →'));
+  await userEvent.click(screen.getByText('Next: Teams →'));
+}
+
 describe('LeagueSetupScreen', () => {
-  it('walks through Details, Teams, and Review, and creates the league', async () => {
+  it('walks through Details, Phases, Teams, and Review, and creates the league', async () => {
     render(<LeagueSetupScreen />);
 
     await userEvent.type(screen.getByLabelText('League name'), 'Coastal Premier');
     await userEvent.click(screen.getByLabelText('Home advantage'));
-    await userEvent.click(screen.getByText('Next: Teams →'));
+    await goToTeamsStep();
 
     await addTwoTeams();
     await userEvent.click(screen.getByText('Next: Review →'));
@@ -76,9 +83,9 @@ describe('LeagueSetupScreen', () => {
     render(<LeagueSetupScreen />);
 
     await userEvent.type(screen.getByLabelText('League name'), '!!!');
-    expect(screen.getByText('Next: Teams →')).toBeDisabled();
+    expect(screen.getByText('Next: Phases →')).toBeDisabled();
     // The step tabs still allow a jump past the disabled Next.
-    await userEvent.click(screen.getByRole('tab', { name: '2 · Teams' }));
+    await userEvent.click(screen.getByRole('tab', { name: '3 · Teams' }));
     await addTwoTeams();
     await userEvent.click(screen.getByText('Next: Review →'));
     await userEvent.click(screen.getByText('Create league'));
@@ -97,7 +104,7 @@ describe('LeagueSetupScreen', () => {
     render(<LeagueSetupScreen />);
 
     await userEvent.type(screen.getByLabelText('League name'), 'Coastal Premier');
-    await userEvent.click(screen.getByText('Next: Teams →'));
+    await goToTeamsStep();
     await addTwoTeams();
     await userEvent.click(screen.getByText('Next: Review →'));
     await userEvent.click(screen.getByText('Create league'));
@@ -118,7 +125,7 @@ describe('LeagueSetupScreen', () => {
     render(<LeagueSetupScreen />);
 
     await userEvent.type(screen.getByLabelText('League name'), 'Coastal Premier');
-    await userEvent.click(screen.getByText('Next: Teams →'));
+    await goToTeamsStep();
     await addTwoTeams();
     await userEvent.click(screen.getByText('Next: Review →'));
     await userEvent.click(screen.getByText('Create league'));
@@ -133,7 +140,7 @@ describe('LeagueSetupScreen', () => {
     const scrollTo = vi.spyOn(window, 'scrollTo');
     render(<LeagueSetupScreen />);
     await userEvent.type(screen.getByLabelText('League name'), 'Coastal Premier');
-    await userEvent.click(screen.getByText('Next: Teams →'));
+    await goToTeamsStep();
     expect(scrollTo).toHaveBeenCalledWith({ top: 0 });
     scrollTo.mockRestore();
   });
@@ -141,22 +148,24 @@ describe('LeagueSetupScreen', () => {
   it('moves focus to the new step tab after Next', async () => {
     render(<LeagueSetupScreen />);
     await userEvent.type(screen.getByLabelText('League name'), 'Coastal Premier');
-    await userEvent.click(screen.getByText('Next: Teams →'));
-    expect(screen.getByRole('tab', { name: '2 · Teams' })).toHaveFocus();
+    await goToTeamsStep();
+    expect(screen.getByRole('tab', { name: '3 · Teams' })).toHaveFocus();
     // Next on the Teams step stays disabled until a team is selected.
     await addTwoTeams();
     await userEvent.click(screen.getByText('Next: Review →'));
-    expect(screen.getByRole('tab', { name: '3 · Review' })).toHaveFocus();
+    expect(screen.getByRole('tab', { name: '4 · Review' })).toHaveFocus();
   });
 
   it('moves focus to the new step tab after Back', async () => {
     render(<LeagueSetupScreen />);
     await userEvent.type(screen.getByLabelText('League name'), 'Coastal Premier');
-    await userEvent.click(screen.getByText('Next: Teams →'));
+    await goToTeamsStep();
     await addTwoTeams();
     await userEvent.click(screen.getByText('Next: Review →'));
     await userEvent.click(screen.getByRole('button', { name: 'Back' }));
-    expect(screen.getByRole('tab', { name: '2 · Teams' })).toHaveFocus();
+    expect(screen.getByRole('tab', { name: '3 · Teams' })).toHaveFocus();
+    await userEvent.click(screen.getByRole('button', { name: 'Back' }));
+    expect(screen.getByRole('tab', { name: '2 · Phases' })).toHaveFocus();
     await userEvent.click(screen.getByRole('button', { name: 'Back' }));
     expect(screen.getByRole('tab', { name: '1 · Details' })).toHaveFocus();
   });
@@ -164,9 +173,9 @@ describe('LeagueSetupScreen', () => {
   it('does not create a league from a blank name reached through the Review tab', async () => {
     render(<LeagueSetupScreen />);
 
-    await userEvent.click(screen.getByRole('tab', { name: '2 · Teams' }));
+    await userEvent.click(screen.getByRole('tab', { name: '3 · Teams' }));
     await addTwoTeams();
-    await userEvent.click(screen.getByRole('tab', { name: '3 · Review' }));
+    await userEvent.click(screen.getByRole('tab', { name: '4 · Review' }));
     await userEvent.click(screen.getByText('Create league'));
 
     expect(route).not.toHaveBeenCalled();
@@ -180,7 +189,7 @@ describe('LeagueSetupScreen', () => {
     const create = async (): Promise<void> => {
       render(<LeagueSetupScreen />);
       await userEvent.type(screen.getByLabelText('League name'), 'Coastal Premier');
-      await userEvent.click(screen.getByText('Next: Teams →'));
+      await goToTeamsStep();
       await addTwoTeams();
       await userEvent.click(screen.getByText('Next: Review →'));
       await userEvent.click(screen.getByText('Create league'));
@@ -202,7 +211,7 @@ describe('LeagueSetupScreen', () => {
     render(<LeagueSetupScreen />);
     await userEvent.type(screen.getByLabelText('League name'), 'Coastal Premier');
     await userEvent.click(screen.getByLabelText('Home advantage'));
-    await userEvent.click(screen.getByText('Next: Teams →'));
+    await goToTeamsStep();
 
     expect(screen.getByText('Coastal Premier')).toBeInTheDocument();
     expect(screen.getByText('Home adv. on')).toBeInTheDocument();
@@ -215,14 +224,14 @@ describe('LeagueSetupScreen', () => {
 
   it('jumps directly to a step when its stepper button is clicked', async () => {
     render(<LeagueSetupScreen />);
-    await userEvent.click(screen.getByText('2 · Teams'));
+    await userEvent.click(screen.getByText('3 · Teams'));
     expect(screen.getByText('No teams added yet')).toBeInTheDocument();
   });
 
   it('lets a team created inside the add dialog reach Review', async () => {
     render(<LeagueSetupScreen />);
     await userEvent.type(screen.getByLabelText('League name'), 'Coastal Premier');
-    await userEvent.click(screen.getByText('Next: Teams →'));
+    await goToTeamsStep();
 
     await userEvent.click(screen.getByRole('button', { name: '+ Add teams' }));
     const dialog = screen.getByRole('dialog', { name: 'Add teams' });
@@ -240,7 +249,7 @@ describe('LeagueSetupScreen', () => {
   it('keeps the team list and its OVRs in the draft, and creates the league with them (Task 81)', async () => {
     render(<LeagueSetupScreen />);
     await userEvent.type(screen.getByLabelText('League name'), 'Coastal Premier');
-    await userEvent.click(screen.getByText('Next: Teams →'));
+    await goToTeamsStep();
     await userEvent.click(screen.getByRole('button', { name: 'Load them all' }));
     cleanup();
 
@@ -261,7 +270,7 @@ describe('LeagueSetupScreen', () => {
   it('disables "Create league" with 1 team, and shows the reason (US-08.8)', async () => {
     render(<LeagueSetupScreen />);
     await userEvent.type(screen.getByLabelText('League name'), 'Coastal Premier');
-    await userEvent.click(screen.getByText('Next: Teams →'));
+    await goToTeamsStep();
     await userEvent.click(screen.getByRole('button', { name: '+ Add teams' }));
     const dialog = screen.getByRole('dialog', { name: 'Add teams' });
     await userEvent.click(within(dialog).getByRole('button', { name: 'FC United' }));
@@ -277,7 +286,7 @@ describe('LeagueSetupScreen', () => {
   it('stores a trigram fixed in the Edit drawer, and the edits, in the league (Task 172)', async () => {
     render(<LeagueSetupScreen />);
     await userEvent.type(screen.getByLabelText('League name'), 'Coastal Premier');
-    await userEvent.click(screen.getByText('Next: Teams →'));
+    await goToTeamsStep();
     await addTwoTeams();
     await userEvent.click(screen.getByRole('button', { name: 'Edit FC United' }));
     await userEvent.clear(screen.getByLabelText('Team name'));
@@ -293,5 +302,85 @@ describe('LeagueSetupScreen', () => {
       trigram: 'UOC',
     });
     expect(useDatabaseStore.getState().blueprints[0].name).toBe('FC United');
+  });
+
+  describe('the Phases step (Task 129)', () => {
+    it('comes after Details, with one Round robin (two-way) phase', async () => {
+      render(<LeagueSetupScreen />);
+      await userEvent.type(screen.getByLabelText('League name'), 'Coastal Premier');
+      await userEvent.click(screen.getByText('Next: Phases →'));
+      expect(screen.getByRole('tab', { name: '2 · Phases' })).toHaveFocus();
+      expect(screen.getByRole('region', { name: 'Phase 1' })).toBeInTheDocument();
+      expect(screen.getByLabelText('Format')).toHaveValue('rr2');
+    });
+
+    it('creates the league with the plans of the Phases step', async () => {
+      render(<LeagueSetupScreen />);
+      await userEvent.type(screen.getByLabelText('League name'), 'Coastal Premier');
+      await userEvent.click(screen.getByText('Next: Phases →'));
+      await userEvent.selectOptions(screen.getByLabelText('Format'), 'rr1');
+      await userEvent.click(screen.getByText('Next: Teams →'));
+      await addTwoTeams();
+      await userEvent.click(screen.getByText('Next: Review →'));
+
+      expect(
+        screen.getByText('1 · Round robin · Round robin (single duels)')
+      ).toBeInTheDocument();
+      await userEvent.click(screen.getByText('Create league'));
+
+      const [league] = Object.values(useDatabaseStore.getState().leagues);
+      expect(league.content.plans).toEqual([
+        { format: 'round-robin', legs: 'single-duels' },
+      ]);
+      expect(league.content.phases[0].fixtures).toHaveLength(1);
+    });
+
+    it('lists each phase on the Review step, and the format chip joins the short names', async () => {
+      useLeagueDraftStore.setState({
+        plans: [
+          {
+            format: 'groups',
+            legs: 'two-way',
+            grouping: { by: 'size', size: 4 },
+            advance: { top: 2, bestOfNext: 0 },
+          },
+          { format: 'round-robin', legs: 'two-way' },
+        ],
+      });
+      render(<LeagueSetupScreen />);
+      await userEvent.click(screen.getByRole('tab', { name: '4 · Review' }));
+      expect(
+        screen.getByText(
+          '1 · Group Stage · Groups round robin (two-way) · size 4 · Top 2 advance per group'
+        )
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText('2 · Round robin · Round robin (two-way)')
+      ).toBeInTheDocument();
+      expect(screen.getByText('Group Stage → Round robin')).toBeInTheDocument();
+    });
+
+    it('keeps "Create league" off while a phase is a bracket, with the reason (choice 2)', async () => {
+      useLeagueDraftStore.setState({ plans: [{ format: 'bracket' }] });
+      render(<LeagueSetupScreen />);
+      await userEvent.type(screen.getByLabelText('League name'), 'Cup');
+      await goToTeamsStep();
+      await addTwoTeams();
+      await userEvent.click(screen.getByText('Next: Review →'));
+      expect(
+        screen.getByText('Bracket phases come in a later update.')
+      ).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Create league' })).toBeDisabled();
+    });
+
+    it('keeps the plans in the draft across a remount', async () => {
+      const { unmount } = render(<LeagueSetupScreen />);
+      await userEvent.click(screen.getByRole('tab', { name: '2 · Phases' }));
+      await userEvent.click(screen.getByRole('button', { name: '+ Add phase' }));
+      unmount();
+      expect(useLeagueDraftStore.getState().plans).toHaveLength(2);
+      render(<LeagueSetupScreen />);
+      expect(screen.getAllByRole('region', { name: /^Phase \d+$/ })).toHaveLength(2);
+    });
   });
 });

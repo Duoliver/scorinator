@@ -6,9 +6,11 @@ import {
   settingsChipLabels,
 } from '@/features/leagues/LeagueSetupScreen/steps/SetupChips';
 import {
-  FIXTURE_FORMAT_LABEL,
   formatLeagueName,
+  formatPhasesLabel,
+  phaseShortName,
 } from '@/features/leagues/leagueSummary';
+import { describePhasePlan } from '@/features/leagues/LeagueSetupScreen/phasePlans';
 import { TeamLabel } from '@/features/leagues/LeagueSetupScreen/steps/TeamLabel';
 import { useBlueprintLocation } from '@/features/leagues/LeagueSetupScreen/useBlueprintLocation';
 import type ReviewStepProps from './types';
@@ -21,6 +23,7 @@ export function ReviewStep({
   homeAdvantage,
   points,
   teams,
+  plans,
   createProblem,
   onBack,
   onCreate,
@@ -33,11 +36,19 @@ export function ReviewStep({
 
         <SetupChips
           labels={[
-            FIXTURE_FORMAT_LABEL,
+            formatPhasesLabel(plans),
             ...settingsChipLabels(homeAdvantage, points),
             formatTeamCount(teams.length),
           ]}
         />
+
+        <ol class={styles.phaseList} aria-label="Phases">
+          {plans.map((plan, index) => (
+            <li key={index}>
+              {`${index + 1} · ${phaseShortName(plan)} · ${describePhasePlan(plan)}`}
+            </li>
+          ))}
+        </ol>
 
         <ul class={styles.teamList}>
           {teams.map((team) => (

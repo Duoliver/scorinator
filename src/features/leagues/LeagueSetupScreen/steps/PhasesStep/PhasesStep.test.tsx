@@ -1,0 +1,206 @@
+import { describe, expect, it, vi } from 'vitest';
+import type { JSX } from 'preact';
+import { render, screen, within } from '@testing-library/preact';
+import userEvent from '@testing-library/user-event';
+import type { PhasePlan } from '@/engine/phases';
+import { usePhaseList } from '@/features/leagues/LeagueSetupScreen/usePhaseList';
+import { PhasesStep } from './PhasesStep';
+
+/** Holds the plan list as the wizard does, and shows it as JSON so a test
+ * can read the plans. */
+function Harness({
+  initial = [{ format: 'round-robin', legs: 'two-way' }],
+  onBack = vi.fn(),
+  onNext = vi.fn(),
+}: {
+  initial?: PhasePlan[];
+  onBack?: () => void;
+  onNext?: () => void;
+}): JSX.Element {
+  const phaseList = usePhaseList(initial);
+  return (
+    <>
+      <PhasesStep phaseList={phaseList} onBack={onBack} onNext={onNext} />
+      <output data-testid="plans">{JSON.stringify(phaseList.plans)}</output>
+    </>
+  );
+}
+
+const plans = (): PhasePlan[] =>
+  JSON.parse(screen.getByTestId('plans').textContent ?? '[]');
+const card = (phase: number): HTMLElement =>
+  screen.getByRole('region', { name: `Phase ${phase}` });
+const addPhase = (): Promise<void> =>
+  userEvent.click(screen.getByRole('button', { name: '+ Add phase' }));
+
+const groupsThenBracket: PhasePlan[] = [
+  {
+    format: 'groups',
+    legs: 'two-way',
+    grouping: { by: 'size', size: 4 },
+    advance: { top: 2, bestOfNext: 0 },
+  },
+  { format: 'bracket' },
+];
+
+describe('PhasesStep', () => {
+  it('shows one Round robin phase card, with no advancement (US-01.1)', () => {
+    render(<Harness />);
+    expect(screen.getAllByRole('region', { name: /^Phase \d+$/ })).toHaveLength(1);
+    expect(within(card(1)).getByText('1')).toBeInTheDocument();
+    expect(
+      within(card(1)).getByRole('heading', { name: 'Round robin' })
+    ).toBeInTheDocument();
+    expect(within(card(1)).getByLabelText('Format')).toHaveValue('rr2');
+    expect(within(card(1)).queryByLabelText('Top')).not.toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'A league runs as a sequence of phases. Stats reset to zero between phases. Bracket may only be the final phase.'
+      )
+    ).toBeInTheDocument();
+  });
+
+  it('adds a phase at the end, and gives the phase before it Top 2', async () => {
+    render(<Harness />);
+    await addPhase();
+    expect(screen.getAllByRole('region', { name: /^Phase \d+$/ })).toHaveLength(2);
+    expect(within(card(1)).getByLabelText('Top')).toHaveValue('2');
+    expect(within(card(1)).getByText('advance to the next phase')).toBeInTheDocument();
+    expect(within(card(2)).queryByLabelText('Top')).not.toBeInTheDocument();
+  });
+
+  it('turns off remove with one phase, up on the first phase, and down on the last', async () => {
+    render(<Harness />);
+    expect(
+      within(card(1)).getByRole('button', { name: 'Remove phase 1' })
+    ).toBeDisabled();
+    await addPhase();
+    expect(
+      within(card(1)).getByRole('button', { name: 'Remove phase 1' })
+    ).toBeEnabled();
+    expect(
+      within(card(1)).getByRole('button', { name: 'Move phase 1 up' })
+    ).toBeDisabled();
+    expect(
+      within(card(1)).getByRole('button', { name: 'Move phase 1 down' })
+    ).toBeEnabled();
+    expect(
+      within(card(2)).getByRole('button', { name: 'Move phase 2 down' })
+    ).toBeDisabled();
+  });
+
+  it('removes a phase', async () => {
+    render(<Harness />);
+    await addPhase();
+    await userEvent.click(
+      within(card(2)).getByRole('button', { name: 'Remove phase 2' })
+    );
+    expect(screen.getAllByRole('region', { name: /^Phase \d+$/ })).toHaveLength(1);
+    expect(plans()).toEqual([{ format: 'round-robin', legs: 'two-way' }]);
+  });
+
+  it('shows the Groups fields for a Groups format: Set by, Group size 4, per group, best M', async () => {
+    render(<Harness />);
+    await addPhase();
+    await userEvent.selectOptions(within(card(1)).getByLabelText('Format'), 'grp1');
+    expect(
+      within(card(1)).getByRole('heading', { name: 'Group Stage' })
+    ).toBeInTheDocument();
+    expect(within(card(1)).getByLabelText('Set by')).toHaveValue('size');
+    expect(within(card(1)).getByLabelText('Group size')).toHaveValue('4');
+    expect(within(card(1)).getByText('advance per group')).toBeInTheDocument();
+    expect(within(card(1)).getByLabelText('Best of place 3')).toHaveValue('0');
+  });
+
+  it('switches Set by to Group count, with count 2', async () => {
+    render(<Harness initial={groupsThenBracket} />);
+    await userEvent.selectOptions(within(card(1)).getByLabelText('Set by'), 'count');
+    expect(within(card(1)).getByLabelText('Group count')).toHaveValue('2');
+    expect(plans()[0]).toMatchObject({ grouping: { by: 'count', count: 2 } });
+  });
+
+  it('writes the typed numbers into the plan, and NaN for a number that is not whole', async () => {
+    render(<Harness initial={groupsThenBracket} />);
+    const top = within(card(1)).getByLabelText('Top');
+    await userEvent.clear(top);
+    await userEvent.type(top, '1');
+    const best = within(card(1)).getByLabelText('Best of place 2');
+    await userEvent.clear(best);
+    await userEvent.type(best, '3');
+    const size = within(card(1)).getByLabelText('Group size');
+    await userEvent.clear(size);
+    await userEvent.type(size, 'x');
+    expect(plans()[0]).toMatchObject({ advance: { top: 1, bestOfNext: 3 } });
+    // JSON writes NaN as null.
+    expect(plans()[0]).toMatchObject({ grouping: { by: 'size', size: null } });
+  });
+
+  describe('the bracket rule (US-01.3)', () => {
+    it('offers Bracket only on the last phase', async () => {
+      render(<Harness />);
+      await addPhase();
+      const options = (phase: number): string[] =>
+        within(within(card(phase)).getByLabelText('Format'))
+          .getAllByRole('option')
+          .map((option) => option.textContent ?? '');
+      expect(options(1)).not.toContain('Bracket');
+      expect(options(2)).toContain('Bracket');
+    });
+
+    it('turns off "+ Add phase" after a bracket, with a hint', () => {
+      render(<Harness initial={groupsThenBracket} />);
+      expect(screen.getByRole('button', { name: '+ Add phase' })).toBeDisabled();
+      expect(screen.getByText('A bracket must be the last phase.')).toBeInTheDocument();
+    });
+
+    it('turns off a move that puts the bracket before another phase', () => {
+      render(<Harness initial={groupsThenBracket} />);
+      expect(
+        within(card(1)).getByRole('button', { name: 'Move phase 1 down' })
+      ).toBeDisabled();
+      expect(
+        within(card(2)).getByRole('button', { name: 'Move phase 2 up' })
+      ).toBeDisabled();
+    });
+
+    it('can leave the bracket as the only phase', async () => {
+      render(<Harness initial={groupsThenBracket} />);
+      await userEvent.click(
+        within(card(1)).getByRole('button', { name: 'Remove phase 1' })
+      );
+      expect(plans()).toEqual([{ format: 'bracket' }]);
+    });
+  });
+
+  it('keeps the field values with their phase after a move', async () => {
+    render(
+      <Harness
+        initial={[
+          { format: 'round-robin', legs: 'two-way', advance: { top: 2 } },
+          {
+            format: 'groups',
+            legs: 'two-way',
+            grouping: { by: 'size', size: 6 },
+            advance: { top: 2, bestOfNext: 0 },
+          },
+          { format: 'round-robin', legs: 'two-way' },
+        ]}
+      />
+    );
+    await userEvent.click(
+      within(card(2)).getByRole('button', { name: 'Move phase 2 up' })
+    );
+    expect(within(card(1)).getByLabelText('Group size')).toHaveValue('6');
+    expect(within(card(2)).getByLabelText('Format')).toHaveValue('rr2');
+  });
+
+  it('calls onBack and onNext', async () => {
+    const onBack = vi.fn();
+    const onNext = vi.fn();
+    render(<Harness onBack={onBack} onNext={onNext} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Back' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Next: Teams →' }));
+    expect(onBack).toHaveBeenCalledOnce();
+    expect(onNext).toHaveBeenCalledOnce();
+  });
+});

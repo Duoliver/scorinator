@@ -4,6 +4,17 @@
   gap: var(--space-6);
 }
 
+/* The phase chain (Task 129), one line for each phase. */
+.phaseList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--font-size-lg);
+}
+
 .teamList {
   border-top: var(--border-width) solid var(--color-fg);
   padding: var(--space-4) 0 0 0;

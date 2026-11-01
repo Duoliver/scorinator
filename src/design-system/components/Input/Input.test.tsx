@@ -147,4 +147,14 @@ describe('Input', () => {
       expect(container.querySelector('[class*="trailing"]')).toBeNull();
     });
   });
+
+  it('passes inputMode through (Task 129)', () => {
+    render(<Input label="Top" inputMode="numeric" />);
+    expect(screen.getByLabelText('Top')).toHaveAttribute('inputmode', 'numeric');
+  });
+
+  it('sets no inputmode by default', () => {
+    render(<Input label="Name" />);
+    expect(screen.getByLabelText('Name')).not.toHaveAttribute('inputmode');
+  });
 });

@@ -16,7 +16,9 @@ import type { LeagueWrapper } from '@/domain';
 import type { DetailsStepHandle } from '@/features/leagues/LeagueSetupScreen/steps/DetailsStep';
 import { leagueNameProblem } from './leagueName';
 import type { LeagueSetup } from './types';
+import { hasBracketPhase } from './phasePlans';
 import { useLeagueDraftSync } from './useLeagueDraftSync';
+import { usePhaseList } from './usePhaseList';
 import { useTeamList } from './useTeamList';
 
 /** The League Setup wizard: the draft, the step changes, and the create. */
@@ -30,13 +32,20 @@ export function useLeagueSetup(): LeagueSetup {
   const [details, setDetails] = useState<LeagueDraftDetails>(initialDraft.details);
   const [step, setStep] = useState<LeagueSetupStep>(initialDraft.step);
   const teamList = useTeamList(initialDraft.teams, initialDraft.fixedTrigrams);
+  const phaseList = usePhaseList(initialDraft.plans);
   const [status, setStatus] = useState<string | null>(null);
 
   const detailsStepRef = useRef<DetailsStepHandle>(null);
   const stepsRef: RefObject<FieldHandle<string>> = useRef(null);
 
   const skipDraftSync = useLeagueDraftSync(
-    { details, teams: teamList.teams, fixedTrigrams: teamList.fixedTrigrams, step },
+    {
+      details,
+      teams: teamList.teams,
+      fixedTrigrams: teamList.fixedTrigrams,
+      plans: phaseList.plans,
+      step,
+    },
     detailsStepRef
   );
 
@@ -57,7 +66,13 @@ export function useLeagueSetup(): LeagueSetup {
     setStep(next);
   };
 
-  const createProblem = teamListProblem(teamList.teams);
+  // A bracket phase cannot start before Task 139, so "Create league" stays
+  // off (Task 129 choice 2). Task 177 adds the fit problems.
+  const createProblem =
+    teamListProblem(teamList.teams) ??
+    (hasBracketPhase(phaseList.plans)
+      ? 'Bracket phases come in a later update.'
+      : null);
 
   const handleCreate = (): void => {
     // `DetailsStep` is unmounted by the time Review is reachable — `details`
@@ -80,11 +95,12 @@ export function useLeagueSetup(): LeagueSetup {
         points: details.points,
         teams: teamList.teams,
         fixedTrigrams: teamList.fixedTrigrams,
+        plans: phaseList.plans,
       });
     } catch (error) {
-      // `createLeague` throws for a Blueprint twice in the list or a closed
-      // database. Neither can happen from this screen today. This only
-      // keeps the screen up if a store change elsewhere ever adds another.
+      // `createLeague` throws for a Blueprint twice in the list, a closed
+      // database, or plans that do not fit the teams (Task 128). Until Task
+      // 177 shows the fit problems on the steps, this status line says it.
       setStatus(getErrorMessage(error));
       return;
     }
@@ -105,7 +121,9 @@ export function useLeagueSetup(): LeagueSetup {
     status,
     stepsRef,
     detailsStepRef,
+    phaseList,
     goToDetails: () => goToStep('details'),
+    goToPhases: () => goToStep('phases'),
     goToTeams: () => goToStep('teams'),
     goToReview: () => goToStep('review'),
     handleTabChange: (id) => goToStep(id as LeagueSetupStep),

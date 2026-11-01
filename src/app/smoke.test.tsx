@@ -127,6 +127,7 @@ describe('smoke: create, scorinate, save, and open a league again', () => {
     await user.click(screen.getByRole('link', { name: 'Leagues' }));
     await user.click(screen.getByRole('link', { name: 'Create league' }));
     await user.type(screen.getByLabelText('League name'), 'Coastal Premier');
+    await user.click(screen.getByRole('button', { name: 'Next: Phases →' }));
     await user.click(screen.getByRole('button', { name: 'Next: Teams →' }));
     await user.click(screen.getByRole('button', { name: 'Load them all' }));
     await user.click(screen.getByRole('button', { name: 'Next: Review →' }));
@@ -220,6 +221,7 @@ describe('smoke: M2 teams and team selection (Task 122)', () => {
     await user.click(screen.getByRole('link', { name: 'Leagues' }));
     await user.click(screen.getByRole('link', { name: 'Create league' }));
     await user.type(screen.getByLabelText('League name'), 'Coastal Premier');
+    await user.click(screen.getByRole('button', { name: 'Next: Phases →' }));
     await user.click(screen.getByRole('button', { name: 'Next: Teams →' }));
     await user.click(screen.getByRole('button', { name: '+ Add teams' }));
     const picker = screen.getByRole('dialog', { name: 'Add teams' });

@@ -3,7 +3,10 @@ import {
   describeLeague,
   formatHomeAdvantageLabel,
   formatLeagueName,
+  formatPhaseLabel,
+  formatPhasesLabel,
   formatPointsLabel,
+  phaseShortName,
 } from './leagueSummary';
 
 describe('describeLeague', () => {
@@ -53,5 +56,40 @@ describe('formatLeagueName', () => {
   it('gives a placeholder for a blank or whitespace-only name', () => {
     expect(formatLeagueName('')).toBe('Untitled league');
     expect(formatLeagueName('   ')).toBe('Untitled league');
+  });
+});
+
+describe('phase labels (Task 129, US-01.2)', () => {
+  it('gives the five full labels', () => {
+    expect(formatPhaseLabel({ format: 'round-robin', legs: 'two-way' })).toBe(
+      'Round robin (two-way)'
+    );
+    expect(formatPhaseLabel({ format: 'round-robin', legs: 'single-duels' })).toBe(
+      'Round robin (single duels)'
+    );
+    expect(formatPhaseLabel({ format: 'groups', legs: 'two-way' })).toBe(
+      'Groups round robin (two-way)'
+    );
+    expect(formatPhaseLabel({ format: 'groups', legs: 'single-duels' })).toBe(
+      'Groups round robin (single duels)'
+    );
+    expect(formatPhaseLabel({ format: 'bracket' })).toBe('Bracket');
+  });
+
+  it('gives the short name of each format family', () => {
+    expect(phaseShortName({ format: 'round-robin', legs: 'single-duels' })).toBe(
+      'Round robin'
+    );
+    expect(phaseShortName({ format: 'groups', legs: 'two-way' })).toBe('Group Stage');
+    expect(phaseShortName({ format: 'bracket' })).toBe('Bracket');
+  });
+
+  it('gives the full label of one phase, or the short names joined with an arrow', () => {
+    expect(formatPhasesLabel([{ format: 'round-robin', legs: 'two-way' }])).toBe(
+      'Round robin (two-way)'
+    );
+    expect(
+      formatPhasesLabel([{ format: 'groups', legs: 'two-way' }, { format: 'bracket' }])
+    ).toBe('Group Stage → Bracket');
   });
 });

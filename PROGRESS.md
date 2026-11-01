@@ -124,7 +124,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 171 | The league name on the wizard Teams step: one font step larger, and bold | `features/leagues` | ✅ Done | 2026-10-30 | 2026-10-30 | [171](/docs/tasks/171-teams-step-league-name.md) | Task created by User - 2026-10-30. Name at `--font-size-xl`, bold, `--color-fg`. |
 | 172 | Edit a team for this league, in the wizard: Original state, OVR, Tier roll, fixed trigram, unique name, Reset | `features/leagues`, `features/components` | ✅ Done | 2026-10-30 | 2026-10-30 | [172](/docs/tasks/172-wizard-edit-team.md) | Split from 121 - 2026-10-30. US-08.4, 09.6. Edit drawer built, with shared `TeamForm` fields. |
 | 173 | The slug check in the team CSV and JSON imports: letters, digits, and hyphens only | `engine/identity`, `adapters/` | ✅ Done | 2026-10-30 | 2026-10-30 | [173](/docs/tasks/173-import-slug-check.md) | Task created by User - 2026-10-30. From the Task 168 review. `isSlug` built, CSV and JSON stop on a bad slug. The user checked the real app. |
-| 175 | The phase start: qualifiers in seed order, the phase build, the lock | `engine/phases` | ⬜ Not started |  |  | [175](/docs/tasks/175-phase-start.md) | M3. US-07.1, 07.3. Split from 126 (choice 1), 2026-11-01. After 126. |
+| 175 | The phase start: qualifiers in seed order, the phase build, the lock | `engine/phases` | ✅ Done | 2026-11-01 | 2026-11-01 | [175](/docs/tasks/175-phase-start.md) | M3. US-07.1, 07.3. Split from 126. 15 new tests. Task 128 is the first caller. |
 
 **Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input, see Open Questions) · 🟩 Review · ✅ Done · ❌ Cancelled (the reason is in the Notes column)
 
@@ -172,6 +172,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-11-01 (Task 175 — the phase start):** The user agreed six choices. (1) `pickQualifiers` takes the standings tables from the caller. (2) One `buildPhase(plan, phase, teams, rng, groups?)` for phase 1, a later phase, and a Shuffle or move. (3) Groups fixtures in group order, then matchday order. `GroupBye` adds the group number. (4) A bracket throws until Task 139. (5) The `rng` draws first, then each group schedule. (6) `isPhaseComplete`, `isPhaseLocked`, `canChangeDraw`. Detail in [`docs/tasks/175-phase-start.md`](/docs/tasks/175-phase-start.md).
 
 - **2026-11-01 (Task 126 — phase chain rules):** The user agreed six choices. (1) Split: Task 126 keeps the rules before the start, new Task 175 takes the phase start and the lock. Task 128 waits for 175. (2) `PhasePlan` lives in `engine/phases`, and Task 128 can reuse it in `domain/`. (3) The checks give problem codes, not messages. (4) `checkPhaseFit` takes the real phase-1 group sizes. (5) One group in size mode is not a problem. (6) Task 128 adds the domain phase types for single duels and Groups, and fixes the `domain/league.ts` comment. Detail in [`docs/tasks/126-phase-chain-rules.md`](/docs/tasks/126-phase-chain-rules.md).
 

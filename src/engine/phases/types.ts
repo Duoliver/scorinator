@@ -1,4 +1,4 @@
-import type { GroupSetting } from '@/engine/round-robin';
+import type { Bye, GroupSetting, PhaseFixture } from '@/engine/round-robin';
 
 /** One or two meetings of each pair of teams (US-01.2): `two-way` is
  * `generateRoundRobin`, `single-duels` is `generateSingleDuels`. */
@@ -47,3 +47,26 @@ export type PhaseFitProblem =
   | { code: 'top-out-of-range'; phase: number; top: number; max: number }
   | { code: 'best-m-out-of-range'; phase: number; bestOfNext: number; max: number }
   | { code: 'best-m-place-missing'; phase: number; place: number };
+
+/** A bye of one group in a Groups phase (Task 175 choice 3). `group`
+ * counts from 1, as in the fixture ids. */
+export interface GroupBye<TeamId> extends Bye<TeamId> {
+  group: number;
+}
+
+/** A round-robin or Groups phase after its start (US-07.3): the fixtures
+ * with their ids (Task 77), the byes, and the groups of a Groups phase. */
+export type BuiltPhase<TeamId> =
+  | {
+      format: 'round-robin';
+      legs: Legs;
+      fixtures: PhaseFixture<TeamId>[];
+      byes: Bye<TeamId>[];
+    }
+  | {
+      format: 'groups';
+      legs: Legs;
+      groups: TeamId[][];
+      fixtures: PhaseFixture<TeamId>[];
+      byes: GroupBye<TeamId>[];
+    };

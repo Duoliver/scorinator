@@ -1,4 +1,5 @@
 export { generateRoundRobin } from './roundRobin';
+export { generateSingleDuels } from './singleDuels';
 export { assignFixtureIds, fixtureId } from './fixtureIds';
 export {
   findPhaseCurrentMatchday,

@@ -73,7 +73,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 120 | Wizard Teams step, part 1: the add dialog, Load them all, empty states, Import slug list | `features/leagues` | ✅ Done | 2026-10-30 | 2026-10-30 | [120](/docs/tasks/120-wizard-teams-part-1.md) | M2. US-08.1, 08.2, 08.3, 08.7. Team list on Instances, add dialog, Load them all, empty states, slug list built. |
 | 121 | Wizard Teams step, part 2: Switch, the live trigram pick, "Create league" | `features/leagues` | ✅ Done | 2026-10-30 | 2026-10-30 | [121](/docs/tasks/121-wizard-teams-part-2.md) | M2. US-08.4 to 08.6, 08.8, 09.6 (league). Switch, live trigrams, create rules built. Split: Edit to 172. |
 | 122 | M2 smoke check | all | ✅ Done | 2026-10-30 | 2026-10-30 | [122](/docs/tasks/122-m2-smoke-check.md) | M2 complete. M2 end-to-end test added. The user checked 11 rows in the real app. |
-| 123 | `generateSingleDuels`, the shared pairing, the doc comment fix | `engine/round-robin` | ⬜ Not started |  |  |  | M3. US-06.1. After 122. |
+| 123 | `generateSingleDuels`, the shared pairing, the doc comment fix | `engine/round-robin` | ✅ Done | 2026-11-01 | 2026-11-01 | [123](/docs/tasks/123-generate-single-duels.md) | M3. US-06.1. 12 new tests. No caller yet: Task 126 is the first. |
 | 124 | Standings v2: fixed lots, the recursive mini-league, the cross-group order, best M | `engine/standings` | ⬜ Not started |  |  |  | M3. US-01.4, 01.6, 02.2, Task 78. After 122. |
 | 125 | The group draw: size or count, add to the smallest group, moves | `engine/round-robin` | ⬜ Not started |  |  |  | M3. US-02.1, 02.5. After 122. |
 | 126 | Phase chain rules: bracket last, fit checks, qualifier counts, build and start a phase, the lock | `engine/phases` | ⬜ Not started |  |  |  | M3. US-01.3, 01.4, 01.6, 07.1, 07.3. After 123, 124, 125. |
@@ -171,6 +171,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-11-01 (Task 123 — `generateSingleDuels`):** The user agreed six choices. (1) A random Euler circuit walk gives home and away. An even N first gets one random dummy edge for each team. (2) A random walk direction makes each side home in 50% of seeds on average. (3) The shared pairing is internal, in `circlePairing.ts`. (4) The `rng` picks home and away first, then shuffles the match order. (5) The 2,000-seed test runs for N from 2 to 20. (6) The new doc comment names `generateSingleDuels`. Detail in [`docs/tasks/123-generate-single-duels.md`](/docs/tasks/123-generate-single-duels.md).
 
 - **2026-10-30 (Task 173 — the slug check in the imports):** The user agreed four choices. (1) A bad slug stops a CSV or JSON import with a row error. (2) Upper case is valid, and the parse changes it to lower case. (3) One `isSlug` in `engine/identity`, for the CSV, JSON, and slug list parsers. (4) No repair of a slug already in the database. Claude choice: the JSON parse trims the slug, as the CSV parse does. Detail in [`docs/tasks/173-import-slug-check.md`](/docs/tasks/173-import-slug-check.md).
 

@@ -26,6 +26,11 @@ interface ButtonBaseProps {
   /** The id of the element that describes the button, for example a
    * `Tooltip` (Task 111). */
   'aria-describedby'?: string;
+  /** For a button that opens a menu, as the `DropdownMenu` trigger (Task
+   * 127). */
+  'aria-haspopup'?: 'menu';
+  /** Whether the menu of the button is open (Task 127). */
+  'aria-expanded'?: boolean;
   onClick?: (event: TargetedMouseEvent<HTMLButtonElement | HTMLAnchorElement>) => void;
 }
 

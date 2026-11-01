@@ -77,7 +77,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 124 | Standings v2: fixed lots, the recursive mini-league, the cross-group order, best M | `engine/standings`, `engine/identity` | ✅ Done | 2026-11-01 | 2026-11-01 | [124](/docs/tasks/124-standings-v2.md) | M3. US-01.4, 01.6, 02.2, Task 78. 24 new tests. Task 128 passes the lots. |
 | 125 | The group draw: size or count, add to the smallest group, moves | `engine/round-robin` | ✅ Done | 2026-11-01 | 2026-11-01 | [125](/docs/tasks/125-group-draw.md) | M3. US-02.1, 02.5. 35 new tests. Task 130 is the first caller. |
 | 126 | Phase chain rules: bracket last, fit checks, qualifier counts, the best M suggestion | `engine/phases` | ✅ Done | 2026-11-01 | 2026-11-01 | [126](/docs/tasks/126-phase-chain-rules.md) | M3. US-01.3, 01.4, 01.6. 27 new tests. Phase start split to 175. |
-| 127 | Dropdown menu | `design-system/` | ⬜ Not started |  |  |  | M3. US-02.5 (Move to group), US-10.1. After 122. |
+| 127 | Dropdown menu | `design-system/` | ✅ Done | 2026-11-01 | 2026-11-01 | [127](/docs/tasks/127-dropdown-menu.md) | M3. US-02.5 (Move to group), US-10.1. 27 new tests. Task 130 and Task 150 use it. |
 | 128 | League state with phases: scorinate in a phase, start the next phase, the progress text | `app/`, `domain/` | ⬜ Not started |  |  |  | M3. US-01.2, 07.1, 07.3. After 175. Adds the domain phase types (Task 126 choice 6). |
 | 129 | Wizard Phases step: phases, formats, advancement, best M, warnings | `features/leagues` | ⬜ Not started |  |  |  | M3. US-01.1 to 01.6. After 128. |
 | 130 | Wizard Teams step with groups: group columns, Shuffle, drag, Move to group | `features/leagues` | ⬜ Not started |  |  |  | M3. US-02.1, 02.4, 02.5. After 127, 129. |
@@ -172,6 +172,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-11-01 (Task 127 — dropdown menu):** The user agreed six choices. (1) The trigger is the `Button` primitive: an icon button with `icon`, else `label ▾`. (2) Flat items, no submenu: Task 130 shows "Move to Group B" and so on (changes the US-02.5 wording). (3) `position: fixed` from the trigger box, as `Tooltip`. (4) The WAI-ARIA menu button keyboard. (5) `Button` gets `aria-haspopup` and `aria-expanded`. (6) The placement is checked in the real app at review. Detail in [`docs/tasks/127-dropdown-menu.md`](/docs/tasks/127-dropdown-menu.md).
 
 - **2026-11-01 (Task 175 — the phase start):** The user agreed six choices. (1) `pickQualifiers` takes the standings tables from the caller. (2) One `buildPhase(plan, phase, teams, rng, groups?)` for phase 1, a later phase, and a Shuffle or move. (3) Groups fixtures in group order, then matchday order. `GroupBye` adds the group number. (4) A bracket throws until Task 139. (5) The `rng` draws first, then each group schedule. (6) `isPhaseComplete`, `isPhaseLocked`, `canChangeDraw`. Detail in [`docs/tasks/175-phase-start.md`](/docs/tasks/175-phase-start.md).
 

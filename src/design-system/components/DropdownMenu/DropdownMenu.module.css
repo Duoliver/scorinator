@@ -1,0 +1,75 @@
+.anchor {
+  display: inline-flex;
+}
+
+/* The panel: the handoff row menu, above the page. Its place comes from
+   `DropdownMenu.tsx`. */
+.menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  min-width: 9.375rem;
+  border: var(--border-width) solid var(--color-fg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-offset-sm);
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  /* The handoff 9px rounds to --space-2, its 10px gap ties and rounds up
+     to --space-3 (DESIGN_SYSTEM.md). */
+  padding: var(--space-2) var(--space-3);
+  border: none;
+  /* No divider token exists: the light background colour gives a soft
+     line, as in PickerDialog. */
+  border-bottom: var(--border-width) solid var(--color-bg);
+  background: var(--color-surface);
+  color: var(--color-fg);
+  font-family: var(--font-body);
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.item:last-child {
+  border-bottom: none;
+}
+
+.item:hover,
+.item:focus-visible {
+  background: var(--color-bg);
+}
+
+.item:focus-visible {
+  outline: var(--border-width) solid var(--color-fg);
+  outline-offset: calc(-1 * var(--border-width));
+}
+
+.danger {
+  color: var(--color-error);
+}
+
+.danger:hover,
+.danger:focus-visible {
+  background: var(--color-error);
+  color: var(--color-error-fg);
+}
+
+.item[aria-disabled='true'] {
+  color: var(--color-fg-muted);
+  background: var(--color-surface);
+  cursor: not-allowed;
+}
+
+.icon {
+  flex: none;
+  width: var(--space-4);
+  text-align: center;
+}

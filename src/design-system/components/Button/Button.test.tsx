@@ -131,6 +131,40 @@ describe('Button', () => {
         screen.getByRole('button', { name: 'Edit team' })
       ).toHaveAccessibleDescription('Edit this team for this league');
     });
+
+    it('passes aria-haspopup and aria-expanded through (Task 127)', () => {
+      const { rerender } = render(
+        <Button
+          size="icon"
+          aria-label="Team options"
+          aria-haspopup="menu"
+          aria-expanded={false}
+        >
+          ⋮
+        </Button>
+      );
+      const button = screen.getByRole('button', { name: 'Team options' });
+      expect(button).toHaveAttribute('aria-haspopup', 'menu');
+      expect(button).toHaveAttribute('aria-expanded', 'false');
+      rerender(
+        <Button
+          size="icon"
+          aria-label="Team options"
+          aria-haspopup="menu"
+          aria-expanded
+        >
+          ⋮
+        </Button>
+      );
+      expect(button).toHaveAttribute('aria-expanded', 'true');
+    });
+
+    it('sets no aria-haspopup or aria-expanded by default', () => {
+      render(<Button>Save</Button>);
+      const button = screen.getByRole('button', { name: 'Save' });
+      expect(button).not.toHaveAttribute('aria-haspopup');
+      expect(button).not.toHaveAttribute('aria-expanded');
+    });
   });
 
   describe('focusableWhenDisabled (Task 111)', () => {

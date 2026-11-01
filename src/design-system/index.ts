@@ -27,6 +27,14 @@ export type { CheckboxProps } from './components/Checkbox';
 export { Switch } from './components/Switch';
 export type { SwitchProps } from './components/Switch';
 
+export { DropdownMenu } from './components/DropdownMenu';
+export type {
+  DropdownMenuAlign,
+  DropdownMenuItem,
+  DropdownMenuProps,
+  DropdownMenuTone,
+} from './components/DropdownMenu';
+
 export { Tooltip } from './components/Tooltip';
 export type { TooltipProps } from './components/Tooltip';
 

@@ -39,7 +39,7 @@ A big OVR gap gives extreme scores too often. The user judged this not a big pro
 **Design note:** a lower `DIFF_WEIGHT`, a saturated difference factor, or a narrower elasticity range would each cut the rare tail together with the common extremes. To keep a rare tail and cut the common extremes, a separate mechanism for the tail is probably necessary. This is untested.
 
 **Constraints:**
-- The OVR-difference vs absolute-OVR weighting is a `CLAUDE.md` open item. A change to the difference factor touches it, so propose an approach and get a decision first.
+- The OVR-difference vs absolute-OVR weighting was settled in MVP1 Task 5. A change to the difference factor changes that decision, so propose an approach and get a decision first.
 - One OVR point is worth 1.5% of goals today. A change to that scale changes the meaning of the Task 32 home advantage values (+5 OVR and +5%), so retune Task 32 after the change.
 - The study scripts are not in the repo.
 

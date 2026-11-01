@@ -87,11 +87,12 @@ All four MVP docs exist and are written. **Only MVP1 and MVP2 are approved for i
 ## Open items to flag, not silently resolve
 
 These are known-unresolved in the specs. If work touches them, stop and propose an explicit approach rather than guessing:
-- OVR-difference vs. absolute-OVR weighting in match simulation (MVP1).
 - Team event trigger frequency/probability curve shape (MVP4 says "configurable," but the underlying distribution is not specified).
 - Autosave during the automatic end-of-season pipeline in Story Mode (explicitly deferred in `scorinator-technical-caveats.md` §5 — do not implement unless separately scoped).
 - Anything listed in `scorinator-future-features.md` — out of scope, do not implement even if it looks like a natural extension of a current task.
 - MVP3 uses different wording for Instance-scoping than the corrected wording in MVP/technical-caveats. MVP3 says "scoped to one Season." The caveats doc corrects this to "scoped to one Instance Wrapper." Treat the Instance Wrapper version as authoritative, per the caveats doc — the MVP3 doc text has not been updated yet.
+
+Settled, not open: the OVR-difference vs. absolute-OVR weighting in match simulation. The user chose the weight in MVP1 Task 5 (see `docs/archive/mvp1/PROGRESS.md`, Task 5). A change to that weight still needs a proposal and a user decision first. *(Changed on 2026-11-01, Task 174.)*
 
 ---
 

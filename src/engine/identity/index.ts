@@ -1,3 +1,4 @@
+export { fixedLot } from './lot';
 export { MAX_LOCATION_LENGTH } from './location';
 export { isSlug, slug, uniqueSlug } from './slug';
 export {

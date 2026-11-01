@@ -74,7 +74,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 121 | Wizard Teams step, part 2: Switch, the live trigram pick, "Create league" | `features/leagues` | ✅ Done | 2026-10-30 | 2026-10-30 | [121](/docs/tasks/121-wizard-teams-part-2.md) | M2. US-08.4 to 08.6, 08.8, 09.6 (league). Switch, live trigrams, create rules built. Split: Edit to 172. |
 | 122 | M2 smoke check | all | ✅ Done | 2026-10-30 | 2026-10-30 | [122](/docs/tasks/122-m2-smoke-check.md) | M2 complete. M2 end-to-end test added. The user checked 11 rows in the real app. |
 | 123 | `generateSingleDuels`, the shared pairing, the doc comment fix | `engine/round-robin` | ✅ Done | 2026-11-01 | 2026-11-01 | [123](/docs/tasks/123-generate-single-duels.md) | M3. US-06.1. 12 new tests. No caller yet: Task 126 is the first. |
-| 124 | Standings v2: fixed lots, the recursive mini-league, the cross-group order, best M | `engine/standings` | ⬜ Not started |  |  |  | M3. US-01.4, 01.6, 02.2, Task 78. After 122. |
+| 124 | Standings v2: fixed lots, the recursive mini-league, the cross-group order, best M | `engine/standings`, `engine/identity` | ✅ Done | 2026-11-01 | 2026-11-01 | [124](/docs/tasks/124-standings-v2.md) | M3. US-01.4, 01.6, 02.2, Task 78. 24 new tests. Task 128 passes the lots. |
 | 125 | The group draw: size or count, add to the smallest group, moves | `engine/round-robin` | ⬜ Not started |  |  |  | M3. US-02.1, 02.5. After 122. |
 | 126 | Phase chain rules: bracket last, fit checks, qualifier counts, build and start a phase, the lock | `engine/phases` | ⬜ Not started |  |  |  | M3. US-01.3, 01.4, 01.6, 07.1, 07.3. After 123, 124, 125. |
 | 127 | Dropdown menu | `design-system/` | ⬜ Not started |  |  |  | M3. US-02.5 (Move to group), US-10.1. After 122. |
@@ -171,6 +171,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-11-01 (Task 124 — standings v2):** The user agreed six choices. (1) `calculateStandings` takes an optional 4th argument `lotOf`, lower first. (2) `fixedLot(leagueId, teamId)` lives in `engine/identity`, in place of the app (changes the Task 78 note). (3) Task 128 passes the lots. Until then, the screens keep the roster order. (4) The mini-league repeats on each still-level block, until a pass splits nothing. (5) The cross-group order always divides by matches played. (6) Equal lots across groups keep the group order. Detail in [`docs/tasks/124-standings-v2.md`](/docs/tasks/124-standings-v2.md).
 
 - **2026-11-01 (Task 123 — `generateSingleDuels`):** The user agreed six choices. (1) A random Euler circuit walk gives home and away. An even N first gets one random dummy edge for each team. (2) A random walk direction makes each side home in 50% of seeds on average. (3) The shared pairing is internal, in `circlePairing.ts`. (4) The `rng` picks home and away first, then shuffles the match order. (5) The 2,000-seed test runs for N from 2 to 20. (6) The new doc comment names `generateSingleDuels`. Detail in [`docs/tasks/123-generate-single-duels.md`](/docs/tasks/123-generate-single-duels.md).
 

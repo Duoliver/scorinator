@@ -4,6 +4,11 @@ export interface PointsConfig {
   loss: number;
 }
 
+/** The fixed lot of a team (Task 78 rule 1): the last resort for teams
+ * level on every football criterion. A lower number goes first. See
+ * `fixedLot` in `engine/identity`. */
+export type LotOf<TeamId> = (team: TeamId) => number;
+
 export interface MatchResult<TeamId> {
   home: TeamId;
   away: TeamId;
@@ -21,13 +26,14 @@ export interface StandingsRow<TeamId> {
   goalsAgainst: number;
   goalDifference: number;
   points: number;
-  /** The row's place in the table, 1 upward. Always unique: roster order
-   * breaks every remaining tie, so no two rows ever share a `sortOrder`. */
+  /** The row's place in the table, 1 upward. Always unique: the fixed lot,
+   * then the roster order, breaks every remaining tie, so no two rows ever
+   * share a `sortOrder`. */
   sortOrder: number;
   /** The standings rank a user reads off the table. Teams level on every
-   * footballing criterion (points, goal difference, goals for, head to
-   * head) share one `position`, the way a real league table shows joint
-   * places. */
+   * footballing criterion (points, goal difference, goals for, the
+   * recursive head to head) share one `position`, the way a real league
+   * table shows joint places. */
   position: number;
   /** `position` as a string on the first row of a tied group, `'-'` on
    * the rest, so a rendered table does not repeat the same number down a

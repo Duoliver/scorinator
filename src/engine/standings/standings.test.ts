@@ -320,3 +320,106 @@ describe('calculateStandings', () => {
     expect(() => calculateStandings(TEAMS, results)).toThrow(RangeError);
   });
 });
+
+describe('calculateStandings: the recursive mini-league (Task 78 rule 2)', () => {
+  // Alpha, Bravo, and Charlie end level overall: 4 points, GD 0, GF 3.
+  // Their mini-league puts Alpha first on goals for (3 to 2 and 2), and
+  // leaves Bravo and Charlie level. A second mini-league between only
+  // Bravo and Charlie has Bravo's 1-0 win, so it separates them.
+  const roster = ['Charlie', 'Bravo', 'Alpha', 'Delta'];
+  const results: MatchResult<string>[] = [
+    { home: 'Alpha', away: 'Bravo', homeGoals: 2, awayGoals: 1 },
+    { home: 'Charlie', away: 'Alpha', homeGoals: 2, awayGoals: 1 },
+    { home: 'Bravo', away: 'Charlie', homeGoals: 1, awayGoals: 0 },
+    { home: 'Alpha', away: 'Delta', homeGoals: 0, awayGoals: 0 },
+    { home: 'Bravo', away: 'Delta', homeGoals: 1, awayGoals: 1 },
+    { home: 'Charlie', away: 'Delta', homeGoals: 1, awayGoals: 1 },
+  ];
+
+  it('starts from three teams level on points, goal difference, and goals for', () => {
+    const table = calculateStandings(roster, results);
+    for (const team of ['Alpha', 'Bravo', 'Charlie']) {
+      expect(row(team, table)).toMatchObject({
+        points: 4,
+        goalDifference: 0,
+        goalsFor: 3,
+      });
+    }
+  });
+
+  it('runs a new mini-league among the teams that one pass leaves level', () => {
+    const table = calculateStandings(roster, results);
+    expect(table.map((r) => r.team)).toEqual(['Alpha', 'Bravo', 'Charlie', 'Delta']);
+    expect(table.map((r) => r.position)).toEqual([1, 2, 3, 4]);
+    expect(table.map((r) => r.positionText)).toEqual(['1', '2', '3', '4']);
+  });
+});
+
+describe('calculateStandings: fixed lots (Task 78 rule 1)', () => {
+  // The 3-way cycle: no mini-league can separate Alpha, Bravo, and Charlie.
+  const roster = ['Charlie', 'Bravo', 'Alpha', 'Delta', 'Echo'];
+  const results: MatchResult<string>[] = [
+    { home: 'Alpha', away: 'Bravo', homeGoals: 1, awayGoals: 0 },
+    { home: 'Bravo', away: 'Charlie', homeGoals: 1, awayGoals: 0 },
+    { home: 'Charlie', away: 'Alpha', homeGoals: 1, awayGoals: 0 },
+    { home: 'Delta', away: 'Echo', homeGoals: 5, awayGoals: 0 },
+  ];
+
+  it('orders a tied block by the lot, lower first, and keeps the shared place', () => {
+    const lots: Record<string, number> = {
+      Alpha: 30,
+      Bravo: 10,
+      Charlie: 20,
+      Delta: 0,
+      Echo: 0,
+    };
+    const table = calculateStandings(roster, results, undefined, (team) => lots[team]);
+    expect(table.map((r) => r.team)).toEqual([
+      'Delta',
+      'Bravo',
+      'Charlie',
+      'Alpha',
+      'Echo',
+    ]);
+    expect(table.map((r) => r.sortOrder)).toEqual([1, 2, 3, 4, 5]);
+    expect(table.map((r) => r.position)).toEqual([1, 2, 2, 2, 5]);
+    expect(table.map((r) => r.positionText)).toEqual(['1', '2', '-', '-', '5']);
+  });
+
+  it('falls back to the roster order for two equal lots', () => {
+    const lots: Record<string, number> = { Alpha: 5, Bravo: 5, Charlie: 1 };
+    const table = calculateStandings(
+      roster,
+      results,
+      undefined,
+      (team) => lots[team] ?? 0
+    );
+    expect(table.map((r) => r.team).slice(1, 4)).toEqual(['Charlie', 'Bravo', 'Alpha']);
+  });
+
+  it('never moves a team that a football criterion separates', () => {
+    // Delta is above the trio on points and Echo is below it, whatever
+    // the lots say.
+    const lots: Record<string, number> = {
+      Alpha: 1,
+      Bravo: 2,
+      Charlie: 3,
+      Delta: 99,
+      Echo: -99,
+    };
+    const table = calculateStandings(roster, results, undefined, (team) => lots[team]);
+    expect(table[0].team).toBe('Delta');
+    expect(table[4].team).toBe('Echo');
+  });
+
+  it('uses the lot with a custom points system too', () => {
+    const lots: Record<string, number> = { Alpha: 1, Bravo: 2, Charlie: 3 };
+    const table = calculateStandings(
+      roster,
+      results,
+      { win: 2, draw: 1, loss: 0 },
+      (team) => lots[team] ?? 0
+    );
+    expect(table.map((r) => r.team).slice(1, 4)).toEqual(['Alpha', 'Bravo', 'Charlie']);
+  });
+});

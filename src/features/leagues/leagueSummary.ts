@@ -80,17 +80,21 @@ export function formatHeaderProgress(
   return phase ? `${phaseShortName(phase)} · ${badge}` : badge;
 }
 
-/** The line under the group cards of a Groups phase (Task 130 choice 5),
- * in the wizard and in League Detail. `undefined` when that phase is not
- * Groups or is the last phase. `phaseIndex` counts from 0. */
-export function formatGroupsAdvanceText(
+/** The line under the tables of a phase that sends teams on (Task 130
+ * choice 5, US-07.2), in the wizard and in League Detail: "Top 2 of each
+ * group advance to the Bracket." or "Top 4 advance to the Bracket.".
+ * `undefined` for the last phase, a Bracket, or no advancement.
+ * `phaseIndex` counts from 0. */
+export function formatAdvanceText(
   plans: readonly PhasePlan[],
   phaseIndex = 0
 ): string | undefined {
   const plan = plans[phaseIndex];
   const next = plans[phaseIndex + 1];
-  if (plan?.format !== 'groups' || !plan.advance || !next) return undefined;
+  if (!plan || plan.format === 'bracket' || !plan.advance || !next) return undefined;
+  const target = `advance to the ${phaseShortName(next)}.`;
+  if (plan.format === 'round-robin') return `Top ${plan.advance.top} ${target}`;
   const { top, bestOfNext } = plan.advance;
   const best = bestOfNext > 0 ? ` and the best ${bestOfNext} of place ${top + 1}` : '';
-  return `Top ${top} of each group${best} advance to the ${phaseShortName(next)}.`;
+  return `Top ${top} of each group${best} ${target}`;
 }

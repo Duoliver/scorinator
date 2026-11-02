@@ -1,4 +1,5 @@
-import type { TabItem } from '@/design-system';
+import type { RefObject } from 'preact';
+import type { FieldHandle, TabItem } from '@/design-system';
 import type { LeagueWrapper } from '@/domain';
 
 export default interface LeagueDetailScreenProps {
@@ -17,6 +18,19 @@ export interface LeagueDetail {
    * league (Task 131 choice 2). */
   tabs: TabItem[];
   defaultTab: string;
+  /** Opens a tab from outside `Tabs`: the new phase after a start. */
+  tabsRef: RefObject<FieldHandle<string>>;
+  /** The confirm of a phase start while it is open (US-07.3). */
+  startConfirm: PhaseStartConfirm | undefined;
+}
+
+/** The texts and handlers of the phase start confirm (US-07.3). */
+export interface PhaseStartConfirm {
+  title: string;
+  message: string;
+  confirmLabel: string;
+  onConfirm: () => void;
+  onCancel: () => void;
 }
 
 /** Where the league of the route stands: read from the database, still

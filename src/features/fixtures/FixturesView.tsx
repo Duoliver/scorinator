@@ -12,8 +12,17 @@ export type { FixturesViewProps };
  * buttons and Scorinate matchday, then one row for each match. `useFixtures`
  * gives the data and the handlers. */
 export function FixturesView(props: FixturesViewProps): JSX.Element {
-  const { hasFixtures, nav, rows, byes, matchdayFullyPlayed, scorinateMatchday } =
-    useFixtures(props);
+  const {
+    hasFixtures,
+    nav,
+    rows,
+    byes,
+    matchdayFullyPlayed,
+    scorinateMatchday,
+    locked,
+    lockHint,
+    completeBadge,
+  } = useFixtures(props);
 
   if (!hasFixtures) {
     return <p class={styles.empty}>Not enough teams to generate fixtures yet.</p>;
@@ -84,11 +93,11 @@ export function FixturesView(props: FixturesViewProps): JSX.Element {
           </Button>
         </div>
         <div class={styles.actions}>
-          {nav.leagueCompleted ? (
+          {nav.phaseComplete ? (
             <Badge tone="accent">
-              <span class={styles.fullText}>League completed</span>
+              <span class={styles.fullText}>{completeBadge.full}</span>
               <span class={styles.shortText} aria-hidden="true">
-                Completed
+                {completeBadge.short}
               </span>
             </Badge>
           ) : (
@@ -108,7 +117,7 @@ export function FixturesView(props: FixturesViewProps): JSX.Element {
             variant="primary"
             size="sm"
             aria-label="Scorinate matchday"
-            disabled={matchdayFullyPlayed}
+            disabled={locked || matchdayFullyPlayed}
             onClick={scorinateMatchday}
           >
             <span>
@@ -117,6 +126,8 @@ export function FixturesView(props: FixturesViewProps): JSX.Element {
           </Button>
         </div>
       </div>
+
+      {lockHint && <p class={styles.lockHint}>{lockHint}</p>}
 
       <div class={styles.list}>
         {rows.map((row) => (
@@ -163,6 +174,7 @@ export function FixturesView(props: FixturesViewProps): JSX.Element {
               <Button
                 variant={row.result ? 'secondary' : 'primary'}
                 size="sm"
+                disabled={locked}
                 onClick={row.scorinate}
               >
                 {row.result ? 'Re-scorinate' : 'Scorinate'}

@@ -113,4 +113,19 @@ describe('Table', () => {
     );
     expect(screen.getByRole('table').className).not.toBe(defaultClass);
   });
+
+  it('gives each row the tone of rowTone, and no tone for undefined (Task 132)', () => {
+    render(
+      <Table
+        label="Standings"
+        columns={columns}
+        rows={rows}
+        rowKey={(r) => r.id}
+        rowTone={(r) => (r.pos === 1 ? 'positive' : undefined)}
+      />
+    );
+    const [, first, second] = screen.getAllByRole('row');
+    expect(first).toHaveAttribute('data-tone', 'positive');
+    expect(second).not.toHaveAttribute('data-tone');
+  });
 });

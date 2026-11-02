@@ -2,7 +2,7 @@ import type { JSX } from 'preact';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
-import { scorinateMatchday } from '@/app/state/leagueWrapperActions';
+import { scorinateMatchday, startNextPhase } from '@/app/state/leagueWrapperActions';
 import { useDatabaseStore } from '@/app/state/databaseStore';
 import type { LeagueWrapper, Phase } from '@/domain';
 import { FixturesView } from './FixturesView';
@@ -524,6 +524,83 @@ describe('FixturesView', () => {
     it('shows no group tag in a round robin', () => {
       render(<FixturesView league={league(4)} phaseIndex={0} />);
       expect(screen.queryByText(/^Group /)).not.toBeInTheDocument();
+    });
+  });
+
+  describe('a phase that is not the last (Task 132)', () => {
+    const FOUR = ALL_TEAMS;
+    /** Groups A (1, 2) and B (3, 4), top 1, then a round robin. Phase 1 is
+     * complete. */
+    function openCompletePhaseOne(): void {
+      openTestLeague(
+        groupsLeague(
+          FOUR,
+          [
+            [1, 2],
+            [3, 4],
+          ],
+          [
+            {
+              format: 'groups',
+              legs: 'two-way',
+              grouping: { by: 'count', count: 2 },
+              advance: { top: 1, bestOfNext: 0 },
+            },
+            { format: 'round-robin', legs: 'two-way' },
+          ]
+        )
+      );
+      scorinateMatchday(LEAGUE, 1);
+      scorinateMatchday(LEAGUE, 2);
+    }
+
+    function PhaseFromStore({
+      phaseIndex,
+    }: {
+      phaseIndex: number;
+    }): JSX.Element | null {
+      const found = useDatabaseStore((state) => state.leagues[LEAGUE]);
+      return found ? <FixturesView league={found} phaseIndex={phaseIndex} /> : null;
+    }
+
+    it('shows a Phase complete badge when complete, not League completed (choice 7)', () => {
+      openCompletePhaseOne();
+      render(<PhaseFromStore phaseIndex={0} />);
+      expect(screen.getByText('Phase complete')).toBeInTheDocument();
+      expect(screen.getByText('Complete')).toHaveAttribute('aria-hidden', 'true');
+      expect(screen.queryByText('League completed')).not.toBeInTheDocument();
+    });
+
+    it('keeps Re-scorinate on until the next phase starts (US-07.3)', () => {
+      openCompletePhaseOne();
+      render(<PhaseFromStore phaseIndex={0} />);
+      for (const button of screen.getAllByRole('button', { name: 'Re-scorinate' })) {
+        expect(button).not.toBeDisabled();
+      }
+      expect(screen.queryByText(/This phase is locked/)).not.toBeInTheDocument();
+    });
+
+    it('turns every Scorinate button off in a locked phase, with the hint (choice 5)', () => {
+      openCompletePhaseOne();
+      startNextPhase(LEAGUE);
+      render(<PhaseFromStore phaseIndex={0} />);
+
+      expect(
+        screen.getByText('Phase 2 started. This phase is locked.')
+      ).toBeInTheDocument();
+      for (const button of screen.getAllByRole('button', { name: 'Re-scorinate' })) {
+        expect(button).toBeDisabled();
+      }
+      expect(screen.getByRole('button', { name: 'Scorinate matchday' })).toBeDisabled();
+    });
+
+    it('leaves the started phase open', () => {
+      openCompletePhaseOne();
+      startNextPhase(LEAGUE);
+      render(<PhaseFromStore phaseIndex={1} />);
+
+      expect(screen.queryByText(/This phase is locked/)).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Scorinate' })).not.toBeDisabled();
     });
   });
 });

@@ -1,20 +1,28 @@
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
+import type { FieldHandle } from '@/design-system';
 import { getErrorMessage } from '@/app/getErrorMessage';
 import { openLeague } from '@/app/state/databaseActions';
+import { setFileStatus } from '@/app/state/fileActions';
+import { startNextPhase } from '@/app/state/leagueWrapperActions';
+import { canStartNextPhase } from '@/app/state/phases';
 import { isLeagueUnsaved, useDatabaseStore } from '@/app/state/databaseStore';
 import { summarizeLeague } from '@/app/state/summarizeLeague';
 import {
   describeLeague,
   formatHeaderProgress,
   formatPointsLabel,
+  phaseShortName,
 } from '@/features/leagues/leagueSummary';
+import type { LeagueWrapper } from '@/domain';
 import {
+  BRACKET_START_HINT,
   getLeagueTabs,
   getPhaseTabs,
   phaseTabId,
   type MatchdayMemory,
+  type PhaseStart,
 } from './helpers';
-import type { LeagueDetailState } from './types';
+import type { LeagueDetailState, PhaseStartConfirm } from './types';
 
 /** The league with this UUID, ready for League Detail (Task 161). A league
  * in the manifest that is not open yet is read from its file once, with
@@ -38,6 +46,9 @@ export function useLeagueDetail(uuid: string): LeagueDetailState {
       setMatchdays((now) => ({ ...now, [phaseIndex]: matchday })),
   };
 
+  const tabsRef = useRef<FieldHandle<string>>(null);
+  const [confirmingStart, setConfirmingStart] = useState(false);
+
   const needsOpen = league === undefined && isKnown;
   useEffect(() => {
     if (!needsOpen) return;
@@ -55,6 +66,26 @@ export function useLeagueDetail(uuid: string): LeagueDetailState {
     const summary = summarizeLeague(league);
     const { plans, phases } = league.content;
     const hasPhaseTabs = plans.length > 1;
+    const start = findPhaseStart(league, () => setConfirmingStart(true));
+    const next = phases.length + 1;
+    const startConfirm: PhaseStartConfirm | undefined = confirmingStart
+      ? {
+          title: `Start phase ${next}?`,
+          message: `Phase ${next - 1} locks, and its results can no longer change.`,
+          confirmLabel: `Start phase ${next}`,
+          onConfirm: (): void => {
+            setConfirmingStart(false);
+            try {
+              startNextPhase(league.uuid);
+              // The new phase tab opens (Task 132 choice 3).
+              tabsRef.current?.setValue(phaseTabId(next - 1));
+            } catch (error) {
+              setFileStatus({ tone: 'error', message: getErrorMessage(error) });
+            }
+          },
+          onCancel: () => setConfirmingStart(false),
+        }
+      : undefined;
     return {
       kind: 'open',
       detail: {
@@ -65,16 +96,36 @@ export function useLeagueDetail(uuid: string): LeagueDetailState {
         // The `Unsaved` badge beside the title (Task 26).
         isUnsaved,
         tabs: hasPhaseTabs
-          ? getPhaseTabs(league, memory)
+          ? getPhaseTabs(league, memory, start)
           : getLeagueTabs(league, 0, memory),
         // The current phase is the last started one.
         defaultTab: hasPhaseTabs
           ? phaseTabId(Math.max(0, phases.length - 1))
           : 'standings',
+        tabsRef,
+        startConfirm,
       },
     };
   }
   if (!isKnown) return { kind: 'not-found' };
   if (openError?.uuid === uuid) return { kind: 'error', message: openError.message };
   return { kind: 'opening' };
+}
+
+/** The Start button of the next phase (US-07.3), or `undefined` while the
+ * current phase is not complete or no next phase is planned. A Bracket next
+ * phase cannot start until Task 139, so its button is off with a reason
+ * (Task 132 choice 4). */
+function findPhaseStart(
+  league: LeagueWrapper,
+  open: () => void
+): PhaseStart | undefined {
+  if (!canStartNextPhase(league)) return undefined;
+  const { phases, plans } = league.content;
+  const nextPlan = plans[phases.length];
+  return {
+    label: `Start phase ${phases.length + 1} · ${phaseShortName(nextPlan)}`,
+    hint: nextPlan.format === 'bracket' ? BRACKET_START_HINT : undefined,
+    onClick: open,
+  };
 }

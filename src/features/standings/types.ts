@@ -1,13 +1,15 @@
 import type { StandingsRow } from '@/engine/standings';
+import type { QualifierMark } from '@/app/state/phases';
 import type { LeagueWrapper } from '@/domain';
 
 export default interface StandingsViewProps {
   league: LeagueWrapper;
   /** The started phase to show, from 0. The current phase when not given. */
   phaseIndex?: number;
-  /** The line under the group cards of a Groups phase, for example "Top 2
-   * of each group advance to the Bracket." (Task 131). League Detail makes
-   * it from the plans, so this folder needs no phase text of its own. */
+  /** The line under the tables of a phase that sends teams on, for example
+   * "Top 2 of each group advance to the Bracket." (Tasks 131, 132). League
+   * Detail makes it from the plans, so this folder needs no phase text of
+   * its own. */
   advanceText?: string;
 }
 
@@ -15,6 +17,8 @@ export default interface StandingsViewProps {
 export interface StandingsViewRow extends StandingsRow<string> {
   teamName: string;
   teamColour: string;
+  /** How the row qualifies, for its tint (Task 132), or `undefined`. */
+  mark: QualifierMark | undefined;
 }
 
 /** One table of a phase: the one table of a round robin, or one group

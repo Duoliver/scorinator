@@ -264,7 +264,7 @@ describe('LeagueDetailScreen', () => {
       ).toBeInTheDocument();
     });
 
-    it('shows one line in a phase that has not started (choice 1)', async () => {
+    it('shows the US-07.3 line in a phase that has not started (Task 132 choice 6)', async () => {
       openTestLeague(
         groupsLeague(FOUR, [
           [1, 2],
@@ -276,7 +276,7 @@ describe('LeagueDetailScreen', () => {
       await userEvent.click(screen.getByRole('tab', { name: '2 · Bracket' }));
 
       expect(
-        screen.getByText('Phase 2 starts when phase 1 is complete.')
+        screen.getByText('This phase starts when phase 1 is complete.')
       ).toBeInTheDocument();
       expect(screen.queryByRole('tab', { name: 'Standings' })).not.toBeInTheDocument();
     });
@@ -357,6 +357,103 @@ describe('LeagueDetailScreen', () => {
       scorinateMatchday(LEAGUE, 2);
       render(<LeagueDetailScreen uuid={LEAGUE} />);
       expect(screen.getByText('Complete')).toBeInTheDocument();
+    });
+  });
+
+  describe('the phase start (Task 132, US-07.3)', () => {
+    const FOUR = [
+      { name: 'FC United', colour: '#E53935' },
+      { name: 'FC Rivals', colour: '#1E88E5' },
+      { name: 'FC Town', colour: '#2E7D32' },
+      { name: 'FC Rangers', colour: '#6A1B9A' },
+    ];
+    const toRoundRobin = (): LeagueWrapper =>
+      groupsLeague(
+        FOUR,
+        [
+          [1, 2],
+          [3, 4],
+        ],
+        [
+          {
+            format: 'groups',
+            legs: 'two-way',
+            grouping: { by: 'count', count: 2 },
+            advance: { top: 1, bestOfNext: 0 },
+          },
+          { format: 'round-robin', legs: 'two-way' },
+        ]
+      );
+    const START = 'Start phase 2 · Round robin';
+
+    it('shows no Start button before the phase is complete', () => {
+      openTestLeague(toRoundRobin());
+      scorinateMatchday(LEAGUE, 1);
+      render(<LeagueDetailScreen uuid={LEAGUE} />);
+      expect(screen.queryByRole('button', { name: START })).not.toBeInTheDocument();
+    });
+
+    it('asks first, and Cancel changes nothing', async () => {
+      openTestLeague(toRoundRobin());
+      scorinateMatchday(LEAGUE, 1);
+      scorinateMatchday(LEAGUE, 2);
+      render(<LeagueDetailScreen uuid={LEAGUE} />);
+
+      await userEvent.click(screen.getByRole('button', { name: START }));
+      const dialog = screen.getByRole('dialog', { name: 'Start phase 2?' });
+      expect(dialog).toHaveTextContent(
+        'Phase 1 locks, and its results can no longer change.'
+      );
+      await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      expect(useDatabaseStore.getState().leagues[LEAGUE]?.content.phases).toHaveLength(
+        1
+      );
+    });
+
+    it('starts the next phase on the confirm, and opens its tab (choice 3)', async () => {
+      openTestLeague(toRoundRobin());
+      scorinateMatchday(LEAGUE, 1);
+      scorinateMatchday(LEAGUE, 2);
+      render(<LeagueDetailScreen uuid={LEAGUE} />);
+
+      await userEvent.click(screen.getByRole('button', { name: START }));
+      await userEvent.click(screen.getByRole('button', { name: 'Start phase 2' }));
+
+      expect(useDatabaseStore.getState().leagues[LEAGUE]?.content.phases).toHaveLength(
+        2
+      );
+      expect(screen.getByRole('tab', { name: '2 · Round robin' })).toHaveAttribute(
+        'aria-selected',
+        'true'
+      );
+      expect(screen.getByText('Round robin · MD 1/2')).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: START })).not.toBeInTheDocument();
+
+      await userEvent.click(screen.getByRole('tab', { name: '1 · Group Stage' }));
+      await userEvent.click(screen.getByRole('tab', { name: 'Fixtures' }));
+      expect(
+        screen.getByText('Phase 2 started. This phase is locked.')
+      ).toBeInTheDocument();
+    });
+
+    it('turns the Start button off for a Bracket next phase, with the reason (choice 4)', () => {
+      openTestLeague(
+        groupsLeague(FOUR, [
+          [1, 2],
+          [3, 4],
+        ])
+      );
+      scorinateMatchday(LEAGUE, 1);
+      scorinateMatchday(LEAGUE, 2);
+      render(<LeagueDetailScreen uuid={LEAGUE} />);
+
+      const button = screen.getByRole('button', { name: 'Start phase 2 · Bracket' });
+      expect(button).toHaveAttribute('aria-disabled', 'true');
+      expect(button).toHaveAccessibleDescription(
+        'A Bracket phase cannot start yet. It comes with the bracket screens.'
+      );
     });
   });
 });

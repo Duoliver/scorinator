@@ -1,5 +1,5 @@
 import type { JSX } from 'preact';
-import type { TableColumn } from '@/design-system';
+import type { TableColumn, TableRowTone } from '@/design-system';
 import { TeamSwatch } from '@/features/components';
 import type { StandingsViewRow } from './types';
 import styles from './StandingsView.module.css';
@@ -9,6 +9,13 @@ export const mono = (value: number, bold = false): JSX.Element => (
 );
 
 export const rowKey = (row: StandingsViewRow): string => row.team;
+
+/** The tint of a row (Task 132 choice 9): a qualifier place is "positive",
+ * a place N + 1 of a best M is the lighter "caution". */
+export const rowTone = (row: StandingsViewRow): TableRowTone | undefined => {
+  if (row.mark === 'qualifier') return 'positive';
+  return row.mark === 'best-of-next' ? 'caution' : undefined;
+};
 
 function getColumn(key: string): TableColumn<StandingsViewRow> {
   const column = COLUMNS.find((candidate) => candidate.key === key);

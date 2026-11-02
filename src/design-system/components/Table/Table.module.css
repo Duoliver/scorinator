@@ -31,6 +31,15 @@
   border-bottom: none;
 }
 
+/* The row tints of `rowTone` (Task 132). */
+.row[data-tone='positive'] {
+  background: var(--color-row-positive);
+}
+
+.row[data-tone='caution'] {
+  background: var(--color-row-caution);
+}
+
 .alignLeft {
   text-align: left;
 }

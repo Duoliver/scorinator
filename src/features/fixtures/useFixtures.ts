@@ -7,13 +7,19 @@ import {
 import { useTeamLookup } from '@/features/components';
 import type FixturesViewProps from './types';
 import type { ByeRow, FixtureRow, Fixtures } from './types';
-import { getGroupIndexes, getGroupTag, getShownPhase } from './helpers';
+import {
+  getCompleteBadge,
+  getGroupIndexes,
+  getGroupTag,
+  getShownPhase,
+} from './helpers';
 import { useMatchdayNav } from './useMatchdayNav';
 import { useScoreFlash } from './useScoreFlash';
 
 /** The matchday browser for one started phase of one league, ready for
  * `FixturesView` to render. A Groups phase gives each match and each bye
- * its group letter, in group order (Task 131 choice 6).
+ * its group letter, in group order (Task 131 choice 6). A phase before the
+ * latest started one is locked: its buttons are off (Task 132).
  *
  * Scorination (Task 15) plays an unplayed match, or a whole unplayed
  * matchday, with the `leagueWrapperActions` of Task 160, by fixture id. A
@@ -24,6 +30,10 @@ import { useScoreFlash } from './useScoreFlash';
 export function useFixtures(props: FixturesViewProps): Fixtures {
   const { league } = props;
   const phase = getShownPhase(league, props.phaseIndex);
+  const { phases, plans } = league.content;
+  const shownIndex = props.phaseIndex ?? phases.length - 1;
+  // The scorinate actions play the latest started phase only (Task 128).
+  const locked = shownIndex < phases.length - 1;
   const groupOf = getGroupIndexes(phase);
   const byGroup = (a: { group?: number }, b: { group?: number }): number =>
     (a.group ?? 0) - (b.group ?? 0);
@@ -69,5 +79,10 @@ export function useFixtures(props: FixturesViewProps): Fixtures {
     byes,
     matchdayFullyPlayed: isPhaseMatchdayPlayed(phase.fixtures, phase.results, matchday),
     scorinateMatchday: () => scorinateMatchday(league.uuid, matchday),
+    locked,
+    lockHint: locked
+      ? `Phase ${shownIndex + 2} started. This phase is locked.`
+      : undefined,
+    completeBadge: getCompleteBadge(shownIndex >= plans.length - 1),
   };
 }

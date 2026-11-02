@@ -21,11 +21,11 @@ export interface MatchdayNav {
   totalMatchdays: number;
   canGoBack: boolean;
   canGoForward: boolean;
-  /** True when every match has a result: the header shows a League
+  /** True when every match of the phase has a result: the header shows a
    * completed badge in place of the Current matchday button. */
-  leagueCompleted: boolean;
+  phaseComplete: boolean;
   /** True when the visible matchday is the first one with an unplayed
-   * match. Always false for a completed league. */
+   * match. Always false for a complete phase. */
   atCurrentMatchday: boolean;
   goToFirst: () => void;
   goToPrevious: () => void;
@@ -66,4 +66,12 @@ export interface Fixtures {
   byes: ByeRow[];
   matchdayFullyPlayed: boolean;
   scorinateMatchday: () => void;
+  /** True for a phase before the latest started one (US-07.3): every
+   * Scorinate button is off. */
+  locked: boolean;
+  /** "Phase 2 started. This phase is locked." for a locked phase. */
+  lockHint: string | undefined;
+  /** The badge of a complete phase (Task 132 choice 7): "League completed"
+   * for the last phase, "Phase complete" for another. */
+  completeBadge: { full: string; short: string };
 }

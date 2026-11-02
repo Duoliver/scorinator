@@ -26,7 +26,7 @@ export function useMatchdayNav({
     ...phase.fixtures.map((fixture) => fixture.matchday),
     ...phase.byes.map((bye) => bye.matchday)
   );
-  // `undefined` means every match has a result: the league is completed.
+  // `undefined` means every match of the phase has a result.
   const currentMatchday = findPhaseCurrentMatchday(phase.fixtures, phase.results);
 
   return {
@@ -34,7 +34,7 @@ export function useMatchdayNav({
     totalMatchdays,
     canGoBack: matchday > 1,
     canGoForward: matchday < totalMatchdays,
-    leagueCompleted: currentMatchday === undefined,
+    phaseComplete: currentMatchday === undefined,
     atCurrentMatchday: matchday === currentMatchday,
     goToFirst: () => goTo(1),
     goToPrevious: () => goTo(matchday - 1),

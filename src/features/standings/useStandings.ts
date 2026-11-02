@@ -1,6 +1,6 @@
 import { useMemo } from 'preact/hooks';
 import { groupLabel } from '@/engine/round-robin';
-import { phaseStandings } from '@/app/state/phases';
+import { phaseQualifierMarks, phaseStandings } from '@/app/state/phases';
 import { useTeamLookup } from '@/features/components';
 import type { LeagueWrapper } from '@/domain';
 import type { Standings, StandingsTable, StandingsViewRow } from './types';
@@ -9,7 +9,8 @@ import type { Standings, StandingsTable, StandingsViewRow } from './types';
  * `StandingsView` to render: one table for a round robin, or one for each
  * group (Task 131). `phaseStandings` is a pure recompute from the phase
  * results (Task 4), with the teams of the phase and the fixed lots of the
- * league (Task 128). So "live update" needs no state here: a scorinate
+ * league (Task 128), and the qualifier mark of each row (Task 132). So
+ * "live update" needs no state here: a scorinate
  * (Task 15) gives a new `league`, and the rows follow. `useMemo` keeps the
  * recompute to a change of the league or the phase.
  *
@@ -24,11 +25,17 @@ export function useStandings(
 
   const tables = useMemo((): StandingsTable[] => {
     if (!phase) return [];
+    const marks = phaseQualifierMarks(league, phaseIndex);
     return phaseStandings(league, phaseIndex).map((table, index) => ({
       name: phase.format === 'groups' ? `Group ${groupLabel(index)}` : 'Standings',
       rows: table.map((row): StandingsViewRow => {
         const { name, colour } = lookupTeam(row.team);
-        return { ...row, teamName: name, teamColour: colour };
+        return {
+          ...row,
+          teamName: name,
+          teamColour: colour,
+          mark: marks.get(row.team),
+        };
       }),
     }));
   }, [league, phase, phaseIndex, lookupTeam]);

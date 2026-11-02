@@ -1,9 +1,9 @@
 import type { JSX } from 'preact';
 import type TableProps from './types';
-import type { TableColumn, TableAlign } from './types';
+import type { TableColumn, TableAlign, TableRowTone } from './types';
 import styles from './Table.module.css';
 
-export type { TableProps, TableColumn, TableAlign };
+export type { TableProps, TableColumn, TableAlign, TableRowTone };
 
 const alignClass: Record<TableAlign, string> = {
   left: styles.alignLeft,
@@ -17,6 +17,7 @@ export function Table<Row>({
   rows,
   rowKey,
   compact,
+  rowTone,
 }: TableProps<Row>): JSX.Element {
   const gridTemplateColumns = columns.map((c) => c.width ?? '1fr').join(' ');
 
@@ -43,6 +44,7 @@ export function Table<Row>({
           class={styles.row}
           style={{ gridTemplateColumns }}
           role="row"
+          data-tone={rowTone?.(row)}
         >
           {columns.map((column) => (
             <span

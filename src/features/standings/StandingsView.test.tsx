@@ -268,4 +268,64 @@ describe('StandingsView', () => {
       expect(screen.getByRole('table', { name: 'Standings' })).toBeInTheDocument();
     });
   });
+
+  describe('the qualifier tint (Task 132, US-02.2, US-07.2)', () => {
+    const SIX = [
+      ...TEAMS,
+      { name: 'FC Harbour', colour: '#6A1B9A' },
+      { name: 'FC Valley', colour: '#F9A825' },
+      { name: 'FC Dunes', colour: '#00838F' },
+    ];
+    const tones = (name: string): (string | null)[] =>
+      within(screen.getByRole('table', { name }))
+        .getAllByRole('row')
+        .slice(1)
+        .map((row) => row.getAttribute('data-tone'));
+
+    it('tints the top N of each group, and place N + 1 lighter with a best M', () => {
+      const wrapper = groupsLeague(
+        SIX,
+        [
+          [1, 2, 3],
+          [4, 5, 6],
+        ],
+        [
+          {
+            format: 'groups',
+            legs: 'two-way',
+            grouping: { by: 'count', count: 2 },
+            advance: { top: 1, bestOfNext: 1 },
+          },
+          { format: 'bracket' },
+        ]
+      );
+      render(<StandingsView league={wrapper} />);
+      expect(tones('Group A')).toEqual(['positive', 'caution', null]);
+      expect(tones('Group B')).toEqual(['positive', 'caution', null]);
+    });
+
+    it('tints the top N of a round robin that is not the last, with its line', () => {
+      const base = league();
+      const wrapper: LeagueWrapper = {
+        ...base,
+        content: {
+          ...base.content,
+          plans: [
+            { format: 'round-robin', legs: 'two-way', advance: { top: 2 } },
+            { format: 'bracket' },
+          ],
+        },
+      };
+      render(
+        <StandingsView league={wrapper} advanceText="Top 2 advance to the Bracket." />
+      );
+      expect(tones('Standings')).toEqual(['positive', 'positive', null]);
+      expect(screen.getByText('Top 2 advance to the Bracket.')).toBeInTheDocument();
+    });
+
+    it('tints nothing in the last phase', () => {
+      render(<StandingsView league={league()} />);
+      expect(tones('Standings')).toEqual([null, null, null]);
+    });
+  });
 });

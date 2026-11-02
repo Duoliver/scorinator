@@ -140,6 +140,12 @@
   color: var(--color-fg-muted);
 }
 
+/* The hint of a locked phase (Task 132 choice 5). */
+.lockHint {
+  margin: 0;
+  color: var(--color-fg-muted);
+}
+
 .empty {
   margin: 0;
   color: var(--color-fg-muted);

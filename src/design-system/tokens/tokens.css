@@ -29,6 +29,10 @@
   --color-error-fg: #ffffff;
   --color-warning: #d9a900;
   --color-warning-fg: #1a1a1a;
+  /* Table row tints (Task 132): "positive" for the qualifier rows, and the
+   * lighter "caution" for the place N + 1 rows of a best M. */
+  --color-row-positive: #eaf3ea;
+  --color-row-caution: #fbf3d6;
 
   /* Typography */
   --font-heading: 'Barlow', sans-serif;

@@ -1,5 +1,5 @@
 import { fixedLot } from '@/engine/identity';
-import { isPhaseComplete } from '@/engine/phases';
+import { isPhaseComplete, pickQualifiers } from '@/engine/phases';
 import { calculateStandings, type LotOf, type StandingsRow } from '@/engine/standings';
 import type { LeagueWrapper } from '@/domain';
 
@@ -62,4 +62,46 @@ export function canStartNextPhase(wrapper: LeagueWrapper): boolean {
   const current = phases[phases.length - 1];
   if (!current || phases.length >= plans.length) return false;
   return isPhaseComplete(current.fixtures, current.results);
+}
+
+/** How a row of a phase table qualifies (US-02.2, US-07.2): a qualifier
+ * place, or a place N + 1 that can still send its best M. */
+export type QualifierMark = 'qualifier' | 'best-of-next';
+
+/**
+ * The qualifier marks of one started phase, by Blueprint UUID (Task 132).
+ * The last phase, and a phase with no advancement, mark nothing.
+ *
+ * - During the phase, the marks follow the current order: the top N rows of
+ *   the table or of each group, and each place N + 1 row of a best M.
+ * - A complete phase marks the teams that `startNextPhase` sends on
+ *   (`pickQualifiers`), so the best M of place N + 1 become qualifiers and
+ *   the other place N + 1 rows lose their mark. A locked phase is complete,
+ *   so it keeps these marks.
+ */
+export function phaseQualifierMarks(
+  wrapper: LeagueWrapper,
+  phaseIndex: number
+): Map<string, QualifierMark> {
+  const marks = new Map<string, QualifierMark>();
+  const plan = wrapper.content.plans[phaseIndex];
+  const phase = wrapper.content.phases[phaseIndex];
+  if (!plan || !phase || plan.format === 'bracket' || !plan.advance) return marks;
+
+  const tables = phaseStandings(wrapper, phaseIndex);
+  if (isPhaseComplete(phase.fixtures, phase.results)) {
+    for (const team of pickQualifiers(plan, tables, leagueLotOf(wrapper))) {
+      marks.set(team, 'qualifier');
+    }
+    return marks;
+  }
+
+  const { top } = plan.advance;
+  const bestOfNext = plan.format === 'groups' ? plan.advance.bestOfNext : 0;
+  for (const table of tables) {
+    table.slice(0, top).forEach((row) => marks.set(row.team, 'qualifier'));
+    const next = table[top];
+    if (bestOfNext > 0 && next) marks.set(next.team, 'best-of-next');
+  }
+  return marks;
 }

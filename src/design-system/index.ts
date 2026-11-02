@@ -10,7 +10,12 @@ export { Badge } from './components/Badge';
 export type { BadgeProps, BadgeTone } from './components/Badge';
 
 export { Table } from './components/Table';
-export type { TableProps, TableColumn, TableAlign } from './components/Table';
+export type {
+  TableProps,
+  TableColumn,
+  TableAlign,
+  TableRowTone,
+} from './components/Table';
 
 export { Tabs } from './components/Tabs';
 export type { TabsProps, TabItem } from './components/Tabs';

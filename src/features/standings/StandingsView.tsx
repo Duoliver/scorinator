@@ -1,14 +1,15 @@
 import type { JSX } from 'preact';
 import { Table } from '@/design-system';
 import type StandingsViewProps from './types';
-import { COLUMNS, GROUP_COLUMNS, rowKey } from './helpers';
+import { COLUMNS, GROUP_COLUMNS, rowKey, rowTone } from './helpers';
 import { useStandings } from './useStandings';
 import styles from './StandingsView.module.css';
 
 export type { StandingsViewProps };
 
 /** The tables of one phase of one league: the league table of a round
- * robin, or one card for each group of a Groups phase (Task 131).
+ * robin, or one card for each group of a Groups phase (Task 131), with the
+ * qualifier tints and the advancement line (Task 132).
  * `useStandings` gives the rows, and `helpers.tsx` holds the static column
  * setup. */
 export function StandingsView({
@@ -34,6 +35,7 @@ export function StandingsView({
                 columns={GROUP_COLUMNS}
                 rows={table.rows}
                 rowKey={rowKey}
+                rowTone={rowTone}
                 compact
               />
             </section>
@@ -49,12 +51,13 @@ export function StandingsView({
                 columns={COLUMNS}
                 rows={table.rows}
                 rowKey={rowKey}
+                rowTone={rowTone}
               />
             ))}
           </div>
         </div>
       )}
-      {isGroups && advanceText && <p class={styles.note}>{advanceText}</p>}
+      {advanceText && <p class={styles.note}>{advanceText}</p>}
       {!hasResults && <p class={styles.note}>No matches played yet.</p>}
     </div>
   );

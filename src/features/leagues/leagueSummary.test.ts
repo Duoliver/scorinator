@@ -3,7 +3,7 @@ import type { PhaseSummary } from '@/domain';
 import type { GroupsPlan, PhasePlan } from '@/engine/phases';
 import {
   describeLeague,
-  formatGroupsAdvanceText,
+  formatAdvanceText,
   formatHeaderProgress,
   formatHomeAdvantageLabel,
   formatLeagueName,
@@ -163,25 +163,34 @@ const bySize = (top?: number, bestOfNext = 0): GroupsPlan => ({
 });
 const rr: PhasePlan = { format: 'round-robin', legs: 'two-way' };
 
-describe('formatGroupsAdvanceText (Task 130 choice 5, Task 131)', () => {
+describe('formatAdvanceText (Task 130 choice 5, Tasks 131 and 132)', () => {
   it('names the next phase by its short name', () => {
-    expect(formatGroupsAdvanceText([bySize(2), { format: 'bracket' }])).toBe(
+    expect(formatAdvanceText([bySize(2), { format: 'bracket' }])).toBe(
       'Top 2 of each group advance to the Bracket.'
     );
-    expect(formatGroupsAdvanceText([bySize(1), rr])).toBe(
+    expect(formatAdvanceText([bySize(1), rr])).toBe(
       'Top 1 of each group advance to the Round robin.'
     );
   });
 
   it('adds the best M', () => {
-    expect(formatGroupsAdvanceText([bySize(2, 4), { format: 'bracket' }])).toBe(
+    expect(formatAdvanceText([bySize(2, 4), { format: 'bracket' }])).toBe(
       'Top 2 of each group and the best 4 of place 3 advance to the Bracket.'
     );
   });
 
-  it('gives nothing when the phase is the last, or not Groups', () => {
-    expect(formatGroupsAdvanceText([bySize()])).toBeUndefined();
-    expect(formatGroupsAdvanceText([rr])).toBeUndefined();
+  it('gives nothing for the last phase', () => {
+    expect(formatAdvanceText([bySize()])).toBeUndefined();
+    expect(formatAdvanceText([rr])).toBeUndefined();
+  });
+
+  it('gives the round-robin line (US-07.2)', () => {
+    expect(
+      formatAdvanceText([
+        { format: 'round-robin', legs: 'two-way', advance: { top: 4 } },
+        { format: 'bracket' },
+      ])
+    ).toBe('Top 4 advance to the Bracket.');
   });
 
   it('reads the phase at the given index', () => {
@@ -190,9 +199,10 @@ describe('formatGroupsAdvanceText (Task 130 choice 5, Task 131)', () => {
       bySize(2),
       { format: 'bracket' },
     ];
-    expect(formatGroupsAdvanceText(plans, 1)).toBe(
+    expect(formatAdvanceText(plans, 1)).toBe(
       'Top 2 of each group advance to the Bracket.'
     );
-    expect(formatGroupsAdvanceText(plans, 0)).toBeUndefined();
+    expect(formatAdvanceText(plans, 0)).toBe('Top 8 advance to the Group Stage.');
+    expect(formatAdvanceText(plans, 2)).toBeUndefined();
   });
 });

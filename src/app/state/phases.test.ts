@@ -1,15 +1,23 @@
 import { describe, expect, it } from 'vitest';
 import { fixedLot } from '@/engine/identity';
 import type { LeagueWrapper, PhaseResult } from '@/domain';
+import { pickQualifiers, type PhasePlan } from '@/engine/phases';
 import {
+  groupsLeague as drawnGroupsLeague,
   HARBORVIEW,
   instance,
   LEAGUE,
   leagueWrapper,
   result,
+  roundRobinLeague,
   SALT_MARSH,
 } from '@/test/databaseRecords';
-import { canStartNextPhase, phaseStandings } from './phases';
+import {
+  canStartNextPhase,
+  leagueLotOf,
+  phaseQualifierMarks,
+  phaseStandings,
+} from './phases';
 
 const NORTH = '00000000-0000-4000-8000-0000000000a3';
 const EAST = '00000000-0000-4000-8000-0000000000a4';
@@ -162,5 +170,98 @@ describe('canStartNextPhase (Task 128)', () => {
         ])
       )
     ).toBe(false);
+  });
+});
+
+describe('phaseQualifierMarks (Task 132, US-02.2, US-07.2)', () => {
+  const TEAMS = ['A', 'B', 'C', 'D', 'E', 'F'].map((name) => ({
+    name,
+    colour: '#1565C0',
+  }));
+  const GROUPS_BEST_OF_NEXT: PhasePlan[] = [
+    {
+      format: 'groups',
+      legs: 'two-way',
+      grouping: { by: 'count', count: 2 },
+      advance: { top: 1, bestOfNext: 1 },
+    },
+    { format: 'bracket' },
+  ];
+  /** Every fixture of phase 1 ends 1-0 for the home team. */
+  function playAll(wrapper: LeagueWrapper): LeagueWrapper {
+    const [phase] = wrapper.content.phases;
+    const results = phase.fixtures.map((f) => ({
+      fixtureId: f.id,
+      home: f.home,
+      away: f.away,
+      homeGoals: 1,
+      awayGoals: 0,
+    }));
+    return {
+      ...wrapper,
+      content: { ...wrapper.content, phases: [{ ...phase, results }] },
+    };
+  }
+
+  it('marks nothing in the last phase', () => {
+    expect(phaseQualifierMarks(roundRobinLeague(TEAMS.slice(0, 4)), 0).size).toBe(0);
+  });
+
+  it('marks the top N rows of a round robin that is not the last', () => {
+    const base = roundRobinLeague(TEAMS.slice(0, 4));
+    const wrapper: LeagueWrapper = {
+      ...base,
+      content: {
+        ...base.content,
+        plans: [
+          { format: 'round-robin', legs: 'two-way', advance: { top: 2 } },
+          { format: 'bracket' },
+        ],
+      },
+    };
+    const [table] = phaseStandings(wrapper, 0);
+    const marks = phaseQualifierMarks(wrapper, 0);
+    expect([...marks.keys()]).toEqual(table.slice(0, 2).map((row) => row.team));
+    expect([...marks.values()]).toEqual(['qualifier', 'qualifier']);
+  });
+
+  it('marks the top N of each group, and place N + 1 lighter, during the phase', () => {
+    const wrapper = drawnGroupsLeague(
+      TEAMS,
+      [
+        [1, 2, 3],
+        [4, 5, 6],
+      ],
+      GROUPS_BEST_OF_NEXT
+    );
+    const tables = phaseStandings(wrapper, 0);
+    const marks = phaseQualifierMarks(wrapper, 0);
+    for (const table of tables) {
+      expect(marks.get(table[0].team)).toBe('qualifier');
+      expect(marks.get(table[1].team)).toBe('best-of-next');
+      expect(marks.has(table[2].team)).toBe(false);
+    }
+  });
+
+  it('marks the qualifiers of pickQualifiers only, when the phase is complete', () => {
+    const wrapper = playAll(
+      drawnGroupsLeague(
+        TEAMS,
+        [
+          [1, 2, 3],
+          [4, 5, 6],
+        ],
+        GROUPS_BEST_OF_NEXT
+      )
+    );
+    const qualifiers = pickQualifiers(
+      GROUPS_BEST_OF_NEXT[0],
+      phaseStandings(wrapper, 0),
+      leagueLotOf(wrapper)
+    );
+    const marks = phaseQualifierMarks(wrapper, 0);
+    expect([...marks.keys()].sort()).toEqual([...qualifiers].sort());
+    expect(qualifiers).toHaveLength(3);
+    expect([...marks.values()].every((mark) => mark === 'qualifier')).toBe(true);
   });
 });

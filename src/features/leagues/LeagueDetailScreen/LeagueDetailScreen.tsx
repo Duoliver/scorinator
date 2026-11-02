@@ -1,5 +1,5 @@
 import type { JSX } from 'preact';
-import { Badge, Tabs } from '@/design-system';
+import { Badge, ConfirmDialog, Tabs } from '@/design-system';
 import { ROUTES } from '@/app/routes';
 import type LeagueDetailScreenProps from './types';
 import { useLeagueDetail } from './useLeagueDetail';
@@ -45,7 +45,17 @@ export function LeagueDetailScreen({ uuid }: LeagueDetailScreenProps): JSX.Eleme
         </div>
       </div>
 
-      <Tabs tabs={detail.tabs} defaultTab={detail.defaultTab} />
+      <Tabs ref={detail.tabsRef} tabs={detail.tabs} defaultTab={detail.defaultTab} />
+
+      {detail.startConfirm && (
+        <ConfirmDialog
+          title={detail.startConfirm.title}
+          message={detail.startConfirm.message}
+          confirmLabel={detail.startConfirm.confirmLabel}
+          onConfirm={detail.startConfirm.onConfirm}
+          onCancel={detail.startConfirm.onCancel}
+        />
+      )}
     </div>
   );
 }

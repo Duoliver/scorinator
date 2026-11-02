@@ -13,7 +13,7 @@ export type { TabsProps, TabItem };
  * what lets a caller outside `Tabs` switch tabs (`tabsRef.current?.setValue(id)`)
  * without lifting the active-tab state up into its own parent. */
 export const Tabs = forwardRef<FieldHandle<string>, TabsProps>(
-  ({ tabs, defaultTab, onChange, fullWidth, scrollToTopOnChange }, ref) => {
+  ({ tabs, defaultTab, onChange, fullWidth, scrollToTopOnChange, actions }, ref) => {
     const tabButtonsRef = useRef(new Map<string, HTMLButtonElement>());
     const { value: activeId, commitValue } = useFieldHandle(ref, {
       defaultValue: defaultTab,
@@ -35,29 +35,32 @@ export const Tabs = forwardRef<FieldHandle<string>, TabsProps>(
 
     return (
       <div class={styles.wrapper}>
-        <div
-          class={`${styles.tabs} ${fullWidth ? styles.tabsFullWidth : ''}`}
-          role="tablist"
-        >
-          {tabs.map((tab) => {
-            const active = tab.id === activeId;
-            return (
-              <button
-                key={tab.id}
-                ref={(el) => {
-                  if (el) tabButtonsRef.current.set(tab.id, el);
-                  else tabButtonsRef.current.delete(tab.id);
-                }}
-                type="button"
-                role="tab"
-                aria-selected={active}
-                class={`${styles.tab} ${active ? styles.tabActive : ''}`}
-                onClick={() => commitValue(tab.id, true)}
-              >
-                {tab.label}
-              </button>
-            );
-          })}
+        <div class={actions ? styles.row : undefined}>
+          <div
+            class={`${styles.tabs} ${fullWidth ? styles.tabsFullWidth : ''}`}
+            role="tablist"
+          >
+            {tabs.map((tab) => {
+              const active = tab.id === activeId;
+              return (
+                <button
+                  key={tab.id}
+                  ref={(el) => {
+                    if (el) tabButtonsRef.current.set(tab.id, el);
+                    else tabButtonsRef.current.delete(tab.id);
+                  }}
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
+                  class={`${styles.tab} ${active ? styles.tabActive : ''}`}
+                  onClick={() => commitValue(tab.id, true)}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+          {actions && <div class={styles.actions}>{actions}</div>}
         </div>
         {activeTab && <div role="tabpanel">{activeTab.content}</div>}
       </div>

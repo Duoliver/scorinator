@@ -14,7 +14,7 @@ import { createLeague } from '@/app/state/leagueWrapperActions';
 import { teamListProblem } from '@/app/state/teamInstances';
 import type { LeagueWrapper } from '@/domain';
 import type { DetailsStepHandle } from '@/features/leagues/LeagueSetupScreen/steps/DetailsStep';
-import { formatGroupsAdvanceText } from '@/features/leagues/leagueSummary';
+import { formatAdvanceText } from '@/features/leagues/leagueSummary';
 import { leagueNameProblem } from './leagueName';
 import type { LeagueSetup } from './types';
 import { phaseChecks, phaseProblemText } from './phaseChecks';
@@ -148,7 +148,7 @@ export function useLeagueSetup(): LeagueSetup {
     switchTeam: phaseOne.switchTeam,
     phaseList,
     groups: phaseOne.groups,
-    groupsAdvanceText: formatGroupsAdvanceText(phaseList.plans),
+    groupsAdvanceText: formatAdvanceText(phaseList.plans),
     shuffleGroups: phaseOne.shuffleGroups,
     moveTeam: phaseOne.moveTeam,
     goToDetails: () => goToStep('details'),

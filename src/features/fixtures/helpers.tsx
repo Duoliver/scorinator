@@ -47,6 +47,17 @@ export const GroupTag = ({ letter }: { letter: string }): JSX.Element => (
   </span>
 );
 
+/** The badge of a complete phase, with its short form for a narrow
+ * header (Task 132 choice 7). */
+export function getCompleteBadge(isLastPhase: boolean): {
+  full: string;
+  short: string;
+} {
+  return isLastPhase
+    ? { full: 'League completed', short: 'Completed' }
+    : { full: 'Phase complete', short: 'Complete' };
+}
+
 /** How long a freshly generated score shows in the accent colour. */
 export const SCORE_FLASH_MS = 500;
 

@@ -10,15 +10,29 @@
   gap: var(--space-3);
 }
 
+/* The name and the Unsaved badge on the left, the progress badge on the
+ * right, as in the MVP2 handoff (Task 131). */
 .titleRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.name {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-3);
+  min-width: 0;
 }
 
 .title {
   margin: 0;
+}
+
+.progress {
+  flex: none;
 }
 
 .meta {

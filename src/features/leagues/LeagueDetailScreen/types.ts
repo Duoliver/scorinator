@@ -9,8 +9,14 @@ export default interface LeagueDetailScreenProps {
 export interface LeagueDetail {
   league: LeagueWrapper;
   meta: string;
+  /** The header badge: "Group Stage · MD 6/6", or "Complete" (Task 131). */
+  progress: string;
+  isComplete: boolean;
   isUnsaved: boolean;
+  /** One tab for each phase, or Standings and Fixtures for a one-phase
+   * league (Task 131 choice 2). */
   tabs: TabItem[];
+  defaultTab: string;
 }
 
 /** Where the league of the route stands: read from the database, still

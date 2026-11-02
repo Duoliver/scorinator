@@ -10,7 +10,7 @@ describe('useStandings (Task 128)', () => {
     const lotOrder = [SALT_MARSH, HARBORVIEW].sort(
       (a, b) => fixedLot(LEAGUE, a) - fixedLot(LEAGUE, b)
     );
-    expect(result.current.rows.map((row) => row.team)).toEqual(lotOrder);
+    expect(result.current.tables[0]!.rows.map((row) => row.team)).toEqual(lotOrder);
   });
 
   it('shows every league team in a phase-1 round robin, also a team with no fixture yet', () => {
@@ -21,7 +21,7 @@ describe('useStandings (Task 128)', () => {
       teams: [...base.teams, { ...base.teams[0], blueprintUuid: NORTH, name: 'North' }],
     };
     const { result } = renderHook(() => useStandings(league));
-    expect(result.current.rows.map((row) => row.team).sort()).toEqual(
+    expect(result.current.tables[0]!.rows.map((row) => row.team).sort()).toEqual(
       [SALT_MARSH, HARBORVIEW, NORTH].sort()
     );
   });

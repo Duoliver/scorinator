@@ -144,6 +144,47 @@ describe('LeaguesDashboardScreen', () => {
     expect(useDatabaseStore.getState().leagues).toEqual({});
   });
 
+  it('shows the progress badge of each card (Task 131 choice 4, US-01.2)', () => {
+    const twoTeams = roundRobinLeague([
+      { name: 'FC United', colour: '#E53935' },
+      { name: 'FC Rivals', colour: '#1E88E5' },
+    ]);
+    storeRows(twoTeams, ironValley());
+    render(<LeaguesDashboardScreen />);
+
+    // The heading sits in the name block of the title row.
+    const card = (name: string): HTMLElement =>
+      screen.getByRole('heading', { name }).parentElement!.parentElement!;
+    expect(within(card('Coastal Premier')).getByText('MD 1/2')).toBeInTheDocument();
+    expect(within(card('Iron Valley Cup')).getByText('Complete')).toBeInTheDocument();
+  });
+
+  it('shows the phase formats on the card (Task 131, US-01.2)', () => {
+    const row = summarizeLeague(coastal());
+    const rows = [
+      { ...row, phases: [{ format: 'round-robin', legs: 'single-duels' } as const] },
+      {
+        ...row,
+        uuid: OTHER_LEAGUE,
+        name: 'Continental Shield',
+        teamCount: 16,
+        phases: [
+          { format: 'groups', legs: 'two-way' } as const,
+          { format: 'bracket' } as const,
+        ],
+      },
+    ];
+    useDatabaseStore.setState({ rows, savedRows: rows });
+    render(<LeaguesDashboardScreen />);
+
+    expect(
+      screen.getByText('Round robin (single duels) · 1 team · Home adv. on')
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('Group Stage → Bracket · 16 teams · Home adv. on')
+    ).toBeInTheDocument();
+  });
+
   it('shows an Unsaved badge on a league with unsaved changes, and on no other', () => {
     openTestLeague(coastal());
     openTestLeague(

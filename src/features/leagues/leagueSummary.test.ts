@@ -1,36 +1,97 @@
 import { describe, expect, it } from 'vitest';
+import type { PhaseSummary } from '@/domain';
+import type { GroupsPlan, PhasePlan } from '@/engine/phases';
 import {
   describeLeague,
+  formatGroupsAdvanceText,
+  formatHeaderProgress,
   formatHomeAdvantageLabel,
   formatLeagueName,
   formatPhaseLabel,
   formatPhasesLabel,
   formatPointsLabel,
+  formatProgressBadge,
   phaseShortName,
 } from './leagueSummary';
 
+const RR: PhaseSummary[] = [{ format: 'round-robin', legs: 'two-way' }];
+const GROUPS_THEN_BRACKET: PhaseSummary[] = [
+  { format: 'groups', legs: 'two-way' },
+  { format: 'bracket' },
+];
+
 describe('describeLeague', () => {
   it('uses the singular "team" for exactly one team', () => {
-    expect(describeLeague({ teamCount: 1, homeAdvantage: true })).toBe(
+    expect(describeLeague({ phases: RR, teamCount: 1, homeAdvantage: true })).toBe(
       'Round robin (two-way) · 1 team · Home adv. on'
     );
   });
 
   it('uses the plural "teams" for any other count', () => {
-    expect(describeLeague({ teamCount: 0, homeAdvantage: true })).toBe(
+    expect(describeLeague({ phases: RR, teamCount: 0, homeAdvantage: true })).toBe(
       'Round robin (two-way) · 0 teams · Home adv. on'
     );
   });
 
   it('reflects home advantage being on', () => {
-    expect(describeLeague({ teamCount: 2, homeAdvantage: true })).toContain(
+    expect(describeLeague({ phases: RR, teamCount: 2, homeAdvantage: true })).toContain(
       'Home adv. on'
     );
   });
 
   it('reflects home advantage being off', () => {
-    expect(describeLeague({ teamCount: 2, homeAdvantage: false })).toContain(
-      'Home adv. off'
+    expect(
+      describeLeague({ phases: RR, teamCount: 2, homeAdvantage: false })
+    ).toContain('Home adv. off');
+  });
+
+  it('gives the full label of a one-phase league (Task 131, US-01.2)', () => {
+    expect(
+      describeLeague({
+        phases: [{ format: 'round-robin', legs: 'single-duels' }],
+        teamCount: 8,
+        homeAdvantage: true,
+      })
+    ).toBe('Round robin (single duels) · 8 teams · Home adv. on');
+  });
+
+  it('joins the short names of a league with several phases', () => {
+    expect(
+      describeLeague({
+        phases: GROUPS_THEN_BRACKET,
+        teamCount: 16,
+        homeAdvantage: true,
+      })
+    ).toBe('Group Stage → Bracket · 16 teams · Home adv. on');
+  });
+});
+
+describe('the progress badge (Task 131 choices 3 and 4, US-01.2)', () => {
+  const during = { kind: 'phase', phase: 1, matchday: 7, matchdays: 16 } as const;
+
+  it('gives "MD x/y" on the card during a phase', () => {
+    expect(formatProgressBadge(during)).toBe('MD 7/16');
+  });
+
+  it('gives "Complete" on the card for a complete league', () => {
+    expect(formatProgressBadge({ kind: 'completed' })).toBe('Complete');
+  });
+
+  it('adds the short name of the current phase in the header', () => {
+    expect(formatHeaderProgress({ phases: RR, progress: during })).toBe(
+      'Round robin · MD 7/16'
+    );
+    expect(
+      formatHeaderProgress({
+        phases: GROUPS_THEN_BRACKET,
+        progress: { kind: 'phase', phase: 1, matchday: 6, matchdays: 6 },
+      })
+    ).toBe('Group Stage · MD 6/6');
+  });
+
+  it('gives "Complete" in the header for a complete league', () => {
+    expect(formatHeaderProgress({ phases: RR, progress: { kind: 'completed' } })).toBe(
+      'Complete'
     );
   });
 });
@@ -91,5 +152,47 @@ describe('phase labels (Task 129, US-01.2)', () => {
     expect(
       formatPhasesLabel([{ format: 'groups', legs: 'two-way' }, { format: 'bracket' }])
     ).toBe('Group Stage → Bracket');
+  });
+});
+
+const bySize = (top?: number, bestOfNext = 0): GroupsPlan => ({
+  format: 'groups',
+  legs: 'two-way',
+  grouping: { by: 'size', size: 4 },
+  ...(top === undefined ? {} : { advance: { top, bestOfNext } }),
+});
+const rr: PhasePlan = { format: 'round-robin', legs: 'two-way' };
+
+describe('formatGroupsAdvanceText (Task 130 choice 5, Task 131)', () => {
+  it('names the next phase by its short name', () => {
+    expect(formatGroupsAdvanceText([bySize(2), { format: 'bracket' }])).toBe(
+      'Top 2 of each group advance to the Bracket.'
+    );
+    expect(formatGroupsAdvanceText([bySize(1), rr])).toBe(
+      'Top 1 of each group advance to the Round robin.'
+    );
+  });
+
+  it('adds the best M', () => {
+    expect(formatGroupsAdvanceText([bySize(2, 4), { format: 'bracket' }])).toBe(
+      'Top 2 of each group and the best 4 of place 3 advance to the Bracket.'
+    );
+  });
+
+  it('gives nothing when the phase is the last, or not Groups', () => {
+    expect(formatGroupsAdvanceText([bySize()])).toBeUndefined();
+    expect(formatGroupsAdvanceText([rr])).toBeUndefined();
+  });
+
+  it('reads the phase at the given index', () => {
+    const plans: PhasePlan[] = [
+      { format: 'round-robin', legs: 'two-way', advance: { top: 8 } },
+      bySize(2),
+      { format: 'bracket' },
+    ];
+    expect(formatGroupsAdvanceText(plans, 1)).toBe(
+      'Top 2 of each group advance to the Bracket.'
+    );
+    expect(formatGroupsAdvanceText(plans, 0)).toBeUndefined();
   });
 });

@@ -33,14 +33,19 @@ export function LeagueDetailScreen({ uuid }: LeagueDetailScreenProps): JSX.Eleme
     <div class={styles.screen}>
       <div>
         {backLink}
-        <div class={styles.titleRow}>
-          <h1 class={styles.title}>{detail.league.content.name}</h1>
-          {detail.isUnsaved && <Badge tone="warning">Unsaved</Badge>}
+        <div class={styles.header}>
+          <div>
+            <div class={styles.titleRow}>
+              <h1 class={styles.title}>{detail.league.content.name}</h1>
+              {detail.isUnsaved && <Badge tone="warning">Unsaved</Badge>}
+            </div>
+            <span class={styles.meta}>{detail.meta}</span>
+          </div>
+          <Badge tone={detail.isComplete ? 'accent' : 'dark'}>{detail.progress}</Badge>
         </div>
-        <span class={styles.meta}>{detail.meta}</span>
       </div>
 
-      <Tabs tabs={detail.tabs} defaultTab="standings" />
+      <Tabs tabs={detail.tabs} defaultTab={detail.defaultTab} />
     </div>
   );
 }

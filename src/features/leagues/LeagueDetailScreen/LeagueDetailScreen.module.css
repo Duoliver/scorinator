@@ -11,6 +11,16 @@
   text-decoration: none;
 }
 
+/* The title block on the left, the progress badge on the right, as in the
+ * MVP2 handoff. The badge wraps under the title on a narrow window. */
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
 .titleRow {
   display: flex;
   flex-wrap: wrap;
@@ -25,5 +35,10 @@
 
 .meta {
   font-size: var(--font-size-md);
+  color: var(--color-fg-muted);
+}
+
+.note {
+  margin: 0;
   color: var(--color-fg-muted);
 }

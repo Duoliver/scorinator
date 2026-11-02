@@ -4,12 +4,17 @@ import userEvent from '@testing-library/user-event';
 import { serializeLeagueWrapper } from '@/app/data/databaseFile';
 import { saveDatabase } from '@/app/state/databaseActions';
 import { useDatabaseStore } from '@/app/state/databaseStore';
-import { createLeague } from '@/app/state/leagueWrapperActions';
+import {
+  createLeague,
+  scorinateMatchday,
+  startNextPhase,
+} from '@/app/state/leagueWrapperActions';
 import { newTeamInstances } from '@/app/state/teamInstances';
 import { summarizeLeague } from '@/app/state/summarizeLeague';
 import type { LeagueWrapper } from '@/domain';
 import { LeagueDetailScreen } from './LeagueDetailScreen';
 import {
+  groupsLeague,
   LEAGUE,
   openTestDatabase,
   openTestLeague,
@@ -46,6 +51,26 @@ describe('LeagueDetailScreen', () => {
 
     beforeEach(() => {
       wrapper = openTestLeague(league());
+    });
+
+    it('shows the phase format in the meta line (Task 131, US-01.2)', () => {
+      render(<LeagueDetailScreen uuid={LEAGUE} />);
+      expect(
+        screen.getByText('Round robin (two-way) · 2 teams · Home adv. on · 3/1/0 pts')
+      ).toBeInTheDocument();
+    });
+
+    it('shows the progress badge with the short name (Task 131 choice 3)', () => {
+      render(<LeagueDetailScreen uuid={LEAGUE} />);
+      expect(screen.getByText('Round robin · MD 1/2')).toBeInTheDocument();
+    });
+
+    it('has no phase tabs for a one-phase league (choice 2)', () => {
+      render(<LeagueDetailScreen uuid={LEAGUE} />);
+      expect(screen.getAllByRole('tab').map((tab) => tab.textContent)).toEqual([
+        'Standings',
+        'Fixtures',
+      ]);
     });
 
     it('renders the league name and a meta summary line', () => {
@@ -193,5 +218,145 @@ describe('LeagueDetailScreen', () => {
     render(<LeagueDetailScreen uuid="no-such-league" />);
     expect(screen.getByText('League not found.')).toBeInTheDocument();
     expect(screen.queryByRole('heading')).not.toBeInTheDocument();
+  });
+
+  describe('a league with several phases (Task 131)', () => {
+    const FOUR = [
+      { name: 'FC United', colour: '#E53935' },
+      { name: 'FC Rivals', colour: '#1E88E5' },
+      { name: 'FC Town', colour: '#2E7D32' },
+      { name: 'FC Rangers', colour: '#6A1B9A' },
+    ];
+
+    it('shows the short names, the badge, and one tab for each phase', () => {
+      openTestLeague(
+        groupsLeague(FOUR, [
+          [1, 2],
+          [3, 4],
+        ])
+      );
+      render(<LeagueDetailScreen uuid={LEAGUE} />);
+
+      expect(
+        screen.getByText('Group Stage → Bracket · 4 teams · Home adv. off · 3/1/0 pts')
+      ).toBeInTheDocument();
+      expect(screen.getByText('Group Stage · MD 1/2')).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: '1 · Group Stage' })).toHaveAttribute(
+        'aria-selected',
+        'true'
+      );
+      expect(screen.getByRole('tab', { name: '2 · Bracket' })).toBeInTheDocument();
+    });
+
+    it('shows the group cards and the advancement line in phase 1', () => {
+      openTestLeague(
+        groupsLeague(FOUR, [
+          [1, 2],
+          [3, 4],
+        ])
+      );
+      render(<LeagueDetailScreen uuid={LEAGUE} />);
+
+      expect(screen.getByRole('table', { name: 'Group A' })).toBeInTheDocument();
+      expect(screen.getByRole('table', { name: 'Group B' })).toBeInTheDocument();
+      expect(
+        screen.getByText('Top 2 of each group advance to the Bracket.')
+      ).toBeInTheDocument();
+    });
+
+    it('shows one line in a phase that has not started (choice 1)', async () => {
+      openTestLeague(
+        groupsLeague(FOUR, [
+          [1, 2],
+          [3, 4],
+        ])
+      );
+      render(<LeagueDetailScreen uuid={LEAGUE} />);
+
+      await userEvent.click(screen.getByRole('tab', { name: '2 · Bracket' }));
+
+      expect(
+        screen.getByText('Phase 2 starts when phase 1 is complete.')
+      ).toBeInTheDocument();
+      expect(screen.queryByRole('tab', { name: 'Standings' })).not.toBeInTheDocument();
+    });
+
+    describe('with two started phases', () => {
+      beforeEach(() => {
+        openTestLeague(
+          groupsLeague(
+            FOUR,
+            [
+              [1, 2],
+              [3, 4],
+            ],
+            [
+              {
+                format: 'groups',
+                legs: 'two-way',
+                grouping: { by: 'count', count: 2 },
+                advance: { top: 1, bestOfNext: 0 },
+              },
+              { format: 'round-robin', legs: 'two-way' },
+            ]
+          )
+        );
+        scorinateMatchday(LEAGUE, 1);
+        scorinateMatchday(LEAGUE, 2);
+        startNextPhase(LEAGUE);
+      });
+
+      it('opens the current phase, and shows the earlier phase on its tab', async () => {
+        render(<LeagueDetailScreen uuid={LEAGUE} />);
+        expect(screen.getByRole('tab', { name: '2 · Round robin' })).toHaveAttribute(
+          'aria-selected',
+          'true'
+        );
+        expect(screen.getByText('Round robin · MD 1/2')).toBeInTheDocument();
+        expect(screen.getByRole('table', { name: 'Standings' })).toBeInTheDocument();
+
+        await userEvent.click(screen.getByRole('tab', { name: '1 · Group Stage' }));
+
+        expect(screen.getByRole('table', { name: 'Group A' })).toBeInTheDocument();
+      });
+
+      it('keeps the matchday of each phase across tab switches', async () => {
+        render(<LeagueDetailScreen uuid={LEAGUE} />);
+        await userEvent.click(screen.getByRole('tab', { name: 'Fixtures' }));
+        await userEvent.click(screen.getByRole('button', { name: 'Next matchday' }));
+        expect(screen.getByText(/Matchday 2 \/ 2/)).toBeInTheDocument();
+
+        await userEvent.click(screen.getByRole('tab', { name: '1 · Group Stage' }));
+        await userEvent.click(screen.getByRole('tab', { name: 'Fixtures' }));
+        expect(screen.getByText(/Matchday 1 \/ 2/)).toBeInTheDocument();
+
+        await userEvent.click(screen.getByRole('tab', { name: '2 · Round robin' }));
+        await userEvent.click(screen.getByRole('tab', { name: 'Fixtures' }));
+        expect(screen.getByText(/Matchday 2 \/ 2/)).toBeInTheDocument();
+      });
+    });
+
+    it('shows Complete in the header for a complete league', () => {
+      openTestLeague(
+        groupsLeague(
+          FOUR,
+          [
+            [1, 2],
+            [3, 4],
+          ],
+          [
+            {
+              format: 'groups',
+              legs: 'two-way',
+              grouping: { by: 'count', count: 2 },
+            },
+          ]
+        )
+      );
+      scorinateMatchday(LEAGUE, 1);
+      scorinateMatchday(LEAGUE, 2);
+      render(<LeagueDetailScreen uuid={LEAGUE} />);
+      expect(screen.getByText('Complete')).toBeInTheDocument();
+    });
   });
 });

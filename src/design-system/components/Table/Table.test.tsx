@@ -95,4 +95,22 @@ describe('Table', () => {
     );
     expect(screen.getByText('19 pts')).toBeInTheDocument();
   });
+
+  it('has a compact look on request, for a narrow card (Task 131)', () => {
+    const { unmount } = render(
+      <Table label="Default" columns={columns} rows={rows} rowKey={(r) => r.id} />
+    );
+    const defaultClass = screen.getByRole('table').className;
+    unmount();
+    render(
+      <Table
+        label="Compact"
+        columns={columns}
+        rows={rows}
+        rowKey={(r) => r.id}
+        compact
+      />
+    );
+    expect(screen.getByRole('table').className).not.toBe(defaultClass);
+  });
 });

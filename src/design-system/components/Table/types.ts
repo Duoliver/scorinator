@@ -17,4 +17,7 @@ export default interface TableProps<Row> {
   columns: TableColumn<Row>[];
   rows: Row[];
   rowKey: (row: Row) => string;
+  /** Smaller gaps, padding, and text, for a table in a narrow card, such
+   * as a group card (Task 131). Default (false) is the full-size table. */
+  compact?: boolean;
 }

@@ -7,6 +7,7 @@ import { useDatabaseStore } from '@/app/state/databaseStore';
 import type { LeagueWrapper, Phase } from '@/domain';
 import { FixturesView } from './FixturesView';
 import {
+  groupsLeague,
   LEAGUE,
   openTestDatabase,
   openTestLeague,
@@ -440,6 +441,89 @@ describe('FixturesView', () => {
       expect(screen.getByText(/^\d+ - \d+$/)).toHaveAttribute('data-flashing');
       expect(goals('home')).toHaveAttribute('data-flashing');
       expect(goals('away')).toHaveAttribute('data-flashing');
+    });
+  });
+
+  describe('a Groups phase (Task 131 choice 6, US-02.2)', () => {
+    const SEVEN = [
+      ...ALL_TEAMS,
+      { name: 'FC Harbour', colour: '#00838F' },
+      { name: 'FC Valley', colour: '#F9A825' },
+      { name: 'FC Dunes', colour: '#5D4037' },
+    ];
+
+    /** The group tags in page order: the match rows, then the bye lines. */
+    const tags = (): string[] =>
+      screen.getAllByText(/^Group [A-Z]+$/).map((tag) => tag.textContent ?? '');
+
+    function GroupsFromStore(): JSX.Element | null {
+      const found = useDatabaseStore((state) => state.leagues[LEAGUE]);
+      return found ? <FixturesView league={found} /> : null;
+    }
+
+    it('gives each match its group tag, in group order', () => {
+      const wrapper = groupsLeague(SEVEN.slice(0, 4), [
+        [3, 4],
+        [1, 2],
+      ]);
+      render(<FixturesView league={wrapper} />);
+      expect(tags()).toEqual(['Group A', 'Group B']);
+      expect(screen.getAllByRole('button', { name: 'Scorinate' })).toHaveLength(2);
+    });
+
+    it('shows one bye line for each group with a bye, with its tag', () => {
+      const wrapper = groupsLeague(SEVEN.slice(0, 6), [
+        [1, 2, 3],
+        [4, 5, 6],
+      ]);
+      render(<FixturesView league={wrapper} />);
+
+      expect(screen.getAllByText('Bye')).toHaveLength(2);
+      expect(tags()).toEqual(['Group A', 'Group B', 'Group A', 'Group B']);
+      const [phase] = wrapper.content.phases;
+      for (const bye of phase.byes.filter((candidate) => candidate.matchday === 1)) {
+        const name = wrapper.teams.find(
+          (team) => team.blueprintUuid === bye.team
+        )?.name;
+        expect(screen.getByText(name ?? '')).toBeInTheDocument();
+      }
+    });
+
+    it('leaves out a group with no match on the matchday', async () => {
+      const wrapper = groupsLeague(SEVEN.slice(0, 6), [
+        [1, 2],
+        [3, 4, 5, 6],
+      ]);
+      render(<FixturesView league={wrapper} />);
+      expect(screen.getByText(/Matchday 1 \/ 6/)).toBeInTheDocument();
+
+      await userEvent.click(screen.getByRole('button', { name: 'Next matchday' }));
+      await userEvent.click(screen.getByRole('button', { name: 'Next matchday' }));
+
+      expect(screen.getByText(/Matchday 3 \/ 6/)).toBeInTheDocument();
+      expect(tags()).toEqual(['Group B', 'Group B']);
+    });
+
+    it('plays the matches of every group on Scorinate matchday', async () => {
+      openTestLeague(
+        groupsLeague(SEVEN.slice(0, 4), [
+          [1, 2],
+          [3, 4],
+        ])
+      );
+      render(<GroupsFromStore />);
+
+      await userEvent.click(screen.getByRole('button', { name: 'Scorinate matchday' }));
+
+      expect(screen.getAllByRole('button', { name: 'Re-scorinate' })).toHaveLength(2);
+      expect(
+        screen.queryByRole('button', { name: 'Scorinate' })
+      ).not.toBeInTheDocument();
+    });
+
+    it('shows no group tag in a round robin', () => {
+      render(<FixturesView league={league(4)} phaseIndex={0} />);
+      expect(screen.queryByText(/^Group /)).not.toBeInTheDocument();
     });
   });
 });

@@ -2,8 +2,18 @@ import { useEffect, useState } from 'preact/hooks';
 import { getErrorMessage } from '@/app/getErrorMessage';
 import { openLeague } from '@/app/state/databaseActions';
 import { isLeagueUnsaved, useDatabaseStore } from '@/app/state/databaseStore';
-import { describeLeague, formatPointsLabel } from '@/features/leagues/leagueSummary';
-import { getLeagueTabs } from './helpers';
+import { summarizeLeague } from '@/app/state/summarizeLeague';
+import {
+  describeLeague,
+  formatHeaderProgress,
+  formatPointsLabel,
+} from '@/features/leagues/leagueSummary';
+import {
+  getLeagueTabs,
+  getPhaseTabs,
+  phaseTabId,
+  type MatchdayMemory,
+} from './helpers';
 import type { LeagueDetailState } from './types';
 
 /** The league with this UUID, ready for League Detail (Task 161). A league
@@ -19,8 +29,14 @@ export function useLeagueDetail(uuid: string): LeagueDetailState {
   // error of the last one.
   const [openError, setOpenError] = useState<{ uuid: string; message: string }>();
   // `Tabs` unmounts the inactive tab, so `FixturesView`'s own matchday state
-  // would reset on every switch. Kept here instead, and fed back in.
-  const [fixturesMatchday, setFixturesMatchday] = useState(1);
+  // would reset on every switch. Kept here instead, one for each phase, and
+  // fed back in.
+  const [matchdays, setMatchdays] = useState<Record<number, number>>({});
+  const memory: MatchdayMemory = {
+    matchdayOf: (phaseIndex) => matchdays[phaseIndex] ?? 1,
+    setMatchday: (phaseIndex, matchday) =>
+      setMatchdays((now) => ({ ...now, [phaseIndex]: matchday })),
+  };
 
   const needsOpen = league === undefined && isKnown;
   useEffect(() => {
@@ -35,17 +51,26 @@ export function useLeagueDetail(uuid: string): LeagueDetailState {
   }, [uuid, needsOpen]);
 
   if (league) {
+    // The same row as the dashboard card, so both say the same (US-01.2).
+    const summary = summarizeLeague(league);
+    const { plans, phases } = league.content;
+    const hasPhaseTabs = plans.length > 1;
     return {
       kind: 'open',
       detail: {
         league,
-        meta: `${describeLeague({
-          teamCount: league.teams.length,
-          homeAdvantage: league.content.homeAdvantage,
-        })} · ${formatPointsLabel(league.content.points)}`,
+        meta: `${describeLeague(summary)} · ${formatPointsLabel(league.content.points)}`,
+        progress: formatHeaderProgress(summary),
+        isComplete: summary.progress.kind === 'completed',
         // The `Unsaved` badge beside the title (Task 26).
         isUnsaved,
-        tabs: getLeagueTabs(league, fixturesMatchday, setFixturesMatchday),
+        tabs: hasPhaseTabs
+          ? getPhaseTabs(league, memory)
+          : getLeagueTabs(league, 0, memory),
+        // The current phase is the last started one.
+        defaultTab: hasPhaseTabs
+          ? phaseTabId(Math.max(0, phases.length - 1))
+          : 'standings',
       },
     };
   }

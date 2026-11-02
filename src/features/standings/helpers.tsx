@@ -10,6 +10,12 @@ export const mono = (value: number, bold = false): JSX.Element => (
 
 export const rowKey = (row: StandingsViewRow): string => row.team;
 
+function getColumn(key: string): TableColumn<StandingsViewRow> {
+  const column = COLUMNS.find((candidate) => candidate.key === key);
+  if (!column) throw new Error(`No standings column ${key}.`);
+  return column;
+}
+
 /** The `#` column shows `positionText`, so a joint place reads `-` on every
  * row after the first of its tied block. */
 export const COLUMNS: TableColumn<StandingsViewRow>[] = [
@@ -57,4 +63,28 @@ export const COLUMNS: TableColumn<StandingsViewRow>[] = [
     width: '3.5rem',
     render: (row) => mono(row.points, true),
   },
+];
+
+/** The columns of a group card (Task 131 choice 5, US-02.2): #, Team, W, D,
+ * L, GD, Pts. Narrow tracks, so a compact table fits a 280px card, and the
+ * Team column takes the rest of a wider card. */
+export const GROUP_COLUMNS: TableColumn<StandingsViewRow>[] = [
+  { ...getColumn('position'), width: '1.5rem' },
+  {
+    key: 'team',
+    header: 'Team',
+    width: 'minmax(0, 1fr)',
+    // The name cuts with an ellipsis, so a long name keeps the card width.
+    render: (row) => (
+      <span class={styles.team}>
+        <TeamSwatch colour={row.teamColour} size="sm" />
+        <span class={styles.teamName}>{row.teamName}</span>
+      </span>
+    ),
+  },
+  { key: 'won', header: 'W', width: '1.25rem' },
+  { key: 'drawn', header: 'D', width: '1.25rem' },
+  { key: 'lost', header: 'L', width: '1.25rem' },
+  { ...getColumn('goalDifference'), width: '1.75rem' },
+  { ...getColumn('points'), width: '1.75rem' },
 ];

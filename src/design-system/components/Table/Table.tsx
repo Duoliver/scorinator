@@ -16,11 +16,16 @@ export function Table<Row>({
   columns,
   rows,
   rowKey,
+  compact,
 }: TableProps<Row>): JSX.Element {
   const gridTemplateColumns = columns.map((c) => c.width ?? '1fr').join(' ');
 
   return (
-    <div class={styles.table} role="table" aria-label={label}>
+    <div
+      class={`${styles.table} ${compact ? styles.compact : ''}`}
+      role="table"
+      aria-label={label}
+    >
       <div class={styles.headerRow} style={{ gridTemplateColumns }} role="row">
         {columns.map((column) => (
           <span

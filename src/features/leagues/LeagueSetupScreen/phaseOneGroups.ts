@@ -8,7 +8,6 @@ import {
   resizeGroups,
   switchInGroups,
 } from '@/engine/round-robin';
-import { phaseShortName } from '@/features/leagues/leagueSummary';
 
 /**
  * The phase-1 draw of the wizard (Task 130, US-02.1): pure changes of the
@@ -83,14 +82,4 @@ export function groupsAfterSwitch(
   newTeam: string
 ): string[][] {
   return switchInGroups(groups, oldTeam, newTeam);
-}
-
-/** The line under the phase-1 group cards (Task 130 choice 5), or
- * `undefined` when phase 1 is not Groups or is the last phase. */
-export function groupsAdvanceText(plans: readonly PhasePlan[]): string | undefined {
-  const [first, next] = plans;
-  if (first?.format !== 'groups' || !first.advance || !next) return undefined;
-  const { top, bestOfNext } = first.advance;
-  const best = bestOfNext > 0 ? ` and the best ${bestOfNext} of place ${top + 1}` : '';
-  return `Top ${top} of each group${best} advance to the ${phaseShortName(next)}.`;
 }

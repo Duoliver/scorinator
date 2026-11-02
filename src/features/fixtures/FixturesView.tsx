@@ -2,7 +2,7 @@ import type { JSX } from 'preact';
 import { Badge, Button } from '@/design-system';
 import { TeamSwatch } from '@/features/components';
 import type FixturesViewProps from './types';
-import { flashAttr, scoreText } from './helpers';
+import { GroupTag, flashAttr, scoreText } from './helpers';
 import { useFixtures } from './useFixtures';
 import styles from './FixturesView.module.css';
 
@@ -12,14 +12,8 @@ export type { FixturesViewProps };
  * buttons and Scorinate matchday, then one row for each match. `useFixtures`
  * gives the data and the handlers. */
 export function FixturesView(props: FixturesViewProps): JSX.Element {
-  const {
-    hasFixtures,
-    nav,
-    rows,
-    byeTeamName,
-    matchdayFullyPlayed,
-    scorinateMatchday,
-  } = useFixtures(props);
+  const { hasFixtures, nav, rows, byes, matchdayFullyPlayed, scorinateMatchday } =
+    useFixtures(props);
 
   if (!hasFixtures) {
     return <p class={styles.empty}>Not enough teams to generate fixtures yet.</p>;
@@ -129,7 +123,11 @@ export function FixturesView(props: FixturesViewProps): JSX.Element {
           // The goals spans serve only the stacked layout (Task 39), where
           // each team has its own line. The score span stays the one text
           // that screen readers and tests read, in both layouts.
-          <div class={styles.match} key={row.key}>
+          <div
+            class={`${styles.match} ${row.groupTag ? styles.matchWithGroup : ''}`}
+            key={row.key}
+          >
+            {row.groupTag && <GroupTag letter={row.groupTag} />}
             <div class={styles.home}>
               <span class={styles.teamName}>{row.home.name}</span>
               <TeamSwatch
@@ -172,12 +170,13 @@ export function FixturesView(props: FixturesViewProps): JSX.Element {
             </div>
           </div>
         ))}
-        {byeTeamName && (
-          <div class={styles.bye}>
+        {byes.map((bye) => (
+          <div class={styles.bye} key={bye.key}>
+            {bye.groupTag && <GroupTag letter={bye.groupTag} />}
             <Badge tone="warning">Bye</Badge>
-            {byeTeamName}
+            {bye.teamName}
           </div>
-        )}
+        ))}
       </div>
     </div>
   );

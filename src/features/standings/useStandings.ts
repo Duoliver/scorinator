@@ -1,35 +1,42 @@
 import { useMemo } from 'preact/hooks';
-import { findCurrentPhase } from '@/app/state/currentPhase';
+import { groupLabel } from '@/engine/round-robin';
 import { phaseStandings } from '@/app/state/phases';
 import { useTeamLookup } from '@/features/components';
 import type { LeagueWrapper } from '@/domain';
-import type { Standings, StandingsViewRow } from './types';
+import type { Standings, StandingsTable, StandingsViewRow } from './types';
 
-/** The table of the current phase of one league, ready for `StandingsView`
- * to render. `phaseStandings` is a pure recompute from the phase results
- * (Task 4), with the teams of the phase and the fixed lots of the league
- * (Task 128). So "live update" needs no state here: a scorinate (Task 15)
- * gives a new `league`, and the rows follow. `useMemo` keeps the recompute
- * to a change of the league.
+/** The tables of one started phase of one league, ready for
+ * `StandingsView` to render: one table for a round robin, or one for each
+ * group (Task 131). `phaseStandings` is a pure recompute from the phase
+ * results (Task 4), with the teams of the phase and the fixed lots of the
+ * league (Task 128). So "live update" needs no state here: a scorinate
+ * (Task 15) gives a new `league`, and the rows follow. `useMemo` keeps the
+ * recompute to a change of the league or the phase.
  *
- * A Groups phase shows its first table only, until Task 131 adds the group
- * cards (Task 128 choice 6). */
-export function useStandings(league: LeagueWrapper): Standings {
+ * `phaseIndex` counts from 0. The current phase (the last started one) is
+ * the default. */
+export function useStandings(
+  league: LeagueWrapper,
+  phaseIndex = league.content.phases.length - 1
+): Standings {
   const lookupTeam = useTeamLookup(league.teams);
-  const results = findCurrentPhase(league)?.results;
+  const phase = league.content.phases[phaseIndex];
 
-  const rows = useMemo(() => {
-    const index = league.content.phases.length - 1;
-    const [table = []] = index < 0 ? [] : phaseStandings(league, index);
-    return table.map((row): StandingsViewRow => {
-      const { name, colour } = lookupTeam(row.team);
-      return { ...row, teamName: name, teamColour: colour };
-    });
-  }, [league, lookupTeam]);
+  const tables = useMemo((): StandingsTable[] => {
+    if (!phase) return [];
+    return phaseStandings(league, phaseIndex).map((table, index) => ({
+      name: phase.format === 'groups' ? `Group ${groupLabel(index)}` : 'Standings',
+      rows: table.map((row): StandingsViewRow => {
+        const { name, colour } = lookupTeam(row.team);
+        return { ...row, teamName: name, teamColour: colour };
+      }),
+    }));
+  }, [league, phase, phaseIndex, lookupTeam]);
 
   return {
-    rows,
+    isGroups: phase?.format === 'groups',
+    tables,
     hasTeams: league.teams.length > 0,
-    hasResults: (results?.length ?? 0) > 0,
+    hasResults: (phase?.results.length ?? 0) > 0,
   };
 }

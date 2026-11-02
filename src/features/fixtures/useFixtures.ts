@@ -1,5 +1,4 @@
 import { findPhaseResult, isPhaseMatchdayPlayed } from '@/engine/round-robin';
-import { findCurrentPhase } from '@/app/state/currentPhase';
 import {
   rescorinateFixture,
   scorinateFixture,
@@ -7,13 +6,14 @@ import {
 } from '@/app/state/leagueWrapperActions';
 import { useTeamLookup } from '@/features/components';
 import type FixturesViewProps from './types';
-import type { FixtureRow, Fixtures } from './types';
-import { EMPTY_PHASE } from './helpers';
+import type { ByeRow, FixtureRow, Fixtures } from './types';
+import { getGroupIndexes, getGroupTag, getShownPhase } from './helpers';
 import { useMatchdayNav } from './useMatchdayNav';
 import { useScoreFlash } from './useScoreFlash';
 
-/** The matchday browser for the current phase of one league, ready for
- * `FixturesView` to render.
+/** The matchday browser for one started phase of one league, ready for
+ * `FixturesView` to render. A Groups phase gives each match and each bye
+ * its group letter, in group order (Task 131 choice 6).
  *
  * Scorination (Task 15) plays an unplayed match, or a whole unplayed
  * matchday, with the `leagueWrapperActions` of Task 160, by fixture id. A
@@ -23,7 +23,10 @@ import { useScoreFlash } from './useScoreFlash';
  * match feeds nothing downstream. */
 export function useFixtures(props: FixturesViewProps): Fixtures {
   const { league } = props;
-  const phase = findCurrentPhase(league) ?? EMPTY_PHASE;
+  const phase = getShownPhase(league, props.phaseIndex);
+  const groupOf = getGroupIndexes(phase);
+  const byGroup = (a: { group?: number }, b: { group?: number }): number =>
+    (a.group ?? 0) - (b.group ?? 0);
   const lookupTeam = useTeamLookup(league.teams);
   const nav = useMatchdayNav(props);
   const isFlashing = useScoreFlash(phase.results);
@@ -31,10 +34,13 @@ export function useFixtures(props: FixturesViewProps): Fixtures {
 
   const rows = phase.fixtures
     .filter((fixture) => fixture.matchday === matchday)
-    .map((fixture): FixtureRow => {
+    .map((fixture) => ({ fixture, group: groupOf.get(fixture.home) }))
+    .sort(byGroup)
+    .map(({ fixture, group }): FixtureRow => {
       const result = findPhaseResult(phase.results, fixture);
       return {
         key: fixture.id,
+        groupTag: getGroupTag(group),
         home: lookupTeam(fixture.home),
         away: lookupTeam(fixture.away),
         result,
@@ -46,13 +52,21 @@ export function useFixtures(props: FixturesViewProps): Fixtures {
       };
     });
 
-  const bye = phase.byes.find((candidate) => candidate.matchday === matchday);
+  const byes = phase.byes
+    .filter((bye) => bye.matchday === matchday)
+    .map((bye) => ({ bye, group: groupOf.get(bye.team) }))
+    .sort(byGroup)
+    .map(({ bye, group }): ByeRow => ({
+      key: bye.team,
+      groupTag: getGroupTag(group),
+      teamName: lookupTeam(bye.team).name,
+    }));
 
   return {
     hasFixtures: phase.fixtures.length > 0,
     nav,
     rows,
-    byeTeamName: bye ? lookupTeam(bye.team).name : undefined,
+    byes,
     matchdayFullyPlayed: isPhaseMatchdayPlayed(phase.fixtures, phase.results, matchday),
     scorinateMatchday: () => scorinateMatchday(league.uuid, matchday),
   };

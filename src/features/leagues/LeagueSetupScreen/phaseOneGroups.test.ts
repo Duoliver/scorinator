@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import type { GroupsPlan, PhasePlan } from '@/engine/phases';
 import { createSeededRng } from '@/engine/rng';
 import {
-  groupsAdvanceText,
   groupsAfterAdd,
   groupsAfterRemove,
   groupsAfterSwitch,
@@ -115,27 +114,5 @@ describe('groupsAfterSwitch (US-02.1)', () => {
       ['T1', 'N'],
       ['T3'],
     ]);
-  });
-});
-
-describe('groupsAdvanceText (Task 130 choice 5)', () => {
-  it('names the next phase by its short name', () => {
-    expect(groupsAdvanceText([bySize(4, 2), { format: 'bracket' }])).toBe(
-      'Top 2 of each group advance to the Bracket.'
-    );
-    expect(groupsAdvanceText([bySize(4, 1), rr])).toBe(
-      'Top 1 of each group advance to the Round robin.'
-    );
-  });
-
-  it('adds the best M', () => {
-    expect(groupsAdvanceText([bySize(4, 2, 4), { format: 'bracket' }])).toBe(
-      'Top 2 of each group and the best 4 of place 3 advance to the Bracket.'
-    );
-  });
-
-  it('gives nothing when phase 1 is the last, or not Groups', () => {
-    expect(groupsAdvanceText([bySize(4)])).toBeUndefined();
-    expect(groupsAdvanceText([rr])).toBeUndefined();
   });
 });

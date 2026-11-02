@@ -1,3 +1,5 @@
+import { buildPhase, type PhasePlan } from '@/engine/phases';
+import { createSeededRng } from '@/engine/rng';
 import { assignFixtureIds, generateRoundRobin } from '@/engine/round-robin';
 import type { LeagueWrapper, PhaseResult, TeamBlueprint, TeamInstance } from '@/domain';
 import { useDatabaseStore } from '@/app/state/databaseStore';
@@ -222,6 +224,39 @@ export function roundRobinLeague(
         },
       ],
     },
+  };
+}
+
+/** The plans of `groupsLeague` when a test gives none: two-way groups, the
+ * top 2 of each group to a bracket. */
+export const GROUPS_THEN_BRACKET: PhasePlan[] = [
+  {
+    format: 'groups',
+    legs: 'two-way',
+    grouping: { by: 'count', count: 2 },
+    advance: { top: 2, bestOfNext: 0 },
+  },
+  { format: 'bracket' },
+];
+
+/**
+ * A league whose phase 1 is a Groups phase with the given draw, built as
+ * `createLeague` builds it, with no results (Task 131). `groups` lists team
+ * numbers from 1: `[[1, 2], [3, 4]]` puts teams 1 and 2 in Group A. The
+ * teams are as in `roundRobinLeague`. A fixed seed makes the schedule the
+ * same in each run.
+ */
+export function groupsLeague(
+  teams: readonly Pick<TeamInstance, 'name' | 'colour'>[],
+  groups: readonly (readonly number[])[],
+  plans: PhasePlan[] = GROUPS_THEN_BRACKET
+): LeagueWrapper {
+  const base = roundRobinLeague(teams);
+  const draw = groups.map((group) => group.map((n) => testUuid(n)));
+  const built = buildPhase(plans[0], 1, draw.flat(), createSeededRng(1), draw);
+  return {
+    ...base,
+    content: { ...base.content, plans, phases: [{ ...built, results: [] }] },
   };
 }
 

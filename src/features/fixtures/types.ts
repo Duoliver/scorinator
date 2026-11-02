@@ -3,6 +3,8 @@ import type { LeagueWrapper, PhaseResult } from '@/domain';
 
 export default interface FixturesViewProps {
   league: LeagueWrapper;
+  /** The started phase to show, from 0. The current phase when not given. */
+  phaseIndex?: number;
   /** Which matchday is visible on mount. Uncontrolled after that, the same
    * convention as `Tabs`' `defaultTab`. */
   initialMatchday?: number;
@@ -35,6 +37,9 @@ export interface MatchdayNav {
 /** One match row of the visible matchday, ready to render. */
 export interface FixtureRow {
   key: string;
+  /** The group letter of the match in a Groups phase ("A"), or `undefined`
+   * in a round robin (Task 131 choice 6). */
+  groupTag: string | undefined;
   home: TeamDisplay;
   away: TeamDisplay;
   result: PhaseResult | undefined;
@@ -44,13 +49,21 @@ export interface FixtureRow {
   scorinate: () => void;
 }
 
+/** One team with a bye on the visible matchday. A Groups phase has one
+ * for each group with a bye, with its group letter (Task 131 choice 6). */
+export interface ByeRow {
+  key: string;
+  groupTag: string | undefined;
+  teamName: string;
+}
+
 /** What `useFixtures` gives `FixturesView`. */
 export interface Fixtures {
   hasFixtures: boolean;
   nav: MatchdayNav;
   rows: FixtureRow[];
-  /** The name of the team with a bye on the visible matchday, if any. */
-  byeTeamName: string | undefined;
+  /** The byes of the visible matchday, in group order. */
+  byes: ByeRow[];
   matchdayFullyPlayed: boolean;
   scorinateMatchday: () => void;
 }

@@ -83,6 +83,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 130 | Wizard Teams step with groups: group columns, Shuffle, drag, Move to group | `features/leagues`, `app/state` | ✅ Done | 2026-11-01 | 2026-11-01 | [130](/docs/tasks/130-wizard-teams-step-groups.md) | M3. US-02.1, 02.4, 02.5. 27 new tests. The 22px ⋮ goes to the polish. |
 | 131 | League Detail with phases: tabs, header, badge, group cards, group fixtures, dashboard card text | `features/leagues`, `features/standings` | ✅ Done | 2026-11-02 | 2026-11-02 | [131](/docs/tasks/131-league-detail-phases.md) | M3. US-01.2, 02.2, 02.4. 30 new tests. Two review points wait for Task 132. |
 | 132 | Phase transition: "Start phase N", the confirm, the lock, the empty tab, the qualifier highlight | `features/leagues` | ✅ Done | 2026-11-02 | 2026-11-02 | [132](/docs/tasks/132-phase-transition.md) | M3. US-07.1 to 07.3. 22 new tests. Task 181 has the later Groups draw. |
+| 182 | League card: the button at the bottom edge | `features/leagues` | ✅ Done | 2026-11-02 | 2026-11-02 | [182](/docs/tasks/182-league-card-button-bottom.md) | Task created by User - 2026-11-02. From the Task 132 review. Layout only. |
 | 133 | M3 smoke check | all | ⬜ Not started |  |  |  | M3. After 130, 132. |
 | 134 | AET: a time share of the match, with the bands | `engine/scorination` | ⬜ Not started |  |  |  | M4. US-03.1. After 133. |
 | 135 | Penalties, the coin toss, the four sequences, away goals | `engine/tiebreak` | ⬜ Not started |  |  |  | M4. US-03.2, 03.3, 04.4. After 134. |

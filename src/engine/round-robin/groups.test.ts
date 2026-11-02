@@ -6,6 +6,7 @@ import {
   groupLabel,
   groupSizes,
   moveToGroup,
+  swapInGroups,
   removeFromGroups,
   resizeGroups,
   switchInGroups,
@@ -304,5 +305,36 @@ describe('groupLabel', () => {
   it('throws a RangeError for an index that is not a whole number of 0 or more', () => {
     expect(() => groupLabel(-1)).toThrow(RangeError);
     expect(() => groupLabel(1.5)).toThrow(RangeError);
+  });
+});
+
+describe('swapInGroups (Task 183)', () => {
+  it('puts each team in the place of the other, so the sizes stay', () => {
+    expect(
+      swapInGroups(
+        [
+          ['A', 'B'],
+          ['C', 'D'],
+        ],
+        'B',
+        'C'
+      )
+    ).toEqual([
+      ['A', 'C'],
+      ['B', 'D'],
+    ]);
+  });
+
+  it('throws a RangeError for an unknown team, or two teams of one group', () => {
+    const groups = [['A', 'B'], ['C']];
+    expect(() => swapInGroups(groups, 'Z', 'C')).toThrow(RangeError);
+    expect(() => swapInGroups(groups, 'A', 'Z')).toThrow(RangeError);
+    expect(() => swapInGroups(groups, 'A', 'B')).toThrow(RangeError);
+  });
+
+  it('does not change its input', () => {
+    const groups = [['A', 'B'], ['C']];
+    swapInGroups(groups, 'A', 'C');
+    expect(groups).toEqual([['A', 'B'], ['C']]);
   });
 });

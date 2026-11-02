@@ -14,6 +14,10 @@ export default interface GroupCardsProps {
   onSwitch?: (blueprintUuid: string) => void;
   onRemove?: (blueprintUuid: string) => void;
   onMove: (blueprintUuid: string, groupIndex: number) => void;
+  /** Adds the "Swap with {team}" items and the drop onto a team row: the
+   * two teams change places, so the sizes stay (Task 183). The wizard gives
+   * none. */
+  onSwap?: (blueprintUuid: string, otherUuid: string) => void;
   /** Off by default: a move can leave a group of 1, and the wizard shows the
    * fit problem. On: a team in a group of 2 cannot move, for a phase that
    * has started (Task 181 choice 4). */

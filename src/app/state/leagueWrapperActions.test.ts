@@ -23,6 +23,7 @@ import {
   scorinateFixture,
   scorinateMatchday,
   shuffleCurrentGroups,
+  swapTeamsInCurrentGroups,
   startNextPhase,
 } from './leagueWrapperActions';
 import { canStartNextPhase, phaseStandings } from './phases';
@@ -550,6 +551,32 @@ describe('shuffle and move in a later Groups phase (Task 128 choice 5)', () => {
       'A group needs at least 2 teams.'
     );
     expect(phasesOf(uuid)[1]).toBe(phase);
+  });
+
+  it('swaps two teams of two groups, keeps the sizes, and builds the fixtures again (Task 183)', async () => {
+    const uuid = await leagueInPhaseTwo();
+    const before = phasesOf(uuid)[1];
+    if (before.format !== 'groups') throw new Error('expected Groups');
+    // Group B has 2 teams: a swap works where a move does not.
+    const [a] = before.groups[0];
+    const [b] = before.groups[1];
+    swapTeamsInCurrentGroups(uuid, b, a);
+    const after = phasesOf(uuid)[1];
+    if (after.format !== 'groups') throw new Error('expected Groups');
+    expect(after.groups.map((group) => group.length)).toEqual([3, 2]);
+    expect(after.groups[0]).toContain(b);
+    expect(after.groups[1]).toContain(a);
+    expect(fixturesMatchGroups(uuid)).toBe(true);
+  });
+
+  it('throws a RangeError for a swap once the phase has a result (Task 183)', async () => {
+    const uuid = await leagueInPhaseTwo();
+    scorinateMatchday(uuid, 1);
+    const phase = phasesOf(uuid)[1];
+    if (phase.format !== 'groups') throw new Error('expected Groups');
+    expect(() =>
+      swapTeamsInCurrentGroups(uuid, phase.groups[0][0], phase.groups[1][0])
+    ).toThrow(RangeError);
   });
 
   it('throws a RangeError once the phase has a result', async () => {

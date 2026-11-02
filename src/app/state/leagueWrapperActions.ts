@@ -8,7 +8,12 @@ import {
   type PhasePlan,
 } from '@/engine/phases';
 import { createSeededRng } from '@/engine/rng';
-import { findPhaseResult, moveToGroup, type PhaseFixture } from '@/engine/round-robin';
+import {
+  findPhaseResult,
+  moveToGroup,
+  swapInGroups,
+  type PhaseFixture,
+} from '@/engine/round-robin';
 import { playMatch } from '@/engine/scorination';
 import type { PointsConfig } from '@/engine/standings';
 import type { LeagueWrapper, Phase, PhaseResult, TeamInstance } from '@/domain';
@@ -374,4 +379,16 @@ export function moveTeamInCurrentGroups(
   groupIndex: number
 ): void {
   redrawCurrentGroups(leagueUuid, (groups) => moveToGroup(groups, team, groupIndex));
+}
+
+/** A swap for a later Groups phase (Task 183): the two teams change places,
+ * so the group sizes stay, and the fixtures are built again. Throws the
+ * `swapInGroups` `RangeError` for an unknown team or two teams of one
+ * group, and a `RangeError` once the phase has a result. */
+export function swapTeamsInCurrentGroups(
+  leagueUuid: string,
+  first: string,
+  second: string
+): void {
+  redrawCurrentGroups(leagueUuid, (groups) => swapInGroups(groups, first, second));
 }

@@ -8,6 +8,7 @@ export {
   groupLabel,
   groupSizes,
   moveToGroup,
+  swapInGroups,
   removeFromGroups,
   resizeGroups,
   switchInGroups,

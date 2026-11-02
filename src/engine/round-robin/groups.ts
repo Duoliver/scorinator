@@ -148,6 +148,30 @@ export function moveToGroup<TeamId>(
 }
 
 /**
+ * A manual swap (Task 183): each team takes the place of the other, so the
+ * group sizes stay. A later Groups phase where every group has 2 teams can
+ * change its draw this way, as no move is allowed there (Task 181).
+ *
+ * Throws a `RangeError` when a team is not in a group, or when both teams
+ * are in the same group.
+ */
+export function swapInGroups<TeamId>(
+  groups: readonly (readonly TeamId[])[],
+  first: TeamId,
+  second: TeamId
+): TeamId[][] {
+  const a = groupIndexOf('swapInGroups', groups, first);
+  const b = groupIndexOf('swapInGroups', groups, second);
+  if (a === b) {
+    throw new RangeError('swapInGroups needs two teams of two different groups.');
+  }
+  const copy = copyGroups(groups);
+  copy[a] = copy[a].map((member) => (member === first ? second : member));
+  copy[b] = copy[b].map((member) => (member === second ? first : member));
+  return copy;
+}
+
+/**
  * Changes the group count after the draw (Task 125 choices 3 and 4), for
  * example when an add or a remove in size mode changes `groupCountFor`.
  *

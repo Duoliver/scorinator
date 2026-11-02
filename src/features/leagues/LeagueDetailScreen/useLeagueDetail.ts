@@ -7,6 +7,7 @@ import {
   moveTeamInCurrentGroups,
   shuffleCurrentGroups,
   startNextPhase,
+  swapTeamsInCurrentGroups,
 } from '@/app/state/leagueWrapperActions';
 import { canChangeCurrentGroups, canStartNextPhase } from '@/app/state/phases';
 import { isLeagueUnsaved, useDatabaseStore } from '@/app/state/databaseStore';
@@ -145,8 +146,8 @@ function changeDraw(change: () => void): void {
   }
 }
 
-/** The draw of the current phase while Shuffle and moves can change it
- * (Task 181, US-02.1, US-02.5), or `undefined`. */
+/** The draw of the current phase while Shuffle, moves, and swaps can change
+ * it (Tasks 181 and 183, US-02.1, US-02.5), or `undefined`. */
 function findGroupsDraw(league: LeagueWrapper): GroupsDraw | undefined {
   if (!canChangeCurrentGroups(league)) return undefined;
   const current = league.content.phases[league.content.phases.length - 1];
@@ -155,6 +156,8 @@ function findGroupsDraw(league: LeagueWrapper): GroupsDraw | undefined {
     groups: current.groups,
     onMove: (team, groupIndex) =>
       changeDraw(() => moveTeamInCurrentGroups(league.uuid, team, groupIndex)),
+    onSwap: (team, other) =>
+      changeDraw(() => swapTeamsInCurrentGroups(league.uuid, team, other)),
     onShuffle: () => changeDraw(() => shuffleCurrentGroups(league.uuid)),
   };
 }

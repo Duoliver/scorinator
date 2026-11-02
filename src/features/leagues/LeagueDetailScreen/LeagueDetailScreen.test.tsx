@@ -471,20 +471,22 @@ describe('LeagueDetailScreen', () => {
     const LINE =
       'You can change the groups until the first match has a result. A group needs at least 2 teams.';
 
-    /** Round robin of 7 (top 6), then 2 groups of 3. Phase 2 has started,
-     * with no result. */
-    function openPhaseTwoGroups(): void {
-      const base = roundRobinLeague(SEVEN);
+    /** Round robin of 7 (top 6), then 2 groups of 3, by default. With
+     * `eight`, a round robin of 8 (top 8), then 4 groups of 2. Phase 2 has
+     * started, with no result. */
+    function openPhaseTwoGroups(eight = false): void {
+      const teams = eight ? [...SEVEN, { name: 'FC Moors', colour: '#AD1457' }] : SEVEN;
+      const base = roundRobinLeague(teams);
       openTestLeague({
         ...base,
         content: {
           ...base.content,
           plans: [
-            { format: 'round-robin', legs: 'two-way', advance: { top: 6 } },
+            { format: 'round-robin', legs: 'two-way', advance: { top: eight ? 8 : 6 } },
             {
               format: 'groups',
               legs: 'two-way',
-              grouping: { by: 'count', count: 2 },
+              grouping: { by: 'count', count: eight ? 4 : 2 },
             },
           ],
         },
@@ -517,7 +519,7 @@ describe('LeagueDetailScreen', () => {
       expect(screen.queryByRole('table', { name: 'Group A' })).not.toBeInTheDocument();
     });
 
-    it('offers only the moves in the row menu, and moves a team with new fixtures', async () => {
+    it('offers the moves and the swaps in the row menu, and moves a team with new fixtures', async () => {
       openPhaseTwoGroups();
       const before = phaseTwo();
       const team = before.groups[0][0];
@@ -528,6 +530,7 @@ describe('LeagueDetailScreen', () => {
       );
       expect(screen.getAllByRole('menuitem').map((item) => item.textContent)).toEqual([
         'Move to Group B',
+        ...before.groups[1].map((other) => `Swap with ${nameOf(other)}`),
       ]);
       await userEvent.click(screen.getByRole('menuitem', { name: 'Move to Group B' }));
 
@@ -605,6 +608,54 @@ describe('LeagueDetailScreen', () => {
         screen.queryByRole('button', { name: '⟲ Shuffle groups' })
       ).not.toBeInTheDocument();
       expect(screen.queryByText(LINE)).not.toBeInTheDocument();
+    });
+
+    it('swaps two teams with the row menu in 4 groups of 2 (Task 183)', async () => {
+      openPhaseTwoGroups(true);
+      const before = phaseTwo();
+      const [a] = before.groups[0];
+      const [b] = before.groups[1];
+      render(<LeagueDetailScreen uuid={LEAGUE} />);
+
+      await userEvent.click(
+        screen.getByRole('button', { name: `Options for ${nameOf(a)}` })
+      );
+      expect(screen.getByRole('menuitem', { name: 'Move to Group B' })).toHaveAttribute(
+        'aria-disabled',
+        'true'
+      );
+      const swap = screen.getByRole('menuitem', { name: `Swap with ${nameOf(b)}` });
+      expect(swap).not.toHaveAttribute('aria-disabled');
+      await userEvent.click(swap);
+
+      const after = phaseTwo();
+      expect(after.groups.map((group) => group.length)).toEqual([2, 2, 2, 2]);
+      expect(after.groups[0]).toContain(b);
+      expect(after.groups[1]).toContain(a);
+    });
+
+    it('swaps two teams on a drop onto a team row of another group (Task 183)', () => {
+      openPhaseTwoGroups(true);
+      const before = phaseTwo();
+      const [a] = before.groups[0];
+      const [b] = before.groups[1];
+      render(<LeagueDetailScreen uuid={LEAGUE} />);
+
+      const data = new Map<string, string>();
+      const dataTransfer = {
+        setData: (type: string, value: string): void => {
+          data.set(type, value);
+        },
+        getData: (type: string): string => data.get(type) ?? '',
+      };
+      const rowOf = (group: string, uuid: string): HTMLElement =>
+        within(card(group)).getByText(nameOf(uuid)).closest('li') as HTMLElement;
+      fireEvent.dragStart(rowOf('Group A', a), { dataTransfer });
+      fireEvent.drop(rowOf('Group B', b), { dataTransfer });
+
+      const after = phaseTwo();
+      expect(after.groups[0]).toContain(b);
+      expect(after.groups[1]).toContain(a);
     });
   });
 });

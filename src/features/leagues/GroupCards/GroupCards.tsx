@@ -18,7 +18,9 @@ const DRAG_TYPE = 'text/plain';
  * its swatch, its name with the Location hint, and a ⋮ menu: Edit, Switch,
  * one "Move to Group X" item for each other group, and Remove, each when
  * its handler is given. A drag of a row onto another card moves the team.
- * The menu is the keyboard way.
+ * With `onSwap`, the menu also has one "Swap with {team}" item for each
+ * team of the other groups, and a drop onto a team row of another group
+ * swaps the two teams (Task 183). The menu is the keyboard way.
  */
 export function GroupCards({
   groups,
@@ -28,6 +30,7 @@ export function GroupCards({
   onSwitch,
   onRemove,
   onMove,
+  onSwap,
   keepTwoPerGroup,
 }: GroupCardsProps): JSX.Element {
   const teamOf = new Map(teams.map((team) => [team.blueprintUuid, team]));
@@ -49,6 +52,17 @@ export function GroupCards({
         onSelect: () => onMove(uuid, other),
       });
     });
+    if (onSwap) {
+      groups.forEach((members, other) => {
+        if (other === groupIndex) return;
+        for (const member of members) {
+          items.push({
+            label: `Swap with ${teamOf.get(member)?.name ?? member}`,
+            onSelect: () => onSwap(uuid, member),
+          });
+        }
+      });
+    }
     if (onRemove) {
       items.push({
         label: 'Remove',
@@ -70,6 +84,22 @@ export function GroupCards({
     const from = groups.findIndex((group) => group.includes(uuid));
     if (from < 0 || isStuck(from)) return;
     onMove(uuid, groupIndex);
+  };
+
+  // A drop onto a team row of another group swaps the two teams. It stops
+  // here, so the card does not also take the drop as a move.
+  const handleRowDrop = (
+    event: TargetedDragEvent<HTMLElement>,
+    target: string,
+    groupIndex: number
+  ): void => {
+    if (!onSwap) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const uuid = event.dataTransfer?.getData(DRAG_TYPE);
+    if (!uuid || groups[groupIndex]?.includes(uuid)) return;
+    if (!groups.some((group) => group.includes(uuid))) return;
+    onSwap(uuid, target);
   };
 
   return (
@@ -97,6 +127,7 @@ export function GroupCards({
                     onDragStart={(event) =>
                       event.dataTransfer?.setData(DRAG_TYPE, uuid)
                     }
+                    onDrop={(event) => handleRowDrop(event, uuid, groupIndex)}
                   >
                     <span class={styles.handle} aria-hidden="true">
                       ⠿

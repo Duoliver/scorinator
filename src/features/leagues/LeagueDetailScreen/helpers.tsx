@@ -28,6 +28,7 @@ export interface PhaseStart {
 export interface GroupsDraw {
   groups: readonly (readonly string[])[];
   onMove: (blueprintUuid: string, groupIndex: number) => void;
+  onSwap: (blueprintUuid: string, otherUuid: string) => void;
   onShuffle: () => void;
 }
 
@@ -85,6 +86,7 @@ const DrawEditor = ({
       groups={draw.groups}
       teams={league.teams}
       onMove={draw.onMove}
+      onSwap={draw.onSwap}
       keepTwoPerGroup
     />
     <p class={styles.note}>{DRAW_RULE_LINE}</p>

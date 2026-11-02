@@ -86,7 +86,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 181 | Later Groups phase: Shuffle and moves in League Detail, until its first result | `features/leagues` | ✅ Done | 2026-11-02 | 2026-11-02 | [181](/docs/tasks/181-later-groups-draw.md) | M3. US-02.1, 02.5. Split from 132. 9 new tests. |
 | 182 | League card: the button at the bottom edge | `features/leagues` | ✅ Done | 2026-11-02 | 2026-11-02 | [182](/docs/tasks/182-league-card-button-bottom.md) | Task created by User - 2026-11-02. From the Task 132 review. Layout only. |
 | 183 | Later Groups phase: rearrange groups of 2 | `engine/round-robin`, `app/state`, `features/leagues` | ✅ Done | 2026-11-02 | 2026-11-02 | [183](/docs/tasks/183-later-groups-rearrange.md) | Task created by User - 2026-11-02. From the Task 133 check, row 9. Option 1 (swap). 7 new tests. |
-| 133 | M3 smoke check | all | ⬜ Not started |  |  |  | M3. After 130, 132, 181. |
+| 133 | M3 smoke check | all | ✅ Done | 2026-11-02 | 2026-11-02 | [133](/docs/tasks/133-m3-smoke-check.md) | M3 complete. M3 end-to-end test added. The user checked 10 rows: row 8 Bracket part waits for 140. |
 | 134 | AET: a time share of the match, with the bands | `engine/scorination` | ⬜ Not started |  |  |  | M4. US-03.1. After 133. |
 | 135 | Penalties, the coin toss, the four sequences, away goals | `engine/tiebreak` | ⬜ Not started |  |  |  | M4. US-03.2, 03.3, 04.4. After 134. |
 | 136 | Bracket tree: seeds, the standard placement, byes and the bye change, round names, tie ids | `engine/bracket` | ⬜ Not started |  |  |  | M4. US-04.2, 04.10, 04.11, 04.14. After 133. |
@@ -180,6 +180,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **START BELOW, LAST ON TOP:**
 
 - **2026-11-02 (Task 183 — groups of 2 in a later phase):** The user picked a swap (option 1) to rearrange a later Groups draw where every group has 2 teams. Free moves with a warning wait for a later setting: `scorinator-future-features.md` §16, which also holds the short or full team name. The user asked to check §16 when MVP3 is refined. Detail: [Task 183](/docs/tasks/183-later-groups-rearrange.md).
+
+- **2026-11-02 (Task 133 — the M3 smoke check):** The user agreed two choices. (1) The M3 end-to-end test uses the chain Groups → Groups, so it reaches the later Shuffle (Task 181). (2) The manual check uses the 10 rows of the task file. Detail: [Task 133](/docs/tasks/133-m3-smoke-check.md).
 
 - **2026-11-02 (Task 181 — the later Groups draw):** The user agreed four choices. (1) Until the first result, the Standings tab of a later Groups phase shows the wizard group cards. (2) "⟲ Shuffle groups" sits at the end of the Standings and Fixtures row. (3) `GroupCards` and `TeamLabel` move to the `features/leagues/` root, with Edit, Switch, Remove, and the Location hint optional. (4) A team in a group of 2 has its move items off, a drop from such a group does nothing, and a line under the cards gives the rule. Detail: [Task 181](/docs/tasks/181-later-groups-draw.md).
 

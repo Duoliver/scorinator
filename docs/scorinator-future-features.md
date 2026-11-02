@@ -100,7 +100,18 @@ In MVP2, the app has no settings screen. Later, a settings feature holds:
 
 - **The team name on league screens:** the short name or the full name, by default. It depends on the short team name idea for MVP3 (`PROGRESS.md`, Open questions, 2026-11-02).
 - **A group draw that does not fit:** a group with too few teams, or group sizes that do not match the group size setting. The setting picks a warning or an error. In MVP2, a later Groups phase keeps each group at 2 teams or more (Task 181), and a swap rearranges groups of 2 (Task 183).
+- **The draw of a later Groups phase:** seeded from the order of the phase before it (§18), or random, by default.
 
 **Check this entry when MVP3 is refined:** the user asked for it on 2026-11-02.
+
+*Raised during: MVP2, Task 133 (M3 smoke check), 2026-11-02.*
+
+## 17. A better swap menu
+In MVP2, the row menu of a later Groups draw lists one "Swap with {team}" item for each team of the other groups (Task 183). A big draw gives a long menu: 16 teams in 4 groups give 12 swap items. Later, a better menu: for example, one "Swap with…" item that opens a list grouped by group, with the group letter of each team.
+
+*Raised during: MVP2, Task 183 (rearrange groups of 2), 2026-11-02.*
+
+## 18. Seeded group draw from the phase before
+In MVP2, a later Groups phase draws its qualifiers at random (US-02.1). Later, the draw can take the qualifier order of the phase before (the seeds of `pickQualifiers`) and deal the teams to the groups in turn. For example, 12 qualifiers in 3 groups: Group A gets seeds 1, 4, 7, 10, Group B gets 2, 5, 8, 11, and Group C gets 3, 6, 9, 12. A setting picks the seeded draw or the random draw by default (§16). Shuffle and the manual changes stay.
 
 *Raised during: MVP2, Task 133 (M3 smoke check), 2026-11-02.*

@@ -83,8 +83,9 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 130 | Wizard Teams step with groups: group columns, Shuffle, drag, Move to group | `features/leagues`, `app/state` | ✅ Done | 2026-11-01 | 2026-11-01 | [130](/docs/tasks/130-wizard-teams-step-groups.md) | M3. US-02.1, 02.4, 02.5. 27 new tests. The 22px ⋮ goes to the polish. |
 | 131 | League Detail with phases: tabs, header, badge, group cards, group fixtures, dashboard card text | `features/leagues`, `features/standings` | ✅ Done | 2026-11-02 | 2026-11-02 | [131](/docs/tasks/131-league-detail-phases.md) | M3. US-01.2, 02.2, 02.4. 30 new tests. Two review points wait for Task 132. |
 | 132 | Phase transition: "Start phase N", the confirm, the lock, the empty tab, the qualifier highlight | `features/leagues` | ✅ Done | 2026-11-02 | 2026-11-02 | [132](/docs/tasks/132-phase-transition.md) | M3. US-07.1 to 07.3. 22 new tests. Task 181 has the later Groups draw. |
+| 181 | Later Groups phase: Shuffle and moves in League Detail, until its first result | `features/leagues` | ✅ Done | 2026-11-02 | 2026-11-02 | [181](/docs/tasks/181-later-groups-draw.md) | M3. US-02.1, 02.5. Split from 132. 9 new tests. |
 | 182 | League card: the button at the bottom edge | `features/leagues` | ✅ Done | 2026-11-02 | 2026-11-02 | [182](/docs/tasks/182-league-card-button-bottom.md) | Task created by User - 2026-11-02. From the Task 132 review. Layout only. |
-| 133 | M3 smoke check | all | ⬜ Not started |  |  |  | M3. After 130, 132. |
+| 133 | M3 smoke check | all | ⬜ Not started |  |  |  | M3. After 130, 132, 181. |
 | 134 | AET: a time share of the match, with the bands | `engine/scorination` | ⬜ Not started |  |  |  | M4. US-03.1. After 133. |
 | 135 | Penalties, the coin toss, the four sequences, away goals | `engine/tiebreak` | ⬜ Not started |  |  |  | M4. US-03.2, 03.3, 04.4. After 134. |
 | 136 | Bracket tree: seeds, the standard placement, byes and the bye change, round names, tie ids | `engine/bracket` | ⬜ Not started |  |  |  | M4. US-04.2, 04.10, 04.11, 04.14. After 133. |
@@ -176,6 +177,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-11-02 (Task 181 — the later Groups draw):** The user agreed four choices. (1) Until the first result, the Standings tab of a later Groups phase shows the wizard group cards. (2) "⟲ Shuffle groups" sits at the end of the Standings and Fixtures row. (3) `GroupCards` and `TeamLabel` move to the `features/leagues/` root, with Edit, Switch, Remove, and the Location hint optional. (4) A team in a group of 2 has its move items off, a drop from such a group does nothing, and a line under the cards gives the rule. Detail: [Task 181](/docs/tasks/181-later-groups-draw.md).
 
 - **2026-11-02 (Task 132 — the phase transition):** The user agreed nine choices. (1) Shuffle and moves for a later Groups phase go to a new Task 181. (2) The Start button sits in the current phase tab, at the right end of the Standings and Fixtures row. (3) After the start, the new phase tab opens. (4) A Bracket next phase: the button shows, off, with the hint "A Bracket phase cannot start yet. It comes with the bracket screens." (5) The lock hint sits above the Fixtures match list, and the buttons stay, off. (6) The empty tab uses the US-07.3 text "This phase starts when phase 1 is complete.", in place of the Task 131 text. (7) A complete phase that is not the last shows "Phase complete". (8) Two tint tokens now: `#EAF3EA` and a lighter yellow. Task 152 adds the other zone tokens. (9) A `Table` prop gives each row a tone, "positive" or "caution". Detail: [Task 132](/docs/tasks/132-phase-transition.md).
 

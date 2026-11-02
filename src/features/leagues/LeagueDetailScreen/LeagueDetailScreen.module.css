@@ -42,3 +42,10 @@
   margin: 0;
   color: var(--color-fg-muted);
 }
+
+/* The draw cards and their rule line (Task 181). */
+.draw {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}

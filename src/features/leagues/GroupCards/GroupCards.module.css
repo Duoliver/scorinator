@@ -27,8 +27,12 @@
   letter-spacing: 0.05em;
 }
 
+/* Each row has a bottom border, also the last one, so a card that a
+ * taller neighbour stretches still closes its last row. The list overlaps
+ * the card border by one border width, so a card at its own height shows
+ * one line at the bottom, not two (Task 181 review). */
 .rows {
-  margin: 0;
+  margin: 0 0 calc(-1 * var(--border-width));
   padding: 0;
   list-style: none;
 }
@@ -41,10 +45,6 @@
   border-bottom: var(--border-width) solid var(--color-fg);
   font-size: var(--font-size-md);
   cursor: grab;
-}
-
-.row:last-child {
-  border-bottom: none;
 }
 
 .handle {

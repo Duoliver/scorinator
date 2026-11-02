@@ -13,6 +13,7 @@ import {
   SALT_MARSH,
 } from '@/test/databaseRecords';
 import {
+  canChangeCurrentGroups,
   canStartNextPhase,
   leagueLotOf,
   phaseQualifierMarks,
@@ -263,5 +264,46 @@ describe('phaseQualifierMarks (Task 132, US-02.2, US-07.2)', () => {
     expect([...marks.keys()].sort()).toEqual([...qualifiers].sort());
     expect(qualifiers).toHaveLength(3);
     expect([...marks.values()].every((mark) => mark === 'qualifier')).toBe(true);
+  });
+});
+
+describe('canChangeCurrentGroups (Task 181, US-02.1)', () => {
+  const laterGroups = (results: PhaseResult[] = []): LeagueWrapper => {
+    const wrapper = groupsLeague();
+    const [phase] = wrapper.content.phases;
+    if (phase.format !== 'groups') throw new Error('expected Groups');
+    return {
+      ...wrapper,
+      content: {
+        ...wrapper.content,
+        phases: [
+          {
+            format: 'round-robin',
+            legs: 'two-way',
+            fixtures: [],
+            byes: [],
+            results: [],
+          },
+          { ...phase, results },
+        ],
+      },
+    };
+  };
+
+  it('is true for a later Groups phase with no result', () => {
+    expect(canChangeCurrentGroups(laterGroups())).toBe(true);
+  });
+
+  it('is false after the first result', () => {
+    expect(
+      canChangeCurrentGroups(
+        laterGroups([result('p1.g1.md1.m1', SALT_MARSH, HARBORVIEW)])
+      )
+    ).toBe(false);
+  });
+
+  it('is false for phase 1 and for a round robin', () => {
+    expect(canChangeCurrentGroups(groupsLeague())).toBe(false);
+    expect(canChangeCurrentGroups(leagueWrapper())).toBe(false);
   });
 });

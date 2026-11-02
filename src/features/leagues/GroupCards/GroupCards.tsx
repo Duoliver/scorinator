@@ -2,7 +2,7 @@ import type { JSX, TargetedDragEvent } from 'preact';
 import { DropdownMenu, type DropdownMenuItem } from '@/design-system';
 import { groupLabel } from '@/engine/round-robin';
 import { TeamSwatch } from '@/features/components';
-import { TeamLabel } from '@/features/leagues/LeagueSetupScreen/steps/TeamLabel';
+import { TeamLabel } from '@/features/leagues/TeamLabel';
 import type GroupCardsProps from './types';
 import styles from './GroupCards.module.css';
 
@@ -12,11 +12,13 @@ export type { GroupCardsProps };
 const DRAG_TYPE = 'text/plain';
 
 /**
- * The phase-1 draw of the Teams step (Task 130, US-02.4, US-02.5): one card
- * for each group, in a row that wraps. Each team row has ⠿, its swatch, its
- * name with the Location hint, and a ⋮ menu: Edit, Switch, one "Move to
- * Group X" item for each other group, and Remove. A drag of a row onto
- * another card moves the team. The menu is the keyboard way.
+ * A draw that the user can change (US-02.4, US-02.5): the phase-1 draw of
+ * the Teams step (Task 130), or a later Groups draw in League Detail (Task
+ * 181). One card for each group, in a row that wraps. Each team row has ⠿,
+ * its swatch, its name with the Location hint, and a ⋮ menu: Edit, Switch,
+ * one "Move to Group X" item for each other group, and Remove, each when
+ * its handler is given. A drag of a row onto another card moves the team.
+ * The menu is the keyboard way.
  */
 export function GroupCards({
   groups,
@@ -26,24 +28,37 @@ export function GroupCards({
   onSwitch,
   onRemove,
   onMove,
+  keepTwoPerGroup,
 }: GroupCardsProps): JSX.Element {
   const teamOf = new Map(teams.map((team) => [team.blueprintUuid, team]));
+  // A move out of a group of 2 would leave 1 team (Task 181 choice 4).
+  const isStuck = (groupIndex: number): boolean =>
+    Boolean(keepTwoPerGroup) && (groups[groupIndex]?.length ?? 0) <= 2;
 
-  const menuItems = (uuid: string, groupIndex: number): DropdownMenuItem[] => [
-    { label: 'Edit', icon: '✎', onSelect: () => onEdit(uuid) },
-    { label: 'Switch', icon: '⇄', onSelect: () => onSwitch(uuid) },
-    ...groups.flatMap((_, other) =>
-      other === groupIndex
-        ? []
-        : [
-            {
-              label: `Move to Group ${groupLabel(other)}`,
-              onSelect: () => onMove(uuid, other),
-            },
-          ]
-    ),
-    { label: 'Remove', icon: '✕', tone: 'danger', onSelect: () => onRemove(uuid) },
-  ];
+  const menuItems = (uuid: string, groupIndex: number): DropdownMenuItem[] => {
+    const items: DropdownMenuItem[] = [];
+    if (onEdit) items.push({ label: 'Edit', icon: '✎', onSelect: () => onEdit(uuid) });
+    if (onSwitch) {
+      items.push({ label: 'Switch', icon: '⇄', onSelect: () => onSwitch(uuid) });
+    }
+    groups.forEach((_, other) => {
+      if (other === groupIndex) return;
+      items.push({
+        label: `Move to Group ${groupLabel(other)}`,
+        disabled: isStuck(groupIndex),
+        onSelect: () => onMove(uuid, other),
+      });
+    });
+    if (onRemove) {
+      items.push({
+        label: 'Remove',
+        icon: '✕',
+        tone: 'danger',
+        onSelect: () => onRemove(uuid),
+      });
+    }
+    return items;
+  };
 
   const handleDrop = (
     event: TargetedDragEvent<HTMLElement>,
@@ -52,6 +67,8 @@ export function GroupCards({
     event.preventDefault();
     const uuid = event.dataTransfer?.getData(DRAG_TYPE);
     if (!uuid || groups[groupIndex]?.includes(uuid)) return;
+    const from = groups.findIndex((group) => group.includes(uuid));
+    if (from < 0 || isStuck(from)) return;
     onMove(uuid, groupIndex);
   };
 
@@ -86,7 +103,7 @@ export function GroupCards({
                     </span>
                     <TeamSwatch colour={team.colour} />
                     <span class={styles.label}>
-                      <TeamLabel name={team.name} location={locationOf(uuid)} />
+                      <TeamLabel name={team.name} location={locationOf?.(uuid) ?? ''} />
                     </span>
                     <DropdownMenu
                       label={`Options for ${team.name}`}

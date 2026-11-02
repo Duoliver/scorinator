@@ -5,7 +5,7 @@ import { SetupChips } from '@/features/leagues/LeagueSetupScreen/steps/SetupChip
 import type TeamsStepProps from './types';
 import type { TeamsStepState } from './types';
 import { EditTeamDrawer } from './EditTeamDrawer';
-import { GroupCards } from './GroupCards';
+import { GroupCards } from '@/features/leagues/GroupCards';
 import { describeNotFound, getRowKey } from './helpers';
 import { useTeamsStep } from './useTeamsStep';
 import styles from './TeamsStep.module.css';

@@ -37,9 +37,17 @@
   border: var(--border-width) solid var(--color-fg);
 }
 
-/* The card border is the table border. */
+/* The card border is the table border. The table overlaps the card
+ * border by one border width, and its last row keeps its bottom border, so
+ * a card that a taller neighbour stretches still closes its last row (Task
+ * 181 review). */
 .card [role='table'] {
   border: none;
+  margin-bottom: calc(-1 * var(--border-width));
+}
+
+.card [role='row']:last-child {
+  border-bottom: var(--border-width) solid var(--color-fg);
 }
 
 /* The dark band with the group name, in its own row (choice 5). */

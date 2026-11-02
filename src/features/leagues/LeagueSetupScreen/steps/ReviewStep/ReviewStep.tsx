@@ -15,7 +15,7 @@ import {
   endsWithGroups,
   GROUPS_LAST_WARNING,
 } from '@/features/leagues/LeagueSetupScreen/phaseChecks';
-import { TeamLabel } from '@/features/leagues/LeagueSetupScreen/steps/TeamLabel';
+import { TeamLabel } from '@/features/leagues/TeamLabel';
 import { useBlueprintLocation } from '@/features/leagues/LeagueSetupScreen/useBlueprintLocation';
 import type ReviewStepProps from './types';
 import styles from './ReviewStep.module.css';

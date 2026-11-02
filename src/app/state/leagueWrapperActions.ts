@@ -1,7 +1,6 @@
 import { uuidV4, type RandomBytes } from '@/engine/identity';
 import {
   buildPhase,
-  canChangeDraw,
   checkPhaseChain,
   checkPhaseFit,
   pickQualifiers,
@@ -15,7 +14,12 @@ import type { PointsConfig } from '@/engine/standings';
 import type { LeagueWrapper, Phase, PhaseResult, TeamInstance } from '@/domain';
 import { cryptoRandomBytes, freshSeed } from '@/app/random';
 import { findCurrentPhase } from './currentPhase';
-import { canStartNextPhase, leagueLotOf, phaseStandings } from './phases';
+import {
+  canChangeCurrentGroups,
+  canStartNextPhase,
+  leagueLotOf,
+  phaseStandings,
+} from './phases';
 import { pickTeamTrigrams } from './teamInstances';
 import { requireOpenDatabase, useDatabaseStore } from './databaseStore';
 
@@ -321,7 +325,7 @@ export function startNextPhase(leagueUuid: string): void {
 /**
  * Builds the current Groups phase again from a new draw (Task 128 choice
  * 5). Only for a Groups phase after phase 1, while it has no result
- * (`canChangeDraw`, US-02.1): phase 1 draws in the wizard. Throws a
+ * (`canChangeCurrentGroups`, US-02.1): phase 1 draws in the wizard. Throws a
  * `RangeError` otherwise.
  */
 function redrawCurrentGroups(
@@ -332,7 +336,7 @@ function redrawCurrentGroups(
     const { phases, plans } = wrapper.content;
     const index = phases.length - 1;
     const current = phases[index];
-    if (index < 1 || current?.format !== 'groups' || !canChangeDraw(current.results)) {
+    if (!canChangeCurrentGroups(wrapper) || current?.format !== 'groups') {
       throw new RangeError(
         'Only a later Groups phase with no result can change its draw.'
       );

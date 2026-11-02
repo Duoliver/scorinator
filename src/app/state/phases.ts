@@ -1,5 +1,5 @@
 import { fixedLot } from '@/engine/identity';
-import { isPhaseComplete, pickQualifiers } from '@/engine/phases';
+import { canChangeDraw, isPhaseComplete, pickQualifiers } from '@/engine/phases';
 import { calculateStandings, type LotOf, type StandingsRow } from '@/engine/standings';
 import type { LeagueWrapper } from '@/domain';
 
@@ -62,6 +62,16 @@ export function canStartNextPhase(wrapper: LeagueWrapper): boolean {
   const current = phases[phases.length - 1];
   if (!current || phases.length >= plans.length) return false;
   return isPhaseComplete(current.fixtures, current.results);
+}
+
+/** True when the current phase is a Groups phase after phase 1 with no
+ * result yet (US-02.1, US-02.5): Shuffle and moves can change its draw.
+ * Phase 1 draws in the wizard. */
+export function canChangeCurrentGroups(wrapper: LeagueWrapper): boolean {
+  const { phases } = wrapper.content;
+  const index = phases.length - 1;
+  const current = phases[index];
+  return index >= 1 && current?.format === 'groups' && canChangeDraw(current.results);
 }
 
 /** How a row of a phase table qualifies (US-02.2, US-07.2): a qualifier

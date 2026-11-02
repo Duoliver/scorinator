@@ -1,17 +1,18 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { act, render, screen } from '@testing-library/preact';
+import { act, fireEvent, render, screen, within } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { serializeLeagueWrapper } from '@/app/data/databaseFile';
 import { saveDatabase } from '@/app/state/databaseActions';
 import { useDatabaseStore } from '@/app/state/databaseStore';
 import {
   createLeague,
+  scorinateFixture,
   scorinateMatchday,
   startNextPhase,
 } from '@/app/state/leagueWrapperActions';
 import { newTeamInstances } from '@/app/state/teamInstances';
 import { summarizeLeague } from '@/app/state/summarizeLeague';
-import type { LeagueWrapper } from '@/domain';
+import type { GroupsPhase, LeagueWrapper } from '@/domain';
 import { LeagueDetailScreen } from './LeagueDetailScreen';
 import {
   groupsLeague,
@@ -454,6 +455,156 @@ describe('LeagueDetailScreen', () => {
       expect(button).toHaveAccessibleDescription(
         'A Bracket phase cannot start yet. It comes with the bracket screens.'
       );
+    });
+  });
+
+  describe('a later Groups draw (Task 181, US-02.1, US-02.5)', () => {
+    const SEVEN = [
+      { name: 'FC United', colour: '#E53935' },
+      { name: 'FC Rivals', colour: '#1E88E5' },
+      { name: 'FC Town', colour: '#2E7D32' },
+      { name: 'FC Rangers', colour: '#6A1B9A' },
+      { name: 'FC Harbour', colour: '#00838F' },
+      { name: 'FC Valley', colour: '#F9A825' },
+      { name: 'FC Dunes', colour: '#5D4037' },
+    ];
+    const LINE =
+      'You can change the groups until the first match has a result. A group needs at least 2 teams.';
+
+    /** Round robin of 7 (top 6), then 2 groups of 3. Phase 2 has started,
+     * with no result. */
+    function openPhaseTwoGroups(): void {
+      const base = roundRobinLeague(SEVEN);
+      openTestLeague({
+        ...base,
+        content: {
+          ...base.content,
+          plans: [
+            { format: 'round-robin', legs: 'two-way', advance: { top: 6 } },
+            {
+              format: 'groups',
+              legs: 'two-way',
+              grouping: { by: 'count', count: 2 },
+            },
+          ],
+        },
+      });
+      for (let matchday = 1; matchday <= 14; matchday++)
+        scorinateMatchday(LEAGUE, matchday);
+      startNextPhase(LEAGUE);
+    }
+    const phaseTwo = (): GroupsPhase => {
+      const phase = useDatabaseStore.getState().leagues[LEAGUE]?.content.phases[1];
+      if (phase?.format !== 'groups') throw new Error('expected a Groups phase 2');
+      return phase;
+    };
+    const card = (name: string): HTMLElement => screen.getByRole('region', { name });
+    const nameOf = (uuid: string): string =>
+      useDatabaseStore
+        .getState()
+        .leagues[LEAGUE]!.teams.find((t) => t.blueprintUuid === uuid)!.name;
+
+    it('shows the editable cards, Shuffle, and the line before the first result', () => {
+      openPhaseTwoGroups();
+      render(<LeagueDetailScreen uuid={LEAGUE} />);
+
+      expect(within(card('Group A')).getAllByRole('listitem')).toHaveLength(3);
+      expect(within(card('Group B')).getAllByRole('listitem')).toHaveLength(3);
+      expect(
+        screen.getByRole('button', { name: '⟲ Shuffle groups' })
+      ).toBeInTheDocument();
+      expect(screen.getByText(LINE)).toBeInTheDocument();
+      expect(screen.queryByRole('table', { name: 'Group A' })).not.toBeInTheDocument();
+    });
+
+    it('offers only the moves in the row menu, and moves a team with new fixtures', async () => {
+      openPhaseTwoGroups();
+      const before = phaseTwo();
+      const team = before.groups[0][0];
+      render(<LeagueDetailScreen uuid={LEAGUE} />);
+
+      await userEvent.click(
+        screen.getByRole('button', { name: `Options for ${nameOf(team)}` })
+      );
+      expect(screen.getAllByRole('menuitem').map((item) => item.textContent)).toEqual([
+        'Move to Group B',
+      ]);
+      await userEvent.click(screen.getByRole('menuitem', { name: 'Move to Group B' }));
+
+      const after = phaseTwo();
+      expect(after.groups[1]).toContain(team);
+      expect(after.groups.map((group) => group.length)).toEqual([2, 4]);
+      expect(after.fixtures).not.toEqual(before.fixtures);
+      expect(within(card('Group B')).getAllByRole('listitem')).toHaveLength(4);
+    });
+
+    it('turns the moves off for a team in a group of 2 (choice 4)', async () => {
+      openPhaseTwoGroups();
+      const [groupA] = phaseTwo().groups;
+      render(<LeagueDetailScreen uuid={LEAGUE} />);
+      await userEvent.click(
+        screen.getByRole('button', { name: `Options for ${nameOf(groupA[0])}` })
+      );
+      await userEvent.click(screen.getByRole('menuitem', { name: 'Move to Group B' }));
+
+      const [stayed] = phaseTwo().groups[0];
+      await userEvent.click(
+        screen.getByRole('button', { name: `Options for ${nameOf(stayed)}` })
+      );
+
+      expect(screen.getByRole('menuitem', { name: 'Move to Group B' })).toHaveAttribute(
+        'aria-disabled',
+        'true'
+      );
+    });
+
+    it('does nothing on a drop that leaves a group with 1 team', async () => {
+      openPhaseTwoGroups();
+      const [groupA] = phaseTwo().groups;
+      render(<LeagueDetailScreen uuid={LEAGUE} />);
+      await userEvent.click(
+        screen.getByRole('button', { name: `Options for ${nameOf(groupA[0])}` })
+      );
+      await userEvent.click(screen.getByRole('menuitem', { name: 'Move to Group B' }));
+      const before = phaseTwo();
+
+      const data = new Map<string, string>();
+      const dataTransfer = {
+        setData: (type: string, value: string): void => {
+          data.set(type, value);
+        },
+        getData: (type: string): string => data.get(type) ?? '',
+      };
+      const row = within(card('Group A'))
+        .getByText(nameOf(before.groups[0][0]))
+        .closest('li') as HTMLElement;
+      fireEvent.dragStart(row, { dataTransfer });
+      fireEvent.drop(card('Group B'), { dataTransfer });
+
+      expect(phaseTwo()).toBe(before);
+    });
+
+    it('draws again on Shuffle', async () => {
+      openPhaseTwoGroups();
+      const before = phaseTwo();
+      render(<LeagueDetailScreen uuid={LEAGUE} />);
+
+      await userEvent.click(screen.getByRole('button', { name: '⟲ Shuffle groups' }));
+
+      expect(phaseTwo()).not.toBe(before);
+      expect(phaseTwo().groups.flat().sort()).toEqual(before.groups.flat().sort());
+    });
+
+    it('shows the normal group cards after the first result, with no Shuffle', () => {
+      openPhaseTwoGroups();
+      scorinateFixture(LEAGUE, phaseTwo().fixtures[0].id);
+      render(<LeagueDetailScreen uuid={LEAGUE} />);
+
+      expect(screen.getByRole('table', { name: 'Group A' })).toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: '⟲ Shuffle groups' })
+      ).not.toBeInTheDocument();
+      expect(screen.queryByText(LINE)).not.toBeInTheDocument();
     });
   });
 });

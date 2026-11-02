@@ -3,8 +3,12 @@ import type { FieldHandle } from '@/design-system';
 import { getErrorMessage } from '@/app/getErrorMessage';
 import { openLeague } from '@/app/state/databaseActions';
 import { setFileStatus } from '@/app/state/fileActions';
-import { startNextPhase } from '@/app/state/leagueWrapperActions';
-import { canStartNextPhase } from '@/app/state/phases';
+import {
+  moveTeamInCurrentGroups,
+  shuffleCurrentGroups,
+  startNextPhase,
+} from '@/app/state/leagueWrapperActions';
+import { canChangeCurrentGroups, canStartNextPhase } from '@/app/state/phases';
 import { isLeagueUnsaved, useDatabaseStore } from '@/app/state/databaseStore';
 import { summarizeLeague } from '@/app/state/summarizeLeague';
 import {
@@ -19,6 +23,7 @@ import {
   getLeagueTabs,
   getPhaseTabs,
   phaseTabId,
+  type GroupsDraw,
   type MatchdayMemory,
   type PhaseStart,
 } from './helpers';
@@ -96,7 +101,7 @@ export function useLeagueDetail(uuid: string): LeagueDetailState {
         // The `Unsaved` badge beside the title (Task 26).
         isUnsaved,
         tabs: hasPhaseTabs
-          ? getPhaseTabs(league, memory, start)
+          ? getPhaseTabs(league, memory, start, findGroupsDraw(league))
           : getLeagueTabs(league, 0, memory),
         // The current phase is the last started one.
         defaultTab: hasPhaseTabs
@@ -127,5 +132,29 @@ function findPhaseStart(
     label: `Start phase ${phases.length + 1} · ${phaseShortName(nextPlan)}`,
     hint: nextPlan.format === 'bracket' ? BRACKET_START_HINT : undefined,
     onClick: open,
+  };
+}
+
+/** Runs a draw change, and shows its error in the status line. The screen
+ * keeps a bad move off, so an error here is a fault. */
+function changeDraw(change: () => void): void {
+  try {
+    change();
+  } catch (error) {
+    setFileStatus({ tone: 'error', message: getErrorMessage(error) });
+  }
+}
+
+/** The draw of the current phase while Shuffle and moves can change it
+ * (Task 181, US-02.1, US-02.5), or `undefined`. */
+function findGroupsDraw(league: LeagueWrapper): GroupsDraw | undefined {
+  if (!canChangeCurrentGroups(league)) return undefined;
+  const current = league.content.phases[league.content.phases.length - 1];
+  if (current?.format !== 'groups') return undefined;
+  return {
+    groups: current.groups,
+    onMove: (team, groupIndex) =>
+      changeDraw(() => moveTeamInCurrentGroups(league.uuid, team, groupIndex)),
+    onShuffle: () => changeDraw(() => shuffleCurrentGroups(league.uuid)),
   };
 }

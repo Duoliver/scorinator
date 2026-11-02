@@ -2,6 +2,7 @@ import type { JSX } from 'preact';
 import { Button, Tabs, Tooltip, type TabItem } from '@/design-system';
 import type { LeagueWrapper } from '@/domain';
 import { FixturesView } from '@/features/fixtures';
+import { GroupCards } from '@/features/leagues/GroupCards';
 import { formatAdvanceText, phaseShortName } from '@/features/leagues/leagueSummary';
 import { StandingsView } from '@/features/standings';
 import styles from './LeagueDetailScreen.module.css';
@@ -21,6 +22,18 @@ export interface PhaseStart {
   hint: string | undefined;
   onClick: () => void;
 }
+
+/** The draw of the current phase while it can change (Task 181): a later
+ * Groups phase with no result. */
+export interface GroupsDraw {
+  groups: readonly (readonly string[])[];
+  onMove: (blueprintUuid: string, groupIndex: number) => void;
+  onShuffle: () => void;
+}
+
+/** The line under a draw that can change (Task 181 choice 4). */
+export const DRAW_RULE_LINE =
+  'You can change the groups until the first match has a result. A group needs at least 2 teams.';
 
 /** The reason the Start button is off for a Bracket next phase. */
 export const BRACKET_START_HINT =
@@ -52,19 +65,49 @@ const StartButton = ({ start }: { start: PhaseStart }): JSX.Element => {
   );
 };
 
+const ShuffleButton = ({ draw }: { draw: GroupsDraw }): JSX.Element => (
+  <Button variant="secondary" size="sm" onClick={draw.onShuffle}>
+    ⟲ Shuffle groups
+  </Button>
+);
+
+/** The draw cards of Task 181 (choice 1): the wizard group cards, with the
+ * moves only, and the rule line. */
+const DrawEditor = ({
+  league,
+  draw,
+}: {
+  league: LeagueWrapper;
+  draw: GroupsDraw;
+}): JSX.Element => (
+  <div class={styles.draw}>
+    <GroupCards
+      groups={draw.groups}
+      teams={league.teams}
+      onMove={draw.onMove}
+      keepTwoPerGroup
+    />
+    <p class={styles.note}>{DRAW_RULE_LINE}</p>
+  </div>
+);
+
 /** Standings and Fixtures of one started phase, matching the design
  * reference: scorination is a button inside Fixtures, not its own tab. Both
  * views read the same `league` wrapper, so a scorinate in Fixtures shows up
- * in Standings on the next tab switch. */
+ * in Standings on the next tab switch. With a `draw`, the Standings tab
+ * shows the draw cards in place of the tables (Task 181). */
 export const getLeagueTabs = (
   league: LeagueWrapper,
   phaseIndex: number,
-  memory: MatchdayMemory
+  memory: MatchdayMemory,
+  draw?: GroupsDraw
 ): TabItem[] => [
   {
     id: 'standings',
     label: 'Standings',
-    content: (
+    content: draw ? (
+      <DrawEditor league={league} draw={draw} />
+    ) : (
       <StandingsView
         league={league}
         phaseIndex={phaseIndex}
@@ -90,26 +133,32 @@ export const getLeagueTabs = (
  * phase holds its own Standings and Fixtures tabs, keyed by phase, so a
  * switch between phases mounts fresh views. The current phase has the
  * Start button of the next phase at the end of that row, when it can start
- * (Task 132 choice 2). A phase not started yet holds the US-07.3 line
+ * (Task 132 choice 2), or "⟲ Shuffle groups" while its draw can change
+ * (Task 181 choice 2). A phase not started yet holds the US-07.3 line
  * (Task 132 choice 6). */
 export const getPhaseTabs = (
   league: LeagueWrapper,
   memory: MatchdayMemory,
-  start: PhaseStart | undefined
+  start: PhaseStart | undefined,
+  draw: GroupsDraw | undefined
 ): TabItem[] =>
   league.content.plans.map((plan, index) => {
     const number = index + 1;
     const started = index < league.content.phases.length;
     const isCurrent = index === league.content.phases.length - 1;
+    const currentDraw = isCurrent ? draw : undefined;
+    let actions: JSX.Element | undefined;
+    if (isCurrent && start) actions = <StartButton start={start} />;
+    else if (currentDraw) actions = <ShuffleButton draw={currentDraw} />;
     return {
       id: phaseTabId(index),
       label: `${number} · ${phaseShortName(plan)}`,
       content: started ? (
         <Tabs
           key={phaseTabId(index)}
-          tabs={getLeagueTabs(league, index, memory)}
+          tabs={getLeagueTabs(league, index, memory, currentDraw)}
           defaultTab="standings"
-          actions={isCurrent && start ? <StartButton start={start} /> : undefined}
+          actions={actions}
         />
       ) : (
         <p class={styles.note}>

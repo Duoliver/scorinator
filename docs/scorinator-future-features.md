@@ -115,3 +115,18 @@ In MVP2, the row menu of a later Groups draw lists one "Swap with {team}" item f
 In MVP2, a later Groups phase draws its qualifiers at random (US-02.1). Later, the draw can take the qualifier order of the phase before (the seeds of `pickQualifiers`) and deal the teams to the groups in turn. For example, 12 qualifiers in 3 groups: Group A gets seeds 1, 4, 7, 10, Group B gets 2, 5, 8, 11, and Group C gets 3, 6, 9, 12. A setting picks the seeded draw or the random draw by default (§16). Shuffle and the manual changes stay.
 
 *Raised during: MVP2, Task 133 (M3 smoke check), 2026-11-02.*
+
+## 19. The current phase on the league card
+In MVP2, the dashboard card badge shows the matchday only, for example "MD 6/6" (US-01.2, Task 131 choice 4). Only the League Detail header names the phase ("Group Stage · MD 6/6"). Later, the card also shows which phase the league plays now, for example with the header text.
+
+*Raised during: MVP2, end of the M3 session, 2026-11-02.*
+
+## 20. Rename and delete a league
+In MVP2, a league keeps the name it got at "Create league", and the app cannot remove a league. Later, the user can rename a league and delete it, after a confirm. The delete removes the league file and its manifest row at the next save (`PERSISTENCE.md`).
+
+*Raised during: MVP2, end of the M3 session, 2026-11-02.*
+
+## 21. Blueprint collections
+In MVP2, the Teams screen holds one flat list of Blueprints. Later, the user can put Blueprints into collections: create a collection, add and remove teams, rename it, and disband it (the teams stay). To settle at refinement: one team in several collections or not, where collections show (Teams screen, wizard add dialog), and how the database files keep them. No spec had this before 2026-11-02.
+
+*Raised during: MVP2, end of the M3 session, 2026-11-02.*

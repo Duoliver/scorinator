@@ -28,6 +28,7 @@ export function ReviewStep({
   points,
   teams,
   plans,
+  bracketQualifiers,
   phaseProblems,
   createProblem,
   onBack,
@@ -50,7 +51,7 @@ export function ReviewStep({
         <ol class={styles.phaseList} aria-label="Phases">
           {plans.map((plan, index) => (
             <li key={index}>
-              {`${index + 1} · ${phaseShortName(plan)} · ${describePhasePlan(plan)}`}
+              {`${index + 1} · ${phaseShortName(plan)} · ${describePhasePlan(plan, plan.format === 'bracket' ? bracketQualifiers : undefined)}`}
             </li>
           ))}
         </ol>

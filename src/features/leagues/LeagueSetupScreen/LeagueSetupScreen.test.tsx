@@ -7,7 +7,12 @@ import { useLeagueDraftStore } from '@/app/state/leagueDraftStore';
 import { TIER_OVR_RANGES } from '@/engine/tier-ovr';
 import { DEFAULT_POINTS_CONFIG } from '@/engine/standings';
 import { useDatabaseStore } from '@/app/state/databaseStore';
-import { openTestDatabase, testUuid, scheduled } from '@/test/databaseRecords';
+import {
+  instance,
+  openTestDatabase,
+  scheduled,
+  testUuid,
+} from '@/test/databaseRecords';
 
 vi.mock('preact-router', () => ({ route: vi.fn() }));
 
@@ -361,7 +366,7 @@ describe('LeagueSetupScreen', () => {
       expect(screen.getByText('Group Stage → Round robin')).toBeInTheDocument();
     });
 
-    it('keeps "Create league" off while a phase is a bracket, with the reason (choice 2)', async () => {
+    it('keeps "Create league" off while a phase is a bracket, with the reason (Task 140 choice 7)', async () => {
       useLeagueDraftStore.setState({ plans: [{ format: 'bracket' }] });
       render(<LeagueSetupScreen />);
       await userEvent.type(screen.getByLabelText('League name'), 'Cup');
@@ -369,9 +374,43 @@ describe('LeagueSetupScreen', () => {
       await addTwoTeams();
       await userEvent.click(screen.getByText('Next: Review →'));
       expect(
-        screen.getByText('Bracket phases come in a later update.')
+        screen.getByText('The bracket screen comes in a later update.')
       ).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Create league' })).toBeDisabled();
+    });
+
+    it('shows the power-of-2 warning on the Teams step, and the bracket in Review (Task 140)', async () => {
+      const teams = ['a1', 'a2', 'a3'].map((slug, i) =>
+        instance({ blueprintUuid: testUuid(500 + i), slug, name: `Team ${slug}` })
+      );
+      useLeagueDraftStore.setState({
+        teams,
+        plans: [
+          {
+            format: 'bracket',
+            rules: {
+              format: 'two-legged',
+              awayGoals: true,
+              playsAet: false,
+              method: 'penalties',
+              singleMatchFinal: true,
+              thirdPlace: true,
+            },
+          },
+        ],
+      });
+      render(<LeagueSetupScreen />);
+      await userEvent.click(screen.getByRole('tab', { name: '3 · Teams' }));
+      expect(
+        screen.getByText('3 qualifiers: the bracket has 4 slots, so 1 team gets a bye.')
+      ).toBeInTheDocument();
+      await userEvent.click(screen.getByRole('tab', { name: '4 · Review' }));
+      // 3 qualifiers: no third-place tie, so no "Third place".
+      expect(
+        screen.getByText(
+          '1 · Bracket · Bracket · Two-legged · away goals on · AET off · Penalties · Single-match final'
+        )
+      ).toBeInTheDocument();
     });
 
     it('keeps the plans in the draft across a remount', async () => {

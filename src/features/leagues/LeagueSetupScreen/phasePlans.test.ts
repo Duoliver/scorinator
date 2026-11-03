@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { PhasePlan } from '@/engine/phases';
+import { DEFAULT_BRACKET_RULES, type PhasePlan } from '@/engine/phases';
 import {
   DEFAULT_PHASE_PLANS,
   addPhase,
@@ -12,6 +12,7 @@ import {
   parseWholeNumber,
   removePhase,
   setBestOfNext,
+  setBracketRules,
   setGroupBy,
   setGroupNumber,
   setPhaseFormat,
@@ -173,11 +174,99 @@ describe('the format keys and the text', () => {
     expect(describePhasePlan({ ...rr2, advance: { top: 4 } })).toBe(
       'Round robin (two-way) · Top 4 advance'
     );
-    expect(describePhasePlan(bracket)).toBe('Bracket');
+    expect(describePhasePlan(bracket)).toBe(
+      'Bracket · Single match · AET on · Penalties'
+    );
   });
 
   it('finds a bracket phase (choice 2)', () => {
     expect(hasBracketPhase([groups(2), bracket])).toBe(true);
     expect(hasBracketPhase([rr2])).toBe(false);
+  });
+});
+
+describe('the bracket settings (Task 140)', () => {
+  const plans: PhasePlan[] = [rr2, { format: 'bracket' }];
+
+  it('a change writes the full rules: the defaults plus the change (choice 2)', () => {
+    const [, bracket] = setBracketRules(plans, 1, { format: 'two-legged' });
+    expect(bracket).toEqual({
+      format: 'bracket',
+      rules: { ...DEFAULT_BRACKET_RULES, format: 'two-legged' },
+    });
+  });
+
+  it('a later change keeps the earlier one', () => {
+    const once = setBracketRules(plans, 1, { format: 'two-legged' });
+    const [, bracket] = setBracketRules(once, 1, { awayGoals: true });
+    expect(bracket).toEqual({
+      format: 'bracket',
+      rules: { ...DEFAULT_BRACKET_RULES, format: 'two-legged', awayGoals: true },
+    });
+  });
+
+  it('a switch to Single match keeps the hidden values (choice 3)', () => {
+    const two = setBracketRules(plans, 1, { format: 'two-legged', awayGoals: true });
+    const [, bracket] = setBracketRules(two, 1, { format: 'single-match' });
+    expect(bracket.format === 'bracket' && bracket.rules?.awayGoals).toBe(true);
+  });
+
+  it('changes nothing for a round-robin or Groups plan', () => {
+    expect(setBracketRules(plans, 0, { playsAet: false })).toEqual(plans);
+  });
+
+  it('does not change its input', () => {
+    const input = structuredClone(plans);
+    setBracketRules(input, 1, { thirdPlace: true });
+    expect(input).toEqual(plans);
+  });
+});
+
+describe('describePhasePlan for a bracket (Task 140 choice 6)', () => {
+  const bracket = (rules: Partial<typeof DEFAULT_BRACKET_RULES> = {}): PhasePlan => ({
+    format: 'bracket',
+    rules: { ...DEFAULT_BRACKET_RULES, ...rules },
+  });
+
+  it('a plan with no rules shows the defaults', () => {
+    expect(describePhasePlan({ format: 'bracket' })).toBe(
+      'Bracket · Single match · AET on · Penalties'
+    );
+  });
+
+  it('single match: no away goals and no single-match final, even when set', () => {
+    expect(
+      describePhasePlan(
+        bracket({
+          playsAet: false,
+          method: 'replay-coin-toss',
+          awayGoals: true,
+          singleMatchFinal: true,
+        })
+      )
+    ).toBe('Bracket · Single match · AET off · Replay→Coin toss');
+  });
+
+  it('two legs: away goals, then the single-match final', () => {
+    expect(
+      describePhasePlan(bracket({ format: 'two-legged', singleMatchFinal: true }))
+    ).toBe(
+      'Bracket · Two-legged · away goals off · AET on · Penalties · Single-match final'
+    );
+    expect(describePhasePlan(bracket({ format: 'two-legged', awayGoals: true }))).toBe(
+      'Bracket · Two-legged · away goals on · AET on · Penalties'
+    );
+  });
+
+  it('adds the third place when it is on, and the bracket can have one', () => {
+    expect(describePhasePlan(bracket({ thirdPlace: true }))).toBe(
+      'Bracket · Single match · AET on · Penalties · Third place'
+    );
+    expect(describePhasePlan(bracket({ thirdPlace: true }), 4)).toBe(
+      'Bracket · Single match · AET on · Penalties · Third place'
+    );
+    expect(describePhasePlan(bracket({ thirdPlace: true }), 3)).toBe(
+      'Bracket · Single match · AET on · Penalties'
+    );
   });
 });

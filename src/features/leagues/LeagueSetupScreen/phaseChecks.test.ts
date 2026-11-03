@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import type { PhasePlan } from '@/engine/phases';
 import {
   bestMSuggestion,
+  bracketQualifiers,
+  bracketWarning,
   endsWithGroups,
   phaseChecks,
   phaseCountLines,
@@ -171,5 +173,37 @@ describe('endsWithGroups (US-01.5)', () => {
     expect(endsWithGroups([groups({ by: 'size', size: 4 })])).toBe(true);
     expect(endsWithGroups([rr(2), groups({ by: 'size', size: 4 })])).toBe(true);
     expect(endsWithGroups([groups({ by: 'size', size: 4 }, 2), bracket])).toBe(false);
+  });
+});
+
+describe('the power-of-2 warning (US-04.9, Task 140)', () => {
+  it('gives the slots and the byes for a count that is not a power of 2', () => {
+    expect(bracketWarning(6)).toBe(
+      '6 qualifiers: the bracket has 8 slots, so 2 teams get a bye.'
+    );
+    expect(bracketWarning(7)).toBe(
+      '7 qualifiers: the bracket has 8 slots, so 1 team gets a bye.'
+    );
+    expect(bracketWarning(3)).toBe(
+      '3 qualifiers: the bracket has 4 slots, so 1 team gets a bye.'
+    );
+  });
+
+  it('gives nothing for a power of 2, or fewer than 2', () => {
+    for (const count of [0, 1, 2, 4, 8, 16])
+      expect(bracketWarning(count)).toBeUndefined();
+  });
+
+  it('bracketQualifiers gives the team count of the bracket phase, when known', () => {
+    const plans: PhasePlan[] = [rr(6), { format: 'bracket' }];
+    expect(bracketQualifiers(plans, phaseChecks(plans, 10).counts)).toBe(6);
+    expect(bracketQualifiers(plans, undefined)).toBeUndefined();
+    expect(bracketQualifiers([rr()], phaseChecks([rr()], 10).counts)).toBeUndefined();
+    expect(
+      bracketQualifiers(
+        [{ format: 'bracket' }],
+        phaseChecks([{ format: 'bracket' }], 5).counts
+      )
+    ).toBe(5);
   });
 });

@@ -1,3 +1,4 @@
+import type { BracketPlanRules } from '@/engine/bracket';
 import type { PhasePlan } from '@/engine/phases';
 import type { PhaseList } from '@/features/leagues/LeagueSetupScreen/types';
 
@@ -16,6 +17,10 @@ export interface PhaseCardView {
   problems: string[];
   /** The best M suggestion before a bracket (US-01.6). */
   suggestion?: { m: number; text: string };
+  /** The settings of a Bracket phase (Task 140): the rules, or the
+   * defaults, whether a third-place tie can exist, and the US-04.9
+   * power-of-2 warning. */
+  bracket?: { rules: BracketPlanRules; thirdPlaceAllowed: boolean; warning?: string };
 }
 
 export default interface PhaseCardProps {

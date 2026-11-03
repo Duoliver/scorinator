@@ -24,6 +24,9 @@ export default interface TeamsStepProps {
   groups?: readonly (readonly string[])[] | null;
   /** The line under the group cards, or `undefined` (Task 130 choice 5). */
   groupsAdvanceText?: string;
+  /** The US-04.9 power-of-2 warning of the bracket, or `undefined`
+   * (Task 140 choice 5). */
+  bracketWarning?: string;
   /** "⟲ Shuffle groups": a new draw (US-02.1). */
   onShuffleGroups?: () => void;
   /** Moves a team to the group at `groupIndex` (US-02.5). */

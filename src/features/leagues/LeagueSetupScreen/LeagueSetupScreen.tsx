@@ -54,6 +54,7 @@ export function LeagueSetupScreen(): JSX.Element {
           onUpdateTeam={setup.updateTeam}
           groups={setup.groups}
           groupsAdvanceText={setup.groupsAdvanceText}
+          bracketWarning={setup.bracketWarning}
           onShuffleGroups={setup.shuffleGroups}
           onMoveTeam={setup.moveTeam}
           onBack={setup.goToPhases}
@@ -71,6 +72,7 @@ export function LeagueSetupScreen(): JSX.Element {
           points={details.points}
           teams={setup.teams}
           plans={setup.phaseList.plans}
+          bracketQualifiers={setup.bracketQualifiers}
           phaseProblems={setup.phaseProblems}
           createProblem={setup.createProblem}
           onBack={setup.goToTeams}

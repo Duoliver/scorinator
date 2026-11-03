@@ -50,3 +50,16 @@
 .label {
   font-size: var(--font-size-lg);
 }
+
+/* A disabled switch: no pointer, and a muted label. */
+.root:has(.input:disabled) {
+  cursor: not-allowed;
+}
+
+.input:disabled {
+  cursor: not-allowed;
+}
+
+.input:disabled ~ .label {
+  color: var(--color-fg-muted);
+}

@@ -88,7 +88,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 183 | Later Groups phase: rearrange groups of 2 | `engine/round-robin`, `app/state`, `features/leagues` | ✅ Done | 2026-11-02 | 2026-11-02 | [183](/docs/tasks/183-later-groups-rearrange.md) | Task created by User - 2026-11-02. From the Task 133 check, row 9. Option 1 (swap). 7 new tests. |
 | 133 | M3 smoke check | all | ✅ Done | 2026-11-02 | 2026-11-02 | [133](/docs/tasks/133-m3-smoke-check.md) | M3 complete. M3 end-to-end test added. The user checked 10 rows: row 8 Bracket part waits for 140. |
 | 134 | AET: a time share of the match, with the bands | `engine/scorination` | ✅ Done | 2026-11-03 | 2026-11-03 | [134](/docs/tasks/134-aet-time-share.md) | M4. US-03.1. 14 new tests. `scorinateExtraTime` built. No caller yet: Task 137 is the first. |
-| 135 | Penalties, the coin toss, the four sequences, away goals | `engine/tiebreak` | ⬜ Not started |  |  |  | M4. US-03.2, 03.3, 04.4. After 134. |
+| 135 | Penalties, the coin toss, the four sequences, away goals | `engine/tiebreak` | ✅ Done | 2026-11-03 | 2026-11-03 | [135](/docs/tasks/135-penalties-coin-toss-tie.md) | M4. US-03.2, 03.3, 04.4. 56 new tests. `playTie` built. No caller yet: Task 137 is the first. |
 | 136 | Bracket tree: seeds, the standard placement, byes and the bye change, round names, tie ids | `engine/bracket` | ⬜ Not started |  |  |  | M4. US-04.2, 04.10, 04.11, 04.14. After 133. |
 | 137 | Bracket play: playable ties, one round, the dependent clear, third place, single-match final | `engine/bracket` | ⬜ Not started |  |  |  | M4. US-04.1, 04.5, 04.7, 04.12, 04.13. After 135, 136. |
 | 138 | Segmented control | `design-system/` | ⬜ Not started |  |  |  | M4. US-03.2, 04.1, 11.2. After 133. |
@@ -182,6 +182,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-11-03 (Task 135 — penalties, the coin toss, one tie):** The user agreed six choices. (1) `engine/tiebreak` holds `scorinatePenalties`, `tossCoin`, and `playTie`. (2) A `TieRules` type: `format`, `awayGoals`, `playsAet`, `method`, `homeAdvantage`. The string values use kebab-case, as `PhasePlan` does. (3) Each match keeps its AET goals apart, and a `decidedBy` field. (4) The higher seed takes the home slot of a neutral match. (5) The shootout score uses the home and away of the last match. (6) 20,000 runs for each statistical case. Detail: [Task 135](/docs/tasks/135-penalties-coin-toss-tie.md).
 
 - **2026-11-03 (Task 134 — AET time share):** The user agreed five choices. (1) A core `scorinatePeriod` with a time share. The bracket rolls the elasticity and calls it. (2) `scorinateMatch` keeps its RNG draw order, with a pinned-score test. (3) `scorinateExtraTime` returns the AET goals only. (4) The caller keeps the home boost. (5) 10,000 AETs for each statistical case, the Task 80 bands. The user parked a display of the score before AET: `scorinator-future-features.md` §22. Detail: [Task 134](/docs/tasks/134-aet-time-share.md).
 

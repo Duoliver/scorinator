@@ -296,7 +296,7 @@ As a user, I want an optional third-place tie between the two semi-final losers,
 **Acceptance criteria:**
 
 - [ ] A Bracket phase has a "Third-place playoff" toggle in the phase step. The default is off (Task 77).
-- [ ] The toggle is disabled when the bracket has fewer than 4 slots, because it has no semi-finals.
+- [ ] The toggle is disabled when the bracket has fewer than 4 qualifiers. With 2 there are no semi-finals. With 3, one semi-final is a bye with no loser. *(Changed on 2026-11-03, Task 137 choice 3. It said fewer than 4 slots.)*
 - [ ] The Review step adds "· Third place" to the bracket detail when the toggle is on.
 - [ ] With the toggle on, the two semi-final losers play a tie with the id `p<phase>.r<round>.third` (Task 77). The final is `p<phase>.r<round>.final`.
 - [ ] The third-place tie uses the tie format of the final (US-04.13).

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createSeededRng } from '@/engine/rng';
 import {
   THIRD_PLACE_NAME,
+  bracketMatchId,
   bracketSlotCount,
   bracketTieId,
   drawBracketSeeds,
@@ -161,11 +162,22 @@ describe('bracketTieId (Task 77)', () => {
     expect(bracketTieId({ phase: 3, round: 3, tie: 'final' })).toBe('p3.r3.final');
   });
 
+  it('builds p{phase}.r{round}.third for the third-place tie', () => {
+    expect(bracketTieId({ phase: 3, round: 3, tie: 'third' })).toBe('p3.r3.third');
+  });
+
   it.each([
     { phase: 0, round: 1, tie: 1 },
     { phase: 1, round: 1.5, tie: 1 },
     { phase: 1, round: 1, tie: 0 },
   ])('throws a RangeError for %j', (position) => {
     expect(() => bracketTieId(position)).toThrow(RangeError);
+  });
+});
+
+describe('bracketMatchId (Task 77)', () => {
+  it('adds the match part to the tie id', () => {
+    expect(bracketMatchId('p3.r2.t1', 'leg2')).toBe('p3.r2.t1.leg2');
+    expect(bracketMatchId('p3.r3.final', 'replay')).toBe('p3.r3.final.replay');
   });
 });

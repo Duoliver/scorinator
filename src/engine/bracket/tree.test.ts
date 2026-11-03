@@ -225,3 +225,47 @@ describe('buildBracketTree: byes (US-04.10, US-04.11)', () => {
     expect(byes).toEqual(['s5', 's3']);
   });
 });
+
+describe('buildBracketTree: the third-place tie (US-04.12)', () => {
+  it('is off by default', () => {
+    const rounds = roundsOf(1, teamsOf(8), []);
+    expect(rounds[2].ties.map((tie) => tie.id)).toEqual(['p1.r3.final']);
+  });
+
+  it('8 qualifiers: the losers of the semi-finals, before the final in the last round', () => {
+    const tree = buildBracketTree(1, teamsOf(8), [], true);
+    if (tree.status !== 'ready') throw new Error('The tree is not ready.');
+    const last = tree.rounds[2];
+    expect(last.ties.map((tie) => [tie.id, tie.kind])).toEqual([
+      ['p1.r3.third', 'third'],
+      ['p1.r3.final', 'final'],
+    ]);
+    expect(last.ties[0].slots).toEqual([
+      { kind: 'loser-of', tieId: 'p1.r2.t1' },
+      { kind: 'loser-of', tieId: 'p1.r2.t2' },
+    ]);
+  });
+
+  it('4 qualifiers: the losers of the first round', () => {
+    const tree = buildBracketTree(1, teamsOf(4), [], true);
+    if (tree.status !== 'ready') throw new Error('The tree is not ready.');
+    expect(tree.rounds[1].ties[0].slots).toEqual([
+      { kind: 'loser-of', tieId: 'p1.r1.t1' },
+      { kind: 'loser-of', tieId: 'p1.r1.t2' },
+    ]);
+  });
+
+  it.each([2, 3])('%i qualifiers: no third-place tie, even with the flag on', (n) => {
+    const seeds = teamsOf(n);
+    const tree = buildBracketTree(1, seeds, defaultByeTeams(seeds), true);
+    if (tree.status !== 'ready') throw new Error('The tree is not ready.');
+    const ties = tree.rounds.flatMap((round) => round.ties);
+    expect(ties.some((tie) => tie.kind === 'third')).toBe(false);
+  });
+
+  it('marks the other ties as regular ties', () => {
+    const rounds = roundsOf(1, teamsOf(8), []);
+    expect(rounds[0].ties.every((tie) => tie.kind === 'regular')).toBe(true);
+    expect(rounds[2].ties[0].kind).toBe('final');
+  });
+});

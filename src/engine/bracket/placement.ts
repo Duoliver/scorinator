@@ -1,4 +1,5 @@
 import type { Rng } from '@/engine/rng';
+import type { TieMatchPart } from '@/engine/tiebreak';
 import type { BracketTiePosition } from './types';
 
 function isPowerOfTwo(value: number): boolean {
@@ -83,7 +84,8 @@ export function roundName(teams: number): string {
 
 /**
  * Builds the id of a bracket tie from its place in the league (Task 77):
- * `p{phase}.r{round}.t{tie}`, or `p{phase}.r{round}.final` for the final.
+ * `p{phase}.r{round}.t{tie}`, or `p{phase}.r{round}.final` for the final
+ * and `p{phase}.r{round}.third` for the third-place tie.
  * As for `fixtureId`, this is the only function that builds a tie id, and
  * no code parses one.
  *
@@ -95,7 +97,7 @@ export function bracketTieId(position: BracketTiePosition): string {
     ['phase', phase],
     ['round', round],
   ];
-  if (tie !== 'final') numbers.push(['tie', tie]);
+  if (typeof tie === 'number') numbers.push(['tie', tie]);
   for (const [field, value] of numbers) {
     if (!Number.isInteger(value) || value < 1) {
       throw new RangeError(
@@ -103,5 +105,16 @@ export function bracketTieId(position: BracketTiePosition): string {
       );
     }
   }
-  return tie === 'final' ? `p${phase}.r${round}.final` : `p${phase}.r${round}.t${tie}`;
+  return typeof tie === 'number'
+    ? `p${phase}.r${round}.t${tie}`
+    : `p${phase}.r${round}.${tie}`;
+}
+
+/**
+ * Builds the id of one match of a tie (Task 77): the tie id and the part,
+ * for example `p3.r2.t1.leg2`. This is the only function that builds a
+ * match id, and no code parses one.
+ */
+export function bracketMatchId(tieId: string, part: TieMatchPart): string {
+  return `${tieId}.${part}`;
 }

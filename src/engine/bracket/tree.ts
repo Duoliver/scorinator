@@ -1,5 +1,11 @@
 import { bracketSlotCount, bracketTieId, standardPlacement } from './placement';
-import type { BracketRound, BracketSlot, BracketTie, BracketTree } from './types';
+import type {
+  BracketRound,
+  BracketSlot,
+  BracketTie,
+  BracketTieKind,
+  BracketTree,
+} from './types';
 
 /**
  * The default bye teams (US-04.10): the top seeds, one for each bye. 6
@@ -45,11 +51,11 @@ function makeTie<TeamId>(
   phase: number,
   round: number,
   tie: number,
-  isFinal: boolean,
+  kind: BracketTieKind,
   slots: [BracketSlot<TeamId>, BracketSlot<TeamId>]
 ): BracketTie<TeamId> {
-  const id = bracketTieId({ phase, round, tie: isFinal ? 'final' : tie });
-  return { id, round, tie, slots };
+  const id = bracketTieId({ phase, round, tie: kind === 'regular' ? tie : kind });
+  return { id, round, tie, kind, slots };
 }
 
 // A bye team goes on with no click (US-04.11). Any other tie sends its
@@ -68,7 +74,10 @@ function nextSlot<TeamId>(tie: BracketTie<TeamId>): BracketSlot<TeamId> {
  * The first round follows `standardPlacement`. A bye tie has the team in
  * the first slot and a `bye` in the second, and its team is already in its
  * next-round tie. Each later tie takes the winners of two adjacent ties.
- * The last round has one tie, the final. Task 137 adds the third-place tie.
+ * The last round has the final. With `thirdPlace` on and 4 qualifiers or
+ * more, it also has the third-place tie, before the final (Task 137
+ * choices 2 and 3). It takes the losers of the two semi-finals. With 3
+ * qualifiers, one semi-final is a bye with no loser, so there is none.
  *
  * With fewer bye teams than byes, gives the counts and no rounds. Throws a
  * `RangeError` for fewer than 2 qualifiers, a team named twice, more bye
@@ -78,7 +87,8 @@ function nextSlot<TeamId>(tie: BracketTie<TeamId>): BracketSlot<TeamId> {
 export function buildBracketTree<TeamId>(
   phase: number,
   seeds: readonly TeamId[],
-  byeTeams: readonly TeamId[]
+  byeTeams: readonly TeamId[],
+  thirdPlace = false
 ): BracketTree<TeamId> {
   const slotCount = bracketSlotCount(seeds.length);
   const byes = slotCount - seeds.length;
@@ -93,13 +103,15 @@ export function buildBracketTree<TeamId>(
   }
 
   const roundCount = Math.log2(slotCount);
+  const kindOf = (round: number): BracketTieKind =>
+    round === roundCount ? 'final' : 'regular';
   const byNumber = placeTeams(seeds, byeTeams);
   const placement = standardPlacement(slotCount);
   const firstTies: BracketTie<TeamId>[] = [];
   for (let i = 0; i < slotCount; i += 2) {
     const top = byNumber.get(placement[i]) ?? { kind: 'bye' };
     const bottom = byNumber.get(placement[i + 1]) ?? { kind: 'bye' };
-    firstTies.push(makeTie(phase, 1, i / 2 + 1, roundCount === 1, [top, bottom]));
+    firstTies.push(makeTie(phase, 1, i / 2 + 1, kindOf(1), [top, bottom]));
   }
 
   const rounds: BracketRound<TeamId>[] = [
@@ -110,13 +122,23 @@ export function buildBracketTree<TeamId>(
     const ties: BracketTie<TeamId>[] = [];
     for (let i = 0; i < before.length; i += 2) {
       ties.push(
-        makeTie(phase, round, i / 2 + 1, round === roundCount, [
+        makeTie(phase, round, i / 2 + 1, kindOf(round), [
           nextSlot(before[i]),
           nextSlot(before[i + 1]),
         ])
       );
     }
     rounds.push({ round, teams: slotCount / 2 ** (round - 1), ties });
+  }
+  if (thirdPlace && seeds.length >= 4) {
+    const last = rounds[rounds.length - 1];
+    const [semi1, semi2] = rounds[rounds.length - 2].ties;
+    last.ties.unshift(
+      makeTie(phase, last.round, 2, 'third', [
+        { kind: 'loser-of', tieId: semi1.id },
+        { kind: 'loser-of', tieId: semi2.id },
+      ])
+    );
   }
   return { status: 'ready', rounds };
 }

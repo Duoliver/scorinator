@@ -9,6 +9,9 @@ export default interface InputProps {
   onChange?: (value: string) => void;
   placeholder?: string;
   type?: 'text' | 'number' | 'email';
+  /** The on-screen keyboard: `numeric` for a whole-number field that keeps
+   * its text, as the wizard phase fields (Task 129). */
+  inputMode?: 'numeric';
   id?: string;
   readOnly?: boolean;
   min?: number;

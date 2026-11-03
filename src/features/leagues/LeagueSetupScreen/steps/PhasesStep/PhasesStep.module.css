@@ -1,0 +1,42 @@
+.step {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.intro {
+  margin: 0;
+  font-size: var(--font-size-md);
+  color: var(--color-fg-muted);
+}
+
+.add {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.hint {
+  margin: 0;
+  font-size: var(--font-size-md);
+  color: var(--color-fg-muted);
+}
+
+/* A fit problem (Task 177 choice 4). */
+.problem {
+  margin: 0;
+  font-size: var(--font-size-md);
+  color: var(--color-error);
+}
+
+/* The "ends with groups" warning (US-01.5): it blocks nothing. */
+.warning {
+  margin: 0;
+  font-size: var(--font-size-md);
+  color: var(--color-fg-muted);
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+}

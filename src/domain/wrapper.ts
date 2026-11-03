@@ -1,4 +1,5 @@
 import type { PointsConfig } from '@/engine/standings';
+import type { BracketPlan, Legs } from '@/engine/phases';
 import type { League, PhaseFormat } from './league';
 import type { TeamBlueprint, TeamInstance } from './team';
 
@@ -25,6 +26,11 @@ export type LeagueProgress =
   | { kind: 'phase'; phase: number; matchday: number; matchdays: number }
   | { kind: 'completed' };
 
+/** One phase of a manifest row, from its plan (Task 176 choice 4). The
+ * dashboard card shows "Round robin (single duels)" from the legs, and the
+ * short names of the phases not started yet. A bracket has no legs. */
+export type PhaseSummary = { format: PhaseFormat; legs: Legs } | BracketPlan;
+
 /**
  * The manifest row of one wrapper: the fields of its dashboard card, so the
  * dashboard does not load every wrapper (Task 76 d). One pure function
@@ -37,7 +43,7 @@ export interface WrapperSummary {
   teamCount: number;
   homeAdvantage: boolean;
   points: PointsConfig;
-  phaseFormats: PhaseFormat[];
+  phases: PhaseSummary[];
   progress: LeagueProgress;
 }
 

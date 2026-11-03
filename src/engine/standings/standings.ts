@@ -1,4 +1,4 @@
-import type { MatchResult, PointsConfig, StandingsRow } from './types';
+import type { LotOf, MatchResult, PointsConfig, StandingsRow } from './types';
 
 /** MVP1 spec §1 "Standings": win/draw/loss defaults to 3/1/0. */
 export const DEFAULT_POINTS_CONFIG: Readonly<PointsConfig> = {
@@ -17,11 +17,17 @@ export const DEFAULT_POINTS_CONFIG: Readonly<PointsConfig> = {
  * this layer — there is no standings-side state to keep in sync by hand.
  * The same `results` list also backs the head-to-head tie-break below —
  * standings needs no state beyond what this call already receives.
+ *
+ * `lotOf` gives the fixed lot of each team (Task 78 rule 1, `fixedLot` in
+ * `engine/identity`): the last resort inside a tied block, lower first.
+ * Two equal lots, or no `lotOf` at all, fall back to the roster order, the
+ * MVP1 rule.
  */
 export function calculateStandings<TeamId>(
   teams: readonly TeamId[],
   results: readonly MatchResult<TeamId>[],
-  pointsConfig: PointsConfig = DEFAULT_POINTS_CONFIG
+  pointsConfig: PointsConfig = DEFAULT_POINTS_CONFIG,
+  lotOf?: LotOf<TeamId>
 ): StandingsRow<TeamId>[] {
   const rows = new Map<TeamId, StandingsRow<TeamId>>();
   for (const team of teams) {
@@ -45,7 +51,35 @@ export function calculateStandings<TeamId>(
     applyResult(rows, result, pointsConfig);
   }
 
-  return orderAndPosition([...rows.values()], teams, results, pointsConfig);
+  return orderAndPosition(
+    [...rows.values()],
+    results,
+    pointsConfig,
+    lastResortOrder(teams, lotOf)
+  );
+}
+
+// The order inside a block level on every football criterion: the lot,
+// lower first, then the roster order. Never 0 for two roster teams, so the
+// `sortOrder` is always unique.
+function lastResortOrder<TeamId>(
+  teams: readonly TeamId[],
+  lotOf: LotOf<TeamId> | undefined
+): (a: StandingsRow<TeamId>, b: StandingsRow<TeamId>) => number {
+  const rosterIndex = new Map<TeamId, number>();
+  teams.forEach((team, i) => {
+    if (!rosterIndex.has(team)) rosterIndex.set(team, i);
+  });
+  const byRoster = (a: StandingsRow<TeamId>, b: StandingsRow<TeamId>): number =>
+    (rosterIndex.get(a.team) ?? 0) - (rosterIndex.get(b.team) ?? 0);
+  if (!lotOf) return byRoster;
+  return (a, b) => compareNumbers(lotOf(a.team), lotOf(b.team)) || byRoster(a, b);
+}
+
+function compareNumbers(a: number, b: number): number {
+  if (a < b) return -1;
+  if (a > b) return 1;
+  return 0;
 }
 
 function applyResult<TeamId>(
@@ -113,68 +147,69 @@ function getPoints(
  * consistent pairwise order, so a pairwise comparator used inside a sort
  * is not reliable there. The mini-league sidesteps this because its inputs
  * — points, goal difference, goals for, all counted only within the group
- * — are plain numbers, and comparing numbers is always transitive. A group
- * still level after its own mini-league shares one `position`, ordered
- * among themselves by roster order, the tie-break of last resort.
+ * — are plain numbers, and comparing numbers is always transitive.
  *
- * This runs one mini-league pass per group, not the fully recursive
- * version a professional competition uses when a mini-league partially
- * — but not fully — separates a group (which then rebuilds a smaller
- * mini-league from only the still-tied remainder). See the Task 4 decision
- * log for what that would take and why this task does not build it.
+ * The mini-league is recursive (Task 78 rule 2, the UEFA method): when it
+ * separates only some of the group, a new mini-league runs among each
+ * block that is still level, until a pass separates nothing. A block still
+ * level after that shares one `position`, ordered among themselves by
+ * `lastResort`: the fixed lot, then the roster order.
  */
 function orderAndPosition<TeamId>(
   rows: StandingsRow<TeamId>[],
-  teams: readonly TeamId[],
   results: readonly MatchResult<TeamId>[],
-  pointsConfig: PointsConfig
+  pointsConfig: PointsConfig,
+  lastResort: (a: StandingsRow<TeamId>, b: StandingsRow<TeamId>) => number
 ): StandingsRow<TeamId>[] {
-  const byRoster = (a: StandingsRow<TeamId>, b: StandingsRow<TeamId>): number =>
-    teams.indexOf(a.team) - teams.indexOf(b.team);
-
   const ordered: StandingsRow<TeamId>[] = [];
-  let sortOrder = 0;
 
-  for (const group of groupBy(rows, compareByMainCriteria, byRoster)) {
-    if (group.length === 1) {
-      const row = group[0];
-      sortOrder += 1;
-      row.sortOrder = sortOrder;
-      row.position = sortOrder;
-      row.positionText = String(sortOrder);
-      ordered.push(row);
-      continue;
-    }
-
-    const miniLeague = computeMiniLeague(
-      group.map((row) => row.team),
-      results,
-      pointsConfig
-    );
-    const compareByMiniLeague = (
-      a: StandingsRow<TeamId>,
-      b: StandingsRow<TeamId>
-    ): number => {
-      const miniA = miniLeague.get(a.team);
-      const miniB = miniLeague.get(b.team);
-      if (!miniA || !miniB)
-        throw new RangeError('mini-league is missing a group member.');
-      return compareByMainCriteria(miniA, miniB);
-    };
-
-    for (const subGroup of groupBy(group, compareByMiniLeague, byRoster)) {
-      const position = sortOrder + 1;
-      for (const row of subGroup) {
-        sortOrder += 1;
-        row.sortOrder = sortOrder;
+  for (const group of groupBy(rows, compareByMainCriteria, lastResort)) {
+    for (const block of splitByMiniLeague(group, results, pointsConfig, lastResort)) {
+      const position = ordered.length + 1;
+      for (const row of block) {
+        row.sortOrder = ordered.length + 1;
         row.position = position;
-        row.positionText = sortOrder === position ? String(position) : '-';
+        row.positionText = row.sortOrder === position ? String(position) : '-';
         ordered.push(row);
       }
     }
   }
 
   return ordered;
+}
+
+// Splits a group level on the main criteria into ordered blocks. Each block
+// is level on every criterion, the recursive mini-leagues included. Each
+// call works on a smaller group, so the recursion ends.
+function splitByMiniLeague<TeamId>(
+  group: StandingsRow<TeamId>[],
+  results: readonly MatchResult<TeamId>[],
+  pointsConfig: PointsConfig,
+  lastResort: (a: StandingsRow<TeamId>, b: StandingsRow<TeamId>) => number
+): StandingsRow<TeamId>[][] {
+  if (group.length === 1) return [group];
+
+  const miniLeague = computeMiniLeague(
+    group.map((row) => row.team),
+    results,
+    pointsConfig
+  );
+  const compareByMiniLeague = (
+    a: StandingsRow<TeamId>,
+    b: StandingsRow<TeamId>
+  ): number => {
+    const miniA = miniLeague.get(a.team);
+    const miniB = miniLeague.get(b.team);
+    if (!miniA || !miniB)
+      throw new RangeError('mini-league is missing a group member.');
+    return compareByMainCriteria(miniA, miniB);
+  };
+
+  const subGroups = groupBy(group, compareByMiniLeague, lastResort);
+  if (subGroups.length === 1) return subGroups;
+  return subGroups.flatMap((subGroup) =>
+    splitByMiniLeague(subGroup, results, pointsConfig, lastResort)
+  );
 }
 
 // The numbers both the main table and a mini-league rank by.

@@ -19,6 +19,15 @@ export default interface TeamsStepProps {
   onSwitchTeam: (blueprintUuid: string, replacement: TeamBlueprint) => void;
   /** Changes one Instance from the Edit drawer (US-08.4, Task 172). */
   onUpdateTeam: (blueprintUuid: string, edit: TeamInstanceEdit) => void;
+  /** The phase-1 draw as Blueprint UUIDs, when phase 1 is Groups (Task
+   * 130). The step then shows group cards in place of the table. */
+  groups?: readonly (readonly string[])[] | null;
+  /** The line under the group cards, or `undefined` (Task 130 choice 5). */
+  groupsAdvanceText?: string;
+  /** "⟲ Shuffle groups": a new draw (US-02.1). */
+  onShuffleGroups?: () => void;
+  /** Moves a team to the group at `groupIndex` (US-02.5). */
+  onMoveTeam?: (blueprintUuid: string, groupIndex: number) => void;
   onBack: () => void;
   onNext: () => void;
 }
@@ -36,6 +45,12 @@ export interface TeamsStepState {
   /** No Blueprint at all: the "first team" empty state (US-08.3). */
   hasNoBlueprints: boolean;
   columns: TableColumn<TeamInstance>[];
+  /** The Location of a team, from its Blueprint (US-09.3). */
+  locationOf: (blueprintUuid: string) => string;
+  /** Opens the Edit drawer of a team (Task 172). */
+  openEdit: (blueprintUuid: string) => void;
+  /** Opens the Switch dialog of a team (US-08.5). */
+  openSwitch: (blueprintUuid: string) => void;
   countText: string;
   canLoadAll: boolean;
   canGoNext: boolean;

@@ -16,6 +16,10 @@ export const colors = {
   errorFg: '#FFFFFF',
   warning: '#D9A900',
   warningFg: '#1A1A1A',
+  // The row tints of a table (Task 132): the qualifier rows, and the lighter
+  // place N + 1 rows of a best M. `#EAF3EA` is the MVP2 handoff value.
+  rowPositive: '#EAF3EA',
+  rowCaution: '#FBF3D6',
 } as const;
 
 /**
@@ -34,4 +38,7 @@ export const aaaTextPairs: Array<[foreground: string, background: string]> = [
   [colors.error, colors.surface],
   [colors.warningFg, colors.warning],
   [colors.fg, colors.warning],
+  // The text of a tinted table row (Task 132).
+  [colors.fg, colors.rowPositive],
+  [colors.fg, colors.rowCaution],
 ];

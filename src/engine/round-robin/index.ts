@@ -1,5 +1,18 @@
 export { generateRoundRobin } from './roundRobin';
+export { generateSingleDuels } from './singleDuels';
 export { assignFixtureIds, fixtureId } from './fixtureIds';
+export {
+  addToSmallestGroup,
+  drawGroups,
+  groupCountFor,
+  groupLabel,
+  groupSizes,
+  moveToGroup,
+  swapInGroups,
+  removeFromGroups,
+  resizeGroups,
+  switchInGroups,
+} from './groups';
 export {
   findPhaseCurrentMatchday,
   findPhaseResult,
@@ -9,6 +22,7 @@ export type {
   Bye,
   Fixture,
   FixturePosition,
+  GroupSetting,
   PhaseFixture,
   RoundRobinSchedule,
 } from './types';

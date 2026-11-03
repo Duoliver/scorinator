@@ -85,30 +85,30 @@ describe('DetailsStep', () => {
         onNext={onNext}
       />
     );
-    await userEvent.click(screen.getByText('Next: Teams →'));
+    await userEvent.click(screen.getByText('Next: Phases →'));
     expect(onNext).toHaveBeenCalled();
   });
 
   describe('Next needs a league name', () => {
     it('disables Next while the name is blank', () => {
       render(<DetailsStep initial={baseDetails} onNext={vi.fn()} />);
-      expect(screen.getByText('Next: Teams →')).toBeDisabled();
+      expect(screen.getByText('Next: Phases →')).toBeDisabled();
     });
 
     it('enables Next once the name has a letter or a number, and disables it again when cleared', async () => {
       render(<DetailsStep initial={baseDetails} onNext={vi.fn()} />);
       await userEvent.type(screen.getByLabelText('League name'), 'Coastal Premier');
-      expect(screen.getByText('Next: Teams →')).toBeEnabled();
+      expect(screen.getByText('Next: Phases →')).toBeEnabled();
       await userEvent.clear(screen.getByLabelText('League name'));
-      expect(screen.getByText('Next: Teams →')).toBeDisabled();
+      expect(screen.getByText('Next: Phases →')).toBeDisabled();
     });
 
     it('keeps Next disabled for a name with only spaces or symbols, which slug() rejects', async () => {
       render(<DetailsStep initial={baseDetails} onNext={vi.fn()} />);
       await userEvent.type(screen.getByLabelText('League name'), '   ');
-      expect(screen.getByText('Next: Teams →')).toBeDisabled();
+      expect(screen.getByText('Next: Phases →')).toBeDisabled();
       await userEvent.type(screen.getByLabelText('League name'), '!!!');
-      expect(screen.getByText('Next: Teams →')).toBeDisabled();
+      expect(screen.getByText('Next: Phases →')).toBeDisabled();
     });
 
     it('explains next to the disabled Next why it is off, and hides the hint for a valid name', async () => {
@@ -130,7 +130,7 @@ describe('DetailsStep', () => {
           onNext={vi.fn()}
         />
       );
-      expect(screen.getByText('Next: Teams →')).toBeEnabled();
+      expect(screen.getByText('Next: Phases →')).toBeEnabled();
     });
   });
 });

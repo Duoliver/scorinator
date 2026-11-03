@@ -31,6 +31,15 @@
   border-bottom: none;
 }
 
+/* The row tints of `rowTone` (Task 132). */
+.row[data-tone='positive'] {
+  background: var(--color-row-positive);
+}
+
+.row[data-tone='caution'] {
+  background: var(--color-row-caution);
+}
+
 .alignLeft {
   text-align: left;
 }
@@ -39,4 +48,16 @@
 }
 .alignRight {
   text-align: right;
+}
+
+/* A table in a narrow card (Task 131): smaller gaps, padding, and text.
+ * Two classes, so these rules beat `.headerRow` and `.row`. */
+.compact .headerRow,
+.compact .row {
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+}
+
+.compact .row {
+  font-size: var(--font-size-sm);
 }

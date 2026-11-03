@@ -1,0 +1,183 @@
+import { describe, expect, it } from 'vitest';
+import type { PhasePlan } from '@/engine/phases';
+import {
+  DEFAULT_PHASE_PLANS,
+  addPhase,
+  canAddPhase,
+  canMovePhase,
+  describePhasePlan,
+  formatKeyOf,
+  hasBracketPhase,
+  movePhase,
+  parseWholeNumber,
+  removePhase,
+  setBestOfNext,
+  setGroupBy,
+  setGroupNumber,
+  setPhaseFormat,
+  setTop,
+} from './phasePlans';
+
+const rr2: PhasePlan = { format: 'round-robin', legs: 'two-way' };
+const groups = (top?: number): PhasePlan => ({
+  format: 'groups',
+  legs: 'two-way',
+  grouping: { by: 'size', size: 4 },
+  ...(top === undefined ? {} : { advance: { top, bestOfNext: 0 } }),
+});
+const bracket: PhasePlan = { format: 'bracket' };
+
+describe('the default plans (US-01.1)', () => {
+  it('is one two-way round robin with no advancement', () => {
+    expect(DEFAULT_PHASE_PLANS).toEqual([rr2]);
+  });
+});
+
+describe('addPhase (choice 5)', () => {
+  it('adds a two-way round robin at the end, and gives the phase before it Top 2', () => {
+    expect(addPhase([rr2])).toEqual([{ ...rr2, advance: { top: 2 } }, rr2]);
+    expect(addPhase([groups()])).toEqual([groups(2), rr2]);
+  });
+
+  it('keeps the advancement that a phase already has', () => {
+    const plans = addPhase(addPhase([rr2]));
+    expect(plans[0]).toEqual({ ...rr2, advance: { top: 2 } });
+    expect(plans[1]).toEqual({ ...rr2, advance: { top: 2 } });
+  });
+
+  it('cannot add after a bracket (US-01.3)', () => {
+    expect(canAddPhase([groups(2), bracket])).toBe(false);
+    expect(canAddPhase([rr2])).toBe(true);
+  });
+});
+
+describe('removePhase', () => {
+  it('drops the advancement of the phase that becomes the last', () => {
+    expect(removePhase([groups(2), rr2], 1)).toEqual([groups()]);
+  });
+
+  it('can leave a bracket as the only phase', () => {
+    expect(removePhase([groups(2), bracket], 0)).toEqual([bracket]);
+  });
+});
+
+describe('movePhase and canMovePhase', () => {
+  it('swaps two phases, and fixes the advancement of the new last phase', () => {
+    expect(movePhase([groups(2), rr2], 0, 1)).toEqual([
+      { ...rr2, advance: { top: 2 } },
+      groups(),
+    ]);
+  });
+
+  it('cannot move past the ends', () => {
+    expect(canMovePhase([groups(2), rr2], 0, -1)).toBe(false);
+    expect(canMovePhase([groups(2), rr2], 1, 1)).toBe(false);
+    expect(canMovePhase([groups(2), rr2], 0, 1)).toBe(true);
+  });
+
+  it('cannot put a bracket before another phase (US-01.3)', () => {
+    expect(canMovePhase([groups(2), bracket], 1, -1)).toBe(false);
+    expect(canMovePhase([groups(2), bracket], 0, 1)).toBe(false);
+  });
+});
+
+describe('setPhaseFormat', () => {
+  it('gives a Groups phase size 4, and keeps the top N', () => {
+    const plans = setPhaseFormat([{ ...rr2, advance: { top: 3 } }, rr2], 0, 'grp1');
+    expect(plans[0]).toEqual({
+      format: 'groups',
+      legs: 'single-duels',
+      grouping: { by: 'size', size: 4 },
+      advance: { top: 3, bestOfNext: 0 },
+    });
+  });
+
+  it('gives a round robin from Groups the same top N, with no best M', () => {
+    const plans = setPhaseFormat([groups(2), rr2], 0, 'rr1');
+    expect(plans[0]).toEqual({
+      format: 'round-robin',
+      legs: 'single-duels',
+      advance: { top: 2 },
+    });
+  });
+
+  it('gives a bracket no advancement', () => {
+    expect(setPhaseFormat([rr2], 0, 'bracket')).toEqual([bracket]);
+  });
+
+  it('keeps the group setting when only the legs change', () => {
+    const plans = setGroupNumber([groups()], 0, 6);
+    expect(setPhaseFormat(plans, 0, 'grp1')[0]).toMatchObject({
+      grouping: { by: 'size', size: 6 },
+    });
+  });
+});
+
+describe('the field edits', () => {
+  it('sets the group number in the current mode', () => {
+    expect(setGroupNumber([groups()], 0, 5)[0]).toMatchObject({
+      grouping: { by: 'size', size: 5 },
+    });
+  });
+
+  it('switches Set by, with the default number of the mode: size 4, count 2', () => {
+    const byCount = setGroupBy([groups()], 0, 'count');
+    expect(byCount[0]).toMatchObject({ grouping: { by: 'count', count: 2 } });
+    expect(setGroupBy(byCount, 0, 'size')[0]).toMatchObject({
+      grouping: { by: 'size', size: 4 },
+    });
+  });
+
+  it('sets the top N and the best M', () => {
+    const plans = setBestOfNext(setTop([groups(2), rr2], 0, 1), 0, 2);
+    expect(plans[0]).toMatchObject({ advance: { top: 1, bestOfNext: 2 } });
+    expect(setTop([{ ...rr2, advance: { top: 2 } }, rr2], 0, 5)[0]).toEqual({
+      ...rr2,
+      advance: { top: 5 },
+    });
+  });
+});
+
+describe('parseWholeNumber (choice 4)', () => {
+  it('reads a whole number, and gives NaN for anything else', () => {
+    expect(parseWholeNumber('12')).toBe(12);
+    expect(parseWholeNumber(' 3 ')).toBe(3);
+    for (const text of ['', '2.5', '-1', 'x', '1e2']) {
+      expect(parseWholeNumber(text)).toBeNaN();
+    }
+  });
+});
+
+describe('the format keys and the text', () => {
+  it('maps each plan to its format key', () => {
+    expect(formatKeyOf(rr2)).toBe('rr2');
+    expect(formatKeyOf({ format: 'round-robin', legs: 'single-duels' })).toBe('rr1');
+    expect(formatKeyOf(groups())).toBe('grp2');
+    expect(formatKeyOf(bracket)).toBe('bracket');
+  });
+
+  it('describes a phase for the Review step', () => {
+    expect(describePhasePlan(groups(2))).toBe(
+      'Groups round robin (two-way) · size 4 · Top 2 advance per group'
+    );
+    expect(
+      describePhasePlan({
+        format: 'groups',
+        legs: 'single-duels',
+        grouping: { by: 'count', count: 6 },
+        advance: { top: 2, bestOfNext: 4 },
+      })
+    ).toBe(
+      'Groups round robin (single duels) · 6 groups · Top 2 advance per group · best 4 of place 3'
+    );
+    expect(describePhasePlan({ ...rr2, advance: { top: 4 } })).toBe(
+      'Round robin (two-way) · Top 4 advance'
+    );
+    expect(describePhasePlan(bracket)).toBe('Bracket');
+  });
+
+  it('finds a bracket phase (choice 2)', () => {
+    expect(hasBracketPhase([groups(2), bracket])).toBe(true);
+    expect(hasBracketPhase([rr2])).toBe(false);
+  });
+});

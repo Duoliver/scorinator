@@ -1,5 +1,5 @@
 import type { JSX } from 'preact';
-import { Badge, Tabs } from '@/design-system';
+import { Badge, ConfirmDialog, Tabs } from '@/design-system';
 import { ROUTES } from '@/app/routes';
 import type LeagueDetailScreenProps from './types';
 import { useLeagueDetail } from './useLeagueDetail';
@@ -33,14 +33,29 @@ export function LeagueDetailScreen({ uuid }: LeagueDetailScreenProps): JSX.Eleme
     <div class={styles.screen}>
       <div>
         {backLink}
-        <div class={styles.titleRow}>
-          <h1 class={styles.title}>{detail.league.content.name}</h1>
-          {detail.isUnsaved && <Badge tone="warning">Unsaved</Badge>}
+        <div class={styles.header}>
+          <div>
+            <div class={styles.titleRow}>
+              <h1 class={styles.title}>{detail.league.content.name}</h1>
+              {detail.isUnsaved && <Badge tone="warning">Unsaved</Badge>}
+            </div>
+            <span class={styles.meta}>{detail.meta}</span>
+          </div>
+          <Badge tone={detail.isComplete ? 'accent' : 'dark'}>{detail.progress}</Badge>
         </div>
-        <span class={styles.meta}>{detail.meta}</span>
       </div>
 
-      <Tabs tabs={detail.tabs} defaultTab="standings" />
+      <Tabs ref={detail.tabsRef} tabs={detail.tabs} defaultTab={detail.defaultTab} />
+
+      {detail.startConfirm && (
+        <ConfirmDialog
+          title={detail.startConfirm.title}
+          message={detail.startConfirm.message}
+          confirmLabel={detail.startConfirm.confirmLabel}
+          onConfirm={detail.startConfirm.onConfirm}
+          onCancel={detail.startConfirm.onCancel}
+        />
+      )}
     </div>
   );
 }

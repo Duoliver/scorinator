@@ -4,21 +4,46 @@
   gap: var(--space-5);
 }
 
+/* The card is a grid item, so the row sets its height. The content fills
+ * it, so the button can sit at the bottom edge (Task 182). */
 .card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  height: 100%;
+}
+
+/* The meta line and the points pill take the free space. */
+.body {
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
 }
 
+/* The name and the Unsaved badge on the left, the progress badge on the
+ * right, as in the MVP2 handoff (Task 131). */
 .titleRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.name {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-3);
+  min-width: 0;
 }
 
 .title {
   margin: 0;
+}
+
+.progress {
+  flex: none;
 }
 
 .meta {

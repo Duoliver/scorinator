@@ -29,3 +29,8 @@ export interface FixturePosition {
   matchday: number;
   match: number;
 }
+
+/** How the user sets a Groups phase (US-02.1): by the group size, a
+ * maximum, or by the group count. */
+export type GroupSetting =
+  { by: 'size'; size: number } | { by: 'count'; count: number };

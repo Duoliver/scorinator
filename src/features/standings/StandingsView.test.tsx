@@ -1,11 +1,12 @@
 import type { JSX } from 'preact';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { act, render, screen } from '@testing-library/preact';
+import { act, render, screen, within } from '@testing-library/preact';
 import { scorinateFixture } from '@/app/state/leagueWrapperActions';
 import { useDatabaseStore } from '@/app/state/databaseStore';
 import type { LeagueWrapper, PhaseResult } from '@/domain';
 import { StandingsView } from './StandingsView';
 import {
+  groupsLeague,
   LEAGUE,
   openTestDatabase,
   openTestLeague,
@@ -165,5 +166,166 @@ describe('StandingsView', () => {
     const totalPoints = rows.reduce((sum, row) => sum + Number(pointsOf(row)), 0);
     expect([2, 3]).toContain(totalPoints);
     expect(screen.queryByText('No matches played yet.')).not.toBeInTheDocument();
+  });
+
+  describe('a Groups phase (Task 131, US-02.2, US-02.4)', () => {
+    const SIX = [
+      ...TEAMS,
+      { name: 'FC Harbour', colour: '#6A1B9A' },
+      { name: 'FC Valley', colour: '#F9A825' },
+      { name: 'FC Dunes', colour: '#00838F' },
+    ];
+    const sixInTwo = (): LeagueWrapper =>
+      groupsLeague(SIX, [
+        [1, 2, 3],
+        [4, 5, 6],
+      ]);
+
+    /** The cell texts of each data row of one group table. */
+    function groupRows(name: string): string[][] {
+      const table = screen.getByRole('table', { name });
+      return within(table)
+        .getAllByRole('row')
+        .slice(1)
+        .map((row) => Array.from(row.children).map((cell) => cell.textContent ?? ''));
+    }
+
+    it('shows one card for each group, in group order, with its name', () => {
+      render(<StandingsView league={sixInTwo()} />);
+      expect(
+        screen.getAllByRole('table').map((t) => t.getAttribute('aria-label'))
+      ).toEqual(['Group A', 'Group B']);
+      expect(screen.getByText('Group A')).toBeInTheDocument();
+      expect(screen.getByText('Group B')).toBeInTheDocument();
+      expect(
+        groupRows('Group A')
+          .map((row) => row[1])
+          .sort()
+      ).toEqual(['FC Rivals', 'FC Town', 'FC United']);
+      expect(
+        groupRows('Group B')
+          .map((row) => row[1])
+          .sort()
+      ).toEqual(['FC Dunes', 'FC Harbour', 'FC Valley']);
+    });
+
+    it('has the columns #, Team, W, D, L, GD, Pts (choice 5)', () => {
+      render(<StandingsView league={sixInTwo()} />);
+      const table = screen.getByRole('table', { name: 'Group A' });
+      expect(
+        within(table)
+          .getAllByRole('columnheader')
+          .map((cell) => cell.textContent)
+      ).toEqual(['#', 'Team', 'W', 'D', 'L', 'GD', 'Pts']);
+    });
+
+    it('shows the MVP1 shared place for level teams', () => {
+      render(<StandingsView league={sixInTwo()} />);
+      expect(groupRows('Group A').map((row) => row[0])).toEqual(['1', '-', '-']);
+    });
+
+    it('counts only the results of the own group', () => {
+      const wrapper = sixInTwo();
+      const [phase] = wrapper.content.phases;
+      const fixture = phase.fixtures.find(
+        (candidate) => candidate.home === UNITED || candidate.away === UNITED
+      );
+      if (!fixture) throw new Error('expected a group A fixture');
+      const played: LeagueWrapper = {
+        ...wrapper,
+        content: {
+          ...wrapper.content,
+          phases: [
+            {
+              ...phase,
+              results: [score(fixture.id, fixture.home, fixture.away, 2, 0)],
+            },
+          ],
+        },
+      };
+      render(<StandingsView league={played} />);
+
+      expect(pointsOf(groupRows('Group A')[0])).toBe('3');
+      expect(groupRows('Group B').map(pointsOf)).toEqual(['0', '0', '0']);
+      expect(screen.queryByText('No matches played yet.')).not.toBeInTheDocument();
+    });
+
+    it('shows the advancement line under the cards', () => {
+      render(
+        <StandingsView
+          league={sixInTwo()}
+          advanceText="Top 2 of each group advance to the Bracket."
+        />
+      );
+      expect(
+        screen.getByText('Top 2 of each group advance to the Bracket.')
+      ).toBeInTheDocument();
+    });
+
+    it('shows the phase at the given index', () => {
+      const wrapper = league();
+      render(<StandingsView league={wrapper} phaseIndex={0} />);
+      expect(screen.getByRole('table', { name: 'Standings' })).toBeInTheDocument();
+    });
+  });
+
+  describe('the qualifier tint (Task 132, US-02.2, US-07.2)', () => {
+    const SIX = [
+      ...TEAMS,
+      { name: 'FC Harbour', colour: '#6A1B9A' },
+      { name: 'FC Valley', colour: '#F9A825' },
+      { name: 'FC Dunes', colour: '#00838F' },
+    ];
+    const tones = (name: string): (string | null)[] =>
+      within(screen.getByRole('table', { name }))
+        .getAllByRole('row')
+        .slice(1)
+        .map((row) => row.getAttribute('data-tone'));
+
+    it('tints the top N of each group, and place N + 1 lighter with a best M', () => {
+      const wrapper = groupsLeague(
+        SIX,
+        [
+          [1, 2, 3],
+          [4, 5, 6],
+        ],
+        [
+          {
+            format: 'groups',
+            legs: 'two-way',
+            grouping: { by: 'count', count: 2 },
+            advance: { top: 1, bestOfNext: 1 },
+          },
+          { format: 'bracket' },
+        ]
+      );
+      render(<StandingsView league={wrapper} />);
+      expect(tones('Group A')).toEqual(['positive', 'caution', null]);
+      expect(tones('Group B')).toEqual(['positive', 'caution', null]);
+    });
+
+    it('tints the top N of a round robin that is not the last, with its line', () => {
+      const base = league();
+      const wrapper: LeagueWrapper = {
+        ...base,
+        content: {
+          ...base.content,
+          plans: [
+            { format: 'round-robin', legs: 'two-way', advance: { top: 2 } },
+            { format: 'bracket' },
+          ],
+        },
+      };
+      render(
+        <StandingsView league={wrapper} advanceText="Top 2 advance to the Bracket." />
+      );
+      expect(tones('Standings')).toEqual(['positive', 'positive', null]);
+      expect(screen.getByText('Top 2 advance to the Bracket.')).toBeInTheDocument();
+    });
+
+    it('tints nothing in the last phase', () => {
+      render(<StandingsView league={league()} />);
+      expect(tones('Standings')).toEqual([null, null, null]);
+    });
   });
 });

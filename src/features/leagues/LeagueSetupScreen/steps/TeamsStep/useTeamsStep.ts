@@ -81,6 +81,11 @@ export function useTeamsStep({
       }
     : null;
 
+  const openEdit = (blueprintUuid: string): void => {
+    setEditUuid(blueprintUuid);
+    setOverlay('edit');
+  };
+
   const openSwitch = (blueprintUuid: string): void => {
     setSwitchUuid(blueprintUuid);
     setOverlay('switch');
@@ -164,13 +169,13 @@ export function useTeamsStep({
     columns: getTeamsStepColumns(
       locationOf,
       (uuid) => picks.get(uuid),
-      (uuid) => {
-        setEditUuid(uuid);
-        setOverlay('edit');
-      },
+      openEdit,
       openSwitch,
       onRemoveTeam
     ),
+    locationOf,
+    openEdit,
+    openSwitch,
     countText: formatTeamCount(teams.length),
     canLoadAll: available.length > 0,
     canGoNext: teams.length > 0,

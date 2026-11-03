@@ -60,6 +60,27 @@
   border-bottom: var(--border-width) solid var(--color-fg);
 }
 
+/* A Groups match starts with its group tag (Task 131 choice 6): the
+ * handoff's 50px column. */
+.matchWithGroup {
+  grid-template-columns: 3.125rem 1fr auto 1fr 9rem;
+}
+
+.groupTag {
+  display: flex;
+  justify-content: center;
+}
+
+/* Hidden from view, read by screen readers: the full "Group A". */
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 .match:last-child {
   border-bottom: none;
 }
@@ -116,6 +137,12 @@
   gap: var(--space-3);
   padding: var(--space-4) var(--space-5);
   font-size: var(--font-size-md);
+  color: var(--color-fg-muted);
+}
+
+/* The hint of a locked phase (Task 132 choice 5). */
+.lockHint {
+  margin: 0;
   color: var(--color-fg-muted);
 }
 

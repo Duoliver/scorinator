@@ -156,4 +156,17 @@ describe('Tabs', () => {
       expect(scrollTo).not.toHaveBeenCalled();
     });
   });
+
+  it('shows the actions at the end of the tab row, outside the tab list (Task 132)', () => {
+    render(
+      <Tabs
+        tabs={tabs}
+        defaultTab="standings"
+        actions={<button type="button">Go</button>}
+      />
+    );
+    const action = screen.getByRole('button', { name: 'Go' });
+    expect(screen.getByRole('tablist')).not.toContainElement(action);
+    expect(screen.queryByRole('tab', { name: 'Go' })).not.toBeInTheDocument();
+  });
 });

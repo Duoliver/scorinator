@@ -1,12 +1,13 @@
 import type { JSX } from 'preact';
 import { Tabs, type TabItem } from '@/design-system';
 import { DetailsStep } from '@/features/leagues/LeagueSetupScreen/steps/DetailsStep';
+import { PhasesStep } from '@/features/leagues/LeagueSetupScreen/steps/PhasesStep';
 import { ReviewStep } from '@/features/leagues/LeagueSetupScreen/steps/ReviewStep';
 import { TeamsStep } from '@/features/leagues/LeagueSetupScreen/steps/TeamsStep';
 import { useLeagueSetup } from './useLeagueSetup';
 import styles from './LeagueSetupScreen.module.css';
 
-/** The three-step League Setup wizard. `useLeagueSetup` gives the draft,
+/** The four-step League Setup wizard (US-01.1). `useLeagueSetup` gives the draft,
  * the step changes, and the create. */
 export function LeagueSetupScreen(): JSX.Element {
   const setup = useLeagueSetup();
@@ -19,14 +20,27 @@ export function LeagueSetupScreen(): JSX.Element {
       content: (
         <DetailsStep
           initial={details}
-          onNext={setup.goToTeams}
+          onNext={setup.goToPhases}
           ref={setup.detailsStepRef}
         />
       ),
     },
     {
+      id: 'phases',
+      label: '2 · Phases',
+      content: (
+        <PhasesStep
+          phaseList={setup.phaseList}
+          teamCount={setup.teams.length}
+          firstGroupSizes={setup.groups?.map((group) => group.length)}
+          onBack={setup.goToDetails}
+          onNext={setup.goToTeams}
+        />
+      ),
+    },
+    {
       id: 'teams',
-      label: '2 · Teams',
+      label: '3 · Teams',
       content: (
         <TeamsStep
           name={details.name}
@@ -38,20 +52,26 @@ export function LeagueSetupScreen(): JSX.Element {
           onRemoveTeam={setup.removeTeam}
           onSwitchTeam={setup.switchTeam}
           onUpdateTeam={setup.updateTeam}
-          onBack={setup.goToDetails}
+          groups={setup.groups}
+          groupsAdvanceText={setup.groupsAdvanceText}
+          onShuffleGroups={setup.shuffleGroups}
+          onMoveTeam={setup.moveTeam}
+          onBack={setup.goToPhases}
           onNext={setup.goToReview}
         />
       ),
     },
     {
       id: 'review',
-      label: '3 · Review',
+      label: '4 · Review',
       content: (
         <ReviewStep
           name={details.name}
           homeAdvantage={details.homeAdvantage}
           points={details.points}
           teams={setup.teams}
+          plans={setup.phaseList.plans}
+          phaseProblems={setup.phaseProblems}
           createProblem={setup.createProblem}
           onBack={setup.goToTeams}
           onCreate={setup.handleCreate}

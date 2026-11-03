@@ -17,7 +17,8 @@ import { useDatabaseStore } from '@/app/state/databaseStore';
  * are fake: an in-memory disk, dialogs that pick no file unless a test
  * sets one, and a fixed app data folder. A second test runs the M2 flow
  * (Task 122): a team CSV import, the wizard add dialog, and an edit for one
- * league. */
+ * league. A third test runs the M3 flow (Task 133): a Groups phase from the
+ * wizard draw, the phase start, the lock, and a later Shuffle. */
 
 const disk = vi.hoisted(() => new Map<string, string>());
 
@@ -127,6 +128,7 @@ describe('smoke: create, scorinate, save, and open a league again', () => {
     await user.click(screen.getByRole('link', { name: 'Leagues' }));
     await user.click(screen.getByRole('link', { name: 'Create league' }));
     await user.type(screen.getByLabelText('League name'), 'Coastal Premier');
+    await user.click(screen.getByRole('button', { name: 'Next: Phases →' }));
     await user.click(screen.getByRole('button', { name: 'Next: Teams →' }));
     await user.click(screen.getByRole('button', { name: 'Load them all' }));
     await user.click(screen.getByRole('button', { name: 'Next: Review →' }));
@@ -220,6 +222,7 @@ describe('smoke: M2 teams and team selection (Task 122)', () => {
     await user.click(screen.getByRole('link', { name: 'Leagues' }));
     await user.click(screen.getByRole('link', { name: 'Create league' }));
     await user.type(screen.getByLabelText('League name'), 'Coastal Premier');
+    await user.click(screen.getByRole('button', { name: 'Next: Phases →' }));
     await user.click(screen.getByRole('button', { name: 'Next: Teams →' }));
     await user.click(screen.getByRole('button', { name: '+ Add teams' }));
     const picker = screen.getByRole('dialog', { name: 'Add teams' });
@@ -277,5 +280,125 @@ describe('smoke: M2 teams and team selection (Task 122)', () => {
       { slug: 'salt-marsh-united', ovr: 77, trigram: 'SAL' },
       { slug: 'harborview-sc', ovr: expect.any(Number), trigram: 'HSC' },
     ]);
+  });
+});
+
+describe('smoke: M3 phases, groups, and the phase start (Task 133)', () => {
+  const CSV_PATH = '/home/six.csv';
+  const CSV = [
+    'Slug,Name,Colour,Tier',
+    'salt-marsh-united,Salt Marsh United,#E53935,B',
+    'harborview-sc,Harborview SC,#1E88E5,A',
+    'ironbridge-athletic,Ironbridge Athletic,#2E7D32,C',
+    'northgate-rovers,Northgate Rovers,#6A1B9A,B',
+    'copper-hills-fc,Copper Hills FC,#F9A825,C',
+    'westbrook-wanderers,Westbrook Wanderers,#00838F,A',
+  ].join('\n');
+
+  it('plays a Groups phase, starts a later Groups phase, and keeps both in a new session', async () => {
+    const user = userEvent.setup();
+    disk.set(CSV_PATH, CSV);
+    vi.mocked(open).mockResolvedValueOnce(CSV_PATH);
+    const { unmount } = render(<AppShell />);
+    expect(
+      await screen.findByRole('heading', { name: 'No leagues yet.' })
+    ).toBeInTheDocument();
+
+    // 1. Import the six teams.
+    await user.click(screen.getByRole('link', { name: 'Teams' }));
+    await user.click(screen.getByRole('button', { name: 'Import teams...' }));
+    const confirm = await screen.findByRole('dialog', { name: 'Import teams?' });
+    await user.click(within(confirm).getByRole('button', { name: 'Import' }));
+    expect(screen.getByText('6 teams')).toBeInTheDocument();
+
+    // 2. The Phases step: Groups (top 2), then Groups by count (2 groups).
+    await user.click(screen.getByRole('link', { name: 'Leagues' }));
+    await user.click(screen.getByRole('link', { name: 'Create league' }));
+    await user.type(screen.getByLabelText('League name'), 'Group Cup');
+    await user.click(screen.getByRole('button', { name: 'Next: Phases →' }));
+    const phase1 = (): HTMLElement => screen.getByRole('region', { name: 'Phase 1' });
+    await user.selectOptions(within(phase1()).getByLabelText('Format'), 'grp2');
+    await user.click(screen.getByRole('button', { name: '+ Add phase' }));
+    const phase2 = screen.getByRole('region', { name: 'Phase 2' });
+    await user.selectOptions(within(phase2).getByLabelText('Format'), 'grp2');
+    await user.selectOptions(within(phase2).getByLabelText('Set by'), 'count');
+    expect(within(phase1()).getByLabelText('Top')).toHaveValue('2');
+
+    // 3. The Teams step draws the teams into two cards of three.
+    await user.click(screen.getByRole('button', { name: 'Next: Teams →' }));
+    await user.click(screen.getByRole('button', { name: 'Load them all' }));
+    for (const name of ['Group A', 'Group B']) {
+      expect(
+        within(screen.getByRole('region', { name })).getAllByRole('listitem')
+      ).toHaveLength(3);
+    }
+    await user.click(screen.getByRole('button', { name: 'Next: Review →' }));
+    await user.click(screen.getByRole('button', { name: 'Create league' }));
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Group Cup' })
+    ).toBeInTheDocument();
+    expect(screen.getByText('Group Stage · MD 1/6')).toBeInTheDocument();
+    expect(screen.getByRole('table', { name: 'Group A' })).toBeInTheDocument();
+
+    // 4. Play phase 1 to the end, then start phase 2 through the confirm.
+    await user.click(screen.getByRole('tab', { name: 'Fixtures' }));
+    for (let matchday = 1; matchday <= 6; matchday += 1) {
+      await user.click(screen.getByRole('button', { name: 'Scorinate matchday' }));
+      if (matchday < 6)
+        await user.click(screen.getByRole('button', { name: 'Next matchday' }));
+    }
+    expect(screen.getByText('Phase complete')).toBeInTheDocument();
+    await user.click(
+      screen.getByRole('button', { name: 'Start phase 2 · Group Stage' })
+    );
+    const start = screen.getByRole('dialog', { name: 'Start phase 2?' });
+    await user.click(within(start).getByRole('button', { name: 'Start phase 2' }));
+    expect(screen.getByRole('tab', { name: '2 · Group Stage' })).toHaveAttribute(
+      'aria-selected',
+      'true'
+    );
+
+    // 5. The phase-2 draw can change until its first result. Phase 1 locks.
+    const [league] = Object.values(useDatabaseStore.getState().leagues);
+    const drawBefore = league.content.phases[1];
+    expect(drawBefore?.format === 'groups' && drawBefore.groups.flat()).toHaveLength(4);
+    await user.click(screen.getByRole('button', { name: '⟲ Shuffle groups' }));
+    const [shuffled] = Object.values(useDatabaseStore.getState().leagues);
+    expect(shuffled.content.phases[1]).not.toBe(drawBefore);
+    await user.click(screen.getByRole('tab', { name: '1 · Group Stage' }));
+    await user.click(screen.getByRole('tab', { name: 'Fixtures' }));
+    expect(
+      screen.getByText('Phase 2 started. This phase is locked.')
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Scorinate matchday' })).toBeDisabled();
+
+    // 6. Save, start a new session, and open the league again.
+    pressCtrlS();
+    expect(await screen.findByText('Saved.')).toBeInTheDocument();
+    const [leagueBefore] = Object.values(useDatabaseStore.getState().leagues);
+    unmount();
+    resetSession();
+    openAt('/');
+    render(<AppShell />);
+    expect(
+      await screen.findByRole('heading', { name: 'Group Cup' })
+    ).toBeInTheDocument();
+    expect(screen.getByText('MD 1/2')).toBeInTheDocument();
+    expect(
+      screen.getByText('Group Stage → Group Stage · 6 teams · Home adv. off')
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole('link', { name: 'Open standings' }));
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Group Cup' })
+    ).toBeInTheDocument();
+    expect(useDatabaseStore.getState().leagues[leagueBefore.uuid]).toEqual(
+      leagueBefore
+    );
+    expect(screen.getByRole('tab', { name: '2 · Group Stage' })).toHaveAttribute(
+      'aria-selected',
+      'true'
+    );
+    expect(screen.getByText('Group Stage · MD 1/2')).toBeInTheDocument();
   });
 });

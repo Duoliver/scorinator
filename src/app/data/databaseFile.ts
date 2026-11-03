@@ -11,10 +11,12 @@ import {
   type SavedWrapper,
   type SavedWrapperSummary,
 } from '@/adapters/json-io';
+import type { PhasePlan } from '@/engine/phases';
 import type {
   LeagueWrapper,
   Manifest,
   Phase,
+  PhaseSummary,
   TeamBlueprint,
   TeamInstance,
   WrapperSummary,
@@ -42,6 +44,34 @@ function blueprintToFile(blueprint: TeamBlueprint): SavedBlueprint {
   };
 }
 
+function phaseSummaryCopy(phase: PhaseSummary): PhaseSummary {
+  return phase.format === 'bracket'
+    ? { format: 'bracket' }
+    : { format: phase.format, legs: phase.legs };
+}
+
+/** A copy of a phase plan (Task 176). The plan type is the engine type, in
+ * the domain and in the file, so one copy serves both ways. */
+function planCopy(plan: PhasePlan): PhasePlan {
+  switch (plan.format) {
+    case 'bracket':
+      return { format: 'bracket' };
+    case 'round-robin':
+      return {
+        format: 'round-robin',
+        legs: plan.legs,
+        ...(plan.advance ? { advance: { top: plan.advance.top } } : {}),
+      };
+    case 'groups':
+      return {
+        format: 'groups',
+        legs: plan.legs,
+        grouping: { ...plan.grouping },
+        ...(plan.advance ? { advance: { ...plan.advance } } : {}),
+      };
+  }
+}
+
 function summaryToFile(row: WrapperSummary): SavedWrapperSummary {
   return {
     uuid: row.uuid,
@@ -50,7 +80,7 @@ function summaryToFile(row: WrapperSummary): SavedWrapperSummary {
     teamCount: row.teamCount,
     homeAdvantage: row.homeAdvantage,
     points: { ...row.points },
-    phaseFormats: [...row.phaseFormats],
+    phases: row.phases.map(phaseSummaryCopy),
     progress: { ...row.progress },
   };
 }
@@ -68,11 +98,24 @@ function instanceToFile(team: TeamInstance): SavedInstance {
 }
 
 function phaseToFile(phase: Phase): SavedPhase {
+  const fixtures = phase.fixtures.map((fixture) => ({ ...fixture }));
+  const results = phase.results.map((result) => ({ ...result }));
+  if (phase.format === 'groups') {
+    return {
+      format: 'groups',
+      legs: phase.legs,
+      groups: phase.groups.map((group) => [...group]),
+      fixtures,
+      byes: phase.byes.map((bye) => ({ ...bye })),
+      results,
+    };
+  }
   return {
-    format: phase.format,
-    fixtures: phase.fixtures.map((fixture) => ({ ...fixture })),
+    format: 'round-robin',
+    legs: phase.legs,
+    fixtures,
     byes: phase.byes.map((bye) => ({ ...bye })),
-    results: phase.results.map((result) => ({ ...result })),
+    results,
   };
 }
 
@@ -120,6 +163,7 @@ export function serializeLeagueWrapper(wrapper: LeagueWrapper): string {
       points: { ...league.points },
       createdByInstallation: league.createdByInstallation,
       lastModifiedByInstallation: league.lastModifiedByInstallation,
+      plans: league.plans.map(planCopy),
       phases: league.phases.map(phaseToFile),
     },
   };
@@ -140,6 +184,7 @@ export function parseLeagueWrapper(text: string): LeagueWrapper {
       points: { ...league.points },
       createdByInstallation: league.createdByInstallation,
       lastModifiedByInstallation: league.lastModifiedByInstallation,
+      plans: league.plans.map(planCopy),
       phases: league.phases.map(phaseFromFile),
     },
   };

@@ -1,3 +1,4 @@
+import type { PhasePlan } from '@/engine/phases';
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
@@ -8,6 +9,8 @@ const teams = [
   instance({ slug: 'fc-united', name: 'FC United', colour: '#E53935', tier: 'B' }),
 ];
 
+const ONE_PHASE: PhasePlan[] = [{ format: 'round-robin', legs: 'two-way' }];
+
 describe('ReviewStep', () => {
   it('shows the league name, config summary, and selected teams', () => {
     render(
@@ -16,6 +19,8 @@ describe('ReviewStep', () => {
         homeAdvantage
         points={{ win: 3, draw: 1, loss: 0 }}
         teams={teams}
+        plans={ONE_PHASE}
+        phaseProblems={[]}
         createProblem={null}
         onBack={vi.fn()}
         onCreate={vi.fn()}
@@ -36,6 +41,8 @@ describe('ReviewStep', () => {
         homeAdvantage={false}
         points={{ win: 3, draw: 1, loss: 0 }}
         teams={teams}
+        plans={ONE_PHASE}
+        phaseProblems={[]}
         createProblem={null}
         onBack={vi.fn()}
         onCreate={onCreate}
@@ -52,6 +59,8 @@ describe('ReviewStep', () => {
         homeAdvantage={false}
         points={{ win: 3, draw: 1, loss: 0 }}
         teams={[]}
+        plans={ONE_PHASE}
+        phaseProblems={[]}
         createProblem="The league needs at least 2 teams to start."
         onBack={vi.fn()}
         onCreate={vi.fn()}
@@ -70,6 +79,8 @@ describe('ReviewStep', () => {
         homeAdvantage={false}
         points={{ win: 3, draw: 1, loss: 0 }}
         teams={teams}
+        plans={ONE_PHASE}
+        phaseProblems={[]}
         createProblem={null}
         onBack={vi.fn()}
         onCreate={vi.fn()}
@@ -85,6 +96,8 @@ describe('ReviewStep', () => {
         homeAdvantage={false}
         points={{ win: 3, draw: 1, loss: 0 }}
         teams={teams}
+        plans={ONE_PHASE}
+        phaseProblems={[]}
         createProblem={null}
         onBack={vi.fn()}
         onCreate={vi.fn()}
@@ -111,12 +124,15 @@ describe('ReviewStep', () => {
         homeAdvantage={false}
         points={{ win: 3, draw: 1, loss: 0 }}
         teams={[instance({ blueprintUuid: testUuid(1), name: 'FC United' })]}
+        plans={ONE_PHASE}
+        phaseProblems={[]}
         createProblem={null}
         onBack={vi.fn()}
         onCreate={vi.fn()}
       />
     );
-    const row = screen.getByRole('listitem');
+    // The team row, not a phase row (Task 129).
+    const row = screen.getByText('FC United').closest('li') as HTMLElement;
     expect(row).toHaveTextContent('FC United');
     expect(row).toHaveTextContent('Unity');
   });

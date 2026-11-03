@@ -14,9 +14,14 @@ import { createLeague } from '@/app/state/leagueWrapperActions';
 import { teamListProblem } from '@/app/state/teamInstances';
 import type { LeagueWrapper } from '@/domain';
 import type { DetailsStepHandle } from '@/features/leagues/LeagueSetupScreen/steps/DetailsStep';
+import { formatAdvanceText } from '@/features/leagues/leagueSummary';
 import { leagueNameProblem } from './leagueName';
 import type { LeagueSetup } from './types';
+import { phaseChecks, phaseProblemText } from './phaseChecks';
+import { hasBracketPhase } from './phasePlans';
 import { useLeagueDraftSync } from './useLeagueDraftSync';
+import { usePhaseList } from './usePhaseList';
+import { usePhaseOneGroups } from './usePhaseOneGroups';
 import { useTeamList } from './useTeamList';
 
 /** The League Setup wizard: the draft, the step changes, and the create. */
@@ -30,13 +35,27 @@ export function useLeagueSetup(): LeagueSetup {
   const [details, setDetails] = useState<LeagueDraftDetails>(initialDraft.details);
   const [step, setStep] = useState<LeagueSetupStep>(initialDraft.step);
   const teamList = useTeamList(initialDraft.teams, initialDraft.fixedTrigrams);
+  const phaseList = usePhaseList(initialDraft.plans);
+  const phaseOne = usePhaseOneGroups(
+    teamList,
+    phaseList.plans,
+    initialDraft.groups ?? null
+  );
+  const firstGroupSizes = phaseOne.groups?.map((group) => group.length);
   const [status, setStatus] = useState<string | null>(null);
 
   const detailsStepRef = useRef<DetailsStepHandle>(null);
   const stepsRef: RefObject<FieldHandle<string>> = useRef(null);
 
   const skipDraftSync = useLeagueDraftSync(
-    { details, teams: teamList.teams, fixedTrigrams: teamList.fixedTrigrams, step },
+    {
+      details,
+      teams: teamList.teams,
+      fixedTrigrams: teamList.fixedTrigrams,
+      plans: phaseList.plans,
+      groups: phaseOne.groups,
+      step,
+    },
     detailsStepRef
   );
 
@@ -57,7 +76,22 @@ export function useLeagueSetup(): LeagueSetup {
     setStep(next);
   };
 
-  const createProblem = teamListProblem(teamList.teams);
+  // The phase problems need the team count (Task 177 choice 3).
+  const phaseProblems = phaseChecks(
+    phaseList.plans,
+    teamList.teams.length,
+    firstGroupSizes
+  ).problems.map((problem) => phaseProblemText(problem, phaseList.plans));
+  // A bracket phase cannot start before Task 139, so "Create league" stays
+  // off (Task 129 choice 2). A phase problem shows its first text (Task 177
+  // choice 6).
+  const createProblem =
+    teamListProblem(teamList.teams) ??
+    (hasBracketPhase(phaseList.plans)
+      ? 'Bracket phases come in a later update.'
+      : null) ??
+    phaseProblems[0] ??
+    null;
 
   const handleCreate = (): void => {
     // `DetailsStep` is unmounted by the time Review is reachable — `details`
@@ -80,11 +114,13 @@ export function useLeagueSetup(): LeagueSetup {
         points: details.points,
         teams: teamList.teams,
         fixedTrigrams: teamList.fixedTrigrams,
+        plans: phaseList.plans,
+        groups: phaseOne.groups ?? undefined,
       });
     } catch (error) {
-      // `createLeague` throws for a Blueprint twice in the list or a closed
-      // database. Neither can happen from this screen today. This only
-      // keeps the screen up if a store change elsewhere ever adds another.
+      // `createLeague` throws for a Blueprint twice in the list, a closed
+      // database, or plans that do not fit the teams (Task 128). Until Task
+      // 177 shows the fit problems on the steps, this status line says it.
       setStatus(getErrorMessage(error));
       return;
     }
@@ -102,10 +138,21 @@ export function useLeagueSetup(): LeagueSetup {
     step,
     details,
     createProblem,
+    phaseProblems,
     status,
     stepsRef,
     detailsStepRef,
+    // The team actions that also change the phase-1 draw (Task 130).
+    addTeams: phaseOne.addTeams,
+    removeTeam: phaseOne.removeTeam,
+    switchTeam: phaseOne.switchTeam,
+    phaseList,
+    groups: phaseOne.groups,
+    groupsAdvanceText: formatAdvanceText(phaseList.plans),
+    shuffleGroups: phaseOne.shuffleGroups,
+    moveTeam: phaseOne.moveTeam,
     goToDetails: () => goToStep('details'),
+    goToPhases: () => goToStep('phases'),
     goToTeams: () => goToStep('teams'),
     goToReview: () => goToStep('review'),
     handleTabChange: (id) => goToStep(id as LeagueSetupStep),

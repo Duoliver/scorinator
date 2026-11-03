@@ -1,20 +1,20 @@
 import { useState } from 'preact/hooks';
 import { findPhaseCurrentMatchday } from '@/engine/round-robin';
-import { findCurrentPhase } from '@/app/state/currentPhase';
 import type FixturesViewProps from './types';
 import type { MatchdayNav } from './types';
-import { EMPTY_PHASE } from './helpers';
+import { getShownPhase } from './helpers';
 
 /** The visible matchday and the header's jump buttons. The matchday is
  * local state, seeded from `initialMatchday`, and each change goes to
  * `onMatchdayChange` too. See `FixturesViewProps`. */
 export function useMatchdayNav({
   league,
+  phaseIndex,
   initialMatchday = 1,
   onMatchdayChange,
 }: FixturesViewProps): MatchdayNav {
   const [matchday, setMatchday] = useState(initialMatchday);
-  const phase = findCurrentPhase(league) ?? EMPTY_PHASE;
+  const phase = getShownPhase(league, phaseIndex);
 
   const goTo = (next: number): void => {
     setMatchday(next);
@@ -26,7 +26,7 @@ export function useMatchdayNav({
     ...phase.fixtures.map((fixture) => fixture.matchday),
     ...phase.byes.map((bye) => bye.matchday)
   );
-  // `undefined` means every match has a result: the league is completed.
+  // `undefined` means every match of the phase has a result.
   const currentMatchday = findPhaseCurrentMatchday(phase.fixtures, phase.results);
 
   return {
@@ -34,7 +34,7 @@ export function useMatchdayNav({
     totalMatchdays,
     canGoBack: matchday > 1,
     canGoForward: matchday < totalMatchdays,
-    leagueCompleted: currentMatchday === undefined,
+    phaseComplete: currentMatchday === undefined,
     atCurrentMatchday: matchday === currentMatchday,
     goToFirst: () => goTo(1),
     goToPrevious: () => goTo(matchday - 1),

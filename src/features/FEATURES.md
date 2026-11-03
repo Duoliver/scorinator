@@ -16,6 +16,8 @@ A screen folder that holds more than one component gives each component its own 
 features/leagues/
   index.ts                  the barrel for the three screens
   leagueSummary.ts          used by LeagueDetailScreen and LeagueList
+  GroupCards/               used by TeamsStep and LeagueDetailScreen
+  TeamLabel/                used by GroupCards and the setup steps
   LeagueDetailScreen/
   LeaguesDashboardScreen/
     LeagueList/             only the dashboard uses it

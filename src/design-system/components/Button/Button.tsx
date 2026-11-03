@@ -16,6 +16,8 @@ export function Button({
   href,
   'aria-label': ariaLabel,
   'aria-describedby': ariaDescribedBy,
+  'aria-haspopup': ariaHasPopup,
+  'aria-expanded': ariaExpanded,
   onClick,
 }: ButtonProps): JSX.Element {
   const className = `${styles.button} ${styles[variant]} ${styles[size]}${
@@ -56,6 +58,8 @@ export function Button({
       aria-disabled={softDisabled ? 'true' : undefined}
       aria-label={ariaLabel}
       aria-describedby={ariaDescribedBy}
+      aria-haspopup={ariaHasPopup}
+      aria-expanded={ariaExpanded}
       onClick={handleClick}
       class={className}
     >

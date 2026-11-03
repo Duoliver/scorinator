@@ -2,11 +2,12 @@ import type { JSX } from 'preact';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
-import { scorinateMatchday } from '@/app/state/leagueWrapperActions';
+import { scorinateMatchday, startNextPhase } from '@/app/state/leagueWrapperActions';
 import { useDatabaseStore } from '@/app/state/databaseStore';
 import type { LeagueWrapper, Phase } from '@/domain';
 import { FixturesView } from './FixturesView';
 import {
+  groupsLeague,
   LEAGUE,
   openTestDatabase,
   openTestLeague,
@@ -440,6 +441,166 @@ describe('FixturesView', () => {
       expect(screen.getByText(/^\d+ - \d+$/)).toHaveAttribute('data-flashing');
       expect(goals('home')).toHaveAttribute('data-flashing');
       expect(goals('away')).toHaveAttribute('data-flashing');
+    });
+  });
+
+  describe('a Groups phase (Task 131 choice 6, US-02.2)', () => {
+    const SEVEN = [
+      ...ALL_TEAMS,
+      { name: 'FC Harbour', colour: '#00838F' },
+      { name: 'FC Valley', colour: '#F9A825' },
+      { name: 'FC Dunes', colour: '#5D4037' },
+    ];
+
+    /** The group tags in page order: the match rows, then the bye lines. */
+    const tags = (): string[] =>
+      screen.getAllByText(/^Group [A-Z]+$/).map((tag) => tag.textContent ?? '');
+
+    function GroupsFromStore(): JSX.Element | null {
+      const found = useDatabaseStore((state) => state.leagues[LEAGUE]);
+      return found ? <FixturesView league={found} /> : null;
+    }
+
+    it('gives each match its group tag, in group order', () => {
+      const wrapper = groupsLeague(SEVEN.slice(0, 4), [
+        [3, 4],
+        [1, 2],
+      ]);
+      render(<FixturesView league={wrapper} />);
+      expect(tags()).toEqual(['Group A', 'Group B']);
+      expect(screen.getAllByRole('button', { name: 'Scorinate' })).toHaveLength(2);
+    });
+
+    it('shows one bye line for each group with a bye, with its tag', () => {
+      const wrapper = groupsLeague(SEVEN.slice(0, 6), [
+        [1, 2, 3],
+        [4, 5, 6],
+      ]);
+      render(<FixturesView league={wrapper} />);
+
+      expect(screen.getAllByText('Bye')).toHaveLength(2);
+      expect(tags()).toEqual(['Group A', 'Group B', 'Group A', 'Group B']);
+      const [phase] = wrapper.content.phases;
+      for (const bye of phase.byes.filter((candidate) => candidate.matchday === 1)) {
+        const name = wrapper.teams.find(
+          (team) => team.blueprintUuid === bye.team
+        )?.name;
+        expect(screen.getByText(name ?? '')).toBeInTheDocument();
+      }
+    });
+
+    it('leaves out a group with no match on the matchday', async () => {
+      const wrapper = groupsLeague(SEVEN.slice(0, 6), [
+        [1, 2],
+        [3, 4, 5, 6],
+      ]);
+      render(<FixturesView league={wrapper} />);
+      expect(screen.getByText(/Matchday 1 \/ 6/)).toBeInTheDocument();
+
+      await userEvent.click(screen.getByRole('button', { name: 'Next matchday' }));
+      await userEvent.click(screen.getByRole('button', { name: 'Next matchday' }));
+
+      expect(screen.getByText(/Matchday 3 \/ 6/)).toBeInTheDocument();
+      expect(tags()).toEqual(['Group B', 'Group B']);
+    });
+
+    it('plays the matches of every group on Scorinate matchday', async () => {
+      openTestLeague(
+        groupsLeague(SEVEN.slice(0, 4), [
+          [1, 2],
+          [3, 4],
+        ])
+      );
+      render(<GroupsFromStore />);
+
+      await userEvent.click(screen.getByRole('button', { name: 'Scorinate matchday' }));
+
+      expect(screen.getAllByRole('button', { name: 'Re-scorinate' })).toHaveLength(2);
+      expect(
+        screen.queryByRole('button', { name: 'Scorinate' })
+      ).not.toBeInTheDocument();
+    });
+
+    it('shows no group tag in a round robin', () => {
+      render(<FixturesView league={league(4)} phaseIndex={0} />);
+      expect(screen.queryByText(/^Group /)).not.toBeInTheDocument();
+    });
+  });
+
+  describe('a phase that is not the last (Task 132)', () => {
+    const FOUR = ALL_TEAMS;
+    /** Groups A (1, 2) and B (3, 4), top 1, then a round robin. Phase 1 is
+     * complete. */
+    function openCompletePhaseOne(): void {
+      openTestLeague(
+        groupsLeague(
+          FOUR,
+          [
+            [1, 2],
+            [3, 4],
+          ],
+          [
+            {
+              format: 'groups',
+              legs: 'two-way',
+              grouping: { by: 'count', count: 2 },
+              advance: { top: 1, bestOfNext: 0 },
+            },
+            { format: 'round-robin', legs: 'two-way' },
+          ]
+        )
+      );
+      scorinateMatchday(LEAGUE, 1);
+      scorinateMatchday(LEAGUE, 2);
+    }
+
+    function PhaseFromStore({
+      phaseIndex,
+    }: {
+      phaseIndex: number;
+    }): JSX.Element | null {
+      const found = useDatabaseStore((state) => state.leagues[LEAGUE]);
+      return found ? <FixturesView league={found} phaseIndex={phaseIndex} /> : null;
+    }
+
+    it('shows a Phase complete badge when complete, not League completed (choice 7)', () => {
+      openCompletePhaseOne();
+      render(<PhaseFromStore phaseIndex={0} />);
+      expect(screen.getByText('Phase complete')).toBeInTheDocument();
+      expect(screen.getByText('Complete')).toHaveAttribute('aria-hidden', 'true');
+      expect(screen.queryByText('League completed')).not.toBeInTheDocument();
+    });
+
+    it('keeps Re-scorinate on until the next phase starts (US-07.3)', () => {
+      openCompletePhaseOne();
+      render(<PhaseFromStore phaseIndex={0} />);
+      for (const button of screen.getAllByRole('button', { name: 'Re-scorinate' })) {
+        expect(button).not.toBeDisabled();
+      }
+      expect(screen.queryByText(/This phase is locked/)).not.toBeInTheDocument();
+    });
+
+    it('turns every Scorinate button off in a locked phase, with the hint (choice 5)', () => {
+      openCompletePhaseOne();
+      startNextPhase(LEAGUE);
+      render(<PhaseFromStore phaseIndex={0} />);
+
+      expect(
+        screen.getByText('Phase 2 started. This phase is locked.')
+      ).toBeInTheDocument();
+      for (const button of screen.getAllByRole('button', { name: 'Re-scorinate' })) {
+        expect(button).toBeDisabled();
+      }
+      expect(screen.getByRole('button', { name: 'Scorinate matchday' })).toBeDisabled();
+    });
+
+    it('leaves the started phase open', () => {
+      openCompletePhaseOne();
+      startNextPhase(LEAGUE);
+      render(<PhaseFromStore phaseIndex={1} />);
+
+      expect(screen.queryByText(/This phase is locked/)).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Scorinate' })).not.toBeDisabled();
     });
   });
 });

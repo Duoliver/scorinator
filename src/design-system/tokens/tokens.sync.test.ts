@@ -23,6 +23,8 @@ describe('tokens.ts stays in sync with tokens.css', () => {
     ['color-error-fg', colors.errorFg],
     ['color-warning', colors.warning],
     ['color-warning-fg', colors.warningFg],
+    ['color-row-positive', colors.rowPositive],
+    ['color-row-caution', colors.rowCaution],
   ])('--%s matches tokens.ts', (variable, tsValue) => {
     expect(cssValueOf(variable)?.toUpperCase()).toBe(tsValue.toUpperCase());
   });

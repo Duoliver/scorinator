@@ -29,7 +29,7 @@ const manifest = (): Manifest => ({
       teamCount: 2,
       homeAdvantage: true,
       points: { win: 3, draw: 1, loss: 0 },
-      phaseFormats: ['round-robin'],
+      phases: [{ format: 'round-robin', legs: 'two-way' }],
       progress: { kind: 'phase', phase: 1, matchday: 2, matchdays: 2 },
     },
   ],
@@ -45,7 +45,7 @@ describe('the manifest map (Task 108)', () => {
   it('writes the MVP2 file format, with its kind and version', () => {
     const file = JSON.parse(serializeManifestRecord(manifest()));
     expect(file.kind).toBe('manifest');
-    expect(file.formatVersion).toBe(2);
+    expect(file.formatVersion).toBe(3);
   });
 
   it('gives the parser error for a bad file', () => {
@@ -62,7 +62,7 @@ describe('the wrapper map (Task 108)', () => {
   it('writes the MVP2 file format, with its kind and version', () => {
     const file = JSON.parse(serializeLeagueWrapper(leagueWrapper()));
     expect(file.kind).toBe('wrapper');
-    expect(file.formatVersion).toBe(2);
+    expect(file.formatVersion).toBe(3);
   });
 
   it('gives the parser error for a bad file', () => {

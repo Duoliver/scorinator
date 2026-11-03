@@ -17,6 +17,7 @@ export const Input = forwardRef<FieldHandle<string>, InputProps>(
       onChange,
       placeholder,
       type = 'text',
+      inputMode,
       id,
       readOnly,
       min,
@@ -51,6 +52,7 @@ export const Input = forwardRef<FieldHandle<string>, InputProps>(
             id={inputId}
             class={styles.input}
             type={type}
+            inputMode={inputMode}
             value={value}
             placeholder={placeholder}
             aria-label={ariaLabel}

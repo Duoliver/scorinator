@@ -54,7 +54,7 @@ export const DetailsStep = forwardRef<DetailsStepHandle, DetailsStepProps>(
                 `useLeagueSetup`'s `handleCreate`. */}
             {step.nameProblem && <span class={styles.hint}>{step.nameProblem}</span>}
             <Button onClick={onNext} disabled={step.nameProblem !== null}>
-              Next: Teams →
+              Next: Phases →
             </Button>
           </div>
         </div>

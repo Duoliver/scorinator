@@ -2,7 +2,7 @@ import type { JSX } from 'preact';
 import { Badge, Button } from '@/design-system';
 import { TeamSwatch } from '@/features/components';
 import type FixturesViewProps from './types';
-import { flashAttr, scoreText } from './helpers';
+import { GroupTag, flashAttr, scoreText } from './helpers';
 import { useFixtures } from './useFixtures';
 import styles from './FixturesView.module.css';
 
@@ -16,9 +16,12 @@ export function FixturesView(props: FixturesViewProps): JSX.Element {
     hasFixtures,
     nav,
     rows,
-    byeTeamName,
+    byes,
     matchdayFullyPlayed,
     scorinateMatchday,
+    locked,
+    lockHint,
+    completeBadge,
   } = useFixtures(props);
 
   if (!hasFixtures) {
@@ -90,11 +93,11 @@ export function FixturesView(props: FixturesViewProps): JSX.Element {
           </Button>
         </div>
         <div class={styles.actions}>
-          {nav.leagueCompleted ? (
+          {nav.phaseComplete ? (
             <Badge tone="accent">
-              <span class={styles.fullText}>League completed</span>
+              <span class={styles.fullText}>{completeBadge.full}</span>
               <span class={styles.shortText} aria-hidden="true">
-                Completed
+                {completeBadge.short}
               </span>
             </Badge>
           ) : (
@@ -114,7 +117,7 @@ export function FixturesView(props: FixturesViewProps): JSX.Element {
             variant="primary"
             size="sm"
             aria-label="Scorinate matchday"
-            disabled={matchdayFullyPlayed}
+            disabled={locked || matchdayFullyPlayed}
             onClick={scorinateMatchday}
           >
             <span>
@@ -124,12 +127,18 @@ export function FixturesView(props: FixturesViewProps): JSX.Element {
         </div>
       </div>
 
+      {lockHint && <p class={styles.lockHint}>{lockHint}</p>}
+
       <div class={styles.list}>
         {rows.map((row) => (
           // The goals spans serve only the stacked layout (Task 39), where
           // each team has its own line. The score span stays the one text
           // that screen readers and tests read, in both layouts.
-          <div class={styles.match} key={row.key}>
+          <div
+            class={`${styles.match} ${row.groupTag ? styles.matchWithGroup : ''}`}
+            key={row.key}
+          >
+            {row.groupTag && <GroupTag letter={row.groupTag} />}
             <div class={styles.home}>
               <span class={styles.teamName}>{row.home.name}</span>
               <TeamSwatch
@@ -165,6 +174,7 @@ export function FixturesView(props: FixturesViewProps): JSX.Element {
               <Button
                 variant={row.result ? 'secondary' : 'primary'}
                 size="sm"
+                disabled={locked}
                 onClick={row.scorinate}
               >
                 {row.result ? 'Re-scorinate' : 'Scorinate'}
@@ -172,12 +182,13 @@ export function FixturesView(props: FixturesViewProps): JSX.Element {
             </div>
           </div>
         ))}
-        {byeTeamName && (
-          <div class={styles.bye}>
+        {byes.map((bye) => (
+          <div class={styles.bye} key={bye.key}>
+            {bye.groupTag && <GroupTag letter={bye.groupTag} />}
             <Badge tone="warning">Bye</Badge>
-            {byeTeamName}
+            {bye.teamName}
           </div>
-        )}
+        ))}
       </div>
     </div>
   );

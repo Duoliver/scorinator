@@ -21,4 +21,7 @@ export default interface TabsProps {
    * start at its top. Not on mount, and not when the active tab is picked
    * again. Default (false) leaves the scroll position alone. */
   scrollToTopOnChange?: boolean;
+  /** Content at the end of the tab row, outside the tab list, such as a
+   * button that acts on the whole tab set (Task 132). */
+  actions?: ComponentChildren;
 }

@@ -9,6 +9,7 @@ import type {
   Manifest,
   Phase,
   PhaseFormat,
+  PhaseSummary,
   PhaseResult,
   Provenance,
   TeamBlueprint,
@@ -111,7 +112,7 @@ describe('Manifest (Task 76)', () => {
   it('gives each summary row the card fields and the progress (Task 76 d)', () => {
     expectTypeOf<WrapperSummary['contentType']>().toEqualTypeOf<'league'>();
     expectTypeOf<WrapperSummary['teamCount']>().toEqualTypeOf<number>();
-    expectTypeOf<WrapperSummary['phaseFormats']>().toEqualTypeOf<PhaseFormat[]>();
+    expectTypeOf<WrapperSummary['phases']>().toEqualTypeOf<PhaseSummary[]>();
     expectTypeOf<WrapperSummary['progress']>().toEqualTypeOf<LeagueProgress>();
   });
 

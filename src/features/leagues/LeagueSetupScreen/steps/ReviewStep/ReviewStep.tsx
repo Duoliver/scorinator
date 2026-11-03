@@ -6,10 +6,16 @@ import {
   settingsChipLabels,
 } from '@/features/leagues/LeagueSetupScreen/steps/SetupChips';
 import {
-  FIXTURE_FORMAT_LABEL,
   formatLeagueName,
+  formatPhasesLabel,
+  phaseShortName,
 } from '@/features/leagues/leagueSummary';
-import { TeamLabel } from '@/features/leagues/LeagueSetupScreen/steps/TeamLabel';
+import { describePhasePlan } from '@/features/leagues/LeagueSetupScreen/phasePlans';
+import {
+  endsWithGroups,
+  GROUPS_LAST_WARNING,
+} from '@/features/leagues/LeagueSetupScreen/phaseChecks';
+import { TeamLabel } from '@/features/leagues/TeamLabel';
 import { useBlueprintLocation } from '@/features/leagues/LeagueSetupScreen/useBlueprintLocation';
 import type ReviewStepProps from './types';
 import styles from './ReviewStep.module.css';
@@ -21,6 +27,8 @@ export function ReviewStep({
   homeAdvantage,
   points,
   teams,
+  plans,
+  phaseProblems,
   createProblem,
   onBack,
   onCreate,
@@ -33,11 +41,28 @@ export function ReviewStep({
 
         <SetupChips
           labels={[
-            FIXTURE_FORMAT_LABEL,
+            formatPhasesLabel(plans),
             ...settingsChipLabels(homeAdvantage, points),
             formatTeamCount(teams.length),
           ]}
         />
+
+        <ol class={styles.phaseList} aria-label="Phases">
+          {plans.map((plan, index) => (
+            <li key={index}>
+              {`${index + 1} · ${phaseShortName(plan)} · ${describePhasePlan(plan)}`}
+            </li>
+          ))}
+        </ol>
+
+        {phaseProblems.length > 0 && (
+          <ul class={styles.phaseProblems} aria-label="Phase problems">
+            {phaseProblems.map((text) => (
+              <li key={text}>{text}</li>
+            ))}
+          </ul>
+        )}
+        {endsWithGroups(plans) && <p class={styles.warning}>{GROUPS_LAST_WARNING}</p>}
 
         <ul class={styles.teamList}>
           {teams.map((team) => (

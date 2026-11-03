@@ -17,7 +17,7 @@ describe('summarizeLeague (Task 76 d)', () => {
       teamCount: 2,
       homeAdvantage: true,
       points: { win: 3, draw: 1, loss: 0 },
-      phaseFormats: ['round-robin'],
+      phases: [{ format: 'round-robin', legs: 'two-way' }],
       progress: { kind: 'phase', phase: 1, matchday: 1, matchdays: 2 },
     });
   });
@@ -63,12 +63,84 @@ describe('summarizeLeague (Task 76 d)', () => {
     };
     const twoPhases = {
       ...wrapper,
-      content: { ...wrapper.content, phases: [played, second] },
+      content: {
+        ...wrapper.content,
+        plans: [
+          {
+            format: 'round-robin' as const,
+            legs: 'two-way' as const,
+            advance: { top: 2 },
+          },
+          { format: 'round-robin' as const, legs: 'two-way' as const },
+        ],
+        phases: [played, second],
+      },
     };
     expect(summarizeLeague(twoPhases)).toMatchObject({
-      phaseFormats: ['round-robin', 'round-robin'],
+      phases: [
+        { format: 'round-robin', legs: 'two-way' },
+        { format: 'round-robin', legs: 'two-way' },
+      ],
       progress: { kind: 'phase', phase: 2, matchday: 1, matchdays: 2 },
     });
+  });
+
+  it('lists every planned phase, also a phase that has not started (Task 176)', () => {
+    const wrapper = leagueWrapper();
+    const planned = {
+      ...wrapper,
+      content: {
+        ...wrapper.content,
+        plans: [
+          {
+            format: 'groups' as const,
+            legs: 'single-duels' as const,
+            grouping: { by: 'size' as const, size: 4 },
+            advance: { top: 2, bestOfNext: 0 },
+          },
+          { format: 'bracket' as const },
+        ],
+      },
+    };
+    expect(summarizeLeague(planned).phases).toEqual([
+      { format: 'groups', legs: 'single-duels' },
+      { format: 'bracket' },
+    ]);
+  });
+
+  it('keeps the last progress of a complete phase until the next phase starts (US-07.3)', () => {
+    const wrapper = leagueWrapper([
+      result('p1.g1.md1.m1', SALT_MARSH, HARBORVIEW),
+      result('p1.g1.md2.m1', HARBORVIEW, SALT_MARSH),
+    ]);
+    const twoPlans = {
+      ...wrapper,
+      content: {
+        ...wrapper.content,
+        plans: [
+          {
+            format: 'round-robin' as const,
+            legs: 'two-way' as const,
+            advance: { top: 2 },
+          },
+          { format: 'round-robin' as const, legs: 'two-way' as const },
+        ],
+      },
+    };
+    expect(summarizeLeague(twoPlans).progress).toEqual({
+      kind: 'phase',
+      phase: 1,
+      matchday: 2,
+      matchdays: 2,
+    });
+  });
+
+  it('gives completed only when the last planned phase is complete', () => {
+    const wrapper = leagueWrapper([
+      result('p1.g1.md1.m1', SALT_MARSH, HARBORVIEW),
+      result('p1.g1.md2.m1', HARBORVIEW, SALT_MARSH),
+    ]);
+    expect(summarizeLeague(wrapper).progress).toEqual({ kind: 'completed' });
   });
 
   it('gives completed for a league with no phase or no fixture', () => {

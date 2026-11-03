@@ -39,7 +39,7 @@ A big OVR gap gives extreme scores too often. The user judged this not a big pro
 **Design note:** a lower `DIFF_WEIGHT`, a saturated difference factor, or a narrower elasticity range would each cut the rare tail together with the common extremes. To keep a rare tail and cut the common extremes, a separate mechanism for the tail is probably necessary. This is untested.
 
 **Constraints:**
-- The OVR-difference vs absolute-OVR weighting is a `CLAUDE.md` open item. A change to the difference factor touches it, so propose an approach and get a decision first.
+- The OVR-difference vs absolute-OVR weighting was settled in MVP1 Task 5. A change to the difference factor changes that decision, so propose an approach and get a decision first.
 - One OVR point is worth 1.5% of goals today. A change to that scale changes the meaning of the Task 32 home advantage values (+5 OVR and +5%), so retune Task 32 after the change.
 - The study scripts are not in the repo.
 
@@ -94,3 +94,39 @@ In MVP2, only the round-robin table shows the last 5 matches (US-12.1). The grou
 In MVP2, the standings chart shows each team's place after each matchday (US-12.4). Later, a switch shows the points after each matchday instead.
 
 *Raised during: MVP2, Task 102 (Standings display), 2026-10-28.*
+
+## 16. App settings: team name length and group size checks
+In MVP2, the app has no settings screen. Later, a settings feature holds:
+
+- **The team name on league screens:** the short name or the full name, by default. It depends on the short team name idea for MVP3 (`PROGRESS.md`, Open questions, 2026-11-02).
+- **A group draw that does not fit:** a group with too few teams, or group sizes that do not match the group size setting. The setting picks a warning or an error. In MVP2, a later Groups phase keeps each group at 2 teams or more (Task 181), and a swap rearranges groups of 2 (Task 183).
+- **The draw of a later Groups phase:** seeded from the order of the phase before it (§18), or random, by default.
+
+**Check this entry when MVP3 is refined:** the user asked for it on 2026-11-02.
+
+*Raised during: MVP2, Task 133 (M3 smoke check), 2026-11-02.*
+
+## 17. A better swap menu
+In MVP2, the row menu of a later Groups draw lists one "Swap with {team}" item for each team of the other groups (Task 183). A big draw gives a long menu: 16 teams in 4 groups give 12 swap items. Later, a better menu: for example, one "Swap with…" item that opens a list grouped by group, with the group letter of each team.
+
+*Raised during: MVP2, Task 183 (rearrange groups of 2), 2026-11-02.*
+
+## 18. Seeded group draw from the phase before
+In MVP2, a later Groups phase draws its qualifiers at random (US-02.1). Later, the draw can take the qualifier order of the phase before (the seeds of `pickQualifiers`) and deal the teams to the groups in turn. For example, 12 qualifiers in 3 groups: Group A gets seeds 1, 4, 7, 10, Group B gets 2, 5, 8, 11, and Group C gets 3, 6, 9, 12. A setting picks the seeded draw or the random draw by default (§16). Shuffle and the manual changes stay.
+
+*Raised during: MVP2, Task 133 (M3 smoke check), 2026-11-02.*
+
+## 19. The current phase on the league card
+In MVP2, the dashboard card badge shows the matchday only, for example "MD 6/6" (US-01.2, Task 131 choice 4). Only the League Detail header names the phase ("Group Stage · MD 6/6"). Later, the card also shows which phase the league plays now, for example with the header text.
+
+*Raised during: MVP2, end of the M3 session, 2026-11-02.*
+
+## 20. Rename and delete a league
+In MVP2, a league keeps the name it got at "Create league", and the app cannot remove a league. Later, the user can rename a league and delete it, after a confirm. The delete removes the league file and its manifest row at the next save (`PERSISTENCE.md`).
+
+*Raised during: MVP2, end of the M3 session, 2026-11-02.*
+
+## 21. Blueprint collections
+In MVP2, the Teams screen holds one flat list of Blueprints. Later, the user can put Blueprints into collections: create a collection, add and remove teams, rename it, and disband it (the teams stay). To settle at refinement: one team in several collections or not, where collections show (Teams screen, wizard add dialog), and how the database files keep them. No spec had this before 2026-11-02.
+
+*Raised during: MVP2, end of the M3 session, 2026-11-02.*

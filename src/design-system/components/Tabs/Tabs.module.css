@@ -4,6 +4,21 @@
   gap: var(--space-4);
 }
 
+/* The tab list and the actions on one row, the actions at the end. They
+ * wrap to two lines on a narrow width. */
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-3);
+}
+
 .tabs {
   display: flex;
   border: var(--border-width) solid var(--color-border);

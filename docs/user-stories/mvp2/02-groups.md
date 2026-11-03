@@ -35,7 +35,7 @@ As a user, I want teams to be randomly split into groups when a Groups Round Rob
 
 **Out of scope:** manual moves (US-02.5). Geographic clustering (US-02.3, MVP3). Seeded pots: not in MVP2.
 
-**Notes:** the user chose the size or count switch, group size as the default (changed from group count on 2026-10-27, at review), the size as a maximum, the pure random draw, and the draw times on 2026-10-27 (Task 87 notes, Task 83 D6 and D8). A Shuffle is a new draw from the `Rng`. The fixed lots of Task 78 are a separate thing: they order level teams, and a Shuffle does not change them.
+**Notes:** the user chose the size or count switch, group size as the default (changed from group count on 2026-10-27, at review), the size as a maximum, the pure random draw, and the draw times on 2026-10-27 (Task 87 notes, Task 83 D6 and D8). A Shuffle is a new draw from the `Rng`. The fixed lots of Task 78 are a separate thing: they order level teams, and a Shuffle does not change them. In size mode, an add or a remove can change the group count. The user chose a resize on 2026-11-01 (Task 125 choice 3): more groups get teams from the largest groups, until sizes differ by 1 at most. Fewer groups: the last smallest group gives its teams to the smallest groups. The rest of the draw stays.
 
 ---
 

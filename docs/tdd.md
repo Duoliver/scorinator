@@ -13,7 +13,7 @@ For each user story or epic in the MVP docs:
 
 **Task scoping:** one epic (per the MVP docs) or one `design-system/` primitive per task. Never take on "implement the whole MVP" or "build the whole team-management flow, styled and wired" as a single task — this is how domain-first TDD collapses into UI-wiring work that swallows it. See `design-reference/README` doc for why this matters especially around the design handoff.
 
-**When a spec leaves something as an open/balancing detail** (e.g. MVP1's OVR-difference-vs-absolute-OVR weighting, MVP4's event trigger probability curves) — do not silently pick a number and move on. Propose the concrete value/approach you intend to test against and flag it explicitly, since these are exactly the decisions a locked-in test can quietly ossify.
+**When a spec leaves something as an open/balancing detail** (e.g. MVP1's OVR-difference-vs-absolute-OVR weighting, settled in MVP1 Task 5, or MVP4's event trigger probability curves) — do not silently pick a number and move on. Propose the concrete value/approach you intend to test against and flag it explicitly, since these are exactly the decisions a locked-in test can quietly ossify.
 
 ## Testing strategy by layer
 

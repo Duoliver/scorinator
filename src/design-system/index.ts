@@ -10,7 +10,12 @@ export { Badge } from './components/Badge';
 export type { BadgeProps, BadgeTone } from './components/Badge';
 
 export { Table } from './components/Table';
-export type { TableProps, TableColumn, TableAlign } from './components/Table';
+export type {
+  TableProps,
+  TableColumn,
+  TableAlign,
+  TableRowTone,
+} from './components/Table';
 
 export { Tabs } from './components/Tabs';
 export type { TabsProps, TabItem } from './components/Tabs';
@@ -26,6 +31,14 @@ export type { CheckboxProps } from './components/Checkbox';
 
 export { Switch } from './components/Switch';
 export type { SwitchProps } from './components/Switch';
+
+export { DropdownMenu } from './components/DropdownMenu';
+export type {
+  DropdownMenuAlign,
+  DropdownMenuItem,
+  DropdownMenuProps,
+  DropdownMenuTone,
+} from './components/DropdownMenu';
 
 export { Tooltip } from './components/Tooltip';
 export type { TooltipProps } from './components/Tooltip';

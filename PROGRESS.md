@@ -89,7 +89,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 133 | M3 smoke check | all | ✅ Done | 2026-11-02 | 2026-11-02 | [133](/docs/tasks/133-m3-smoke-check.md) | M3 complete. M3 end-to-end test added. The user checked 10 rows: row 8 Bracket part waits for 140. |
 | 134 | AET: a time share of the match, with the bands | `engine/scorination` | ✅ Done | 2026-11-03 | 2026-11-03 | [134](/docs/tasks/134-aet-time-share.md) | M4. US-03.1. 14 new tests. `scorinateExtraTime` built. No caller yet: Task 137 is the first. |
 | 135 | Penalties, the coin toss, the four sequences, away goals | `engine/tiebreak` | ✅ Done | 2026-11-03 | 2026-11-03 | [135](/docs/tasks/135-penalties-coin-toss-tie.md) | M4. US-03.2, 03.3, 04.4. 56 new tests. `playTie` built. No caller yet: Task 137 is the first. |
-| 136 | Bracket tree: seeds, the standard placement, byes and the bye change, round names, tie ids | `engine/bracket` | ⬜ Not started |  |  |  | M4. US-04.2, 04.10, 04.11, 04.14. After 133. |
+| 136 | Bracket tree: seeds, the standard placement, byes and the bye change, round names, tie ids | `engine/bracket` | ✅ Done | 2026-11-03 | 2026-11-03 | [136](/docs/tasks/136-bracket-tree.md) | M4. US-04.2, 04.10, 04.11, 04.14. 89 new tests. `buildBracketTree` built. No caller yet: Task 137. |
 | 137 | Bracket play: playable ties, one round, the dependent clear, third place, single-match final | `engine/bracket` | ⬜ Not started |  |  |  | M4. US-04.1, 04.5, 04.7, 04.12, 04.13. After 135, 136. |
 | 138 | Segmented control | `design-system/` | ⬜ Not started |  |  |  | M4. US-03.2, 04.1, 11.2. After 133. |
 | 139 | Bracket state: phase start for a bracket, the first-phase draw, tie actions, the bye change | `app/` | ⬜ Not started |  |  |  | M4. US-04.2, 04.5, 04.6, 04.10. After 137. |
@@ -182,6 +182,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-11-03 (Task 136 — the bracket tree):** The user agreed six choices. (1) A static tree: a later slot names the tie it comes from. (2) A bye team sits in its next-round tie from the start. (3) Too few bye teams gives a result with the counts, not an error. (4) One tie id builder, `bracketTieId`. (5) The round names are English text in `engine/bracket`, shared by the screens and the text export. (6) The first-phase draw has its own shuffle. Detail: [Task 136](/docs/tasks/136-bracket-tree.md).
 
 - **2026-11-03 (Task 135 — penalties, the coin toss, one tie):** The user agreed six choices. (1) `engine/tiebreak` holds `scorinatePenalties`, `tossCoin`, and `playTie`. (2) A `TieRules` type: `format`, `awayGoals`, `playsAet`, `method`, `homeAdvantage`. The string values use kebab-case, as `PhasePlan` does. (3) Each match keeps its AET goals apart, and a `decidedBy` field. (4) The higher seed takes the home slot of a neutral match. (5) The shootout score uses the home and away of the last match. (6) 20,000 runs for each statistical case. Detail: [Task 135](/docs/tasks/135-penalties-coin-toss-tie.md).
 

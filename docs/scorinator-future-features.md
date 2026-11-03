@@ -135,3 +135,8 @@ In MVP2, the Teams screen holds one flat list of Blueprints. Later, the user can
 In MVP2, the tie card shows one score for a match that went to AET, with an asterisk and the footnote "* score includes AET" (US-03.1). The user cannot see how many goals came in AET. Later, the tie card also shows the score after 90 minutes, for example "2–2 (1–1)", or the AET goals on their own line. The engine already returns the AET goals apart from the match goals (Task 134 choice 3). The tie record must keep both scores, so check this entry before Task 139 fixes the tie record.
 
 *Raised during: MVP2, Task 134 (AET time share), 2026-11-03.*
+
+## 23. Choose how to seed a bracket before it starts
+In MVP2, a bracket after a Groups phase seeds by place, then stats (Task 78), with the standard placement (Task 89). A first-round tie never pairs two teams of one group (Task 185). Later, the user picks the seeding method on the Seed List before the first result, as for the byes today (US-04.10). One method: fixed pairs across groups, as in the World Cup: A1 v B2, B1 v A2, C1 v D2, D1 v C2. It works only with a power of 2 of qualifiers and no best-M teams, so the Seed List offers it only then. A change after the first result asks for a confirm, as the bye change does.
+
+*Raised during: MVP2, Task 142 review, 2026-11-03.*

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Phase } from '@/domain';
+import type { Phase, ScheduledPhase } from '@/domain';
 import { isUuidV4 } from '@/engine/identity';
 import {
   blueprint,
@@ -11,6 +11,7 @@ import {
   memoryFolder,
   result,
   SALT_MARSH,
+  scheduled,
 } from '@/test/databaseRecords';
 import { serializeManifestRecord } from '@/app/data/databaseFile';
 import { openDatabase } from './databaseActions';
@@ -78,8 +79,8 @@ async function openWithLeague(): Promise<void> {
   });
 }
 
-const phaseOf = (uuid: string = LEAGUE): Phase =>
-  state().leagues[uuid].content.phases[0];
+const phaseOf = (uuid: string = LEAGUE): ScheduledPhase =>
+  scheduled(state().leagues[uuid].content.phases[0]);
 
 beforeEach(() => {
   useDatabaseStore.setState(useDatabaseStore.getInitialState(), true);
@@ -158,7 +159,7 @@ describe('createLeague (US-09.2, US-11.1, Task 105)', () => {
 
   it('builds phase 1 as a two-way round robin with fixture ids, teams by Blueprint UUID', async () => {
     await open();
-    const [phase] = createLeague(input).content.phases;
+    const phase = scheduled(createLeague(input).content.phases[0]);
 
     expect(phase.format).toBe('round-robin');
     // 3 teams: 6 matches, 6 matchdays, one bye each matchday.
@@ -274,7 +275,9 @@ describe('rescorinateFixture', () => {
 
     const after = phaseOf().results;
     expect(after.map((r) => r.fixtureId)).toEqual(['p1.g1.md1.m1', 'p1.g1.md2.m1']);
-    expect(after[1]).toBe(state().leagues[LEAGUE].content.phases[0].results[1]);
+    expect(after[1]).toBe(
+      scheduled(state().leagues[LEAGUE].content.phases[0]).results[1]
+    );
     expect(state().leagues[LEAGUE].content.lastModifiedByInstallation).toBe(
       INSTALLATION
     );
@@ -358,7 +361,9 @@ function phaseInput(
 /** Plays every fixture of the current phase of a league. */
 function playCurrentPhase(uuid: string): void {
   const { phases } = state().leagues[uuid].content;
-  const matchdays = new Set(phases[phases.length - 1].fixtures.map((f) => f.matchday));
+  const matchdays = new Set(
+    scheduled(phases[phases.length - 1]).fixtures.map((f) => f.matchday)
+  );
   for (const matchday of matchdays) scorinateMatchday(uuid, matchday);
 }
 
@@ -379,7 +384,7 @@ describe('createLeague with plans (Task 128)', () => {
     ];
     const league = createLeague(phaseInput(groupsThenRoundRobin, groups));
     expect(league.content.plans).toEqual(groupsThenRoundRobin);
-    const [phase] = league.content.phases;
+    const phase = scheduled(league.content.phases[0]);
     expect(phase.format).toBe('groups');
     if (phase.format !== 'groups') return;
     expect(phase.groups).toEqual(groups);
@@ -392,7 +397,9 @@ describe('createLeague with plans (Task 128)', () => {
 
   it('builds a single-duels round robin: each pair once', async () => {
     await open();
-    const [phase] = createLeague(phaseInput(roundRobinThenGroups)).content.phases;
+    const phase = scheduled(
+      createLeague(phaseInput(roundRobinThenGroups)).content.phases[0]
+    );
     expect(phase.fixtures).toHaveLength(15);
   });
 
@@ -453,10 +460,12 @@ describe('startNextPhase (Task 128, US-07.3)', () => {
     expect(phases).toHaveLength(2);
     expect(phases[1].format).toBe('round-robin');
     const teamsInPhaseTwo = new Set(
-      phases[1].fixtures.flatMap((f) => [f.home, f.away])
+      scheduled(phases[1]).fixtures.flatMap((f) => [f.home, f.away])
     );
     expect([...teamsInPhaseTwo].sort()).toEqual([...winners].sort());
-    expect(phases[1].fixtures.every((f) => f.id.startsWith('p2.g1.'))).toBe(true);
+    expect(scheduled(phases[1]).fixtures.every((f) => f.id.startsWith('p2.g1.'))).toBe(
+      true
+    );
     expect(phases[1].results).toEqual([]);
     expect(isLeagueUnsaved(state(), uuid)).toBe(true);
   });

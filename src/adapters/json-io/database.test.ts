@@ -146,8 +146,8 @@ function wrapperText(change: (raw: RawFile) => void = () => {}): string {
 }
 
 describe('the format version', () => {
-  it('is 3 for each MVP2 database file (Task 176)', () => {
-    expect(DATABASE_FORMAT_VERSION).toBe(3);
+  it('is 4 for each MVP2 database file (Task 139)', () => {
+    expect(DATABASE_FORMAT_VERSION).toBe(4);
   });
 });
 
@@ -196,14 +196,14 @@ describe('parseManifest', () => {
   });
 
   it('rejects a newer format version, and says that a newer Scorinator made it', () => {
-    expect(() => parseManifest(manifestText((raw) => (raw.formatVersion = 4)))).toThrow(
-      'manifest.json is not valid: a newer version of Scorinator made this file (format version 4). This version reads format versions 2 and 3.'
+    expect(() => parseManifest(manifestText((raw) => (raw.formatVersion = 5)))).toThrow(
+      'manifest.json is not valid: a newer version of Scorinator made this file (format version 5). This version reads format versions 2 to 4.'
     );
   });
 
   it('rejects an older or missing format version', () => {
     expect(() => parseManifest(manifestText((raw) => (raw.formatVersion = 1)))).toThrow(
-      'manifest.json is not valid: the format version is "1". This version reads format versions 2 and 3.'
+      'manifest.json is not valid: the format version is "1". This version reads format versions 2 to 4.'
     );
     expect(() =>
       parseManifest(manifestText((raw) => delete raw.formatVersion))
@@ -369,7 +369,7 @@ describe('parseWrapper', () => {
       parseWrapper(wrapperText((raw) => delete raw.content.homeAdvantage))
     ).toThrow('the league has no valid "homeAdvantage" flag.');
     expect(() =>
-      parseWrapper(wrapperText((raw) => (raw.content.phases[0].format = 'bracket')))
+      parseWrapper(wrapperText((raw) => (raw.content.phases[0].format = 'cup')))
     ).toThrow('phase 1 has a format that is not known.');
   });
 
@@ -662,8 +662,8 @@ describe('phases, plans, and legs (Task 176)', () => {
         (raw) => (raw.content.phases[0].byes = [{ matchday: 2, team: NORTH, group: 2 }])
       )
     );
-    expect(wrapper.content.phases[0].byes).toEqual([
-      { matchday: 2, team: NORTH, group: 2 },
-    ]);
+    const [phase] = wrapper.content.phases;
+    if (phase.format !== 'groups') throw new Error('expected a Groups phase');
+    expect(phase.byes).toEqual([{ matchday: 2, team: NORTH, group: 2 }]);
   });
 });

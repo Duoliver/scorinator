@@ -16,8 +16,22 @@ import {
 } from '@/engine/round-robin';
 import { playMatch } from '@/engine/scorination';
 import type { PointsConfig } from '@/engine/standings';
-import type { LeagueWrapper, Phase, PhaseResult, TeamInstance } from '@/domain';
+import {
+  findPlayableTies,
+  playBracketRound,
+  playBracketTie,
+  type BracketRound,
+} from '@/engine/bracket';
+import type {
+  BracketPhase,
+  LeagueWrapper,
+  Phase,
+  PhaseResult,
+  ScheduledPhase,
+  TeamInstance,
+} from '@/domain';
 import { cryptoRandomBytes, freshSeed } from '@/app/random';
+import { bracketRulesFor, bracketTreeOf, leagueOvrOf } from './bracket';
 import { findCurrentPhase } from './currentPhase';
 import {
   canChangeCurrentGroups,
@@ -100,14 +114,14 @@ function checkDraw(
  *
  * The league stores its `plans` (Task 128), and builds phase 1 from the
  * first plan with `buildPhase`: a round robin in the team list order, or
- * Groups from `groups`. The match order is shuffled (Task 30), and the
+ * Groups from `groups`, or a bracket with a stored draw (US-04.2). The match order is shuffled (Task 30), and the
  * fixtures have the ids of Task 77. Fixtures name teams by Blueprint UUID.
  * League names need not be unique: routes use the UUID.
  *
  * Throws a `RangeError`, and adds nothing, for a Blueprint UUID that is in
  * the list twice, for a chain or fit problem of the plans (fewer than 2
  * teams too, Task 128 choice 2), for `groups` that do not hold each team
- * once, and for a bracket phase 1 until Task 139.
+ * once.
  */
 export function createLeague(
   input: CreateLeagueInput,
@@ -171,11 +185,7 @@ function playFixture(
   wrapper: LeagueWrapper,
   fixture: PhaseFixture<string>
 ): PhaseResult {
-  const ovrOf = (uuid: string): number => {
-    const team = wrapper.teams.find((candidate) => candidate.blueprintUuid === uuid);
-    if (!team) throw new RangeError(`The league has no team with the UUID ${uuid}.`);
-    return team.ovr;
-  };
+  const ovrOf = leagueOvrOf(wrapper);
   const score = playMatch(
     ovrOf(fixture.home),
     ovrOf(fixture.away),
@@ -218,7 +228,16 @@ function changeCurrentPhase(
   }));
 }
 
-function findFixture(phase: Phase, fixtureId: string): PhaseFixture<string> {
+/** The current phase as a round robin or Groups phase. Throws a
+ * `RangeError` for a bracket: it has ties, not fixtures (Task 139). */
+function requireScheduled(phase: Phase): ScheduledPhase {
+  if (phase.format === 'bracket') {
+    throw new RangeError('The current phase is a bracket. It has ties, not fixtures.');
+  }
+  return phase;
+}
+
+function findFixture(phase: ScheduledPhase, fixtureId: string): PhaseFixture<string> {
   const fixture = phase.fixtures.find((candidate) => candidate.id === fixtureId);
   if (!fixture) {
     throw new RangeError(
@@ -231,7 +250,8 @@ function findFixture(phase: Phase, fixtureId: string): PhaseFixture<string> {
 /** Plays one fixture of the current phase. Skips a fixture that has a result:
  * that is `rescorinateFixture`. */
 export function scorinateFixture(leagueUuid: string, fixtureId: string): void {
-  changeCurrentPhase(leagueUuid, (phase, wrapper) => {
+  changeCurrentPhase(leagueUuid, (current, wrapper) => {
+    const phase = requireScheduled(current);
     const fixture = findFixture(phase, fixtureId);
     if (findPhaseResult(phase.results, fixture)) return phase;
     return { ...phase, results: [...phase.results, playFixture(wrapper, fixture)] };
@@ -241,7 +261,8 @@ export function scorinateFixture(leagueUuid: string, fixtureId: string): void {
 /** Draws a new score for a fixture that has a result, in the same place in
  * the list (MVP1 Task 7). Does nothing for a fixture with no result. */
 export function rescorinateFixture(leagueUuid: string, fixtureId: string): void {
-  changeCurrentPhase(leagueUuid, (phase, wrapper) => {
+  changeCurrentPhase(leagueUuid, (current, wrapper) => {
+    const phase = requireScheduled(current);
     const fixture = findFixture(phase, fixtureId);
     if (!findPhaseResult(phase.results, fixture)) return phase;
     const replacement = playFixture(wrapper, fixture);
@@ -256,7 +277,8 @@ export function rescorinateFixture(leagueUuid: string, fixtureId: string): void 
 
 /** Plays each unplayed fixture of one matchday of the current phase. */
 export function scorinateMatchday(leagueUuid: string, matchday: number): void {
-  changeCurrentPhase(leagueUuid, (phase, wrapper) => {
+  changeCurrentPhase(leagueUuid, (current, wrapper) => {
+    const phase = requireScheduled(current);
     const unplayed = phase.fixtures.filter(
       (fixture) =>
         fixture.matchday === matchday && !findPhaseResult(phase.results, fixture)
@@ -304,8 +326,11 @@ function replacePhases(
  * The earlier phases do not change, and the scorinate actions play the new
  * phase only, so the earlier phases are locked.
  *
+ * A bracket next phase takes the qualifiers as its seeds, with the default
+ * byes (Task 139 choice 4).
+ *
  * Throws a `RangeError` when `canStartNextPhase` is false (Task 128 choice
- * 4), and for a bracket next phase until Task 139.
+ * 4).
  */
 export function startNextPhase(leagueUuid: string): void {
   replacePhases(leagueUuid, (wrapper) => {
@@ -391,4 +416,105 @@ export function swapTeamsInCurrentGroups(
   second: string
 ): void {
   redrawCurrentGroups(leagueUuid, (groups) => swapInGroups(groups, first, second));
+}
+
+/** The current phase as a bracket, with its index. Throws a `RangeError`
+ * for a round robin or Groups phase. */
+function requireBracket(phase: Phase): BracketPhase {
+  if (phase.format !== 'bracket') {
+    throw new RangeError(
+      'The current phase is not a bracket. It has fixtures, not ties.'
+    );
+  }
+  return phase;
+}
+
+/** The rounds of the current bracket. Throws a `RangeError` while it has
+ * too few bye teams: the first round cannot start (US-04.10). */
+function readyRounds(wrapper: LeagueWrapper, index: number): BracketRound<string>[] {
+  const tree = bracketTreeOf(wrapper, index);
+  if (tree.status !== 'ready') {
+    throw new RangeError(
+      `The bracket has ${tree.assigned} of its ${tree.byes} byes. Assign them to play the first round.`
+    );
+  }
+  return tree.rounds;
+}
+
+/**
+ * Plays one tie of the current bracket, with a fresh seed, the stored OVRs,
+ * and the league home advantage (US-04.5). On a tie with a result, it is a
+ * re-scorinate: the dependent ties lose their results first (US-04.6). The
+ * screen asks for the confirm before this call (Task 141).
+ *
+ * Throws a `RangeError` for a current phase that is not a bracket, a
+ * bracket with missing byes, a bye tie, a tie with a TBD team, or an
+ * unknown tie id.
+ */
+export function scorinateBracketTie(leagueUuid: string, tieId: string): void {
+  changeCurrentPhase(leagueUuid, (current, wrapper) => {
+    const phase = requireBracket(current);
+    const index = wrapper.content.phases.length - 1;
+    const results = playBracketTie(
+      readyRounds(wrapper, index),
+      phase.results,
+      tieId,
+      bracketRulesFor(wrapper, index),
+      leagueOvrOf(wrapper),
+      createSeededRng(freshSeed())
+    );
+    return { ...phase, results };
+  });
+}
+
+/**
+ * Plays every playable tie of the current bracket, and only those (US-04.5):
+ * one click plays one round. With no playable tie, nothing changes.
+ *
+ * Throws a `RangeError` for a current phase that is not a bracket, or a
+ * bracket with missing byes.
+ */
+export function scorinateBracket(leagueUuid: string): void {
+  changeCurrentPhase(leagueUuid, (current, wrapper) => {
+    const phase = requireBracket(current);
+    const index = wrapper.content.phases.length - 1;
+    const rounds = readyRounds(wrapper, index);
+    if (findPlayableTies(rounds, phase.results).length === 0) return phase;
+    const results = playBracketRound(
+      rounds,
+      phase.results,
+      bracketRulesFor(wrapper, index),
+      leagueOvrOf(wrapper),
+      createSeededRng(freshSeed())
+    );
+    return { ...phase, results };
+  });
+}
+
+/**
+ * Stores the bye teams of the current bracket (US-04.10). When the phase has
+ * a result, every result of the phase is cleared first: the screen asks for
+ * the confirm before this call (Task 142). Too few bye teams is allowed: the
+ * tree then waits for the missing byes. The same bye teams change nothing.
+ *
+ * Throws a `RangeError` for a current phase that is not a bracket, and the
+ * `buildBracketTree` one for more bye teams than byes, or a bye team that is
+ * not a seed.
+ */
+export function setBracketByes(leagueUuid: string, byeTeams: readonly string[]): void {
+  changeCurrentPhase(leagueUuid, (current, wrapper) => {
+    const phase = requireBracket(current);
+    const same =
+      byeTeams.length === phase.byeTeams.length &&
+      byeTeams.every((team) => phase.byeTeams.includes(team));
+    if (same) return phase;
+    const changed: BracketPhase = { ...phase, byeTeams: [...byeTeams], results: [] };
+    // A check of the new byes: it throws for a bad bye team.
+    const index = wrapper.content.phases.length - 1;
+    const phases = wrapper.content.phases.map((candidate, i) =>
+      i === index ? changed : candidate
+    );
+    bracketTreeOf({ ...wrapper, content: { ...wrapper.content, phases } }, index);
+    return changed;
+  });
 }

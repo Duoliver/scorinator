@@ -92,7 +92,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 136 | Bracket tree: seeds, the standard placement, byes and the bye change, round names, tie ids | `engine/bracket` | ✅ Done | 2026-11-03 | 2026-11-03 | [136](/docs/tasks/136-bracket-tree.md) | M4. US-04.2, 04.10, 04.11, 04.14. 89 new tests. `buildBracketTree` built. No caller yet: Task 137. |
 | 137 | Bracket play: playable ties, one round, the dependent clear, third place, single-match final | `engine/bracket` | ✅ Done | 2026-11-03 | 2026-11-03 | [137](/docs/tasks/137-bracket-play.md) | M4. US-04.1, 04.5, 04.7, 04.12, 04.13. 42 new tests. No caller yet: Task 139 is the first. |
 | 138 | Segmented control | `design-system/` | ✅ Done | 2026-11-03 | 2026-11-03 | [138](/docs/tasks/138-segmented-control.md) | M4. US-03.2, 04.1, 11.2. 21 new tests. The user checked the real app. Task 140 is the first user. |
-| 139 | Bracket state: phase start for a bracket, the first-phase draw, tie actions, the bye change | `app/` | ⬜ Not started |  |  |  | M4. US-04.2, 04.5, 04.6, 04.10. After 137. |
+| 139 | Bracket state: phase start for a bracket, the first-phase draw, tie actions, the bye change | `app/` | ✅ Done | 2026-11-03 | 2026-11-03 | [139](/docs/tasks/139-bracket-state.md) | M4. US-04.2, 04.5, 04.6, 04.10. 47 new tests. File format 4. No user path yet: Tasks 140, 141. |
 | 140 | Wizard bracket settings: tie format, away goals, AET, method, third place, single-match final, the power-of-2 warning | `features/leagues` | ⬜ Not started |  |  |  | M4. US-03.1, 03.2, 04.1, 04.3, 04.9, 04.12, 04.13. After 138, 139. |
 | 141 | League Detail bracket: the tree, tie cards, Scorinate, the re-scorinate confirm, TBD, BYE, the winner line | `features/leagues` | ⬜ Not started |  |  |  | M4. US-04.5 to 04.8, 04.11, 04.14. After 139. |
 | 142 | Seed List: seeds, tags, the bye stars, the bye change confirm | `features/leagues` | ⬜ Not started |  |  |  | M4. US-04.2, 04.10, 07.2. After 141. |
@@ -183,6 +183,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-11-03 (Task 139 — bracket state):** The user agreed seven choices. (1) A bracket phase stores its seeds, bye teams, and results. A selector builds the tree. (2) `BracketPlan` gets `rules` here, with the story defaults. (3) File format version 4, the parsers read 2 to 4. (4) `buildPhase` builds the bracket. (5) Three actions: `scorinateBracketTie`, `scorinateBracket`, `setBracketByes`. (6) A bracket progress kind with the current round. (7) No user path reaches a bracket until Tasks 140 and 141. Detail: [Task 139](/docs/tasks/139-bracket-state.md).
 
 - **2026-11-03 (Task 138 — segmented control):** The user agreed six choices. (1) A field primitive with `useFieldHandle` and a `defaultValue`. (2) A generic value type, `T extends string`. (3) The WAI-ARIA radio group pattern: one Tab stop, the arrow keys move and select. (4) A `label` always, and `hideLabel` for the conflict rows. (5) 14px padding rounds up to `--space-4`. (6) A temporary try-out in the real app for the review. Detail: [Task 138](/docs/tasks/138-segmented-control.md).
 

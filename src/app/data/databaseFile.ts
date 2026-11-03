@@ -55,7 +55,9 @@ function phaseSummaryCopy(phase: PhaseSummary): PhaseSummary {
 function planCopy(plan: PhasePlan): PhasePlan {
   switch (plan.format) {
     case 'bracket':
-      return { format: 'bracket' };
+      return plan.rules
+        ? { format: 'bracket', rules: { ...plan.rules } }
+        : { format: 'bracket' };
     case 'round-robin':
       return {
         format: 'round-robin',
@@ -98,6 +100,14 @@ function instanceToFile(team: TeamInstance): SavedInstance {
 }
 
 function phaseToFile(phase: Phase): SavedPhase {
+  if (phase.format === 'bracket') {
+    return {
+      format: 'bracket',
+      seeds: [...phase.seeds],
+      byeTeams: [...phase.byeTeams],
+      results: structuredClone(phase.results),
+    };
+  }
   const fixtures = phase.fixtures.map((fixture) => ({ ...fixture }));
   const results = phase.results.map((result) => ({ ...result }));
   if (phase.format === 'groups') {

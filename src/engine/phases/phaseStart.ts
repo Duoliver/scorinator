@@ -13,6 +13,7 @@ import {
   type LotOf,
   type StandingsRow,
 } from '@/engine/standings';
+import { defaultByeTeams, drawBracketSeeds } from '@/engine/bracket';
 import type { BuiltPhase, GroupBye, Legs, PhasePlan } from './types';
 
 /**
@@ -72,8 +73,7 @@ export function pickQualifiers<TeamId>(
 }
 
 /**
- * Builds a round-robin or Groups phase at its start (US-07.3, Task 175
- * choice 2). `phase` counts from 1 and goes into each fixture id (Task 77).
+ * Builds a phase at its start (US-07.3, Task 175 choice 2). `phase` counts from 1 and goes into each fixture id (Task 77).
  *
  * - Round robin: one schedule of `teams`, in the given order (the seed
  *   order of the qualifiers, or the wizard order for phase 1). The ids use
@@ -88,8 +88,12 @@ export function pickQualifiers<TeamId>(
  * schedule in group order (choice 5). The same seed gives the same build.
  * The fixtures come in group order, then matchday order (choice 3).
  *
- * Throws a `RangeError` for a bracket until Task 139 (choice 4), and the
- * generator `RangeError` for a schedule of fewer than 2 teams.
+ * - Bracket (Task 139 choice 4): as phase 1, the `rng` draws the seeds
+ *   (US-04.2). After that, `teams` is the seed order. The top seeds get the
+ *   byes (`defaultByeTeams`).
+ *
+ * Throws the generator `RangeError` for a schedule of fewer than 2 teams,
+ * and the `bracketSlotCount` one for a bracket of fewer than 2 teams.
  */
 export function buildPhase<TeamId>(
   plan: PhasePlan,
@@ -99,7 +103,8 @@ export function buildPhase<TeamId>(
   groups?: readonly (readonly TeamId[])[]
 ): BuiltPhase<TeamId> {
   if (plan.format === 'bracket') {
-    throw new RangeError('buildPhase cannot build a bracket yet. Task 139 adds it.');
+    const seeds = phase === 1 ? drawBracketSeeds(teams, rng) : [...teams];
+    return { format: 'bracket', seeds, byeTeams: defaultByeTeams(seeds) };
   }
 
   if (plan.format === 'round-robin') {

@@ -5,6 +5,7 @@ import {
   leagueWrapper,
   result,
   SALT_MARSH,
+  scheduled,
 } from '@/test/databaseRecords';
 import { summarizeLeague } from './summarizeLeague';
 
@@ -48,15 +49,15 @@ describe('summarizeLeague (Task 76 d)', () => {
   it('reads the last phase as the current phase (M1 rule)', () => {
     const wrapper = leagueWrapper();
     const played = {
-      ...wrapper.content.phases[0],
+      ...scheduled(wrapper.content.phases[0]),
       results: [
         result('p1.g1.md1.m1', SALT_MARSH, HARBORVIEW),
         result('p1.g1.md2.m1', HARBORVIEW, SALT_MARSH),
       ],
     };
     const second = {
-      ...wrapper.content.phases[0],
-      fixtures: wrapper.content.phases[0].fixtures.map((f) => ({
+      ...scheduled(wrapper.content.phases[0]),
+      fixtures: scheduled(wrapper.content.phases[0]).fixtures.map((f) => ({
         ...f,
         id: f.id.replace('p1', 'p2'),
       })),

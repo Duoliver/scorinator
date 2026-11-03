@@ -1,3 +1,4 @@
+export { DEFAULT_BRACKET_RULES, bracketRulesOf } from './bracketRules';
 export {
   checkPhaseChain,
   checkPhaseFit,

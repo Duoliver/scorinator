@@ -7,7 +7,7 @@ import { useLeagueDraftStore } from '@/app/state/leagueDraftStore';
 import { TIER_OVR_RANGES } from '@/engine/tier-ovr';
 import { DEFAULT_POINTS_CONFIG } from '@/engine/standings';
 import { useDatabaseStore } from '@/app/state/databaseStore';
-import { openTestDatabase, testUuid } from '@/test/databaseRecords';
+import { openTestDatabase, testUuid, scheduled } from '@/test/databaseRecords';
 
 vi.mock('preact-router', () => ({ route: vi.fn() }));
 
@@ -333,7 +333,7 @@ describe('LeagueSetupScreen', () => {
       expect(league.content.plans).toEqual([
         { format: 'round-robin', legs: 'single-duels' },
       ]);
-      expect(league.content.phases[0].fixtures).toHaveLength(1);
+      expect(scheduled(league.content.phases[0]).fixtures).toHaveLength(1);
     });
 
     it('lists each phase on the Review step, and the format chip joins the short names', async () => {

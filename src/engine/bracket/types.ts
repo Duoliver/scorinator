@@ -62,6 +62,10 @@ export interface BracketRules extends TieRules {
   thirdPlace: boolean;
 }
 
+/** The bracket settings of a phase plan: `BracketRules` without the
+ * league home advantage, which the league holds (Task 139 choice 2). */
+export type BracketPlanRules = Omit<BracketRules, 'homeAdvantage'>;
+
 /** The result of one played tie, with its tie id (Task 137 choice 1). */
 export type BracketTieResult<TeamId> = TieResult<TeamId> & { tieId: string };
 

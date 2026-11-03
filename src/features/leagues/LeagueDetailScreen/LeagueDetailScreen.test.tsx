@@ -20,6 +20,7 @@ import {
   openTestDatabase,
   openTestLeague,
   roundRobinLeague,
+  scheduled,
 } from '@/test/databaseRecords';
 
 const TEAMS = [
@@ -128,7 +129,7 @@ describe('LeagueDetailScreen', () => {
     });
 
     it('updates Standings after a re-scorinate in Fixtures', async () => {
-      const [phase] = wrapper.content.phases;
+      const phase = scheduled(wrapper.content.phases[0]);
       const [first] = phase.fixtures;
       const played: LeagueWrapper = {
         ...wrapper,

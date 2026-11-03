@@ -4,7 +4,7 @@ import { act, render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { scorinateMatchday, startNextPhase } from '@/app/state/leagueWrapperActions';
 import { useDatabaseStore } from '@/app/state/databaseStore';
-import type { LeagueWrapper, Phase } from '@/domain';
+import type { LeagueWrapper, ScheduledPhase } from '@/domain';
 import { FixturesView } from './FixturesView';
 import {
   groupsLeague,
@@ -12,6 +12,7 @@ import {
   openTestDatabase,
   openTestLeague,
   roundRobinLeague,
+  scheduled,
 } from '@/test/databaseRecords';
 
 const ALL_TEAMS = [
@@ -27,7 +28,7 @@ type Score = { homeGoals: number; awayGoals: number };
  * of fixture `i` of phase 1. */
 function league(teamCount: number, scores: Score[] = []): LeagueWrapper {
   const wrapper = roundRobinLeague(ALL_TEAMS.slice(0, teamCount));
-  const [phase] = wrapper.content.phases;
+  const phase = scheduled(wrapper.content.phases[0]);
   const results = scores.map((score, i) => {
     const fixture = phase.fixtures[i];
     return { fixtureId: fixture.id, home: fixture.home, away: fixture.away, ...score };
@@ -39,8 +40,8 @@ function league(teamCount: number, scores: Score[] = []): LeagueWrapper {
 }
 
 /** Phase 1 of the league. */
-function fixturesOf(wrapper: LeagueWrapper): Phase {
-  return wrapper.content.phases[0];
+function fixturesOf(wrapper: LeagueWrapper): ScheduledPhase {
+  return scheduled(wrapper.content.phases[0]);
 }
 
 /** Puts the league in the store, for a test that renders through
@@ -480,7 +481,7 @@ describe('FixturesView', () => {
 
       expect(screen.getAllByText('Bye')).toHaveLength(2);
       expect(tags()).toEqual(['Group A', 'Group B', 'Group A', 'Group B']);
-      const [phase] = wrapper.content.phases;
+      const phase = scheduled(wrapper.content.phases[0]);
       for (const bye of phase.byes.filter((candidate) => candidate.matchday === 1)) {
         const name = wrapper.teams.find(
           (team) => team.blueprintUuid === bye.team

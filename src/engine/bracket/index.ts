@@ -20,6 +20,7 @@ export {
   playBracketTie,
 } from './play';
 export type {
+  BracketPlanRules,
   BracketRound,
   BracketRules,
   BracketSlot,

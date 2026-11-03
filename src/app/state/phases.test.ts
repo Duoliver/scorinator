@@ -11,6 +11,7 @@ import {
   result,
   roundRobinLeague,
   SALT_MARSH,
+  scheduled,
 } from '@/test/databaseRecords';
 import {
   canChangeCurrentGroups,
@@ -190,7 +191,7 @@ describe('phaseQualifierMarks (Task 132, US-02.2, US-07.2)', () => {
   ];
   /** Every fixture of phase 1 ends 1-0 for the home team. */
   function playAll(wrapper: LeagueWrapper): LeagueWrapper {
-    const [phase] = wrapper.content.phases;
+    const phase = scheduled(wrapper.content.phases[0]);
     const results = phase.fixtures.map((f) => ({
       fixtureId: f.id,
       home: f.home,
@@ -270,7 +271,7 @@ describe('phaseQualifierMarks (Task 132, US-02.2, US-07.2)', () => {
 describe('canChangeCurrentGroups (Task 181, US-02.1)', () => {
   const laterGroups = (results: PhaseResult[] = []): LeagueWrapper => {
     const wrapper = groupsLeague();
-    const [phase] = wrapper.content.phases;
+    const phase = scheduled(wrapper.content.phases[0]);
     if (phase.format !== 'groups') throw new Error('expected Groups');
     return {
       ...wrapper,

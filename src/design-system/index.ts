@@ -26,6 +26,12 @@ export type { InputProps } from './components/Input';
 export { Select } from './components/Select';
 export type { SelectProps, SelectOption } from './components/Select';
 
+export { SegmentedControl } from './components/SegmentedControl';
+export type {
+  SegmentedControlProps,
+  SegmentedOption,
+} from './components/SegmentedControl';
+
 export { Checkbox } from './components/Checkbox';
 export type { CheckboxProps } from './components/Checkbox';
 

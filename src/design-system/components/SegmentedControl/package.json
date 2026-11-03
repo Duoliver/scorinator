@@ -1,0 +1,7 @@
+{
+  "name": "@design-system/segmented-control",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./SegmentedControl.tsx",
+  "types": "./SegmentedControl.tsx"
+}

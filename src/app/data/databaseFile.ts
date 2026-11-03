@@ -106,6 +106,7 @@ function phaseToFile(phase: Phase): SavedPhase {
       seeds: [...phase.seeds],
       byeTeams: [...phase.byeTeams],
       results: structuredClone(phase.results),
+      ...(phase.avoidGroupTies ? { avoidGroupTies: true } : {}),
     };
   }
   const fixtures = phase.fixtures.map((fixture) => ({ ...fixture }));

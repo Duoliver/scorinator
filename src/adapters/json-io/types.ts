@@ -116,6 +116,9 @@ export interface SavedBracketPhase {
   seeds: string[];
   byeTeams: string[];
   results: SavedTieResult[];
+  /** The Task 185 rule: no same-group first-round tie. Not there in a
+   * bracket that started before, which keeps its pairs. */
+  avoidGroupTies?: boolean;
 }
 
 export type SavedPhase = SavedRoundRobinPhase | SavedGroupsPhase | SavedBracketPhase;

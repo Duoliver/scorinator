@@ -309,3 +309,92 @@ describe('the bracket progress (Task 139 choice 6)', () => {
     expect(summarizeLeague(wrapperOf(uuid)).phases).toEqual([{ format: 'bracket' }]);
   });
 });
+
+describe('no same-group tie in the first round (Task 185)', () => {
+  // 8 teams in 2 groups of 4, top 2 of each: 4 qualifiers.
+  const groupsThenBracket: PhasePlan[] = [
+    {
+      format: 'groups',
+      legs: 'single-duels',
+      grouping: { by: 'count', count: 2 },
+      advance: { top: 2, bestOfNext: 0 },
+    },
+    { format: 'bracket' },
+  ];
+
+  function startBracket(): string {
+    const uuid = createCup(8, groupsThenBracket);
+    for (let matchday = 1; matchday <= 3; matchday++) scorinateMatchday(uuid, matchday);
+    startNextPhase(uuid);
+    return uuid;
+  }
+
+  it('a bracket after Groups stores the flag when it starts', () => {
+    expect(bracketOf(startBracket()).avoidGroupTies).toBe(true);
+  });
+
+  it('a first-phase bracket stores the flag too', () => {
+    expect(bracketOf(createCup(4)).avoidGroupTies).toBe(true);
+  });
+
+  // A started bracket, made to clash: groups [a, b] and [c, d], seeds
+  // a, c, d, b, so the first tie is a v b, two teams of group 1.
+  function withClash(flag: boolean): LeagueWrapper {
+    const uuid = startBracket();
+    const wrapper = wrapperOf(uuid);
+    const [groups, phase] = wrapper.content.phases;
+    if (groups.format !== 'groups' || phase.format !== 'bracket') {
+      throw new Error('expected Groups, then a bracket');
+    }
+    const [a, b, c, d] = phase.seeds;
+    const bracket: BracketPhase = {
+      format: 'bracket',
+      seeds: [a, c, d, b],
+      byeTeams: [],
+      results: [],
+      ...(flag ? { avoidGroupTies: true } : {}),
+    };
+    return {
+      ...wrapper,
+      content: {
+        ...wrapper.content,
+        phases: [
+          {
+            ...groups,
+            groups: [
+              [a, b],
+              [c, d],
+            ],
+          },
+          bracket,
+        ],
+      },
+    };
+  }
+
+  const firstRound = (wrapper: LeagueWrapper): string[][] => {
+    const tree = bracketTreeOf(wrapper, 1);
+    if (tree.status !== 'ready') throw new Error('expected a ready tree');
+    return tree.rounds[0].ties.map((tie) =>
+      tie.slots.map((slot) => (slot.kind === 'team' ? slot.teamId : slot.kind))
+    );
+  };
+
+  it('the tree of a flagged bracket has no same-group first-round tie', () => {
+    const wrapper = withClash(true);
+    const [a, c, d, b] = (wrapper.content.phases[1] as BracketPhase).seeds;
+    expect(firstRound(wrapper)).toEqual([
+      [a, d],
+      [c, b],
+    ]);
+  });
+
+  it('a bracket that started before Task 185 (no flag) keeps its pairs', () => {
+    const wrapper = withClash(false);
+    const [a, c, d, b] = (wrapper.content.phases[1] as BracketPhase).seeds;
+    expect(firstRound(wrapper)).toEqual([
+      [a, b],
+      [c, d],
+    ]);
+  });
+});

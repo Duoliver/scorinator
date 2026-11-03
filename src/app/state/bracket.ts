@@ -32,7 +32,8 @@ export function bracketRulesFor(
 }
 
 /** The tree of a bracket phase, made again from its seeds, its bye teams,
- * and the third-place setting (Task 139 choice 1). With too few bye teams,
+ * and the third-place setting (Task 139 choice 1). A flagged bracket after
+ * Groups has no same-group first-round tie (Task 185). With too few bye teams,
  * it has the counts and no rounds (US-04.10). Throws a `RangeError` for a
  * phase that is not a started bracket. */
 export function bracketTreeOf(
@@ -44,7 +45,23 @@ export function bracketTreeOf(
     phaseIndex + 1,
     phase.seeds,
     phase.byeTeams,
-    rules.thirdPlace
+    rules.thirdPlace,
+    phase.avoidGroupTies ? groupsBefore(wrapper, phaseIndex) : undefined
+  );
+}
+
+/** The group of each team of the Groups phase before a bracket, for the
+ * Task 185 rule. `undefined` when the phase before is not Groups. */
+function groupsBefore(
+  wrapper: LeagueWrapper,
+  phaseIndex: number
+): Map<string, number> | undefined {
+  const before = wrapper.content.phases[phaseIndex - 1];
+  if (before?.format !== 'groups') return undefined;
+  return new Map(
+    before.groups.flatMap((members, group) =>
+      members.map((team): [string, number] => [team, group])
+    )
   );
 }
 

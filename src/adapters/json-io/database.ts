@@ -639,7 +639,17 @@ function readBracketPhase(
   const results = readList(value.results, 'results', fail).map((item, i) =>
     readTieResult(item, `${label}, result ${i + 1}`, seedSet)
   );
-  return { format: 'bracket', seeds, byeTeams, results };
+  const flag = value.avoidGroupTies;
+  if (flag !== undefined && typeof flag !== 'boolean') {
+    fail(`${label} has no valid "avoidGroupTies" flag.`);
+  }
+  return {
+    format: 'bracket',
+    seeds,
+    byeTeams,
+    results,
+    ...(flag === true ? { avoidGroupTies: true } : {}),
+  };
 }
 
 /** Checks a bracket phase against its tree: the bye teams fit, and each

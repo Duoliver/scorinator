@@ -66,6 +66,60 @@ function nextSlot<TeamId>(tie: BracketTie<TeamId>): BracketSlot<TeamId> {
     : { kind: 'winner-of', tieId: tie.id };
 }
 
+// The group of a team slot, or undefined for a bye or a team with no group.
+function groupOfSlot<TeamId>(
+  slot: BracketSlot<TeamId>,
+  groupOf: ReadonlyMap<TeamId, number>
+): number | undefined {
+  return slot.kind === 'team' ? groupOf.get(slot.teamId) : undefined;
+}
+
+function isSameGroup<TeamId>(
+  a: BracketSlot<TeamId>,
+  b: BracketSlot<TeamId>,
+  groupOf: ReadonlyMap<TeamId, number>
+): boolean {
+  const group = groupOfSlot(a, groupOf);
+  return group !== undefined && group === groupOfSlot(b, groupOf);
+}
+
+const seedOf = <TeamId>(slot: BracketSlot<TeamId>): number =>
+  slot.kind === 'team' ? slot.seed : 0;
+
+/**
+ * Removes the same-group ties of the first round, after a Groups phase
+ * (Task 185). The top team of a tie never moves, so the seed rule of the
+ * standard placement holds. The lower team of a same-group tie swaps with
+ * the lower team of another tie, the nearest seed number first, then the
+ * higher number on a draw. A swap counts only when neither tie then pairs
+ * two teams of one group. A bye tie takes no part, and a tie with no valid
+ * swap stays. The ties change in place.
+ */
+function avoidGroupTies<TeamId>(
+  ties: BracketTie<TeamId>[],
+  groupOf: ReadonlyMap<TeamId, number>
+): void {
+  const playable = ties.filter((tie) => tie.slots[1].kind === 'team');
+  for (const tie of playable) {
+    const [top, low] = tie.slots;
+    if (!isSameGroup(top, low, groupOf)) continue;
+    const candidates = playable
+      .filter((other) => other !== tie)
+      .sort(
+        (a, b) =>
+          Math.abs(seedOf(a.slots[1]) - seedOf(low)) -
+            Math.abs(seedOf(b.slots[1]) - seedOf(low)) ||
+          seedOf(b.slots[1]) - seedOf(a.slots[1])
+      );
+    const swap = candidates.find(
+      (other) =>
+        !isSameGroup(top, other.slots[1], groupOf) &&
+        !isSameGroup(other.slots[0], low, groupOf)
+    );
+    if (swap) [tie.slots[1], swap.slots[1]] = [swap.slots[1], low];
+  }
+}
+
 /**
  * The tree of a bracket phase, before any tie is played (US-04.2, US-04.10,
  * US-04.11). Pass the qualifiers in seed order (`pickQualifiers`, or
@@ -79,6 +133,9 @@ function nextSlot<TeamId>(tie: BracketTie<TeamId>): BracketSlot<TeamId> {
  * choices 2 and 3). It takes the losers of the two semi-finals. With 3
  * qualifiers, one semi-final is a bye with no loser, so there is none.
  *
+ * With `groupOf`, the group of each team after a Groups phase, the first
+ * round has no same-group tie when a swap can avoid it (Task 185).
+ *
  * With fewer bye teams than byes, gives the counts and no rounds. Throws a
  * `RangeError` for fewer than 2 qualifiers, a team named twice, more bye
  * teams than byes, or a bye team that is not a qualifier. The inputs do not
@@ -88,7 +145,8 @@ export function buildBracketTree<TeamId>(
   phase: number,
   seeds: readonly TeamId[],
   byeTeams: readonly TeamId[],
-  thirdPlace = false
+  thirdPlace = false,
+  groupOf?: ReadonlyMap<TeamId, number>
 ): BracketTree<TeamId> {
   const slotCount = bracketSlotCount(seeds.length);
   const byes = slotCount - seeds.length;
@@ -113,6 +171,8 @@ export function buildBracketTree<TeamId>(
     const bottom = byNumber.get(placement[i + 1]) ?? { kind: 'bye' };
     firstTies.push(makeTie(phase, 1, i / 2 + 1, kindOf(1), [top, bottom]));
   }
+
+  if (groupOf) avoidGroupTies(firstTies, groupOf);
 
   const rounds: BracketRound<TeamId>[] = [
     { round: 1, teams: slotCount, ties: firstTies },

@@ -269,3 +269,119 @@ describe('buildBracketTree: the third-place tie (US-04.12)', () => {
     expect(rounds[2].ties[0].kind).toBe('final');
   });
 });
+
+describe('buildBracketTree: no same-group tie in the first round (Task 185)', () => {
+  // A team id names its group and its place, for example "B2".
+  const groupOf = (teams: readonly string[]): Map<string, number> =>
+    new Map(teams.map((team) => [team, team.charCodeAt(0) - 65]));
+  const firstRound = (seeds: string[], byes: string[] = []): string[] => {
+    const tree = buildBracketTree(1, seeds, byes, false, groupOf(seeds));
+    if (tree.status !== 'ready') throw new Error('expected a ready tree');
+    return tree.rounds[0].ties.map(tieText);
+  };
+
+  it('the review case: 4 groups, top 2, B1 v B2 and C1 v C2 swap away', () => {
+    // The 4 winners are seeds 1 to 4, the runners-up seeds 5 to 8.
+    const seeds = ['A1', 'B1', 'C1', 'D1', 'D2', 'C2', 'B2', 'A2'];
+    // Without the rule: A1 v A2, D1 v D2, B1 v B2, C1 v C2.
+    const plain = buildBracketTree(1, seeds, []);
+    if (plain.status !== 'ready') throw new Error('expected a ready tree');
+    expect(plain.rounds[0].ties.map(tieText)).toEqual([
+      'A1 v A2',
+      'D1 v D2',
+      'B1 v B2',
+      'C1 v C2',
+    ]);
+    const ties = firstRound(seeds);
+    for (const tie of ties) {
+      const [top, bottom] = tie.split(' v ');
+      expect(top[0]).not.toBe(bottom[0]);
+    }
+    // The top team of each tie stays. A2 swaps with the nearest lower team,
+    // B2 (seed 7). Then D2 swaps with its nearest, C2 (seed 6).
+    expect(ties).toEqual(['A1 v B2', 'D1 v C2', 'B1 v A2', 'C1 v D2']);
+  });
+
+  it('swaps with the nearest seed number first', () => {
+    // 1 v 4 is A1 v A2: the only other lower team is B2 (seed 3).
+    expect(firstRound(['A1', 'B1', 'B2', 'A2'])).toEqual(['A1 v B2', 'B1 v A2']);
+  });
+
+  it('keeps the seeds of the teams after a swap', () => {
+    const tree = buildBracketTree(
+      1,
+      ['A1', 'B1', 'B2', 'A2'],
+      [],
+      false,
+      groupOf(['A1', 'B1', 'B2', 'A2'])
+    );
+    if (tree.status !== 'ready') throw new Error('expected a ready tree');
+    expect(tree.rounds[0].ties[0].slots[1]).toEqual({
+      kind: 'team',
+      teamId: 'B2',
+      seed: 3,
+    });
+  });
+
+  it('never moves a bye: 3 groups, top 2, 2 byes', () => {
+    // Seeds A1 B1 C1 C2 B2 A2: ties 1 v BYE, 4 v 5 (C2 v B2), 2 v BYE, 3 v 6 (C1 v A2).
+    // No clash: no change.
+    const seeds = ['A1', 'B1', 'C1', 'C2', 'B2', 'A2'];
+    expect(firstRound(seeds, ['A1', 'B1'])).toEqual([
+      'A1 v BYE',
+      'C2 v B2',
+      'B1 v BYE',
+      'C1 v A2',
+    ]);
+    // C1 v C2 in 3 v 6: C2 swaps with the lower team of 4 v 5.
+    const clash = ['A1', 'B1', 'C1', 'B2', 'A2', 'C2'];
+    expect(firstRound(clash, ['A1', 'B1'])).toEqual([
+      'A1 v BYE',
+      'B2 v C2',
+      'B1 v BYE',
+      'C1 v A2',
+    ]);
+  });
+
+  it('leaves a tie with no valid swap as it is', () => {
+    expect(firstRound(['A1', 'A2'])).toEqual(['A1 v A2']);
+  });
+
+  it('changes nothing for a team with no group', () => {
+    const seeds = ['A1', 'B1', 'B2', 'A2'];
+    const tree = buildBracketTree(1, seeds, [], false, new Map());
+    if (tree.status !== 'ready') throw new Error('expected a ready tree');
+    expect(tree.rounds[0].ties.map(tieText)).toEqual(['A1 v A2', 'B1 v B2']);
+  });
+
+  it.each([
+    [8, 4],
+    [16, 8],
+    [32, 16],
+  ])(
+    '%i qualifiers from %i groups of 2: no same-group tie, and the tops stay',
+    (n, groups) => {
+      const letters = Array.from({ length: groups }, (_, i) =>
+        String.fromCharCode(65 + i)
+      );
+      for (let shift = 0; shift < groups; shift++) {
+        // Winners in group order, runners-up in a rotated order.
+        const winners = letters.map((g) => `${g}1`);
+        const runners = letters.map((_, i) => `${letters[(i + shift) % groups]}2`);
+        const seeds = [...winners, ...runners];
+        const tree = buildBracketTree(1, seeds, [], false, groupOf(seeds));
+        if (tree.status !== 'ready') throw new Error('expected a ready tree');
+        const plain = buildBracketTree(1, seeds, []);
+        if (plain.status !== 'ready') throw new Error('expected a ready tree');
+        tree.rounds[0].ties.forEach((tie, i) => {
+          const [top, bottom] = tie.slots;
+          expect(top).toEqual(plain.rounds[0].ties[i].slots[0]);
+          if (top.kind === 'team' && bottom.kind === 'team') {
+            expect(top.teamId[0]).not.toBe(bottom.teamId[0]);
+          }
+        });
+        expect(tree.rounds[0].ties).toHaveLength(n / 2);
+      }
+    }
+  );
+});

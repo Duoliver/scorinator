@@ -59,6 +59,10 @@ export interface BracketPhase {
   seeds: string[];
   byeTeams: string[];
   results: BracketTieResult<string>[];
+  /** True for a bracket that started from Task 185 on: its first round has
+   * no same-group tie after a Groups phase. A bracket that started before
+   * has no flag and keeps its pairs (Task 185 choice 1). */
+  avoidGroupTies?: boolean;
 }
 
 /** A phase with a round-robin schedule: a round robin or Groups phase. */

@@ -96,7 +96,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 140 | Wizard bracket settings: tie format, away goals, AET, method, third place, single-match final, the power-of-2 warning | `features/leagues` | ✅ Done | 2026-11-03 | 2026-11-03 | [140](/docs/tasks/140-wizard-bracket-settings.md) | M4. US-03.1, 03.2, 04.1, 04.3, 04.9, 04.12, 04.13. 24 new tests. The user checked the real app. |
 | 141 | League Detail bracket: the tree, tie cards, Scorinate, the re-scorinate confirm, TBD, BYE, the winner line | `features/leagues` | ✅ Done | 2026-11-03 | 2026-11-03 | [141](/docs/tasks/141-league-detail-bracket.md) | M4. US-04.5 to 04.8, 04.11, 04.14. 28 new tests. The user checked the real app. |
 | 142 | Seed List: seeds, tags, the bye stars, the bye change confirm | `features/leagues` | ✅ Done | 2026-11-03 | 2026-11-03 | [142](/docs/tasks/142-seed-list.md) | M4. US-04.2, 04.10, 07.2. 27 new tests. The user checked the real app. |
-| 185 | No same-group tie in the first bracket round | `engine/bracket`, `app/state` | ⬜ Not started |  |  | [185](/docs/tasks/185-bracket-group-clash.md) | Task created by User - 2026-11-03. From the Task 142 review. Option 1. Criteria wait for the user. |
+| 185 | No same-group tie in the first bracket round | `engine/bracket`, `app/state` | ✅ Done | 2026-11-03 | 2026-11-03 | [185](/docs/tasks/185-bracket-group-clash.md) | Task created by User - 2026-11-03. From the Task 142 review. 15 new tests. The user checked the real app. |
 | 143 | M4 smoke check | all | ⬜ Not started |  |  |  | M4. After 140, 142, 185. |
 | 144 | Import decisions: unknown, same content, conflict, Skip, Import as new, the embedded Blueprint rule | `persistence/` | ⬜ Not started |  |  |  | M5. US-11.2, 10.3. After 143. |
 | 145 | League and Blueprint files: one or many, format versions, wrong-file errors | `adapters/json-io` | ⬜ Not started |  |  |  | M5. US-10.1 to 10.3. After 144. |
@@ -184,6 +184,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-11-03 (Task 185 — no same-group first-round tie):** The user agreed the criteria and choice 1: a bracket phase stores `avoidGroupTies`, set when it starts, so a bracket that started before keeps its pairs. Detail: [Task 185](/docs/tasks/185-bracket-group-clash.md).
 
 - **2026-11-03 (Task 142 review — same-group ties):** The user found B1 v B2 and C1 v C2 in a first bracket round after Groups. The user chose option 1: a first-round swap that avoids a same-group tie, in a new Task 185. The user preferred fixed cross-group pairs, but they need a power of 2. A choice of the seeding method is parked: `scorinator-future-features.md` §23. Detail: [Task 185](/docs/tasks/185-bracket-group-clash.md).
 

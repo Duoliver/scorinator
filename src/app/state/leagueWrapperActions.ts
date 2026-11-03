@@ -63,8 +63,11 @@ const DEFAULT_PLANS: readonly PhasePlan[] = [
   { format: 'round-robin', legs: 'two-way' },
 ];
 
-/** A built phase of the engine, as a domain phase with no results yet. */
+/** A built phase of the engine, as a domain phase with no results yet. A
+ * bracket starts with the Task 185 rule on. */
 function startedPhase(built: BuiltPhase<string>): Phase {
+  if (built.format === 'bracket')
+    return { ...built, results: [], avoidGroupTies: true };
   return { ...built, results: [] };
 }
 

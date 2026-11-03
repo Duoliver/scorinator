@@ -227,6 +227,27 @@ describe('the bracket files (Task 139)', () => {
     expect(() => parseLeagueWrapper(cupText(change))).toThrow(message);
   });
 
+  it('keeps the Task 185 flag after a round trip, and a bracket with no flag has none', () => {
+    const base = playedCup();
+    const [phase] = base.content.phases;
+    if (phase.format !== 'bracket') throw new Error('expected a bracket');
+    const flagged: LeagueWrapper = {
+      ...base,
+      content: { ...base.content, phases: [{ ...phase, avoidGroupTies: true }] },
+    };
+    expect(parseLeagueWrapper(serializeLeagueWrapper(flagged))).toEqual(flagged);
+    const [read] = parseLeagueWrapper(serializeLeagueWrapper(base)).content.phases;
+    expect(read.format === 'bracket' && 'avoidGroupTies' in read).toBe(false);
+  });
+
+  it('rejects an "avoidGroupTies" flag that is not a boolean', () => {
+    expect(() =>
+      parseLeagueWrapper(
+        cupText((raw) => (raw.content.phases[0].avoidGroupTies = 'yes'))
+      )
+    ).toThrow('phase 1 has no valid "avoidGroupTies" flag.');
+  });
+
   it('rejects a bracket phase in a version-3 file', () => {
     expect(() => parseLeagueWrapper(cupText((raw) => (raw.formatVersion = 3)))).toThrow(
       'phase 1 has a format that is not known.'

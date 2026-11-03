@@ -87,7 +87,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 182 | League card: the button at the bottom edge | `features/leagues` | ✅ Done | 2026-11-02 | 2026-11-02 | [182](/docs/tasks/182-league-card-button-bottom.md) | Task created by User - 2026-11-02. From the Task 132 review. Layout only. |
 | 183 | Later Groups phase: rearrange groups of 2 | `engine/round-robin`, `app/state`, `features/leagues` | ✅ Done | 2026-11-02 | 2026-11-02 | [183](/docs/tasks/183-later-groups-rearrange.md) | Task created by User - 2026-11-02. From the Task 133 check, row 9. Option 1 (swap). 7 new tests. |
 | 133 | M3 smoke check | all | ✅ Done | 2026-11-02 | 2026-11-02 | [133](/docs/tasks/133-m3-smoke-check.md) | M3 complete. M3 end-to-end test added. The user checked 10 rows: row 8 Bracket part waits for 140. |
-| 134 | AET: a time share of the match, with the bands | `engine/scorination` | ⬜ Not started |  |  |  | M4. US-03.1. After 133. |
+| 134 | AET: a time share of the match, with the bands | `engine/scorination` | ✅ Done | 2026-11-03 | 2026-11-03 | [134](/docs/tasks/134-aet-time-share.md) | M4. US-03.1. 14 new tests. `scorinateExtraTime` built. No caller yet: Task 137 is the first. |
 | 135 | Penalties, the coin toss, the four sequences, away goals | `engine/tiebreak` | ⬜ Not started |  |  |  | M4. US-03.2, 03.3, 04.4. After 134. |
 | 136 | Bracket tree: seeds, the standard placement, byes and the bye change, round names, tie ids | `engine/bracket` | ⬜ Not started |  |  |  | M4. US-04.2, 04.10, 04.11, 04.14. After 133. |
 | 137 | Bracket play: playable ties, one round, the dependent clear, third place, single-match final | `engine/bracket` | ⬜ Not started |  |  |  | M4. US-04.1, 04.5, 04.7, 04.12, 04.13. After 135, 136. |
@@ -182,6 +182,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-11-03 (Task 134 — AET time share):** The user agreed five choices. (1) A core `scorinatePeriod` with a time share. The bracket rolls the elasticity and calls it. (2) `scorinateMatch` keeps its RNG draw order, with a pinned-score test. (3) `scorinateExtraTime` returns the AET goals only. (4) The caller keeps the home boost. (5) 10,000 AETs for each statistical case, the Task 80 bands. The user parked a display of the score before AET: `scorinator-future-features.md` §22. Detail: [Task 134](/docs/tasks/134-aet-time-share.md).
 
 - **2026-11-02 (Task 183 — groups of 2 in a later phase):** The user picked a swap (option 1) to rearrange a later Groups draw where every group has 2 teams. Free moves with a warning wait for a later setting: `scorinator-future-features.md` §16, which also holds the short or full team name. The user asked to check §16 when MVP3 is refined. Detail: [Task 183](/docs/tasks/183-later-groups-rearrange.md).
 

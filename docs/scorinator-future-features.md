@@ -130,3 +130,8 @@ In MVP2, a league keeps the name it got at "Create league", and the app cannot r
 In MVP2, the Teams screen holds one flat list of Blueprints. Later, the user can put Blueprints into collections: create a collection, add and remove teams, rename it, and disband it (the teams stay). To settle at refinement: one team in several collections or not, where collections show (Teams screen, wizard add dialog), and how the database files keep them. No spec had this before 2026-11-02.
 
 *Raised during: MVP2, end of the M3 session, 2026-11-02.*
+
+## 22. The score before AET on the tie card
+In MVP2, the tie card shows one score for a match that went to AET, with an asterisk and the footnote "* score includes AET" (US-03.1). The user cannot see how many goals came in AET. Later, the tie card also shows the score after 90 minutes, for example "2–2 (1–1)", or the AET goals on their own line. The engine already returns the AET goals apart from the match goals (Task 134 choice 3). The tie record must keep both scores, so check this entry before Task 139 fixes the tie record.
+
+*Raised during: MVP2, Task 134 (AET time share), 2026-11-03.*

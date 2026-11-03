@@ -7,10 +7,13 @@ export {
   ELASTICITY_MAX,
   HOME_ADVANTAGE_FLAT,
   HOME_ADVANTAGE_PERCENT,
+  AET_TIME_SHARE,
   rollElasticity,
   computeExpectedGoals,
   applyHomeAdvantage,
   scorinateMatch,
+  scorinatePeriod,
+  scorinateExtraTime,
   playMatch,
 } from './scorination';
 export type { MatchScore } from './types';

@@ -1,5 +1,5 @@
 import type { JSX } from 'preact';
-import { BracketView } from '@/features/bracket';
+import { BracketView, SeedList } from '@/features/bracket';
 import { Button, Tabs, type TabItem } from '@/design-system';
 import type { LeagueWrapper } from '@/domain';
 import { FixturesView } from '@/features/fixtures';
@@ -74,7 +74,7 @@ const DrawEditor = ({
  * views read the same `league` wrapper, so a scorinate in Fixtures shows up
  * in Standings on the next tab switch. With a `draw`, the Standings tab
  * shows the draw cards in place of the tables (Task 181). A bracket phase
- * has one "Bracket" tab instead (Task 141). Task 142 adds the Seed List. */
+ * has the "Bracket" and "Seed List" tabs instead (Tasks 141, 142). */
 export const getLeagueTabs = (
   league: LeagueWrapper,
   phaseIndex: number,
@@ -87,6 +87,11 @@ export const getLeagueTabs = (
           id: 'bracket',
           label: 'Bracket',
           content: <BracketView league={league} phaseIndex={phaseIndex} />,
+        },
+        {
+          id: 'seed-list',
+          label: 'Seed List',
+          content: <SeedList league={league} phaseIndex={phaseIndex} />,
         },
       ]
     : getScheduledTabs(league, phaseIndex, memory, draw);

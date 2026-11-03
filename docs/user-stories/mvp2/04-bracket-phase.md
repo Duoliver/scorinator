@@ -254,7 +254,7 @@ As a user, I want byes auto-assigned to the top seeds when the qualifier count i
 - [ ] A click on an empty star gives that team a bye. A click on a filled star takes the bye away. When all byes are assigned, the empty stars are disabled.
 - [ ] After a change, the bye teams take the bye slots in seed order. The other teams take the other slots in seed order. The seeds do not change.
 - [ ] Before the first bracket result, a star change applies at once.
-- [ ] After the first bracket result, a star change opens the US-04.6 confirm modal. "Clear & scorinate" reads "Clear & change byes" here. A confirm clears every result of the bracket phase, then applies the change.
+- [ ] After the first bracket result, a star change opens a confirm modal: title "Clear bracket results?", text "This will clear every result of the bracket. Continue?", buttons "Cancel" and "Clear & change byes". A confirm clears every result of the bracket phase, then applies the change. *(Changed on 2026-11-03, Task 142 choice 5. It re-used the US-04.6 title "Clear later rounds?", but a bye change clears the first round too.)*
 - [ ] A star change with fewer bye teams than byes needed: the first round cannot start. The Bracket tab shows "Assign 2 / 2 byes to play the first round.", and "Scorinate" and "Scorinate bracket" are disabled.
 - [ ] The bye choice is stored with the league.
 

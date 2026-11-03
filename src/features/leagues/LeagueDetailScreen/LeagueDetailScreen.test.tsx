@@ -462,6 +462,10 @@ describe('LeagueDetailScreen', () => {
       expect(
         screen.getByRole('button', { name: '⚽ Scorinate bracket' })
       ).toBeEnabled();
+      // The Seed List sub-tab comes after the Bracket tab (Task 142 choice 1).
+      await userEvent.click(screen.getByRole('tab', { name: 'Seed List' }));
+      expect(screen.getByRole('table', { name: 'Seed List' })).toBeInTheDocument();
+      expect(screen.getByText('A1')).toBeInTheDocument();
     });
   });
 

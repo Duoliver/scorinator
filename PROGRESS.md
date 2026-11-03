@@ -111,6 +111,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 155 | Zones: the wizard section, "Edit zones", tint, stripe, legend, in place of the highlight | `features/` | ⬜ Not started |  |  |  | M6. US-12.5, 02.2, 07.2. After 152. |
 | 156 | The position chart: the "Chart" sub-tab, SVG, the group selector | `features/standings` | ⬜ Not started |  |  |  | M6. US-12.4. After 153. |
 | 157 | Trigrams and Location on league screens: narrow tables, fixtures, the Location hint | `features/` | ⬜ Not started |  |  |  | M6. US-09.3, 09.6. After 154. |
+| 184 | String unions to enums or named constants, across the codebase | all | ⬜ Not started |  |  | [184](/docs/tasks/184-string-unions-to-constants.md) | Task created by User - 2026-11-03. From the Task 137 review. Before 158. Criteria wait for the user. |
 | 158 | M6 smoke check: MVP2 complete | all | ⬜ Not started |  |  |  | M6. After 155, 156, 157. |
 | 159 | The commit workflow: commit at Done, the message pattern | `CLAUDE.md`, `PROGRESS.md` | ✅ Done | 2026-10-29 | 2026-10-29 | [159](/docs/tasks/159-commit-workflow.md) | Task created by User - 2026-10-29. Commit at Done. Push and branches stay with the user. |
 | 160 | v2 actions: Blueprint create and edit (UUID, unique slug, provenance), league create (Instances, phase 1, fixture ids), scorinate in phase 1 | `app/state` | ✅ Done | 2026-10-29 | 2026-10-29 | [160](/docs/tasks/160-v2-actions.md) | Task created by User - 2026-10-29, split from 108. M1. Built. Seven choices agreed. |

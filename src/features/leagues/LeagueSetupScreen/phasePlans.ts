@@ -196,12 +196,6 @@ export function parseWholeNumber(text: string): number {
   return /^\d+$/.test(trimmed) ? Number(trimmed) : Number.NaN;
 }
 
-/** A bracket phase keeps "Create league" off until Task 141 (Task 140
- * choice 7). */
-export function hasBracketPhase(plans: readonly PhasePlan[]): boolean {
-  return plans.some((plan) => plan.format === 'bracket');
-}
-
 /** The Review text of one phase: the full label, the group setting, and
  * the advancement. A bracket lists its settings (Task 140 choice 6): the
  * tie format, the away goals of two legs, AET, the method, the

@@ -23,7 +23,6 @@ import {
   phaseChecks,
   phaseProblemText,
 } from './phaseChecks';
-import { hasBracketPhase } from './phasePlans';
 import { useLeagueDraftSync } from './useLeagueDraftSync';
 import { usePhaseList } from './usePhaseList';
 import { usePhaseOneGroups } from './usePhaseOneGroups';
@@ -88,16 +87,8 @@ export function useLeagueSetup(): LeagueSetup {
   );
   // The bracket team count and its power-of-2 warning (US-04.9, Task 140).
   const qualifiers = bracketQualifiers(phaseList.plans, checks.counts);
-  // A league with a bracket has no Bracket tab before Task 141, so "Create
-  // league" stays off (Task 140 choice 7). A phase problem shows its first
-  // text (Task 177 choice 6).
-  const createProblem =
-    teamListProblem(teamList.teams) ??
-    (hasBracketPhase(phaseList.plans)
-      ? 'The bracket screen comes in a later update.'
-      : null) ??
-    phaseProblems[0] ??
-    null;
+  // A phase problem shows its first text (Task 177 choice 6).
+  const createProblem = teamListProblem(teamList.teams) ?? phaseProblems[0] ?? null;
 
   const handleCreate = (): void => {
     // `DetailsStep` is unmounted by the time Review is reachable — `details`

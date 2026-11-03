@@ -366,17 +366,20 @@ describe('LeagueSetupScreen', () => {
       expect(screen.getByText('Group Stage → Round robin')).toBeInTheDocument();
     });
 
-    it('keeps "Create league" off while a phase is a bracket, with the reason (Task 140 choice 7)', async () => {
+    it('creates a league with a bracket phase 1, with its draw (Task 141)', async () => {
       useLeagueDraftStore.setState({ plans: [{ format: 'bracket' }] });
       render(<LeagueSetupScreen />);
       await userEvent.type(screen.getByLabelText('League name'), 'Cup');
       await goToTeamsStep();
       await addTwoTeams();
       await userEvent.click(screen.getByText('Next: Review →'));
-      expect(
-        screen.getByText('The bracket screen comes in a later update.')
-      ).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Create league' })).toBeDisabled();
+      expect(screen.getByRole('button', { name: 'Create league' })).toBeEnabled();
+      await userEvent.click(screen.getByText('Create league'));
+
+      const [league] = Object.values(useDatabaseStore.getState().leagues);
+      const [phase] = league.content.phases;
+      expect(phase.format).toBe('bracket');
+      expect(phase.format === 'bracket' && phase.seeds).toHaveLength(2);
     });
 
     it('shows the power-of-2 warning on the Teams step, and the bracket in Review (Task 140)', async () => {

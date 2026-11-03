@@ -18,6 +18,7 @@ export {
   isBracketComplete,
   playBracketRound,
   playBracketTie,
+  rulesForTie,
 } from './play';
 export type {
   BracketPlanRules,

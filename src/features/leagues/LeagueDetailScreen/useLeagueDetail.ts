@@ -20,7 +20,7 @@ import {
 } from '@/features/leagues/leagueSummary';
 import type { LeagueWrapper } from '@/domain';
 import {
-  BRACKET_START_HINT,
+  firstLeagueTab,
   getLeagueTabs,
   getPhaseTabs,
   phaseTabId,
@@ -107,7 +107,7 @@ export function useLeagueDetail(uuid: string): LeagueDetailState {
         // The current phase is the last started one.
         defaultTab: hasPhaseTabs
           ? phaseTabId(Math.max(0, phases.length - 1))
-          : 'standings',
+          : firstLeagueTab(league, 0),
         tabsRef,
         startConfirm,
       },
@@ -120,8 +120,7 @@ export function useLeagueDetail(uuid: string): LeagueDetailState {
 
 /** The Start button of the next phase (US-07.3), or `undefined` while the
  * current phase is not complete or no next phase is planned. A Bracket next
- * phase cannot start until Task 139, so its button is off with a reason
- * (Task 132 choice 4). */
+ * phase starts too, since Task 141. */
 function findPhaseStart(
   league: LeagueWrapper,
   open: () => void
@@ -131,7 +130,6 @@ function findPhaseStart(
   const nextPlan = plans[phases.length];
   return {
     label: `Start phase ${phases.length + 1} · ${phaseShortName(nextPlan)}`,
-    hint: nextPlan.format === 'bracket' ? BRACKET_START_HINT : undefined,
     onClick: open,
   };
 }

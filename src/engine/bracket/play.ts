@@ -127,9 +127,13 @@ export function hasDependentResults<TeamId>(
   return findDependentTies(rounds, tieId).some((id) => findResult(results, id));
 }
 
-// The rules of one tie. With the single-match final on, the final and the
-// third-place tie are one neutral match, with no away goals (US-04.13).
-function pickTieRules<TeamId>(tie: BracketTie<TeamId>, rules: BracketRules): TieRules {
+/** The rules of one tie. With the single-match final on, the final and the
+ * third-place tie are one neutral match, with no away goals (US-04.13). The
+ * tie card reads it for its score columns (Task 141). */
+export function rulesForTie<TeamId>(
+  tie: BracketTie<TeamId>,
+  rules: BracketRules
+): TieRules {
   const { format, awayGoals, playsAet, method, homeAdvantage } = rules;
   if (tie.kind !== 'regular' && rules.singleMatchFinal) {
     return {
@@ -173,7 +177,7 @@ export function playBracketTie<TeamId>(
   const played = playTie(
     { id: higher.teamId, ovr: ovrOf(higher.teamId) },
     { id: lower.teamId, ovr: ovrOf(lower.teamId) },
-    pickTieRules(tie, rules),
+    rulesForTie(tie, rules),
     rng
   );
   const cleared = new Set([tieId, ...findDependentTies(rounds, tieId)]);

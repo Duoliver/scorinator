@@ -1,0 +1,88 @@
+/* A tie card of the handoff: a hard border and a hard shadow. */
+.card {
+  display: flex;
+  flex-direction: column;
+  border: var(--border-width) solid var(--color-border);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-offset-sm);
+  font-size: var(--font-size-sm);
+}
+
+.bye {
+  border-style: dashed;
+  box-shadow: none;
+}
+
+.title {
+  margin: 0;
+  padding: var(--space-1) var(--space-2);
+  border-bottom: var(--border-width) solid var(--color-border);
+  font-family: var(--font-condensed);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+/* A team row: the swatch, the name, then one fixed cell for each score. */
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--space-8);
+  padding-left: var(--space-2);
+  border-bottom: var(--border-width) solid var(--color-border);
+}
+
+.name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.score,
+.head {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--space-8);
+  border-left: var(--border-width) solid var(--color-border);
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+
+.head {
+  font-size: var(--font-size-xs);
+  color: var(--color-fg-muted);
+}
+
+/* The winner: bold, with the positive row tint (choice 4). */
+.winnerRow {
+  background: var(--color-row-positive);
+  font-weight: 700;
+}
+
+.tbd {
+  color: var(--color-fg-muted);
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding-left: var(--space-2);
+}
+
+.footerText {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  color: var(--color-fg-muted);
+}
+
+.byeText {
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-fg-muted);
+}

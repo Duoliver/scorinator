@@ -94,7 +94,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 138 | Segmented control | `design-system/` | ✅ Done | 2026-11-03 | 2026-11-03 | [138](/docs/tasks/138-segmented-control.md) | M4. US-03.2, 04.1, 11.2. 21 new tests. The user checked the real app. Task 140 is the first user. |
 | 139 | Bracket state: phase start for a bracket, the first-phase draw, tie actions, the bye change | `app/` | ✅ Done | 2026-11-03 | 2026-11-03 | [139](/docs/tasks/139-bracket-state.md) | M4. US-04.2, 04.5, 04.6, 04.10. 47 new tests. File format 4. No user path yet: Tasks 140, 141. |
 | 140 | Wizard bracket settings: tie format, away goals, AET, method, third place, single-match final, the power-of-2 warning | `features/leagues` | ✅ Done | 2026-11-03 | 2026-11-03 | [140](/docs/tasks/140-wizard-bracket-settings.md) | M4. US-03.1, 03.2, 04.1, 04.3, 04.9, 04.12, 04.13. 24 new tests. The user checked the real app. |
-| 141 | League Detail bracket: the tree, tie cards, Scorinate, the re-scorinate confirm, TBD, BYE, the winner line | `features/leagues` | ⬜ Not started |  |  |  | M4. US-04.5 to 04.8, 04.11, 04.14. After 139. |
+| 141 | League Detail bracket: the tree, tie cards, Scorinate, the re-scorinate confirm, TBD, BYE, the winner line | `features/leagues` | ✅ Done | 2026-11-03 | 2026-11-03 | [141](/docs/tasks/141-league-detail-bracket.md) | M4. US-04.5 to 04.8, 04.11, 04.14. 28 new tests. The user checked the real app. |
 | 142 | Seed List: seeds, tags, the bye stars, the bye change confirm | `features/leagues` | ⬜ Not started |  |  |  | M4. US-04.2, 04.10, 07.2. After 141. |
 | 143 | M4 smoke check | all | ⬜ Not started |  |  |  | M4. After 140, 142. |
 | 144 | Import decisions: unknown, same content, conflict, Skip, Import as new, the embedded Blueprint rule | `persistence/` | ⬜ Not started |  |  |  | M5. US-11.2, 10.3. After 143. |
@@ -183,6 +183,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-11-03 (Task 141 — League Detail bracket):** The user agreed eight choices. (1) A view folder `features/bracket/`. (2) One column for each round, no connector lines. (3) A score header row "L1", "L2", "Rep". (4) A bold winner row with the positive tint. (5) An icon button "⚽" on each tie. (6) "Pens 5-4" with the top row first. (7) and (8) The method and tie format texts of the header line. Detail: [Task 141](/docs/tasks/141-league-detail-bracket.md).
 
 - **2026-11-03 (Task 140 — wizard bracket settings):** The user agreed seven choices. (1) Switches and `SegmentedControl`, in the handoff order. (2) Each change writes the full `rules`. (3) A switch to Single match keeps the hidden values. (4) Third place off and disabled below 4 known qualifiers. (5) The power-of-2 warning on the Bracket card and the Teams step. (6) The Review order. (7) "Create league" stays off for a bracket until Task 141. Detail: [Task 140](/docs/tasks/140-wizard-bracket-settings.md).
 

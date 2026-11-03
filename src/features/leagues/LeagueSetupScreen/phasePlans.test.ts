@@ -7,7 +7,6 @@ import {
   canMovePhase,
   describePhasePlan,
   formatKeyOf,
-  hasBracketPhase,
   movePhase,
   parseWholeNumber,
   removePhase,
@@ -177,11 +176,6 @@ describe('the format keys and the text', () => {
     expect(describePhasePlan(bracket)).toBe(
       'Bracket · Single match · AET on · Penalties'
     );
-  });
-
-  it('finds a bracket phase (choice 2)', () => {
-    expect(hasBracketPhase([groups(2), bracket])).toBe(true);
-    expect(hasBracketPhase([rr2])).toBe(false);
   });
 });
 

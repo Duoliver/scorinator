@@ -440,7 +440,7 @@ describe('LeagueDetailScreen', () => {
       ).toBeInTheDocument();
     });
 
-    it('turns the Start button off for a Bracket next phase, with the reason (choice 4)', () => {
+    it('starts a Bracket next phase, and shows its Bracket tab (Task 141)', async () => {
       openTestLeague(
         groupsLeague(FOUR, [
           [1, 2],
@@ -451,11 +451,17 @@ describe('LeagueDetailScreen', () => {
       scorinateMatchday(LEAGUE, 2);
       render(<LeagueDetailScreen uuid={LEAGUE} />);
 
-      const button = screen.getByRole('button', { name: 'Start phase 2 · Bracket' });
-      expect(button).toHaveAttribute('aria-disabled', 'true');
-      expect(button).toHaveAccessibleDescription(
-        'A Bracket phase cannot start yet. It comes with the bracket screens.'
+      await userEvent.click(
+        screen.getByRole('button', { name: 'Start phase 2 · Bracket' })
       );
+      await userEvent.click(screen.getByRole('button', { name: 'Start phase 2' }));
+      expect(
+        screen.getByRole('tab', { name: 'Bracket', selected: true })
+      ).toBeInTheDocument();
+      expect(screen.getByRole('region', { name: 'Final' })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: '⚽ Scorinate bracket' })
+      ).toBeEnabled();
     });
   });
 

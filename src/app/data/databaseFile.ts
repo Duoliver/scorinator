@@ -6,6 +6,7 @@ import {
   DATABASE_FORMAT_VERSION,
   type SavedBlueprint,
   type SavedInstance,
+  type SavedLeagueEntry,
   type SavedManifest,
   type SavedPhase,
   type SavedWrapper,
@@ -27,10 +28,10 @@ import type {
  * files of `adapters/json-io` (Task 106). The two shapes are the same today,
  * but each layer keeps its own types (`DOMAIN.md`), so each field is copied
  * here by name. This file is the only caller of the database parsers and
- * serializers.
+ * serializers. `exportFile.ts` reuses its maps for the export files.
  */
 
-function blueprintToFile(blueprint: TeamBlueprint): SavedBlueprint {
+export function blueprintToFile(blueprint: TeamBlueprint): SavedBlueprint {
   return {
     uuid: blueprint.uuid,
     slug: blueprint.slug,
@@ -132,7 +133,7 @@ function phaseToFile(phase: Phase): SavedPhase {
 
 /** The file shapes and the domain shapes have the same fields, so the read
  * side copies the same way as the write side. */
-const blueprintFromFile = (file: SavedBlueprint): TeamBlueprint =>
+export const blueprintFromFile = (file: SavedBlueprint): TeamBlueprint =>
   blueprintToFile(file);
 const summaryFromFile = (file: SavedWrapperSummary): WrapperSummary =>
   summaryToFile(file);
@@ -160,11 +161,11 @@ export function parseManifestRecord(text: string): Manifest {
   };
 }
 
-export function serializeLeagueWrapper(wrapper: LeagueWrapper): string {
+/** The league and its Instances in the file shape: the body of a wrapper
+ * file, and one item of a league file (Task 145). */
+export function leagueToFile(wrapper: LeagueWrapper): SavedLeagueEntry {
   const { content: league } = wrapper;
-  const file: SavedWrapper = {
-    kind: 'wrapper',
-    formatVersion: DATABASE_FORMAT_VERSION,
+  return {
     uuid: wrapper.uuid,
     teams: wrapper.teams.map(instanceToFile),
     content: {
@@ -178,12 +179,10 @@ export function serializeLeagueWrapper(wrapper: LeagueWrapper): string {
       phases: league.phases.map(phaseToFile),
     },
   };
-  return serializeWrapper(file);
 }
 
-/** Throws the `parseWrapper` error for a bad file. */
-export function parseLeagueWrapper(text: string): LeagueWrapper {
-  const file = parseWrapper(text);
+/** The domain league of a wrapper file body or a league file item. */
+export function leagueFromFile(file: SavedLeagueEntry): LeagueWrapper {
   const { content: league } = file;
   return {
     uuid: file.uuid,
@@ -199,4 +198,18 @@ export function parseLeagueWrapper(text: string): LeagueWrapper {
       phases: league.phases.map(phaseFromFile),
     },
   };
+}
+
+export function serializeLeagueWrapper(wrapper: LeagueWrapper): string {
+  const file: SavedWrapper = {
+    kind: 'wrapper',
+    formatVersion: DATABASE_FORMAT_VERSION,
+    ...leagueToFile(wrapper),
+  };
+  return serializeWrapper(file);
+}
+
+/** Throws the `parseWrapper` error for a bad file. */
+export function parseLeagueWrapper(text: string): LeagueWrapper {
+  return leagueFromFile(parseWrapper(text));
 }

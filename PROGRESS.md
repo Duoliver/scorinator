@@ -102,7 +102,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 187 | The tie card title in the score header row, and a thinner header row | `features/bracket` | ✅ Done | 2026-11-04 | 2026-11-04 | [187](/docs/tasks/187-tie-card-header-row.md) | Task created by User - 2026-11-04. Criteria from the user request. 2 new tests. The user checked the real app. |
 | 188 | A title for the final tie card | `features/bracket` | ✅ Done | 2026-11-04 | 2026-11-04 | [188](/docs/tasks/188-tie-card-titles.md) | Task created by User - 2026-11-04. The final only. 5 new tests. The user checked the real app. |
 | 144 | Import decisions: unknown, same content, conflict, Skip, Import as new, the embedded Blueprint rule | `engine/identity`, `app/state` | ✅ Done | 2026-11-04 | 2026-11-04 | [144](/docs/tasks/144-import-decisions.md) | M5. US-11.2, 10.3. 22 new tests. The user agreed choices 1 to 7. |
-| 145 | League and Blueprint files: one or many, format versions, wrong-file errors | `adapters/json-io` | ⬜ Not started |  |  |  | M5. US-10.1 to 10.3. After 144. |
+| 145 | League and Blueprint files: one or many, format versions, wrong-file errors | `adapters/json-io`, `app/data` | ✅ Done | 2026-11-04 | 2026-11-04 | [145](/docs/tasks/145-league-blueprint-files.md) | M5. US-10.1 to 10.3. 37 new tests. The user agreed choices 1 to 8. |
 | 146 | The database `.zip` export and import | `adapters/json-io` | ⬜ Not started |  |  |  | M5. US-10.4. After 145. |
 | 147 | The final ranking across phases | `engine/phases` | ⬜ Not started |  |  |  | M5. US-10.5. After 143. |
 | 148 | Text v2: results with phases, groups, and ties, and the slug list writer | `adapters/txt` | ⬜ Not started |  |  |  | M5. US-10.5, 10.6. After 147. |
@@ -186,6 +186,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-11-04 (Task 145 — league and Blueprint files):** The user agreed five choices. (1) One `blueprints` list for the whole league file. (2) The database format counter, now 4. (3) File shapes in `adapters/json-io`, the domain map in `app/data`, no dialogs. (4) New wrong-file texts that name the right import button. (5) A plain JSON list in "Import teams" gets the MVP1 message. At review, three more: (6) an empty export file is not valid, (7) an error names its league, and (8) two Blueprints with one slug in a file are allowed. Detail: [Task 145](/docs/tasks/145-league-blueprint-files.md).
 
 - **2026-11-04 (Task 144 — import decisions):** The user agreed five choices. (1) Generic rules in `engine/identity`, the domain parts in `app/state`. This resolves the Task 104 open question: `persistence/` stays interfaces only. (2) Rules and store actions over entities in memory. (3) The plan loads a known local league that is not loaded. (4) An unknown Blueprint with a taken slug gets a `-2` slug. (5) A league imported as new accepts a new lot order. At review, two more: (6) a league import adds only the embedded Blueprints that its Instances name, and (7) `importLeagues` takes the snapshots of the file as one list. Detail: [Task 144](/docs/tasks/144-import-decisions.md).
 

@@ -5,11 +5,23 @@ export {
   serializeManifest,
   serializeWrapper,
 } from './database';
+export {
+  detectFileKind,
+  parseBlueprintFile,
+  parseLeagueFile,
+  serializeBlueprintFile,
+  serializeLeagueFile,
+} from './exportFiles';
+export type { DetectedFileKind } from './exportFiles';
 export { isMvp1File } from './mvp1';
 export { DATABASE_FORMAT_VERSION } from './types';
 export type {
   SavedBlueprint,
+  SavedBlueprintFile,
+  SavedFileKind,
   SavedInstance,
+  SavedLeagueEntry,
+  SavedLeagueFile,
   SavedLeagueProgress,
   SavedManifest,
   SavedPhase,

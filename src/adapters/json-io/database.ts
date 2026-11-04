@@ -18,6 +18,8 @@ import {
   DATABASE_FORMAT_VERSION,
   OLDEST_DATABASE_FORMAT_VERSION,
   type SavedBlueprint,
+  type SavedFileKind,
+  type SavedLeagueEntry,
   type SavedBracketPhase,
   type SavedInstance,
   type SavedLeagueProgress,
@@ -42,19 +44,19 @@ import {
  * wrapper file: the app handles that case when it opens a league (Task 108).
  */
 
-type Fail = (message: string) => never;
-type Raw = Record<string, unknown>;
+export type Fail = (message: string) => never;
+export type Raw = Record<string, unknown>;
 
 const PHASE_FORMATS: readonly SavedPhaseFormat[] = ['round-robin', 'groups'];
 const LEGS: readonly Legs[] = ['two-way', 'single-duels'];
 
 /** The format version of the file being read: 2 or 3 (Task 176). A version-2
  * file gets the defaults of version 3. */
-type Version = 2 | 3 | 4;
+export type Version = 2 | 3 | 4;
 
 const READ_VERSIONS = `This version reads format versions ${OLDEST_DATABASE_FORMAT_VERSION} to ${DATABASE_FORMAT_VERSION}.`;
 
-function failFor(file: string): Fail {
+export function failFor(file: string): Fail {
   return (message) => {
     throw new Error(`${file} is not valid: ${message}`);
   };
@@ -63,7 +65,7 @@ function failFor(file: string): Fail {
 const failManifest: Fail = failFor('manifest.json');
 const failWrapper: Fail = failFor('A league file');
 
-function isRecord(value: unknown): value is Raw {
+export function isRecord(value: unknown): value is Raw {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
@@ -91,13 +93,13 @@ function isLegs(value: unknown): value is Legs {
   return (LEGS as readonly unknown[]).includes(value);
 }
 
-function readList(value: unknown, name: string, fail: Fail): unknown[] {
+export function readList(value: unknown, name: string, fail: Fail): unknown[] {
   if (!Array.isArray(value)) fail(`"${name}" is missing or not a list.`);
   return value;
 }
 
 /** Throws for the second item with a key that an earlier item has. */
-function checkUnique<T>(
+export function checkUnique<T>(
   items: readonly T[],
   key: (item: T) => string,
   describeDuplicate: (index: number, firstIndex: number) => string,
@@ -111,9 +113,17 @@ function checkUnique<T>(
   });
 }
 
-function readFileHeader(
+/** The name of each file kind in an error text. */
+const KIND_NAMES: Record<SavedFileKind, string> = {
+  manifest: 'manifest',
+  wrapper: 'wrapper',
+  leagues: 'league file',
+  blueprints: 'team blueprints file',
+};
+
+export function readFileHeader(
   text: string,
-  kind: 'manifest' | 'wrapper',
+  kind: SavedFileKind,
   fail: Fail
 ): { raw: Raw; version: Version } {
   let raw: unknown;
@@ -124,7 +134,7 @@ function readFileHeader(
   }
   if (!isRecord(raw)) fail('the file does not hold a JSON object.');
   if (raw.kind !== kind) {
-    fail(`the file is not a ${kind}. Its kind is "${String(raw.kind)}".`);
+    fail(`the file is not a ${KIND_NAMES[kind]}. Its kind is "${String(raw.kind)}".`);
   }
   const version = raw.formatVersion;
   if (typeof version === 'number' && version > DATABASE_FORMAT_VERSION) {
@@ -164,9 +174,12 @@ function readPoints(value: unknown, label: string, fail: Fail): PointsConfig {
 
 // --- Manifest -----------------------------------------------------------
 
-function readBlueprint(value: unknown, index: number): SavedBlueprint {
+export function readBlueprint(
+  value: unknown,
+  index: number,
+  fail: Fail = failManifest
+): SavedBlueprint {
   const label = `Blueprint ${index + 1}`;
-  const fail: Fail = failManifest;
   if (!isRecord(value)) fail(`${label} is not an object.`);
   if (!isUuidV4(value.uuid)) fail(`${label} has no valid UUID.`);
   if (!isNonBlankString(value.slug)) fail(`${label} has no slug.`);
@@ -298,7 +311,9 @@ export function parseManifest(text: string): SavedManifest {
   const { raw, version } = readFileHeader(text, 'manifest', fail);
   if (!isUuidV4(raw.installationUuid)) fail('the installation UUID is not a UUID v4.');
 
-  const blueprints = readList(raw.blueprints, 'blueprints', fail).map(readBlueprint);
+  const blueprints = readList(raw.blueprints, 'blueprints', fail).map((value, index) =>
+    readBlueprint(value, index)
+  );
   checkUnique(
     blueprints,
     (b) => b.uuid,
@@ -845,8 +860,19 @@ export function serializeWrapper(wrapper: SavedWrapper): string {
 /** Parses and checks one `wrapper-{uuid}.json`. Throws an `Error` that
  * starts with `A league file is not valid:` and says what is wrong. */
 export function parseWrapper(text: string): SavedWrapper {
+  const { raw, version } = readFileHeader(text, 'wrapper', failWrapper);
+  return {
+    kind: 'wrapper',
+    formatVersion: DATABASE_FORMAT_VERSION,
+    ...readWrapperBody(raw, version),
+  };
+}
+
+/** Reads the UUID, the Instances, and the league of one wrapper: the body of
+ * a wrapper file, and of each league in a league file (Task 145). Throws
+ * with the prefix `A league file is not valid:`. */
+export function readWrapperBody(raw: Raw, version: Version): SavedLeagueEntry {
   const fail: Fail = failWrapper;
-  const { raw, version } = readFileHeader(text, 'wrapper', fail);
   if (!isUuidV4(raw.uuid)) fail('the file has no valid UUID.');
 
   const teams = readList(raw.teams, 'teams', fail).map(readInstance);
@@ -864,11 +890,5 @@ export function parseWrapper(text: string): SavedWrapper {
   );
   if (content.uuid !== raw.uuid) fail('the file UUID is not the league UUID.');
 
-  return {
-    kind: 'wrapper',
-    formatVersion: DATABASE_FORMAT_VERSION,
-    uuid: raw.uuid,
-    teams,
-    content,
-  };
+  return { uuid: raw.uuid, teams, content };
 }

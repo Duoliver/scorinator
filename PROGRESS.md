@@ -99,6 +99,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 185 | No same-group tie in the first bracket round | `engine/bracket`, `app/state` | ✅ Done | 2026-11-03 | 2026-11-03 | [185](/docs/tasks/185-bracket-group-clash.md) | Task created by User - 2026-11-03. From the Task 142 review. 15 new tests. The user checked the real app. |
 | 143 | M4 smoke check | all | ✅ Done | 2026-11-03 | 2026-11-04 | [143](/docs/tasks/143-m4-smoke-check.md) | M4 complete. End-to-end test added. The user checked the real app. |
 | 186 | Centre the final column of the bracket | `features/bracket` | ✅ Done | 2026-11-04 | 2026-11-04 | [186](/docs/tasks/186-bracket-final-centre.md) | Task created by User - 2026-11-04. From the Task 143 review. One CSS rule. The user checked the real app. |
+| 187 | The tie card title in the score header row, and a thinner header row | `features/bracket` | ✅ Done | 2026-11-04 | 2026-11-04 | [187](/docs/tasks/187-tie-card-header-row.md) | Task created by User - 2026-11-04. Criteria from the user request. 2 new tests. The user checked the real app. |
 | 144 | Import decisions: unknown, same content, conflict, Skip, Import as new, the embedded Blueprint rule | `persistence/` | ⬜ Not started |  |  |  | M5. US-11.2, 10.3. After 143. |
 | 145 | League and Blueprint files: one or many, format versions, wrong-file errors | `adapters/json-io` | ⬜ Not started |  |  |  | M5. US-10.1 to 10.3. After 144. |
 | 146 | The database `.zip` export and import | `adapters/json-io` | ⬜ Not started |  |  |  | M5. US-10.4. After 145. |
@@ -185,6 +186,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-11-04 (Task 187 — the title in the header row):** Two choices made from the user request, for the user to check at review. (1) The title keeps its style in the header row. (2) Only the score labels are hidden from a screen reader. Detail: [Task 187](/docs/tasks/187-tie-card-header-row.md).
 
 - **2026-11-04 (Task 186 — the final column at the centre):** The user agreed two choices. (1) With a third place, the two cards stay together at the centre, so the final sits a little above it. (2) A CSS `:last-child` rule, with no new test. Detail: [Task 186](/docs/tasks/186-bracket-final-centre.md).
 

@@ -8,7 +8,7 @@ export type { TieCardProps };
 
 /**
  * One tie of the tree (US-04.8): two team rows with a score column for
- * each match, the score header (choice 3), and a footer with the aggregate,
+ * each match, the score header with the title (choice 3, Task 187), and a footer with the aggregate,
  * the decision tag, and the "⚽" button (choice 5). A bye card shows its
  * team and "BYE — advances automatically" (US-04.11). The winner row is
  * bold, with the positive tint (choice 4).
@@ -51,16 +51,19 @@ export function TieCard({ card, onScorinate }: TieCardProps): JSX.Element {
 
   return (
     <div role="group" aria-label={label} class={styles.card}>
-      {card.title && <p class={styles.title}>{card.title}</p>}
-      {card.columns.length > 0 && (
-        <div class={styles.row} aria-hidden="true">
-          <span class={styles.name} />
+      {card.columns.length > 0 ? (
+        // One header row: the title over the names, then the score labels
+        // (Task 187). Only the labels are hidden from a screen reader.
+        <div class={`${styles.row} ${styles.headRow}`}>
+          <span class={`${styles.name} ${styles.title}`}>{card.title}</span>
           {card.columns.map((column) => (
-            <span key={column} class={styles.head}>
+            <span key={column} class={styles.head} aria-hidden="true">
               {column}
             </span>
           ))}
         </div>
+      ) : (
+        card.title && <p class={`${styles.title} ${styles.titleRow}`}>{card.title}</p>
       )}
       {card.rows.map((row) => (
         <div

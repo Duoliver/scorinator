@@ -189,6 +189,36 @@ describe('BracketView (Task 141)', () => {
     ).toBeInTheDocument();
   });
 
+  describe('the title in the score header row (Task 187)', () => {
+    const rules = {
+      awayGoals: false,
+      playsAet: true,
+      method: 'penalties',
+      singleMatchFinal: false,
+      thirdPlace: true,
+    } as const;
+
+    it('shows the title of a two-legged card beside "L1", in one row', () => {
+      createCup(4, [{ format: 'bracket', rules: { ...rules, format: 'two-legged' } }]);
+      render(<FromStore />);
+      const title = within(column('Final')).getByText('Third-place playoff');
+      const header = title.parentElement as HTMLElement;
+      // The parent is the header row, not the whole card.
+      expect(header).not.toHaveAttribute('role', 'group');
+      expect(within(header).getByText('L1')).toBeInTheDocument();
+      expect(within(header).getByText('L2')).toBeInTheDocument();
+    });
+
+    it('keeps the title row of a single-match card', () => {
+      createCup(4, [
+        { format: 'bracket', rules: { ...rules, format: 'single-match' } },
+      ]);
+      render(<FromStore />);
+      const title = within(column('Final')).getByText('Third-place playoff');
+      expect(title.tagName).toBe('P');
+    });
+  });
+
   it('shows the missing byes, with both Scorinate buttons off (US-04.10)', () => {
     createCup(6);
     useDatabaseStore.setState((state) => {

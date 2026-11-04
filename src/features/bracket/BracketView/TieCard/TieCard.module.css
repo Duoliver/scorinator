@@ -13,13 +13,18 @@
   box-shadow: none;
 }
 
+/* The title text, in the header row or in a row of its own. */
 .title {
-  margin: 0;
-  padding: var(--space-1) var(--space-2);
-  border-bottom: var(--border-width) solid var(--color-border);
   font-family: var(--font-condensed);
   font-weight: 700;
   text-transform: uppercase;
+}
+
+/* The title row of a card with one score column, so no header row. */
+.titleRow {
+  margin: 0;
+  padding: var(--space-1) var(--space-2);
+  border-bottom: var(--border-width) solid var(--color-border);
 }
 
 /* A team row: the swatch, the name, then one fixed cell for each score. */
@@ -30,6 +35,17 @@
   min-height: var(--space-8);
   padding-left: var(--space-2);
   border-bottom: var(--border-width) solid var(--color-border);
+}
+
+/* The score header row: the vertical padding of the title, not the
+ * height of a team row (Task 187). The cells take the padding, so the
+ * borders of the score labels reach the row edges. */
+.headRow {
+  min-height: 0;
+}
+
+.headRow > * {
+  padding-block: var(--space-1);
 }
 
 .name {

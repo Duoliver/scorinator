@@ -75,3 +75,10 @@
   justify-content: space-around;
   gap: var(--space-4);
 }
+
+/* The final round is always the last column. Its ties sit at the centre, so
+ * the earlier rounds meet in the final. With a third place, the two cards
+ * stay together, and the final sits a little above the centre (Task 186). */
+.column:last-child .ties {
+  justify-content: center;
+}

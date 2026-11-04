@@ -23,6 +23,8 @@ function nodeFileSystem(): FolderFileSystem {
   return {
     readTextFile: (path) => readFile(path, 'utf-8'),
     writeTextFile: (path, contents) => writeFile(path, contents, 'utf-8'),
+    readBinaryFile: async (path) => new Uint8Array(await readFile(path)),
+    writeBinaryFile: (path, contents) => writeFile(path, contents),
     rename: (from, to) => rename(from, to),
     remove: (path) => rm(path),
     exists: async (path): Promise<boolean> => {

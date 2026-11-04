@@ -1,9 +1,11 @@
 import {
   exists,
   mkdir,
+  readFile,
   readTextFile,
   remove,
   rename,
+  writeFile,
   writeTextFile,
 } from '@tauri-apps/plugin-fs';
 import type { FolderFileSystem } from '@/persistence/types';
@@ -12,6 +14,8 @@ import type { FolderFileSystem } from '@/persistence/types';
 export const tauriFileSystem: FolderFileSystem = {
   readTextFile: (path) => readTextFile(path),
   writeTextFile: (path, contents) => writeTextFile(path, contents),
+  readBinaryFile: (path) => readFile(path),
+  writeBinaryFile: (path, contents) => writeFile(path, contents),
   rename: (from, to) => rename(from, to),
   remove: (path) => remove(path),
   exists: (path) => exists(path),

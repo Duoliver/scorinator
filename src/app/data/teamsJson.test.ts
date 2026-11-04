@@ -6,6 +6,8 @@ function fakeFs(overrides: Partial<FileSystem> = {}): FileSystem {
   return {
     readTextFile: vi.fn(),
     writeTextFile: vi.fn(),
+    readBinaryFile: vi.fn(),
+    writeBinaryFile: vi.fn(),
     rename: vi.fn(),
     remove: vi.fn(),
     exists: vi.fn(),

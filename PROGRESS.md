@@ -103,7 +103,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 188 | A title for the final tie card | `features/bracket` | ✅ Done | 2026-11-04 | 2026-11-04 | [188](/docs/tasks/188-tie-card-titles.md) | Task created by User - 2026-11-04. The final only. 5 new tests. The user checked the real app. |
 | 144 | Import decisions: unknown, same content, conflict, Skip, Import as new, the embedded Blueprint rule | `engine/identity`, `app/state` | ✅ Done | 2026-11-04 | 2026-11-04 | [144](/docs/tasks/144-import-decisions.md) | M5. US-11.2, 10.3. 22 new tests. The user agreed choices 1 to 7. |
 | 145 | League and Blueprint files: one or many, format versions, wrong-file errors | `adapters/json-io`, `app/data` | ✅ Done | 2026-11-04 | 2026-11-04 | [145](/docs/tasks/145-league-blueprint-files.md) | M5. US-10.1 to 10.3. 37 new tests. The user agreed choices 1 to 8. |
-| 146 | The database `.zip` export and import | `adapters/json-io` | ⬜ Not started |  |  |  | M5. US-10.4. After 145. |
+| 146 | The database `.zip` export and import | `adapters/json-io`, `adapters/tauri-fs`, `persistence/`, `app/` | ✅ Done | 2026-11-04 | 2026-11-04 | [146](/docs/tasks/146-database-zip.md) | M5. US-10.4. 16 new tests. The user agreed choices 1 to 7. |
 | 147 | The final ranking across phases | `engine/phases` | ⬜ Not started |  |  |  | M5. US-10.5. After 143. |
 | 148 | Text v2: results with phases, groups, and ties, and the slug list writer | `adapters/txt` | ⬜ Not started |  |  |  | M5. US-10.5, 10.6. After 147. |
 | 149 | File screen: the three sections, the picker, the conflict dialog, messages, dashboard "Import league" | `features/file` | ⬜ Not started |  |  |  | M5. US-10.2 to 10.4, 11.2. After 145, 146. |
@@ -186,6 +186,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-11-04 (Task 146 — the database `.zip`):** The user agreed five choices. (1) fflate 0.8.3. (2) A binary read and write in `FileSystem`, the Tauri adapter, and the capability. (3) The export checks each league that is not loaded, with no open. (4) The zip holds the manifest and a wrapper for each row, and nothing else. (5) One plan with Blueprint and league steps, Blueprints first. At review, two more: (6) a folder entry in the zip does not count, and (7) the import reads only the Blueprints of the zip manifest. Detail: [Task 146](/docs/tasks/146-database-zip.md).
 
 - **2026-11-04 (Task 145 — league and Blueprint files):** The user agreed five choices. (1) One `blueprints` list for the whole league file. (2) The database format counter, now 4. (3) File shapes in `adapters/json-io`, the domain map in `app/data`, no dialogs. (4) New wrong-file texts that name the right import button. (5) A plain JSON list in "Import teams" gets the MVP1 message. At review, three more: (6) an empty export file is not valid, (7) an error names its league, and (8) two Blueprints with one slug in a file are allowed. Detail: [Task 145](/docs/tasks/145-league-blueprint-files.md).
 

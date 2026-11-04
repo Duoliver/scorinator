@@ -1,4 +1,6 @@
 export { DEFAULT_BRACKET_RULES, bracketRulesOf } from './bracketRules';
+export { finalRanking } from './finalRanking';
+export type { PhaseOrderInput } from './finalRanking';
 export {
   checkPhaseChain,
   checkPhaseFit,

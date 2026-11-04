@@ -104,7 +104,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 144 | Import decisions: unknown, same content, conflict, Skip, Import as new, the embedded Blueprint rule | `engine/identity`, `app/state` | ✅ Done | 2026-11-04 | 2026-11-04 | [144](/docs/tasks/144-import-decisions.md) | M5. US-11.2, 10.3. 22 new tests. The user agreed choices 1 to 7. |
 | 145 | League and Blueprint files: one or many, format versions, wrong-file errors | `adapters/json-io`, `app/data` | ✅ Done | 2026-11-04 | 2026-11-04 | [145](/docs/tasks/145-league-blueprint-files.md) | M5. US-10.1 to 10.3. 37 new tests. The user agreed choices 1 to 8. |
 | 146 | The database `.zip` export and import | `adapters/json-io`, `adapters/tauri-fs`, `persistence/`, `app/` | ✅ Done | 2026-11-04 | 2026-11-04 | [146](/docs/tasks/146-database-zip.md) | M5. US-10.4. 16 new tests. The user agreed choices 1 to 7. |
-| 147 | The final ranking across phases | `engine/phases` | ⬜ Not started |  |  |  | M5. US-10.5. After 143. |
+| 147 | The final ranking across phases | `engine/phases`, `app/state` | ✅ Done | 2026-11-04 | 2026-11-04 | [147](/docs/tasks/147-final-ranking.md) | M5. US-10.5. 13 new tests. The user agreed. |
 | 148 | Text v2: results with phases, groups, and ties, and the slug list writer | `adapters/txt` | ⬜ Not started |  |  |  | M5. US-10.5, 10.6. After 147. |
 | 149 | File screen: the three sections, the picker, the conflict dialog, messages, dashboard "Import league" | `features/file` | ⬜ Not started |  |  |  | M5. US-10.2 to 10.4, 11.2. After 145, 146. |
 | 150 | League Detail export menu: league `.json`, results `.txt`, slug list `.txt` | `features/leagues` | ⬜ Not started |  |  |  | M5. US-10.1, 10.5, 10.6. After 148. |
@@ -186,6 +186,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-11-04 (Task 147 — the final ranking):** The user agreed four choices. (1) A pure engine function over the tables and the tree, with the inputs built in `app/state`. (2) A bye team reached round 2 before any play. (3) A bracket that waits for its byes ranks by seed. (4) No text and no menu. Detail: [Task 147](/docs/tasks/147-final-ranking.md).
 
 - **2026-11-04 (Task 146 — the database `.zip`):** The user agreed five choices. (1) fflate 0.8.3. (2) A binary read and write in `FileSystem`, the Tauri adapter, and the capability. (3) The export checks each league that is not loaded, with no open. (4) The zip holds the manifest and a wrapper for each row, and nothing else. (5) One plan with Blueprint and league steps, Blueprints first. At review, two more: (6) a folder entry in the zip does not count, and (7) the import reads only the Blueprints of the zip manifest. Detail: [Task 146](/docs/tasks/146-database-zip.md).
 

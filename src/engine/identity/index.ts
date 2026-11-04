@@ -1,3 +1,10 @@
+export { isSameContent, planImport, resolveImport } from './importPlan';
+export type {
+  ImportChoice,
+  ImportCounts,
+  ImportOutcome,
+  ImportStep,
+} from './importPlan';
 export { fixedLot } from './lot';
 export { MAX_LOCATION_LENGTH } from './location';
 export { isSlug, slug, uniqueSlug } from './slug';

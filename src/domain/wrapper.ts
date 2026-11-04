@@ -1,5 +1,5 @@
 import type { PointsConfig } from '@/engine/standings';
-import type { BracketPlan, Legs } from '@/engine/phases';
+import type { Legs } from '@/engine/phases';
 import type { League, PhaseFormat } from './league';
 import type { TeamBlueprint, TeamInstance } from './team';
 
@@ -20,16 +20,20 @@ export interface InstanceWrapper<T> {
 export type LeagueWrapper = InstanceWrapper<League>;
 
 /** Where a league stands, for its dashboard card (Task 76 d). `phase` and
- * `matchday` count from 1. Task 139 adds a bracket round. A league is never
- * in setup: "Create league" starts it (US-08.8). */
+ * `matchday` count from 1. In a bracket, `round` is the slot count of the
+ * current round, 8 for the Quarter-finals (Task 139 choice 6). A league is
+ * never in setup: "Create league" starts it (US-08.8). */
 export type LeagueProgress =
   | { kind: 'phase'; phase: number; matchday: number; matchdays: number }
+  | { kind: 'bracket'; phase: number; round: number }
   | { kind: 'completed' };
 
 /** One phase of a manifest row, from its plan (Task 176 choice 4). The
  * dashboard card shows "Round robin (single duels)" from the legs, and the
- * short names of the phases not started yet. A bracket has no legs. */
-export type PhaseSummary = { format: PhaseFormat; legs: Legs } | BracketPlan;
+ * short names of the phases not started yet. A bracket has no legs, and its
+ * rules stay in the wrapper file. */
+export type PhaseSummary =
+  { format: Exclude<PhaseFormat, 'bracket'>; legs: Legs } | { format: 'bracket' };
 
 /**
  * The manifest row of one wrapper: the fields of its dashboard card, so the

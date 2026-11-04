@@ -1,8 +1,10 @@
 import { describe, expectTypeOf, it } from 'vitest';
+import type { BracketTieResult } from '@/engine/bracket';
 import type { PhaseFixture } from '@/engine/round-robin';
 import type { MatchResult } from '@/engine/standings';
 import type { Tier } from '@/engine/tier-ovr';
 import type {
+  BracketPhase,
   League,
   LeagueProgress,
   LeagueWrapper,
@@ -11,6 +13,7 @@ import type {
   PhaseFormat,
   PhaseSummary,
   PhaseResult,
+  ScheduledPhase,
   Provenance,
   TeamBlueprint,
   TeamInstance,
@@ -83,8 +86,14 @@ describe('Phase (Task 77)', () => {
   });
 
   it('holds fixtures with ids, and results that name a team by a uuid string', () => {
-    expectTypeOf<Phase['fixtures']>().toEqualTypeOf<PhaseFixture<string>[]>();
-    expectTypeOf<Phase['results']>().toEqualTypeOf<PhaseResult[]>();
+    expectTypeOf<ScheduledPhase['fixtures']>().toEqualTypeOf<PhaseFixture<string>[]>();
+    expectTypeOf<ScheduledPhase['results']>().toEqualTypeOf<PhaseResult[]>();
+  });
+
+  it('a bracket phase holds its seeds, its bye teams, and its tie results (Task 139)', () => {
+    expectTypeOf<BracketPhase['seeds']>().toEqualTypeOf<string[]>();
+    expectTypeOf<BracketPhase['byeTeams']>().toEqualTypeOf<string[]>();
+    expectTypeOf<BracketPhase['results']>().toEqualTypeOf<BracketTieResult<string>[]>();
   });
 
   it('gives each result a fixtureId, not a matchday', () => {
@@ -116,8 +125,10 @@ describe('Manifest (Task 76)', () => {
     expectTypeOf<WrapperSummary['progress']>().toEqualTypeOf<LeagueProgress>();
   });
 
-  it('shows progress as a phase with its matchday, or completed', () => {
-    expectTypeOf<LeagueProgress['kind']>().toEqualTypeOf<'phase' | 'completed'>();
+  it('shows progress as a phase with its matchday, a bracket round, or completed', () => {
+    expectTypeOf<LeagueProgress['kind']>().toEqualTypeOf<
+      'phase' | 'bracket' | 'completed'
+    >();
     expectTypeOf<Extract<LeagueProgress, { kind: 'phase' }>>().toEqualTypeOf<{
       kind: 'phase';
       phase: number;

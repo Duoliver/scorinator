@@ -296,3 +296,115 @@ describe('PhasesStep', () => {
     });
   });
 });
+
+describe('the Bracket card settings (Task 140)', () => {
+  const cup: PhasePlan[] = [{ format: 'bracket' }];
+  const bracketRules = (): Record<string, unknown> | undefined =>
+    (plans()[plans().length - 1] as { rules?: Record<string, unknown> }).rules;
+  const radio = (name: string): HTMLElement =>
+    within(card(1)).getByRole('radio', { name });
+
+  it('shows AET, the method, and the tie format, with the defaults', () => {
+    render(<Harness initial={cup} teamCount={8} />);
+    expect(within(card(1)).getByRole('switch', { name: 'Plays AET' })).toBeChecked();
+    expect(
+      within(card(1)).getByRole('radiogroup', { name: 'Tiebreak method' })
+    ).toBeInTheDocument();
+    expect(radio('Penalties')).toHaveAttribute('aria-checked', 'true');
+    expect(radio('Single match')).toHaveAttribute('aria-checked', 'true');
+    expect(
+      within(card(1)).getByRole('switch', { name: 'Third-place playoff' })
+    ).not.toBeChecked();
+  });
+
+  it('shows away goals and the single-match final for two legs only', async () => {
+    render(<Harness initial={cup} teamCount={8} />);
+    expect(
+      within(card(1)).queryByRole('switch', { name: 'Away goals rule' })
+    ).toBeNull();
+    expect(
+      within(card(1)).queryByRole('switch', { name: 'Single-match final' })
+    ).toBeNull();
+    await userEvent.click(radio('Two-legged'));
+    expect(
+      within(card(1)).getByRole('switch', { name: 'Away goals rule' })
+    ).not.toBeChecked();
+    expect(
+      within(card(1)).getByRole('switch', { name: 'Single-match final' })
+    ).not.toBeChecked();
+  });
+
+  it('each change writes the full rules of the plan', async () => {
+    render(<Harness initial={cup} teamCount={8} />);
+    await userEvent.click(radio('Two-legged'));
+    await userEvent.click(
+      within(card(1)).getByRole('switch', { name: 'Away goals rule' })
+    );
+    await userEvent.click(radio('Replay → Coin toss'));
+    await userEvent.click(within(card(1)).getByRole('switch', { name: 'Plays AET' }));
+    await userEvent.click(
+      within(card(1)).getByRole('switch', { name: 'Single-match final' })
+    );
+    await userEvent.click(
+      within(card(1)).getByRole('switch', { name: 'Third-place playoff' })
+    );
+    expect(bracketRules()).toEqual({
+      format: 'two-legged',
+      awayGoals: true,
+      playsAet: false,
+      method: 'replay-coin-toss',
+      singleMatchFinal: true,
+      thirdPlace: true,
+    });
+  });
+
+  it('keeps the hidden two-leg values after a switch to Single match and back', async () => {
+    render(<Harness initial={cup} teamCount={8} />);
+    await userEvent.click(radio('Two-legged'));
+    await userEvent.click(
+      within(card(1)).getByRole('switch', { name: 'Away goals rule' })
+    );
+    await userEvent.click(radio('Single match'));
+    await userEvent.click(radio('Two-legged'));
+    expect(
+      within(card(1)).getByRole('switch', { name: 'Away goals rule' })
+    ).toBeChecked();
+  });
+
+  it('turns the third place off and disables it below 4 qualifiers, with a hint', () => {
+    render(<Harness initial={cup} teamCount={3} />);
+    const third = within(card(1)).getByRole('switch', { name: 'Third-place playoff' });
+    expect(third).toBeDisabled();
+    expect(third).not.toBeChecked();
+    expect(
+      within(card(1)).getByText('Needs 4 qualifiers or more.')
+    ).toBeInTheDocument();
+  });
+
+  it('enables the third place with no known count', () => {
+    render(<Harness initial={cup} teamCount={0} />);
+    expect(
+      within(card(1)).getByRole('switch', { name: 'Third-place playoff' })
+    ).toBeEnabled();
+  });
+
+  it('shows the power-of-2 warning on the Bracket card (US-04.9)', () => {
+    render(<Harness initial={groupsThenBracket} teamCount={12} />);
+    // 3 groups of 4, top 2: 6 qualifiers.
+    expect(
+      within(card(2)).getByText(
+        '6 qualifiers: the bracket has 8 slots, so 2 teams get a bye.'
+      )
+    ).toBeInTheDocument();
+  });
+
+  it('shows no warning for a power of 2', () => {
+    render(<Harness initial={groupsThenBracket} teamCount={8} />);
+    expect(within(card(2)).queryByText(/qualifiers: the bracket has/)).toBeNull();
+  });
+
+  it('a round-robin card shows no bracket settings', () => {
+    render(<Harness teamCount={8} />);
+    expect(within(card(1)).queryByRole('switch', { name: 'Plays AET' })).toBeNull();
+  });
+});

@@ -1,4 +1,5 @@
-import type { BracketPlan, GroupBye, Legs, PhasePlan } from '@/engine/phases';
+import type { BracketTieResult } from '@/engine/bracket';
+import type { GroupBye, Legs, PhasePlan } from '@/engine/phases';
 import type { Bye, PhaseFixture } from '@/engine/round-robin';
 import type { MatchResult, PointsConfig } from '@/engine/standings';
 import type { Tier } from '@/engine/tier-ovr';
@@ -12,9 +13,10 @@ import type { Tier } from '@/engine/tier-ovr';
 /** The format version of each MVP2 file. The MVP1 save file has version 1.
  * A field that a later task adds with a default keeps this version. A
  * change that an older parser cannot read raises it. Version 3 (Task 176)
- * adds the phase plans, the legs, and the Groups phase. The parsers also
- * read version 2, with defaults. */
-export const DATABASE_FORMAT_VERSION = 3;
+ * adds the phase plans, the legs, and the Groups phase. Version 4 (Task 139)
+ * adds the bracket phase, the bracket plan rules, and the bracket progress.
+ * The parsers also read versions 2 and 3, with defaults. */
+export const DATABASE_FORMAT_VERSION = 4;
 
 /** The oldest format version the parsers read. */
 export const OLDEST_DATABASE_FORMAT_VERSION = 2;
@@ -41,11 +43,14 @@ export type SavedPhaseFormat = 'round-robin' | 'groups';
 export type SavedPhasePlan = PhasePlan;
 
 /** One phase of a manifest row, from its plan (Task 176 choice 4). A
- * bracket has no legs. */
-export type SavedPhaseSummary = { format: SavedPhaseFormat; legs: Legs } | BracketPlan;
+ * bracket has no legs, and its rules stay in the wrapper file. */
+export type SavedPhaseSummary =
+  { format: SavedPhaseFormat; legs: Legs } | { format: 'bracket' };
 
+/** `round` is the slot count of the current bracket round (Task 139). */
 export type SavedLeagueProgress =
   | { kind: 'phase'; phase: number; matchday: number; matchdays: number }
+  | { kind: 'bracket'; phase: number; round: number }
   | { kind: 'completed' };
 
 /** The manifest row of one wrapper: the fields of its dashboard card. */
@@ -101,7 +106,22 @@ export interface SavedGroupsPhase {
   results: SavedPhaseResult[];
 }
 
-export type SavedPhase = SavedRoundRobinPhase | SavedGroupsPhase;
+/** One played tie of a bracket: the engine result, with its tie id. */
+export type SavedTieResult = BracketTieResult<string>;
+
+/** A bracket phase (Task 139 choice 1): the seeds in seed order, the bye
+ * teams, and the played ties. The tree is not stored. */
+export interface SavedBracketPhase {
+  format: 'bracket';
+  seeds: string[];
+  byeTeams: string[];
+  results: SavedTieResult[];
+  /** The Task 185 rule: no same-group first-round tie. Not there in a
+   * bracket that started before, which keeps its pairs. */
+  avoidGroupTies?: boolean;
+}
+
+export type SavedPhase = SavedRoundRobinPhase | SavedGroupsPhase | SavedBracketPhase;
 
 /** The league inside a wrapper file. */
 export interface SavedWrapperLeague extends SavedProvenance {

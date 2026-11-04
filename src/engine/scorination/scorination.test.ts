@@ -9,12 +9,15 @@ import {
   ELASTICITY_MIN,
   HOME_ADVANTAGE_FLAT,
   HOME_ADVANTAGE_PERCENT,
+  AET_TIME_SHARE,
   REFERENCE_OVR,
   applyHomeAdvantage,
   computeExpectedGoals,
   playMatch,
   rollElasticity,
+  scorinateExtraTime,
   scorinateMatch,
+  scorinatePeriod,
 } from './index';
 
 const TRIALS = 3000;
@@ -162,6 +165,185 @@ describe('scorinateMatch', () => {
     // is match-to-match randomness, not a fixed per-team trait (spec §1).
     expect(combinedGoals.size).toBeGreaterThan(1);
   });
+
+  it('gives the same scores as before Task 134, for fixed seeds (stored seeded runs stay the same)', () => {
+    // Recorded from the code before scorinatePeriod existed. A change in
+    // the order of the RNG draws makes this test fail.
+    const pinned: [number, number, number, [number, number][]][] = [
+      [
+        1,
+        65,
+        65,
+        [
+          [0, 3],
+          [3, 1],
+          [0, 0],
+          [0, 2],
+          [0, 0],
+        ],
+      ],
+      [
+        42,
+        80,
+        65,
+        [
+          [3, 1],
+          [2, 2],
+          [1, 1],
+          [1, 1],
+          [0, 0],
+        ],
+      ],
+      [
+        7,
+        35,
+        95,
+        [
+          [0, 3],
+          [0, 3],
+          [0, 2],
+          [0, 3],
+          [0, 1],
+        ],
+      ],
+      [
+        2026,
+        99,
+        30,
+        [
+          [3, 0],
+          [2, 0],
+          [2, 0],
+          [2, 0],
+          [5, 0],
+        ],
+      ],
+    ];
+    for (const [seed, homeOvr, awayOvr, scores] of pinned) {
+      const rng = createSeededRng(seed);
+      const actual = scores.map(() => {
+        const { homeGoals, awayGoals } = scorinateMatch(homeOvr, awayOvr, rng);
+        return [homeGoals, awayGoals];
+      });
+      expect(actual).toEqual(scores);
+    }
+  });
+});
+
+describe('scorinatePeriod', () => {
+  it('gives the same score as scorinateMatch for a time share of 1 and the same elasticity roll', () => {
+    for (let seed = 0; seed < 200; seed++) {
+      const rng = createSeededRng(seed);
+      const elasticity = rollElasticity(rng);
+      expect(scorinatePeriod(75, 60, elasticity, 1, rng)).toEqual(
+        scorinateMatch(75, 60, createSeededRng(seed))
+      );
+    }
+  });
+
+  it('scales the mean goals with the time share', () => {
+    const meanGoals = (timeShare: number): number => {
+      const rng = createSeededRng(5);
+      let total = 0;
+      for (let trial = 0; trial < 20000; trial++) {
+        const { homeGoals, awayGoals } = scorinatePeriod(65, 65, 1, timeShare, rng);
+        total += homeGoals + awayGoals;
+      }
+      return total / 20000;
+    };
+    // Expected: 2 × 1.3 × share, so 2.6 for the full match, 0.87 for 1/3.
+    expect(meanGoals(1)).toBeCloseTo(2.6, 1);
+    expect(meanGoals(1 / 3)).toBeCloseTo(0.87, 1);
+  });
+});
+
+describe('scorinateExtraTime', () => {
+  it('plays one third of a match (Task 80)', () => {
+    expect(AET_TIME_SHARE).toBe(1 / 3);
+  });
+
+  it('is deterministic: the same seed gives the same AET score', () => {
+    expect(scorinateExtraTime(70, 70, 1.1, createSeededRng(42))).toEqual(
+      scorinateExtraTime(70, 70, 1.1, createSeededRng(42))
+    );
+  });
+
+  it('equals scorinatePeriod with the AET time share', () => {
+    for (let seed = 0; seed < 200; seed++) {
+      expect(scorinateExtraTime(80, 65, 0.9, createSeededRng(seed))).toEqual(
+        scorinatePeriod(80, 65, 0.9, AET_TIME_SHARE, createSeededRng(seed))
+      );
+    }
+  });
+
+  it('never returns a negative goal count', () => {
+    for (let seed = 0; seed < 500; seed++) {
+      const score = scorinateExtraTime(90, 40, 1.6, createSeededRng(seed));
+      expect(score.homeGoals).toBeGreaterThanOrEqual(0);
+      expect(score.awayGoals).toBeGreaterThanOrEqual(0);
+    }
+  });
+});
+
+describe('AET statistics (Task 80 bands, US-03.1)', () => {
+  const AET_SAMPLE = 10000;
+
+  interface AetSample {
+    drawnShare: number;
+    meanGoals: number;
+    homeWinShareOfDecided: number;
+  }
+
+  // Plays full matches as the bracket does: one elasticity roll for the
+  // match, and the AET only after a draw, with the same elasticity. A drawn
+  // match has a lower elasticity on average, so a new roll for the AET
+  // measures something else than the Task 80 bands.
+  function sampleAets(homeOvr: number, awayOvr: number, seed: number): AetSample {
+    const rng = createSeededRng(seed);
+    let aets = 0;
+    let drawn = 0;
+    let goals = 0;
+    let homeWins = 0;
+    while (aets < AET_SAMPLE) {
+      const elasticity = rollElasticity(rng);
+      const match = scorinatePeriod(homeOvr, awayOvr, elasticity, 1, rng);
+      if (match.homeGoals !== match.awayGoals) continue;
+      const aet = scorinateExtraTime(homeOvr, awayOvr, elasticity, rng);
+      aets++;
+      goals += aet.homeGoals + aet.awayGoals;
+      if (aet.homeGoals === aet.awayGoals) drawn++;
+      if (aet.homeGoals > aet.awayGoals) homeWins++;
+    }
+    return {
+      drawnShare: drawn / aets,
+      meanGoals: goals / aets,
+      homeWinShareOfDecided: homeWins / (aets - drawn),
+    };
+  }
+
+  it.each([35, 65, 95])(
+    'equal teams at OVR %i: 48 to 60 percent of AETs stay drawn',
+    (ovr) => {
+      const { drawnShare } = sampleAets(ovr, ovr, 134);
+      expect(drawnShare).toBeGreaterThanOrEqual(0.48);
+      expect(drawnShare).toBeLessThanOrEqual(0.6);
+    }
+  );
+
+  it.each([35, 65, 95])(
+    'equal teams at OVR %i: the mean AET goals are 0.65 to 0.95',
+    (ovr) => {
+      const { meanGoals } = sampleAets(ovr, ovr, 134);
+      expect(meanGoals).toBeGreaterThanOrEqual(0.65);
+      expect(meanGoals).toBeLessThanOrEqual(0.95);
+    }
+  );
+
+  it('OVR 80 v 65: the stronger team wins 60 to 70 percent of decided AETs', () => {
+    const { homeWinShareOfDecided } = sampleAets(80, 65, 134);
+    expect(homeWinShareOfDecided).toBeGreaterThanOrEqual(0.6);
+    expect(homeWinShareOfDecided).toBeLessThanOrEqual(0.7);
+  });
 });
 
 describe('applyHomeAdvantage', () => {
@@ -253,10 +435,13 @@ describe('module surface', () => {
         'ELASTICITY_MAX',
         'HOME_ADVANTAGE_FLAT',
         'HOME_ADVANTAGE_PERCENT',
+        'AET_TIME_SHARE',
         'rollElasticity',
         'computeExpectedGoals',
         'applyHomeAdvantage',
         'scorinateMatch',
+        'scorinatePeriod',
+        'scorinateExtraTime',
         'playMatch',
       ].sort()
     );

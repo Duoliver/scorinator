@@ -18,7 +18,9 @@ import { useDatabaseStore } from '@/app/state/databaseStore';
  * sets one, and a fixed app data folder. A second test runs the M2 flow
  * (Task 122): a team CSV import, the wizard add dialog, and an edit for one
  * league. A third test runs the M3 flow (Task 133): a Groups phase from the
- * wizard draw, the phase start, the lock, and a later Shuffle. */
+ * wizard draw, the phase start, the lock, and a later Shuffle. A fourth
+ * test runs the M4 flow (Task 143): Groups, then a two-legged bracket with
+ * a third place, played to its winner. */
 
 const disk = vi.hoisted(() => new Map<string, string>());
 
@@ -400,5 +402,147 @@ describe('smoke: M3 phases, groups, and the phase start (Task 133)', () => {
       'true'
     );
     expect(screen.getByText('Group Stage · MD 1/2')).toBeInTheDocument();
+  });
+});
+
+describe('smoke: M4 bracket after groups (Task 143)', () => {
+  const CSV_PATH = '/home/eight.csv';
+  const CSV = [
+    'Slug,Name,Colour,Tier',
+    'salt-marsh-united,Salt Marsh United,#E53935,B',
+    'harborview-sc,Harborview SC,#1E88E5,A',
+    'ironbridge-athletic,Ironbridge Athletic,#2E7D32,C',
+    'northgate-rovers,Northgate Rovers,#6A1B9A,B',
+    'copper-hills-fc,Copper Hills FC,#F9A825,C',
+    'westbrook-wanderers,Westbrook Wanderers,#00838F,A',
+    'eastport-city,Eastport City,#5D4037,B',
+    'southfield-town,Southfield Town,#C2185B,D',
+  ].join('\n');
+
+  it('plays Groups, then a two-legged bracket to its winner, and keeps it in a new session', async () => {
+    const user = userEvent.setup();
+    disk.set(CSV_PATH, CSV);
+    vi.mocked(open).mockResolvedValueOnce(CSV_PATH);
+    const { unmount } = render(<AppShell />);
+    expect(
+      await screen.findByRole('heading', { name: 'No leagues yet.' })
+    ).toBeInTheDocument();
+
+    // 1. Import the eight teams.
+    await user.click(screen.getByRole('link', { name: 'Teams' }));
+    await user.click(screen.getByRole('button', { name: 'Import teams...' }));
+    const confirm = await screen.findByRole('dialog', { name: 'Import teams?' });
+    await user.click(within(confirm).getByRole('button', { name: 'Import' }));
+    expect(screen.getByText('8 teams')).toBeInTheDocument();
+
+    // 2. The Phases step: Groups of 4 (top 2), then a two-legged Bracket
+    // with a third-place playoff.
+    await user.click(screen.getByRole('link', { name: 'Leagues' }));
+    await user.click(screen.getByRole('link', { name: 'Create league' }));
+    await user.type(screen.getByLabelText('League name'), 'Knockout Cup');
+    await user.click(screen.getByRole('button', { name: 'Next: Phases →' }));
+    const phase1 = (): HTMLElement => screen.getByRole('region', { name: 'Phase 1' });
+    await user.selectOptions(within(phase1()).getByLabelText('Format'), 'grp2');
+    await user.click(screen.getByRole('button', { name: '+ Add phase' }));
+    const phase2 = (): HTMLElement => screen.getByRole('region', { name: 'Phase 2' });
+    await user.selectOptions(within(phase2()).getByLabelText('Format'), 'bracket');
+    await user.click(within(phase2()).getByRole('radio', { name: 'Two-legged' }));
+    await user.click(
+      within(phase2()).getByRole('switch', { name: 'Third-place playoff' })
+    );
+
+    // 3. The Teams step draws two groups of four. Create the league.
+    await user.click(screen.getByRole('button', { name: 'Next: Teams →' }));
+    await user.click(screen.getByRole('button', { name: 'Load them all' }));
+    for (const name of ['Group A', 'Group B']) {
+      expect(
+        within(screen.getByRole('region', { name })).getAllByRole('listitem')
+      ).toHaveLength(4);
+    }
+    await user.click(screen.getByRole('button', { name: 'Next: Review →' }));
+    expect(
+      screen.getByText(
+        '2 · Bracket · Bracket · Two-legged · away goals off · AET on · Penalties · Third place'
+      )
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Create league' }));
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Knockout Cup' })
+    ).toBeInTheDocument();
+
+    // 4. Play the groups, then start the bracket through the confirm.
+    await user.click(screen.getByRole('tab', { name: 'Fixtures' }));
+    for (let matchday = 1; matchday <= 6; matchday += 1) {
+      await user.click(screen.getByRole('button', { name: 'Scorinate matchday' }));
+      if (matchday < 6)
+        await user.click(screen.getByRole('button', { name: 'Next matchday' }));
+    }
+    await user.click(screen.getByRole('button', { name: 'Start phase 2 · Bracket' }));
+    const start = screen.getByRole('dialog', { name: 'Start phase 2?' });
+    await user.click(within(start).getByRole('button', { name: 'Start phase 2' }));
+    expect(
+      screen.getByRole('tab', { name: 'Bracket', selected: true })
+    ).toBeInTheDocument();
+    expect(screen.getByText('Bracket · Semi-finals')).toBeInTheDocument();
+
+    // 5. No semi-final pairs two teams of one group (Task 185).
+    const [started] = Object.values(useDatabaseStore.getState().leagues);
+    const [groups, bracket] = started.content.phases;
+    if (groups.format !== 'groups' || bracket.format !== 'bracket') {
+      throw new Error('expected Groups, then a bracket');
+    }
+    expect(bracket.avoidGroupTies).toBe(true);
+    const groupOf = new Map(
+      groups.groups.flatMap((members, g) => members.map((team) => [team, g]))
+    );
+    const semis = screen.getByRole('region', { name: 'Semi-finals' });
+    const nameToUuid = new Map(
+      started.teams.map((team) => [team.name, team.blueprintUuid])
+    );
+    for (const card of within(semis).getAllByRole('group')) {
+      const [top, bottom] = (card.getAttribute('aria-label') ?? '').split(' v ');
+      expect(groupOf.get(nameToUuid.get(top) ?? '')).not.toBe(
+        groupOf.get(nameToUuid.get(bottom) ?? '')
+      );
+      expect(within(card).getByText('L1')).toBeInTheDocument();
+    }
+
+    // 6. Two clicks play the semi-finals, then the final and the third place.
+    await user.click(screen.getByRole('button', { name: '⚽ Scorinate bracket' }));
+    await user.click(screen.getByRole('button', { name: '⚽ Scorinate bracket' }));
+    expect(screen.getByRole('button', { name: '⚽ Scorinate bracket' })).toBeDisabled();
+    const winnerLine = screen.getByText(/^Winner: /);
+    const winnerName = winnerLine.textContent?.replace('Winner: ', '') ?? '';
+    expect(nameToUuid.has(winnerName)).toBe(true);
+    expect(screen.getByText('Third-place playoff')).toBeInTheDocument();
+
+    // 7. The Seed List tags each seed with its group place.
+    await user.click(screen.getByRole('tab', { name: 'Seed List' }));
+    const seedList = screen.getByRole('table', { name: 'Seed List' });
+    for (const tag of ['A1', 'B1', 'A2', 'B2']) {
+      expect(within(seedList).getByText(tag)).toBeInTheDocument();
+    }
+
+    // 8. Save, start a new session, and open the league again.
+    pressCtrlS();
+    expect(await screen.findByText('Saved.')).toBeInTheDocument();
+    const [leagueBefore] = Object.values(useDatabaseStore.getState().leagues);
+    unmount();
+    resetSession();
+    openAt('/');
+    render(<AppShell />);
+    expect(
+      await screen.findByRole('heading', { name: 'Knockout Cup' })
+    ).toBeInTheDocument();
+    expect(screen.getByText('Complete')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('link', { name: 'Open standings' }));
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Knockout Cup' })
+    ).toBeInTheDocument();
+    expect(useDatabaseStore.getState().leagues[leagueBefore.uuid]).toEqual(
+      leagueBefore
+    );
+    expect(screen.getByText(`Winner: ${winnerName}`)).toBeInTheDocument();
   });
 });

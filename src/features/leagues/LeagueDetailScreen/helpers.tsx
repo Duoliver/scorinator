@@ -1,5 +1,6 @@
 import type { JSX } from 'preact';
-import { Button, Tabs, Tooltip, type TabItem } from '@/design-system';
+import { BracketView, SeedList } from '@/features/bracket';
+import { Button, Tabs, type TabItem } from '@/design-system';
 import type { LeagueWrapper } from '@/domain';
 import { FixturesView } from '@/features/fixtures';
 import { GroupCards } from '@/features/leagues/GroupCards';
@@ -19,7 +20,6 @@ export interface MatchdayMemory {
  * (Task 132 choice 4). */
 export interface PhaseStart {
   label: string;
-  hint: string | undefined;
   onClick: () => void;
 }
 
@@ -36,35 +36,11 @@ export interface GroupsDraw {
 export const DRAW_RULE_LINE =
   'You can change the groups until the first match has a result. A group needs at least 2 teams.';
 
-/** The reason the Start button is off for a Bracket next phase. */
-export const BRACKET_START_HINT =
-  'A Bracket phase cannot start yet. It comes with the bracket screens.';
-
-const StartButton = ({ start }: { start: PhaseStart }): JSX.Element => {
-  const { hint } = start;
-  if (hint === undefined) {
-    return (
-      <Button variant="primary" size="sm" onClick={start.onClick}>
-        {start.label}
-      </Button>
-    );
-  }
-  return (
-    <Tooltip content={hint}>
-      {(describedBy) => (
-        <Button
-          variant="primary"
-          size="sm"
-          aria-describedby={describedBy}
-          disabled
-          focusableWhenDisabled
-        >
-          {start.label}
-        </Button>
-      )}
-    </Tooltip>
-  );
-};
+const StartButton = ({ start }: { start: PhaseStart }): JSX.Element => (
+  <Button variant="primary" size="sm" onClick={start.onClick}>
+    {start.label}
+  </Button>
+);
 
 const ShuffleButton = ({ draw }: { draw: GroupsDraw }): JSX.Element => (
   <Button variant="secondary" size="sm" onClick={draw.onShuffle}>
@@ -97,8 +73,35 @@ const DrawEditor = ({
  * reference: scorination is a button inside Fixtures, not its own tab. Both
  * views read the same `league` wrapper, so a scorinate in Fixtures shows up
  * in Standings on the next tab switch. With a `draw`, the Standings tab
- * shows the draw cards in place of the tables (Task 181). */
+ * shows the draw cards in place of the tables (Task 181). A bracket phase
+ * has the "Bracket" and "Seed List" tabs instead (Tasks 141, 142). */
 export const getLeagueTabs = (
+  league: LeagueWrapper,
+  phaseIndex: number,
+  memory: MatchdayMemory,
+  draw?: GroupsDraw
+): TabItem[] =>
+  league.content.phases[phaseIndex]?.format === 'bracket'
+    ? [
+        {
+          id: 'bracket',
+          label: 'Bracket',
+          content: <BracketView league={league} phaseIndex={phaseIndex} />,
+        },
+        {
+          id: 'seed-list',
+          label: 'Seed List',
+          content: <SeedList league={league} phaseIndex={phaseIndex} />,
+        },
+      ]
+    : getScheduledTabs(league, phaseIndex, memory, draw);
+
+/** The first sub-tab of a started phase: "Bracket" for a bracket, and
+ * "Standings" for the others (Task 141). */
+export const firstLeagueTab = (league: LeagueWrapper, phaseIndex: number): string =>
+  league.content.phases[phaseIndex]?.format === 'bracket' ? 'bracket' : 'standings';
+
+const getScheduledTabs = (
   league: LeagueWrapper,
   phaseIndex: number,
   memory: MatchdayMemory,
@@ -159,7 +162,7 @@ export const getPhaseTabs = (
         <Tabs
           key={phaseTabId(index)}
           tabs={getLeagueTabs(league, index, memory, currentDraw)}
-          defaultTab="standings"
+          defaultTab={firstLeagueTab(league, index)}
           actions={actions}
         />
       ) : (

@@ -11,6 +11,7 @@ import {
   OTHER_LEAGUE,
   result,
   SALT_MARSH,
+  scheduled,
 } from '@/test/databaseRecords';
 import {
   parseLeagueWrapper,
@@ -54,7 +55,7 @@ async function openWithLeague(): Promise<ReturnType<typeof memoryFolder>> {
 /** The change a scorination makes: a new wrapper object with one more result. */
 function scorinateFirstMatch(): void {
   const wrapper = state().leagues[LEAGUE];
-  const phase = wrapper.content.phases[0];
+  const phase = scheduled(wrapper.content.phases[0]);
   const played = {
     ...wrapper,
     content: {

@@ -8,6 +8,7 @@ import {
   type PhasePlan,
   type PhaseTeamCount,
 } from '@/engine/phases';
+import { bracketSlotCount } from '@/engine/bracket';
 import { groupLabel } from '@/engine/round-robin';
 
 /**
@@ -159,4 +160,26 @@ export function bestMSuggestion(
 /** True when the last phase is Groups (US-01.5). */
 export function endsWithGroups(plans: readonly PhasePlan[]): boolean {
   return plans[plans.length - 1]?.format === 'groups';
+}
+
+/** The team count of the bracket phase, when the counts are known
+ * (US-04.9). `undefined` for a league with no bracket. */
+export function bracketQualifiers(
+  plans: readonly PhasePlan[],
+  counts: readonly PhaseTeamCount[] | undefined
+): number | undefined {
+  const index = plans.findIndex((plan) => plan.format === 'bracket');
+  return index < 0 ? undefined : counts?.[index]?.teams;
+}
+
+/** The early power-of-2 warning (US-04.9): the slots and the byes, or
+ * `undefined` for a power of 2 or fewer than 2 qualifiers. It blocks
+ * nothing: the byes make the bracket valid. */
+export function bracketWarning(qualifiers: number): string | undefined {
+  if (!Number.isInteger(qualifiers) || qualifiers < 2) return undefined;
+  const slots = bracketSlotCount(qualifiers);
+  const byes = slots - qualifiers;
+  if (byes === 0) return undefined;
+  const teams = byes === 1 ? '1 team gets' : `${byes} teams get`;
+  return `${qualifiers} qualifiers: the bracket has ${slots} slots, so ${teams} a bye.`;
 }

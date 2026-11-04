@@ -17,8 +17,12 @@ import type { DetailsStepHandle } from '@/features/leagues/LeagueSetupScreen/ste
 import { formatAdvanceText } from '@/features/leagues/leagueSummary';
 import { leagueNameProblem } from './leagueName';
 import type { LeagueSetup } from './types';
-import { phaseChecks, phaseProblemText } from './phaseChecks';
-import { hasBracketPhase } from './phasePlans';
+import {
+  bracketQualifiers,
+  bracketWarning,
+  phaseChecks,
+  phaseProblemText,
+} from './phaseChecks';
 import { useLeagueDraftSync } from './useLeagueDraftSync';
 import { usePhaseList } from './usePhaseList';
 import { usePhaseOneGroups } from './usePhaseOneGroups';
@@ -77,21 +81,14 @@ export function useLeagueSetup(): LeagueSetup {
   };
 
   // The phase problems need the team count (Task 177 choice 3).
-  const phaseProblems = phaseChecks(
-    phaseList.plans,
-    teamList.teams.length,
-    firstGroupSizes
-  ).problems.map((problem) => phaseProblemText(problem, phaseList.plans));
-  // A bracket phase cannot start before Task 139, so "Create league" stays
-  // off (Task 129 choice 2). A phase problem shows its first text (Task 177
-  // choice 6).
-  const createProblem =
-    teamListProblem(teamList.teams) ??
-    (hasBracketPhase(phaseList.plans)
-      ? 'Bracket phases come in a later update.'
-      : null) ??
-    phaseProblems[0] ??
-    null;
+  const checks = phaseChecks(phaseList.plans, teamList.teams.length, firstGroupSizes);
+  const phaseProblems = checks.problems.map((problem) =>
+    phaseProblemText(problem, phaseList.plans)
+  );
+  // The bracket team count and its power-of-2 warning (US-04.9, Task 140).
+  const qualifiers = bracketQualifiers(phaseList.plans, checks.counts);
+  // A phase problem shows its first text (Task 177 choice 6).
+  const createProblem = teamListProblem(teamList.teams) ?? phaseProblems[0] ?? null;
 
   const handleCreate = (): void => {
     // `DetailsStep` is unmounted by the time Review is reachable — `details`
@@ -149,6 +146,8 @@ export function useLeagueSetup(): LeagueSetup {
     phaseList,
     groups: phaseOne.groups,
     groupsAdvanceText: formatAdvanceText(phaseList.plans),
+    bracketQualifiers: qualifiers,
+    bracketWarning: qualifiers === undefined ? undefined : bracketWarning(qualifiers),
     shuffleGroups: phaseOne.shuffleGroups,
     moveTeam: phaseOne.moveTeam,
     goToDetails: () => goToStep('details'),

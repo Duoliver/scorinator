@@ -89,6 +89,14 @@ describe('the progress badge (Task 131 choices 3 and 4, US-01.2)', () => {
     ).toBe('Group Stage · MD 6/6');
   });
 
+  it('gives the round name of a bracket on the card and in the header (US-04.14)', () => {
+    const bracket = { kind: 'bracket', phase: 2, round: 8 } as const;
+    expect(formatProgressBadge(bracket)).toBe('Quarter-finals');
+    expect(
+      formatHeaderProgress({ phases: GROUPS_THEN_BRACKET, progress: bracket })
+    ).toBe('Bracket · Quarter-finals');
+  });
+
   it('gives "Complete" in the header for a complete league', () => {
     expect(formatHeaderProgress({ phases: RR, progress: { kind: 'completed' } })).toBe(
       'Complete'

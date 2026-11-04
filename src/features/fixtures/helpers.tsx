@@ -1,11 +1,12 @@
 import type { JSX } from 'preact';
 import { Badge } from '@/design-system';
 import { groupLabel } from '@/engine/round-robin';
-import type { LeagueWrapper, Phase, PhaseResult } from '@/domain';
+import type { LeagueWrapper, PhaseResult, ScheduledPhase } from '@/domain';
 import styles from './FixturesView.module.css';
 
-/** What the view reads for a league with no phase: nothing to play. */
-export const EMPTY_PHASE: Phase = {
+/** What the view reads for a league with no phase, or a bracket phase:
+ * nothing to play. */
+export const EMPTY_PHASE: ScheduledPhase = {
   format: 'round-robin',
   legs: 'two-way',
   fixtures: [],
@@ -15,14 +16,19 @@ export const EMPTY_PHASE: Phase = {
 
 /** The phase that the view shows: `phaseIndex`, or the current phase (the
  * last started one) when not given. */
-export function getShownPhase(league: LeagueWrapper, phaseIndex?: number): Phase {
+export function getShownPhase(
+  league: LeagueWrapper,
+  phaseIndex?: number
+): ScheduledPhase {
   const { phases } = league.content;
-  return phases[phaseIndex ?? phases.length - 1] ?? EMPTY_PHASE;
+  const phase = phases[phaseIndex ?? phases.length - 1];
+  // A bracket has ties, not fixtures: Task 141 shows it in its own tab.
+  return phase && phase.format !== 'bracket' ? phase : EMPTY_PHASE;
 }
 
 /** The group index of each team of a Groups phase, from the draw, so the
  * view never parses a fixture id (Task 77). Empty for a round robin. */
-export function getGroupIndexes(phase: Phase): Map<string, number> {
+export function getGroupIndexes(phase: ScheduledPhase): Map<string, number> {
   const indexes = new Map<string, number>();
   if (phase.format !== 'groups') return indexes;
   phase.groups.forEach((members, index) => {

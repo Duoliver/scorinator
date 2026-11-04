@@ -25,7 +25,9 @@ const TXT_FILTERS: readonly FileFilter[] = [{ name: 'Text file', extensions: ['t
  * lots order a joint place (Task 128). Task 148 writes every phase. */
 function toResultsTxtInput(wrapper: LeagueWrapper): ResultsTxtInput {
   const { name, homeAdvantage, points } = wrapper.content;
-  const phase = findCurrentPhase(wrapper);
+  const current = findCurrentPhase(wrapper);
+  // A bracket has no fixtures. Task 148 writes its ties.
+  const phase = current?.format === 'bracket' ? undefined : current;
   return {
     league: { name, homeAdvantage, points },
     teams: wrapper.teams.map((team) => ({ id: team.blueprintUuid, name: team.name })),

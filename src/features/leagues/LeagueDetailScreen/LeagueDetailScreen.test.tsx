@@ -20,6 +20,7 @@ import {
   openTestDatabase,
   openTestLeague,
   roundRobinLeague,
+  scheduled,
 } from '@/test/databaseRecords';
 
 const TEAMS = [
@@ -128,7 +129,7 @@ describe('LeagueDetailScreen', () => {
     });
 
     it('updates Standings after a re-scorinate in Fixtures', async () => {
-      const [phase] = wrapper.content.phases;
+      const phase = scheduled(wrapper.content.phases[0]);
       const [first] = phase.fixtures;
       const played: LeagueWrapper = {
         ...wrapper,
@@ -439,7 +440,7 @@ describe('LeagueDetailScreen', () => {
       ).toBeInTheDocument();
     });
 
-    it('turns the Start button off for a Bracket next phase, with the reason (choice 4)', () => {
+    it('starts a Bracket next phase, and shows its Bracket tab (Task 141)', async () => {
       openTestLeague(
         groupsLeague(FOUR, [
           [1, 2],
@@ -450,11 +451,21 @@ describe('LeagueDetailScreen', () => {
       scorinateMatchday(LEAGUE, 2);
       render(<LeagueDetailScreen uuid={LEAGUE} />);
 
-      const button = screen.getByRole('button', { name: 'Start phase 2 · Bracket' });
-      expect(button).toHaveAttribute('aria-disabled', 'true');
-      expect(button).toHaveAccessibleDescription(
-        'A Bracket phase cannot start yet. It comes with the bracket screens.'
+      await userEvent.click(
+        screen.getByRole('button', { name: 'Start phase 2 · Bracket' })
       );
+      await userEvent.click(screen.getByRole('button', { name: 'Start phase 2' }));
+      expect(
+        screen.getByRole('tab', { name: 'Bracket', selected: true })
+      ).toBeInTheDocument();
+      expect(screen.getByRole('region', { name: 'Final' })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: '⚽ Scorinate bracket' })
+      ).toBeEnabled();
+      // The Seed List sub-tab comes after the Bracket tab (Task 142 choice 1).
+      await userEvent.click(screen.getByRole('tab', { name: 'Seed List' }));
+      expect(screen.getByRole('table', { name: 'Seed List' })).toBeInTheDocument();
+      expect(screen.getByText('A1')).toBeInTheDocument();
     });
   });
 

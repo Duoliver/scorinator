@@ -8,6 +8,7 @@ import {
   type PhaseFormatKey,
 } from '@/features/leagues/LeagueSetupScreen/phasePlans';
 import { phaseShortName } from '@/features/leagues/leagueSummary';
+import { BracketSettings } from '@/features/leagues/LeagueSetupScreen/steps/PhasesStep/BracketSettings';
 import type PhaseCardProps from './types';
 import type { PhaseCardView } from './types';
 import styles from './PhaseCard.module.css';
@@ -27,7 +28,7 @@ const numberText = (value: number): string =>
  * One phase of the Phases step (Task 129, handoff step 2): the number badge,
  * the short name, ↑ ↓ ✕, the format field, the Groups setting, and the
  * advancement. Bracket is in the format field of the last phase only
- * (US-01.3).
+ * (US-01.3). A Bracket card shows its settings (Task 140).
  */
 export function PhaseCard({ view, phaseList }: PhaseCardProps): JSX.Element {
   const {
@@ -40,6 +41,7 @@ export function PhaseCard({ view, phaseList }: PhaseCardProps): JSX.Element {
     lines,
     problems,
     suggestion,
+    bracket,
   } = view;
   const bestRef = useRef<FieldHandle<string>>(null);
   const number = index + 1;
@@ -168,6 +170,10 @@ export function PhaseCard({ view, phaseList }: PhaseCardProps): JSX.Element {
                 </div>
               )}
             </div>
+          )}
+
+          {bracket && (
+            <BracketSettings index={index} bracket={bracket} phaseList={phaseList} />
           )}
 
           {lines.sizes && <p class={styles.line}>{lines.sizes}</p>}

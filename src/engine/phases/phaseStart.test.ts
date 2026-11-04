@@ -5,6 +5,7 @@ import {
   isPhaseComplete,
   isPhaseLocked,
   pickQualifiers,
+  type BuiltPhase,
   type GroupsPlan,
   type RoundRobinPlan,
 } from './index';
@@ -18,6 +19,14 @@ import {
 
 function teamsOf(prefix: string, n: number): string[] {
   return Array.from({ length: n }, (_, i) => `${prefix}${i + 1}`);
+}
+
+// A round-robin or Groups build, for the tests that read its schedule.
+function scheduled(
+  built: BuiltPhase<string>
+): Exclude<BuiltPhase<string>, { format: 'bracket' }> {
+  if (built.format === 'bracket') throw new Error('expected a scheduled phase');
+  return built;
 }
 
 // A table where the teams finish in roster order: each team beats every
@@ -120,7 +129,7 @@ describe('pickQualifiers', () => {
 describe('buildPhase', () => {
   it('builds a two-way round robin with group-1 ids, in the given team order', () => {
     const teams = teamsOf('T', 4);
-    const built = buildPhase(roundRobinPlan(), 2, teams, createSeededRng(1));
+    const built = scheduled(buildPhase(roundRobinPlan(), 2, teams, createSeededRng(1)));
     expect(built.format).toBe('round-robin');
     expect(built.fixtures).toHaveLength(12);
     expect(built.byes).toEqual([]);
@@ -130,11 +139,13 @@ describe('buildPhase', () => {
   });
 
   it('builds single duels: each pair once', () => {
-    const built = buildPhase(
-      roundRobinPlan(undefined, 'single-duels'),
-      1,
-      teamsOf('T', 5),
-      createSeededRng(1)
+    const built = scheduled(
+      buildPhase(
+        roundRobinPlan(undefined, 'single-duels'),
+        1,
+        teamsOf('T', 5),
+        createSeededRng(1)
+      )
     );
     expect(built.fixtures).toHaveLength(10);
     expect(built.byes).toHaveLength(5);
@@ -165,12 +176,14 @@ describe('buildPhase', () => {
 
   it('lists Groups fixtures in group order, then matchday order', () => {
     const groups = [teamsOf('A', 4), teamsOf('B', 4)];
-    const built = buildPhase(
-      groupsPlan(undefined, 0, 'two-way'),
-      1,
-      groups.flat(),
-      createSeededRng(2),
-      groups
+    const built = scheduled(
+      buildPhase(
+        groupsPlan(undefined, 0, 'two-way'),
+        1,
+        groups.flat(),
+        createSeededRng(2),
+        groups
+      )
     );
     const order = built.fixtures.map((f) => [
       Number(f.id.split('.')[1].slice(1)),
@@ -196,10 +209,36 @@ describe('buildPhase', () => {
     );
   });
 
-  it('throws a RangeError for a bracket (Task 139)', () => {
-    expect(() =>
-      buildPhase({ format: 'bracket' }, 2, teamsOf('T', 4), createSeededRng(1))
-    ).toThrow(RangeError);
+  it('a later bracket keeps the qualifier order as its seeds, with the default byes (Task 139)', () => {
+    const teams = teamsOf('T', 6);
+    expect(buildPhase({ format: 'bracket' }, 2, teams, createSeededRng(1))).toEqual({
+      format: 'bracket',
+      seeds: teams,
+      byeTeams: ['T1', 'T2'],
+    });
+  });
+
+  it('a bracket as phase 1 draws its seeds (US-04.2), the same seed gives the same draw', () => {
+    const teams = teamsOf('T', 8);
+    const built = buildPhase({ format: 'bracket' }, 1, teams, createSeededRng(4));
+    if (built.format !== 'bracket') throw new Error('Not a bracket.');
+    expect([...built.seeds].sort()).toEqual([...teams].sort());
+    expect(built.seeds).not.toEqual(teams);
+    expect(built.byeTeams).toEqual([]);
+    expect(buildPhase({ format: 'bracket' }, 1, teams, createSeededRng(4))).toEqual(
+      built
+    );
+  });
+
+  it('a bracket as phase 1 gives the byes to the top seeds of the draw', () => {
+    const built = buildPhase(
+      { format: 'bracket' },
+      1,
+      teamsOf('T', 5),
+      createSeededRng(2)
+    );
+    if (built.format !== 'bracket') throw new Error('Not a bracket.');
+    expect(built.byeTeams).toEqual(built.seeds.slice(0, 3));
   });
 });
 

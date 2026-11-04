@@ -1,6 +1,8 @@
 import { useMemo } from 'preact/hooks';
+import { bracketRulesOf } from '@/engine/phases';
 import {
   bestMSuggestion,
+  bracketWarning,
   endsWithGroups,
   phaseChecks,
   phaseCountLines,
@@ -8,6 +10,7 @@ import {
 } from '@/features/leagues/LeagueSetupScreen/phaseChecks';
 import {
   canAddPhase,
+  canHaveThirdPlace,
   canMovePhase,
 } from '@/features/leagues/LeagueSetupScreen/phasePlans';
 import type { PhaseList } from '@/features/leagues/LeagueSetupScreen/types';
@@ -45,6 +48,14 @@ export function usePhasesStep(
         lines: phaseCountLines(plans, counts, index),
         problems: textsOf(index + 1),
         suggestion: bestMSuggestion(plans, counts, index),
+        bracket:
+          plan.format === 'bracket'
+            ? {
+                rules: bracketRulesOf(plan),
+                thirdPlaceAllowed: canHaveThirdPlace(counts?.[index]?.teams),
+                warning: counts?.[index] && bracketWarning(counts[index].teams),
+              }
+            : undefined,
       })),
       addable: canAddPhase(plans),
       countsKnown: counts !== undefined,

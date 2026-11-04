@@ -254,7 +254,7 @@ As a user, I want byes auto-assigned to the top seeds when the qualifier count i
 - [ ] A click on an empty star gives that team a bye. A click on a filled star takes the bye away. When all byes are assigned, the empty stars are disabled.
 - [ ] After a change, the bye teams take the bye slots in seed order. The other teams take the other slots in seed order. The seeds do not change.
 - [ ] Before the first bracket result, a star change applies at once.
-- [ ] After the first bracket result, a star change opens the US-04.6 confirm modal. "Clear & scorinate" reads "Clear & change byes" here. A confirm clears every result of the bracket phase, then applies the change.
+- [ ] After the first bracket result, a star change opens a confirm modal: title "Clear bracket results?", text "This will clear every result of the bracket. Continue?", buttons "Cancel" and "Clear & change byes". A confirm clears every result of the bracket phase, then applies the change. *(Changed on 2026-11-03, Task 142 choice 5. It re-used the US-04.6 title "Clear later rounds?", but a bye change clears the first round too.)*
 - [ ] A star change with fewer bye teams than byes needed: the first round cannot start. The Bracket tab shows "Assign 2 / 2 byes to play the first round.", and "Scorinate" and "Scorinate bracket" are disabled.
 - [ ] The bye choice is stored with the league.
 
@@ -296,7 +296,7 @@ As a user, I want an optional third-place tie between the two semi-final losers,
 **Acceptance criteria:**
 
 - [ ] A Bracket phase has a "Third-place playoff" toggle in the phase step. The default is off (Task 77).
-- [ ] The toggle is disabled when the bracket has fewer than 4 slots, because it has no semi-finals.
+- [ ] The toggle is disabled when the bracket has fewer than 4 qualifiers. With 2 there are no semi-finals. With 3, one semi-final is a bye with no loser. *(Changed on 2026-11-03, Task 137 choice 3. It said fewer than 4 slots.)*
 - [ ] The Review step adds "· Third place" to the bracket detail when the toggle is on.
 - [ ] With the toggle on, the two semi-final losers play a tie with the id `p<phase>.r<round>.third` (Task 77). The final is `p<phase>.r<round>.final`.
 - [ ] The third-place tie uses the tie format of the final (US-04.13).

@@ -1,3 +1,4 @@
+import type { BracketPlanRules } from '@/engine/bracket';
 import type { RefObject } from 'preact';
 import type { FieldHandle } from '@/design-system';
 import type { LeagueDraftDetails, LeagueSetupStep } from '@/app/state/leagueDraftStore';
@@ -41,6 +42,8 @@ export interface PhaseList {
   setGroupNumber: (index: number, value: number) => void;
   setTop: (index: number, top: number) => void;
   setBestOfNext: (index: number, bestOfNext: number) => void;
+  /** Changes the bracket settings of a Bracket phase (Task 140). */
+  setBracketRules: (index: number, change: Partial<BracketPlanRules>) => void;
 }
 
 /** What `useLeagueSetup` gives `LeagueSetupScreen`. */
@@ -61,6 +64,10 @@ export interface LeagueSetup extends TeamList {
   groups: string[][] | null;
   /** The line under the phase-1 group cards, or `undefined`. */
   groupsAdvanceText: string | undefined;
+  /** The team count of the bracket phase, when known (Task 140). */
+  bracketQualifiers: number | undefined;
+  /** The US-04.9 power-of-2 warning, or `undefined` (Task 140). */
+  bracketWarning: string | undefined;
   shuffleGroups: () => void;
   moveTeam: (blueprintUuid: string, groupIndex: number) => void;
   goToDetails: () => void;

@@ -1,5 +1,11 @@
+import {
+  bracketSlotCount,
+  buildBracketTree,
+  type BracketPlanRules,
+} from '@/engine/bracket';
 import { isUuidV4 } from '@/engine/identity';
 import {
+  bracketRulesOf,
   checkPhaseChain,
   type GroupBye,
   type Legs,
@@ -12,6 +18,7 @@ import {
   DATABASE_FORMAT_VERSION,
   OLDEST_DATABASE_FORMAT_VERSION,
   type SavedBlueprint,
+  type SavedBracketPhase,
   type SavedInstance,
   type SavedLeagueProgress,
   type SavedManifest,
@@ -21,6 +28,7 @@ import {
   type SavedPhaseResult,
   type SavedPhaseSummary,
   type SavedProvenance,
+  type SavedTieResult,
   type SavedWrapper,
   type SavedWrapperLeague,
   type SavedWrapperSummary,
@@ -42,9 +50,9 @@ const LEGS: readonly Legs[] = ['two-way', 'single-duels'];
 
 /** The format version of the file being read: 2 or 3 (Task 176). A version-2
  * file gets the defaults of version 3. */
-type Version = 2 | 3;
+type Version = 2 | 3 | 4;
 
-const READ_VERSIONS = `This version reads format versions ${OLDEST_DATABASE_FORMAT_VERSION} and ${DATABASE_FORMAT_VERSION}.`;
+const READ_VERSIONS = `This version reads format versions ${OLDEST_DATABASE_FORMAT_VERSION} to ${DATABASE_FORMAT_VERSION}.`;
 
 function failFor(file: string): Fail {
   return (message) => {
@@ -124,7 +132,7 @@ function readFileHeader(
       `a newer version of Scorinator made this file (format version ${version}). ${READ_VERSIONS}`
     );
   }
-  if (version !== 2 && version !== 3) {
+  if (version !== 2 && version !== 3 && version !== 4) {
     fail(`the format version is "${String(version)}". ${READ_VERSIONS}`);
   }
   return { raw, version };
@@ -193,6 +201,15 @@ function readProgress(
 ): SavedLeagueProgress {
   const fail: Fail = failManifest;
   if (isRecord(value) && value.kind === 'completed') return { kind: 'completed' };
+  if (isRecord(value) && value.kind === 'bracket') {
+    const { phase, round } = value;
+    const isRound =
+      isPositiveInteger(round) && round >= 2 && bracketSlotCount(round) === round;
+    if (!isPositiveInteger(phase) || phase > phaseCount || !isRound) {
+      fail(`${label} has no valid progress.`);
+    }
+    return { kind: 'bracket', phase, round };
+  }
   if (
     !isRecord(value) ||
     value.kind !== 'phase' ||
@@ -424,6 +441,9 @@ function readPhase(
   const label = `phase ${index + 1}`;
   const fail: Fail = failWrapper;
   if (!isRecord(value)) fail(`${label} is not an object.`);
+  if (value.format === 'bracket' && version >= 4) {
+    return readBracketPhase(value, label, teams);
+  }
   if (!isPhaseFormat(value.format)) fail(`${label} has a format that is not known.`);
   // A version-2 phase has no legs: it is a two-way round robin.
   const legs = version === 2 ? (value.legs ?? 'two-way') : value.legs;
@@ -488,6 +508,186 @@ function readPhase(
   return { format: 'round-robin', legs, fixtures, byes, results };
 }
 
+// --- Brackets (Task 139) -------------------------------------------------
+
+const TIE_FORMATS: readonly string[] = ['single-match', 'two-legged'];
+const TIEBREAK_METHODS: readonly string[] = ['penalties', 'replay-coin-toss'];
+const MATCH_PARTS: readonly string[] = ['leg1', 'leg2', 'replay'];
+const TIE_DECISIONS: readonly string[] = [
+  'regulation',
+  'away-goals',
+  'aet',
+  'penalties',
+  'replay',
+  'coin-toss',
+];
+
+function readBracketRules(value: unknown, label: string): BracketPlanRules {
+  const fail: Fail = failWrapper;
+  const valid =
+    isRecord(value) &&
+    TIE_FORMATS.includes(value.format as string) &&
+    TIEBREAK_METHODS.includes(value.method as string) &&
+    typeof value.awayGoals === 'boolean' &&
+    typeof value.playsAet === 'boolean' &&
+    typeof value.singleMatchFinal === 'boolean' &&
+    typeof value.thirdPlace === 'boolean';
+  if (!valid) fail(`${label} has no valid bracket rules.`);
+  return {
+    format: value.format as BracketPlanRules['format'],
+    awayGoals: value.awayGoals as boolean,
+    playsAet: value.playsAet as boolean,
+    method: value.method as BracketPlanRules['method'],
+    singleMatchFinal: value.singleMatchFinal as boolean,
+    thirdPlace: value.thirdPlace as boolean,
+  };
+}
+
+function readScore(
+  value: unknown,
+  label: string
+): { homeGoals: number; awayGoals: number } {
+  if (
+    !isRecord(value) ||
+    !isNonNegativeInteger(value.homeGoals) ||
+    !isNonNegativeInteger(value.awayGoals)
+  ) {
+    return failWrapper(`${label} has no valid score.`);
+  }
+  return { homeGoals: value.homeGoals, awayGoals: value.awayGoals };
+}
+
+function readTieResult(
+  value: unknown,
+  label: string,
+  seeds: ReadonlySet<string>
+): SavedTieResult {
+  const fail: Fail = failWrapper;
+  if (!isRecord(value)) fail(`${label} is not an object.`);
+  if (!isNonBlankString(value.tieId)) fail(`${label} has no tie id.`);
+  const isSeed = (id: unknown): id is string => typeof id === 'string' && seeds.has(id);
+  if (
+    !isSeed(value.winnerId) ||
+    !isSeed(value.loserId) ||
+    value.winnerId === value.loserId
+  ) {
+    fail(`${label} names a winner or a loser that is not a seed of the bracket.`);
+  }
+  if (!TIE_DECISIONS.includes(value.decidedBy as string)) {
+    fail(`${label} has no valid decision.`);
+  }
+  const matches = readList(value.matches, 'matches', fail).map((item, i) => {
+    const matchLabel = `${label}, match ${i + 1}`;
+    if (!isRecord(item) || !MATCH_PARTS.includes(item.part as string)) {
+      fail(`${matchLabel} has no valid part.`);
+    }
+    if (!isSeed(item.homeId) || !isSeed(item.awayId)) {
+      fail(`${matchLabel} names a team that is not a seed of the bracket.`);
+    }
+    return {
+      part: item.part as SavedTieResult['matches'][number]['part'],
+      homeId: item.homeId,
+      awayId: item.awayId,
+      score: readScore(item.score, matchLabel),
+      ...(item.aet === undefined
+        ? {}
+        : { aet: readScore(item.aet, `${matchLabel} AET`) }),
+    };
+  });
+  return {
+    tieId: value.tieId,
+    matches,
+    ...(value.penalties === undefined
+      ? {}
+      : { penalties: readScore(value.penalties, `${label} penalties`) }),
+    winnerId: value.winnerId,
+    loserId: value.loserId,
+    decidedBy: value.decidedBy as SavedTieResult['decidedBy'],
+  };
+}
+
+/** Reads a bracket phase: each seed is a league team, once, and each bye
+ * team is a seed. The tie ids of the results are checked against the tree
+ * in `checkPlansAndPhases`, when the plan is known. */
+function readBracketPhase(
+  value: Raw,
+  label: string,
+  teams: ReadonlySet<string>
+): SavedBracketPhase {
+  const fail: Fail = failWrapper;
+  const seeds = readList(value.seeds, 'seeds', fail);
+  if (
+    !seeds.every((team): team is string => typeof team === 'string' && teams.has(team))
+  ) {
+    fail(`${label} has a seed that is not in the league.`);
+  }
+  checkUnique(
+    seeds,
+    (team) => team,
+    (i) => `${label}, seed ${i + 1} is a seed twice.`,
+    fail
+  );
+  const seedSet = new Set(seeds);
+  const byeTeams = readList(value.byeTeams, 'byeTeams', fail);
+  if (
+    !byeTeams.every(
+      (team): team is string => typeof team === 'string' && seedSet.has(team)
+    )
+  ) {
+    fail(`${label} has a bye team that is not a seed.`);
+  }
+  const results = readList(value.results, 'results', fail).map((item, i) =>
+    readTieResult(item, `${label}, result ${i + 1}`, seedSet)
+  );
+  const flag = value.avoidGroupTies;
+  if (flag !== undefined && typeof flag !== 'boolean') {
+    fail(`${label} has no valid "avoidGroupTies" flag.`);
+  }
+  return {
+    format: 'bracket',
+    seeds,
+    byeTeams,
+    results,
+    ...(flag === true ? { avoidGroupTies: true } : {}),
+  };
+}
+
+/** Checks a bracket phase against its tree: the bye teams fit, and each
+ * result names one tie of the tree that is not a bye, once. */
+function checkBracketResults(
+  phase: SavedBracketPhase,
+  index: number,
+  plan: SavedPhasePlan
+): void {
+  const fail: Fail = failWrapper;
+  const label = `phase ${index + 1}`;
+  if (plan.format !== 'bracket') return;
+  let tieIds: Set<string>;
+  try {
+    const tree = buildBracketTree(
+      index + 1,
+      phase.seeds,
+      phase.byeTeams,
+      bracketRulesOf(plan).thirdPlace
+    );
+    const ties =
+      tree.status === 'ready' ? tree.rounds.flatMap((round) => round.ties) : [];
+    tieIds = new Set(
+      ties.filter((tie) => tie.slots[1].kind !== 'bye').map((tie) => tie.id)
+    );
+  } catch {
+    return fail(`${label} has more bye teams than its bracket has byes.`);
+  }
+  const played = new Set<string>();
+  phase.results.forEach((result, i) => {
+    const resultLabel = `${label}, result ${i + 1}`;
+    if (!tieIds.has(result.tieId)) fail(`${resultLabel} names no tie of its bracket.`);
+    if (played.has(result.tieId))
+      fail(`${resultLabel} names a tie that already has a result.`);
+    played.add(result.tieId);
+  });
+}
+
 // --- Plans --------------------------------------------------------------
 
 function readGrouping(value: unknown, label: string): GroupSetting {
@@ -507,7 +707,11 @@ function readPlan(value: unknown, index: number): SavedPhasePlan {
   const label = `plan ${index + 1}`;
   const fail: Fail = failWrapper;
   if (!isRecord(value)) fail(`${label} is not an object.`);
-  if (value.format === 'bracket') return { format: 'bracket' };
+  if (value.format === 'bracket') {
+    // A plan with no rules plays with the defaults (Task 139 choice 2).
+    if (value.rules === undefined) return { format: 'bracket' };
+    return { format: 'bracket', rules: readBracketRules(value.rules, label) };
+  }
   if (!isPhaseFormat(value.format)) fail(`${label} has a format that is not known.`);
   if (!isLegs(value.legs)) fail(`${label} has no valid legs.`);
   const advance = value.advance;
@@ -593,7 +797,9 @@ function checkPlansAndPhases(
         `phase ${index + 1} is ${FORMAT_NAMES[phase.format]}, but its plan is ${FORMAT_NAMES[plan.format]}.`
       );
     }
-    if ('legs' in plan && plan.legs !== phase.legs) {
+    if (phase.format === 'bracket') {
+      checkBracketResults(phase, index, plan);
+    } else if ('legs' in plan && plan.legs !== phase.legs) {
       fail(`phase ${index + 1} has other legs than its plan.`);
     }
   });

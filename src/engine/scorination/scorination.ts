@@ -128,6 +128,38 @@ export function applyHomeAdvantage(ovr: number): number {
 }
 
 /**
+ * Extra time (AET) is 30 minutes, so a third of a 90-minute match. The AET
+ * of a drawn match plays at this share of the match expected goals, with
+ * the elasticity of the match, because it is the same match (Task 80).
+ */
+export const AET_TIME_SHARE = 1 / 3;
+
+/**
+ * Draws one score for a part of a match: `timeShare` scales the expected
+ * goals of a full match, so 1 is 90 minutes and `AET_TIME_SHARE` is extra
+ * time. The caller gives the elasticity, so the AET of a bracket tie can
+ * re-use the roll of its match. The home goals draw first, then the away
+ * goals: `scorinateMatch` depends on this order to keep seeded runs the same.
+ */
+export function scorinatePeriod(
+  homeOvr: number,
+  awayOvr: number,
+  elasticity: number,
+  timeShare: number,
+  rng: Rng
+): MatchScore {
+  const homeGoals = samplePoisson(
+    computeExpectedGoals(homeOvr, awayOvr, elasticity) * timeShare,
+    rng
+  );
+  const awayGoals = samplePoisson(
+    computeExpectedGoals(awayOvr, homeOvr, elasticity) * timeShare,
+    rng
+  );
+  return { homeGoals, awayGoals };
+}
+
+/**
  * Generates one match's final score. OVR difference primarily sets the
  * margin, absolute OVR gives a smaller secondary pull, and one shared
  * elasticity roll scales both teams' goal volume up or down without
@@ -138,22 +170,32 @@ export function applyHomeAdvantage(ovr: number): number {
  * `applyHomeAdvantage` first for a league that has it enabled.
  */
 export function scorinateMatch(homeOvr: number, awayOvr: number, rng: Rng): MatchScore {
-  const elasticity = rollElasticity(rng);
-  const homeGoals = samplePoisson(
-    computeExpectedGoals(homeOvr, awayOvr, elasticity),
-    rng
-  );
-  const awayGoals = samplePoisson(
-    computeExpectedGoals(awayOvr, homeOvr, elasticity),
-    rng
-  );
-  return { homeGoals, awayGoals };
+  return scorinatePeriod(homeOvr, awayOvr, rollElasticity(rng), 1, rng);
+}
+
+/**
+ * Generates the goals of extra time only, not the match score plus AET.
+ * The bracket adds them to the match score, and keeps the two apart for a
+ * later display of the score before AET (future features §22). Give the
+ * elasticity of the drawn match. As for a match, the caller applies the home
+ * boost: a single-match tie is neutral, and the AET of a second leg keeps
+ * the boost of its home team (Task 80).
+ */
+export function scorinateExtraTime(
+  homeOvr: number,
+  awayOvr: number,
+  elasticity: number,
+  rng: Rng
+): MatchScore {
+  return scorinatePeriod(homeOvr, awayOvr, elasticity, AET_TIME_SHARE, rng);
 }
 
 /**
  * Plays one match of a league: applies the home-advantage boost when the
- * league has it on, then scorinates. Every format plays a match this way.
- * A format with a tiebreak (MVP2 bracket) builds on the score it returns.
+ * league has it on, then scorinates. A round-robin or Groups match plays
+ * this way, and so does a leg of a tie that cannot go to AET.
+ * A bracket tie that can go to AET calls `rollElasticity` and
+ * `scorinatePeriod` itself, because its AET needs the elasticity roll.
  */
 export function playMatch(
   homeOvr: number,

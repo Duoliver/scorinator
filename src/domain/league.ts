@@ -1,12 +1,12 @@
+import type { BracketTieResult } from '@/engine/bracket';
 import type { GroupBye, Legs, PhasePlan } from '@/engine/phases';
 import type { Bye, PhaseFixture } from '@/engine/round-robin';
 import type { MatchResult, PointsConfig } from '@/engine/standings';
 import type { Provenance } from './provenance';
 
 /** The format of a started phase (US-01.2). The legs of a round robin or
- * Groups phase say two-way or single duels (Task 176). Task 139 adds the
- * bracket. */
-export type PhaseFormat = 'round-robin' | 'groups';
+ * Groups phase say two-way or single duels (Task 176). */
+export type PhaseFormat = 'round-robin' | 'groups' | 'bracket';
 
 /** One scorinated match of a phase. `fixtureId` finds its fixture (Task 77):
  * code treats the id as opaque and never parses it. `home` and `away` are
@@ -46,8 +46,30 @@ export interface GroupsPhase {
   results: PhaseResult[];
 }
 
+/**
+ * A bracket phase (US-04.2, US-04.10, Task 139 choice 1). `seeds` holds the
+ * Blueprint UUIDs in seed order: the qualifier order, or the stored draw of
+ * a first-phase bracket. `byeTeams` holds the teams with a first-round bye.
+ * `results` holds one entry for each played tie (Task 137 choice 1). The
+ * tree is not stored: `buildBracketTree` makes it again from the seeds, the
+ * bye teams, and the plan.
+ */
+export interface BracketPhase {
+  format: 'bracket';
+  seeds: string[];
+  byeTeams: string[];
+  results: BracketTieResult<string>[];
+  /** True for a bracket that started from Task 185 on: its first round has
+   * no same-group tie after a Groups phase. A bracket that started before
+   * has no flag and keeps its pairs (Task 185 choice 1). */
+  avoidGroupTies?: boolean;
+}
+
+/** A phase with a round-robin schedule: a round robin or Groups phase. */
+export type ScheduledPhase = RoundRobinPhase | GroupsPhase;
+
 /** One started phase of a league. A union on `format` (see `PhaseFormat`). */
-export type Phase = RoundRobinPhase | GroupsPhase;
+export type Phase = ScheduledPhase | BracketPhase;
 
 /**
  * A league (US-01.1, US-11.1). It holds no teams: its wrapper holds the

@@ -12,6 +12,7 @@ import {
   openTestLeague,
   roundRobinLeague,
   testUuid,
+  scheduled,
 } from '@/test/databaseRecords';
 
 const UNITED = testUuid(1);
@@ -32,7 +33,7 @@ function league(
   teams = TEAMS
 ): LeagueWrapper {
   const wrapper = roundRobinLeague(teams, details);
-  const [phase] = wrapper.content.phases;
+  const phase = scheduled(wrapper.content.phases[0]);
   return {
     ...wrapper,
     content: { ...wrapper.content, phases: [{ ...phase, results }] },
@@ -156,7 +157,7 @@ describe('StandingsView', () => {
     render(<StandingsViewFromStore uuid={LEAGUE} />);
     expect(screen.getByText('No matches played yet.')).toBeInTheDocument();
 
-    const first = wrapper.content.phases[0]?.fixtures[0];
+    const first = scheduled(wrapper.content.phases[0]).fixtures[0];
     if (!first) throw new Error('expected a generated fixture');
     act(() => scorinateFixture(LEAGUE, first.id));
 
@@ -226,7 +227,7 @@ describe('StandingsView', () => {
 
     it('counts only the results of the own group', () => {
       const wrapper = sixInTwo();
-      const [phase] = wrapper.content.phases;
+      const phase = scheduled(wrapper.content.phases[0]);
       const fixture = phase.fixtures.find(
         (candidate) => candidate.home === UNITED || candidate.away === UNITED
       );

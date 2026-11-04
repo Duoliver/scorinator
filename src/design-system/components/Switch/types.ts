@@ -3,4 +3,6 @@ export default interface SwitchProps {
   defaultChecked?: boolean;
   onChange?: (checked: boolean) => void;
   id?: string;
+  /** Turns the switch off for the user. */
+  disabled?: boolean;
 }

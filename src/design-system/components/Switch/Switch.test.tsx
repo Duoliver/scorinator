@@ -94,4 +94,18 @@ describe('Switch', () => {
     ref.current?.focus();
     expect(screen.getByRole('switch', { name: 'Home advantage' })).toHaveFocus();
   });
+
+  it('with disabled, turns the switch off for the user (Task 140)', async () => {
+    const onChange = vi.fn();
+    render(<Switch label="Third place" disabled onChange={onChange} />);
+    const el = screen.getByRole('switch', { name: 'Third place' });
+    expect(el).toBeDisabled();
+    await userEvent.click(el);
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('is enabled by default', () => {
+    render(<Switch label="Third place" />);
+    expect(screen.getByRole('switch', { name: 'Third place' })).toBeEnabled();
+  });
 });

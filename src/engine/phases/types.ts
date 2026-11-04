@@ -1,3 +1,4 @@
+import type { BracketPlanRules } from '@/engine/bracket';
 import type { Bye, GroupSetting, PhaseFixture } from '@/engine/round-robin';
 
 /** One or two meetings of each pair of teams (US-01.2): `two-way` is
@@ -22,10 +23,12 @@ export interface GroupsPlan {
   advance?: { top: number; bestOfNext: number };
 }
 
-/** A bracket phase plan. Only valid as the last phase (US-01.3). M4 (Task
- * 140) adds its settings. */
+/** A bracket phase plan. Only valid as the last phase (US-01.3). `rules`
+ * holds its settings. A plan with no `rules` plays with the defaults
+ * (`bracketRulesOf`, Task 139). The wizard sets them from Task 140. */
 export interface BracketPlan {
   format: 'bracket';
+  rules?: BracketPlanRules;
 }
 
 /** The settings of one phase, before it starts (Task 126 choice 2). */
@@ -54,8 +57,10 @@ export interface GroupBye<TeamId> extends Bye<TeamId> {
   group: number;
 }
 
-/** A round-robin or Groups phase after its start (US-07.3): the fixtures
- * with their ids (Task 77), the byes, and the groups of a Groups phase. */
+/** A phase after its start (US-07.3). A round robin or Groups phase has
+ * the fixtures with their ids (Task 77), the byes, and the groups of a
+ * Groups phase. A bracket has its seeds in seed order and its bye teams.
+ * Its tree comes from `buildBracketTree` (Task 139 choice 1). */
 export type BuiltPhase<TeamId> =
   | {
       format: 'round-robin';
@@ -69,4 +74,5 @@ export type BuiltPhase<TeamId> =
       groups: TeamId[][];
       fixtures: PhaseFixture<TeamId>[];
       byes: GroupBye<TeamId>[];
-    };
+    }
+  | { format: 'bracket'; seeds: TeamId[]; byeTeams: TeamId[] };

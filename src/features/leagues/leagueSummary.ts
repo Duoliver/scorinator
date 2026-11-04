@@ -1,3 +1,4 @@
+import { roundName } from '@/engine/bracket';
 import type { LeagueProgress, PhaseSummary, WrapperSummary } from '@/domain';
 import type { PhasePlan } from '@/engine/phases';
 import type { PointsConfig } from '@/engine/standings';
@@ -60,10 +61,11 @@ export function formatPhasesLabel(phases: readonly PhaseSummary[]): string {
 }
 
 /** The progress badge of a dashboard card (US-01.2, Task 131 choice 4):
- * "MD 7/16" during a phase, "Complete" for a complete league. M4 adds the
- * round name of a bracket. */
+ * "MD 7/16" during a phase, the round name in a bracket, for example
+ * "Quarter-finals" (US-04.14), and "Complete" for a complete league. */
 export function formatProgressBadge(progress: LeagueProgress): string {
   if (progress.kind === 'completed') return 'Complete';
+  if (progress.kind === 'bracket') return roundName(progress.round);
   return `MD ${progress.matchday}/${progress.matchdays}`;
 }
 

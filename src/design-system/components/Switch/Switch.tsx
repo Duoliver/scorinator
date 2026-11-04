@@ -9,7 +9,7 @@ import styles from './Switch.module.css';
 export type { SwitchProps };
 
 export const Switch = forwardRef<FieldHandle<boolean>, SwitchProps>(
-  ({ label, defaultChecked = false, onChange, id }, ref) => {
+  ({ label, defaultChecked = false, onChange, id, disabled }, ref) => {
     const generatedId = useId();
     const switchId = id ?? generatedId;
     const inputEl = useRef<HTMLInputElement>(null);
@@ -31,6 +31,7 @@ export const Switch = forwardRef<FieldHandle<boolean>, SwitchProps>(
           role="switch"
           class={styles.input}
           checked={checked}
+          disabled={disabled}
           onChange={(event: TargetedEvent<HTMLInputElement, Event>) =>
             commitValue(event.currentTarget.checked, true)
           }

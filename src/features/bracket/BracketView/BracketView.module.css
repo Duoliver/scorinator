@@ -1,0 +1,84 @@
+.view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* The header line and "Scorinate bracket", which wrap on a narrow width. */
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.line {
+  margin: 0;
+  max-width: 40rem;
+  font-size: var(--font-size-sm);
+  color: var(--color-fg-muted);
+}
+
+.winner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  font-family: var(--font-condensed);
+  font-weight: 700;
+  font-size: var(--font-size-xl);
+  text-transform: uppercase;
+}
+
+.note {
+  margin: 0;
+  font-size: var(--font-size-md);
+  color: var(--color-fg-muted);
+}
+
+/* The rounds left to right. A wide tree scrolls sideways (choice 2). The
+ * padding keeps the hard shadow of the cards inside the scroll box. */
+.tree {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-8);
+  overflow-x: auto;
+  padding: var(--space-2) var(--space-2) var(--space-4);
+}
+
+.column {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 14rem;
+}
+
+.round {
+  margin: 0;
+  font-family: var(--font-condensed);
+  font-weight: 700;
+  font-size: var(--font-size-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-fg-muted);
+  text-align: center;
+}
+
+/* The ties share the column height: a later tie sits between the two ties
+ * it takes its teams from. */
+.ties {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: space-around;
+  gap: var(--space-4);
+}
+
+/* The final round is always the last column. Its ties sit at the centre, so
+ * the earlier rounds meet in the final. With a third place, the two cards
+ * stay together, and the final sits a little above the centre (Task 186). */
+.column:last-child .ties {
+  justify-content: center;
+}

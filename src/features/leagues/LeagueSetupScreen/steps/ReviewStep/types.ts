@@ -10,6 +10,9 @@ export default interface ReviewStepProps {
   teams: readonly TeamInstance[];
   /** The phase chain of the Phases step (Task 129). */
   plans: readonly PhasePlan[];
+  /** The team count of the bracket phase, when known: below 4 there is
+   * no third-place tie (Task 140). */
+  bracketQualifiers?: number;
   /** The texts of the phase problems (Task 177): the Review step lists
    * them all. */
   phaseProblems: readonly string[];

@@ -1,7 +1,14 @@
 import { buildPhase, type PhasePlan } from '@/engine/phases';
 import { createSeededRng } from '@/engine/rng';
 import { assignFixtureIds, generateRoundRobin } from '@/engine/round-robin';
-import type { LeagueWrapper, PhaseResult, TeamBlueprint, TeamInstance } from '@/domain';
+import type {
+  LeagueWrapper,
+  Phase,
+  PhaseResult,
+  ScheduledPhase,
+  TeamBlueprint,
+  TeamInstance,
+} from '@/domain';
 import { useDatabaseStore } from '@/app/state/databaseStore';
 import { summarizeLeague } from '@/app/state/summarizeLeague';
 import type { DatabaseFolder, WrapperText } from '@/persistence/types';
@@ -272,4 +279,13 @@ export function openTestLeague(wrapper: LeagueWrapper): LeagueWrapper {
     savedRows: [...state.savedRows, row],
   }));
   return wrapper;
+}
+
+/** A started phase as a round robin or Groups phase, for a test that reads
+ * its fixtures or byes. Throws for a missing phase or a bracket. */
+export function scheduled(phase: Phase | undefined): ScheduledPhase {
+  if (!phase || phase.format === 'bracket') {
+    throw new Error('The test expected a round robin or Groups phase.');
+  }
+  return phase;
 }

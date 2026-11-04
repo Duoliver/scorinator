@@ -98,6 +98,7 @@ function TeamListArea({
         )}
         <span class={styles.count}>{step.countText}</span>
         {step.warning && <p class={styles.warning}>{step.warning}</p>}
+        {props.bracketWarning && <p class={styles.note}>{props.bracketWarning}</p>}
       </>
     );
   }
@@ -112,6 +113,7 @@ function TeamListArea({
       />
       <span class={styles.count}>{step.countText}</span>
       {step.warning && <p class={styles.warning}>{step.warning}</p>}
+      {props.bracketWarning && <p class={styles.note}>{props.bracketWarning}</p>}
     </>
   );
 }

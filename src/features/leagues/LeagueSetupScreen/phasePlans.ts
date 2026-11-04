@@ -1,4 +1,5 @@
-import type { PhasePlan } from '@/engine/phases';
+import type { BracketPlanRules } from '@/engine/bracket';
+import { bracketRulesOf, type PhasePlan } from '@/engine/phases';
 import { formatPhaseLabel } from '@/features/leagues/leagueSummary';
 
 /**
@@ -195,16 +196,16 @@ export function parseWholeNumber(text: string): number {
   return /^\d+$/.test(trimmed) ? Number(trimmed) : Number.NaN;
 }
 
-/** A bracket phase keeps "Create league" off until M4 (choice 2). */
-export function hasBracketPhase(plans: readonly PhasePlan[]): boolean {
-  return plans.some((plan) => plan.format === 'bracket');
-}
-
 /** The Review text of one phase: the full label, the group setting, and
- * the advancement. */
-export function describePhasePlan(plan: PhasePlan): string {
+ * the advancement. A bracket lists its settings (Task 140 choice 6): the
+ * tie format, the away goals of two legs, AET, the method, the
+ * single-match final of two legs, and the third place. `qualifiers` is the
+ * bracket team count when known: below 4 there is no third-place tie. */
+export function describePhasePlan(plan: PhasePlan, qualifiers?: number): string {
   const parts = [formatPhaseLabel(plan)];
-  if (plan.format === 'groups') {
+  if (plan.format === 'bracket') {
+    parts.push(...describeBracketRules(bracketRulesOf(plan), qualifiers));
+  } else if (plan.format === 'groups') {
     const { grouping } = plan;
     parts.push(
       grouping.by === 'size' ? `size ${grouping.size}` : `${grouping.count} groups`
@@ -215,8 +216,42 @@ export function describePhasePlan(plan: PhasePlan): string {
         parts.push(`best ${plan.advance.bestOfNext} of place ${plan.advance.top + 1}`);
       }
     }
-  } else if (plan.format === 'round-robin' && plan.advance) {
+  } else if (plan.advance) {
     parts.push(`Top ${plan.advance.top} advance`);
   }
   return parts.join(' · ');
+}
+
+function describeBracketRules(rules: BracketPlanRules, qualifiers?: number): string[] {
+  const twoLegged = rules.format === 'two-legged';
+  const parts = [twoLegged ? 'Two-legged' : 'Single match'];
+  if (twoLegged) parts.push(`away goals ${rules.awayGoals ? 'on' : 'off'}`);
+  parts.push(`AET ${rules.playsAet ? 'on' : 'off'}`);
+  parts.push(rules.method === 'penalties' ? 'Penalties' : 'Replay→Coin toss');
+  if (twoLegged && rules.singleMatchFinal) parts.push('Single-match final');
+  if (rules.thirdPlace && canHaveThirdPlace(qualifiers)) parts.push('Third place');
+  return parts;
+}
+
+/** A third-place tie needs 4 qualifiers or more (US-04.12 row 2, Task 137
+ * choice 3). With an unknown count, it can. */
+export function canHaveThirdPlace(qualifiers?: number): boolean {
+  return qualifiers === undefined || qualifiers >= 4;
+}
+
+/**
+ * Changes the bracket settings of one plan (Task 140 choice 2): the plan
+ * gets its full `rules`, the current ones (or the defaults) with the change.
+ * A round-robin or Groups plan does not change. The input does not change.
+ */
+export function setBracketRules(
+  plans: readonly PhasePlan[],
+  index: number,
+  change: Partial<BracketPlanRules>
+): PhasePlan[] {
+  return plans.map((plan, i) =>
+    i === index && plan.format === 'bracket'
+      ? { format: 'bracket', rules: { ...bracketRulesOf(plan), ...change } }
+      : plan
+  );
 }

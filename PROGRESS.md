@@ -100,6 +100,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 143 | M4 smoke check | all | ✅ Done | 2026-11-03 | 2026-11-04 | [143](/docs/tasks/143-m4-smoke-check.md) | M4 complete. End-to-end test added. The user checked the real app. |
 | 186 | Centre the final column of the bracket | `features/bracket` | ✅ Done | 2026-11-04 | 2026-11-04 | [186](/docs/tasks/186-bracket-final-centre.md) | Task created by User - 2026-11-04. From the Task 143 review. One CSS rule. The user checked the real app. |
 | 187 | The tie card title in the score header row, and a thinner header row | `features/bracket` | ✅ Done | 2026-11-04 | 2026-11-04 | [187](/docs/tasks/187-tie-card-header-row.md) | Task created by User - 2026-11-04. Criteria from the user request. 2 new tests. The user checked the real app. |
+| 188 | A title for the final tie card | `features/bracket` | ✅ Done | 2026-11-04 | 2026-11-04 | [188](/docs/tasks/188-tie-card-titles.md) | Task created by User - 2026-11-04. The final only. 5 new tests. The user checked the real app. |
 | 144 | Import decisions: unknown, same content, conflict, Skip, Import as new, the embedded Blueprint rule | `persistence/` | ⬜ Not started |  |  |  | M5. US-11.2, 10.3. After 143. |
 | 145 | League and Blueprint files: one or many, format versions, wrong-file errors | `adapters/json-io` | ⬜ Not started |  |  |  | M5. US-10.1 to 10.3. After 144. |
 | 146 | The database `.zip` export and import | `adapters/json-io` | ⬜ Not started |  |  |  | M5. US-10.4. After 145. |
@@ -186,6 +187,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-11-04 (Task 188 — the final title):** The user agreed the criteria and choice 1: each final card shows "Final", in all formats, with the Task 187 rule. Titles for the earlier rounds are parked: `scorinator-future-features.md` §24. Detail: [Task 188](/docs/tasks/188-tie-card-titles.md).
 
 - **2026-11-04 (Task 187 — the title in the header row):** Two choices made from the user request, for the user to check at review. (1) The title keeps its style in the header row. (2) Only the score labels are hidden from a screen reader. Detail: [Task 187](/docs/tasks/187-tie-card-header-row.md).
 

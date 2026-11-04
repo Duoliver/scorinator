@@ -140,3 +140,8 @@ In MVP2, the tie card shows one score for a match that went to AET, with an aste
 In MVP2, a bracket after a Groups phase seeds by place, then stats (Task 78), with the standard placement (Task 89). A first-round tie never pairs two teams of one group (Task 185). Later, the user picks the seeding method on the Seed List before the first result, as for the byes today (US-04.10). One method: fixed pairs across groups, as in the World Cup: A1 v B2, B1 v A2, C1 v D2, D1 v C2. It works only with a power of 2 of qualifiers and no best-M teams, so the Seed List offers it only then. A change after the first result asks for a confirm, as the bye change does.
 
 *Raised during: MVP2, Task 142 review, 2026-11-03.*
+
+## 24. Titles for the tie cards of the earlier rounds
+In MVP2, only the final and the third-place tie cards show a title (Tasks 187, 188). The ties of the earlier rounds keep a blank first cell in the score header row. A single-match tie has no header row, so a title needs a title row of its own. A title row on each single-match tie of each round adds height to the whole tree. Later, choose the title text, for example "SF 1" or "QF 2", and how a single-match tie shows it, before or after a replay. Decide also what a bye card shows.
+
+*Raised during: MVP2, Task 188, 2026-11-04.*

@@ -1,4 +1,5 @@
 import {
+  roundName,
   rulesForTie,
   THIRD_PLACE_NAME,
   type BracketRules,
@@ -14,6 +15,13 @@ import type { TieCardModel, TieCardRow } from './types';
 
 /** The grey swatch of a TBD slot, as in the handoff (US-04.7). */
 export const TBD_COLOUR = '#B0B0B0';
+
+/** The card titles: the final and the third-place tie only (Task 188).
+ * The titles of the earlier rounds are parked (future features §24). */
+const TIE_TITLES: Partial<Record<BracketTie<string>['kind'], string>> = {
+  final: roundName(2),
+  third: THIRD_PLACE_NAME,
+};
 
 /** The labels of the score columns (Task 141 choice 3). */
 const PART_LABELS: Record<TieMatch<string>['part'], string> = {
@@ -154,7 +162,7 @@ export function buildTieCard(
   ];
   return {
     id: tie.id,
-    title: tie.kind === 'third' ? THIRD_PLACE_NAME : undefined,
+    title: TIE_TITLES[tie.kind],
     isBye,
     rows,
     columns: parts.length > 1 ? parts.map((part) => PART_LABELS[part]) : [],

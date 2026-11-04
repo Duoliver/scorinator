@@ -109,6 +109,15 @@ describe('buildTieCard (US-04.8, US-04.7, US-04.11)', () => {
     expect(card.rows[0].scores).toEqual(['', '']);
   });
 
+  it.each([
+    ['final', 'Final'],
+    ['third', 'Third-place playoff'],
+    ['regular', undefined],
+  ] as const)('a %s tie has the title %s (Task 188)', (kind, title) => {
+    const card = buildTieCard(tie(kind), sides, undefined, RULES, lookup, true);
+    expect(card.title).toBe(title);
+  });
+
   it('a single-match final in a two-legged bracket has one column', () => {
     const card = buildTieCard(
       tie('final'),

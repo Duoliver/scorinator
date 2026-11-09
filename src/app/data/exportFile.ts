@@ -7,13 +7,21 @@ import {
   serializeLeagueFile,
   type DetectedFileKind,
 } from '@/adapters/json-io';
+import {
+  openTextFileWithDialog,
+  saveTextFileWithDialog,
+  tauriDialog,
+  tauriFileSystem,
+} from '@/adapters/tauri-fs';
 import type { LeagueWrapper, TeamBlueprint } from '@/domain';
+import type { FileFilter, FileSystem, SaveFileDialog } from '@/persistence/types';
 import {
   blueprintFromFile,
   blueprintToFile,
   leagueFromFile,
   leagueToFile,
 } from './databaseFile';
+import { getLocalDate } from './localDate';
 
 /**
  * The map between the domain records and the export files of the File
@@ -26,9 +34,13 @@ import {
 const MVP1_FILE =
   'This file is from Scorinator MVP1. MVP2 cannot import it. Move your teams with the CSV.';
 const DATABASE_FILE =
-  'This file is part of a database folder. Use "Import database" with a .zip file.';
+  'This file is part of a database folder. Use "Import entire database" with a .zip file.';
 const BLUEPRINT_FILE = 'This is a team blueprints file. Use "Import teams" for it.';
 const LEAGUE_FILE = 'This is a league file. Use "Import leagues" for it.';
+
+const JSON_FILTERS: readonly FileFilter[] = [
+  { name: 'JSON file', extensions: ['json'] },
+];
 
 /** The leagues and the Blueprint snapshots of a league file. */
 export interface LeagueImport {
@@ -93,4 +105,59 @@ export function serializeBlueprintExport(blueprints: readonly TeamBlueprint[]): 
 export function readBlueprintImport(text: string): TeamBlueprint[] {
   rejectWrongFile(detectFileKind(text), 'blueprints');
   return parseBlueprintFile(text).blueprints.map(blueprintFromFile);
+}
+
+/** Asks where to write one league file with the given leagues, and writes
+ * it. Returns the path, or `null` on Cancel (Task 149). */
+export function saveLeaguesFile(
+  leagues: readonly LeagueWrapper[],
+  blueprints: readonly TeamBlueprint[],
+  today: Date = new Date(),
+  fs: FileSystem = tauriFileSystem,
+  dialog: SaveFileDialog = tauriDialog
+): Promise<string | null> {
+  return saveTextFileWithDialog(
+    fs,
+    dialog,
+    serializeLeagueExport(leagues, blueprints),
+    `scorinator-leagues-${getLocalDate(today)}.json`,
+    JSON_FILTERS
+  );
+}
+
+/** Asks where to write one Blueprint file, and writes it. Returns the path,
+ * or `null` on Cancel (Task 149). */
+export function saveBlueprintsFile(
+  blueprints: readonly TeamBlueprint[],
+  today: Date = new Date(),
+  fs: FileSystem = tauriFileSystem,
+  dialog: SaveFileDialog = tauriDialog
+): Promise<string | null> {
+  return saveTextFileWithDialog(
+    fs,
+    dialog,
+    serializeBlueprintExport(blueprints),
+    `scorinator-team-blueprints-${getLocalDate(today)}.json`,
+    JSON_FILTERS
+  );
+}
+
+/** The file the user picks for "Import leagues", or `null` on Cancel.
+ * Rejects as `readLeagueImport` does. */
+export async function openLeagueImportFile(
+  fs: FileSystem = tauriFileSystem,
+  dialog: SaveFileDialog = tauriDialog
+): Promise<LeagueImport | null> {
+  const opened = await openTextFileWithDialog(fs, dialog, JSON_FILTERS);
+  return opened === null ? null : readLeagueImport(opened.contents);
+}
+
+/** The file the user picks for "Import teams", or `null` on Cancel. Rejects
+ * as `readBlueprintImport` does. */
+export async function openBlueprintImportFile(
+  fs: FileSystem = tauriFileSystem,
+  dialog: SaveFileDialog = tauriDialog
+): Promise<TeamBlueprint[] | null> {
+  const opened = await openTextFileWithDialog(fs, dialog, JSON_FILTERS);
+  return opened === null ? null : readBlueprintImport(opened.contents);
 }

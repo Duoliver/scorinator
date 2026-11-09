@@ -44,18 +44,24 @@ export interface DatabaseImportCounts {
  */
 export async function exportDatabaseZip(): Promise<Uint8Array> {
   const state = useDatabaseStore.getState();
-  const { folder, installationUuid } = requireOpenDatabase(state);
-  const rows = currentRows(state);
-  const leagues = await Promise.all(
-    rows.map(
+  const { installationUuid } = requireOpenDatabase(state);
+  return packDatabase(
+    { installationUuid, blueprints: state.blueprints, wrappers: currentRows(state) },
+    await readAllLeagues()
+  );
+}
+
+/** Every league from the live state, in the row order. A league that is not
+ * loaded comes from its file and stays closed (choice 3). */
+export async function readAllLeagues(): Promise<LeagueWrapper[]> {
+  const state = useDatabaseStore.getState();
+  const { folder } = requireOpenDatabase(state);
+  return Promise.all(
+    currentRows(state).map(
       async (row) =>
         state.leagues[row.uuid] ??
         parseLeagueWrapper(await folder.readWrapper(row.uuid))
     )
-  );
-  return packDatabase(
-    { installationUuid, blueprints: state.blueprints, wrappers: rows },
-    leagues
   );
 }
 

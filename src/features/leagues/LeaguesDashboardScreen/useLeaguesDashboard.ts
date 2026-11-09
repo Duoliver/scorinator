@@ -1,9 +1,11 @@
 import { useMemo } from 'preact/hooks';
+import { planLeagueFileImport } from '@/app/importFileActions';
 import {
   currentRows,
   isLeagueUnsaved,
   useDatabaseStore,
 } from '@/app/state/databaseStore';
+import { useFileImport } from '@/features/components';
 import { formatLeagueCount } from './helpers';
 import type { LeaguesDashboard } from './types';
 
@@ -13,6 +15,7 @@ export function useLeaguesDashboard(): LeaguesDashboard {
   const rows = useDatabaseStore((state) => state.rows);
   const leagues = useDatabaseStore((state) => state.leagues);
   const savedLeagues = useDatabaseStore((state) => state.savedLeagues);
+  const { startFileImport, importDialogs } = useFileImport();
 
   const cards = useMemo(
     () =>
@@ -27,5 +30,7 @@ export function useLeaguesDashboard(): LeaguesDashboard {
     leagues: cards,
     hasLeagues: cards.length > 0,
     subtitle: `${formatLeagueCount(cards.length)} running`,
+    handleImportLeague: () => startFileImport(planLeagueFileImport),
+    importDialogs,
   };
 }

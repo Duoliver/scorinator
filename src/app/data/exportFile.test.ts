@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { parseLeagueFile } from '@/adapters/json-io';
 import type { TeamBlueprint } from '@/domain';
 import {
@@ -15,11 +15,16 @@ import { importLeagues, planLeagueImport } from '@/app/state/importActions';
 import { useDatabaseStore } from '@/app/state/databaseStore';
 import { serializeLeagueWrapper, serializeManifestRecord } from './databaseFile';
 import {
+  openBlueprintImportFile,
+  openLeagueImportFile,
   readBlueprintImport,
   readLeagueImport,
+  saveBlueprintsFile,
+  saveLeaguesFile,
   serializeBlueprintExport,
   serializeLeagueExport,
 } from './exportFile';
+import type { FileSystem, SaveFileDialog } from '@/persistence/types';
 
 const harborview = blueprint({
   uuid: HARBORVIEW,
@@ -36,7 +41,7 @@ const played = leagueWrapper([result('p1.g1.md1.m1', SALT_MARSH, HARBORVIEW)]);
 const MVP1_TEXT =
   'This file is from Scorinator MVP1. MVP2 cannot import it. Move your teams with the CSV.';
 const DATABASE_TEXT =
-  'This file is part of a database folder. Use "Import database" with a .zip file.';
+  'This file is part of a database folder. Use "Import entire database" with a .zip file.';
 
 beforeEach(() => {
   useDatabaseStore.setState(useDatabaseStore.getInitialState(), true);
@@ -130,5 +135,87 @@ describe('the wrong-file errors (US-10.3, choices 4 and 5)', () => {
     ],
   ])('"Import teams" rejects %s', (_name, text, message) => {
     expect(() => readBlueprintImport(text)).toThrow(message);
+  });
+});
+
+describe('the file dialogs of the File screen (Task 149)', () => {
+  const TODAY = new Date(2026, 10, 9);
+  const fakeFs = (contents = ''): FileSystem => ({
+    readTextFile: vi.fn().mockResolvedValue(contents),
+    writeTextFile: vi.fn().mockResolvedValue(undefined),
+    readBinaryFile: vi.fn(),
+    writeBinaryFile: vi.fn(),
+    rename: vi.fn(),
+    remove: vi.fn(),
+    exists: vi.fn(),
+  });
+  const fakeDialog = (path: string | null): SaveFileDialog => ({
+    pickSavePath: vi.fn().mockResolvedValue(path),
+    pickOpenPath: vi.fn().mockResolvedValue(path),
+  });
+  const JSON_FILTER = [{ name: 'JSON file', extensions: ['json'] }];
+
+  it('saves the leagues under the default name with the date', async () => {
+    const fs = fakeFs();
+    const dialog = fakeDialog('/l.json');
+    const path = await saveLeaguesFile(
+      [leagueWrapper()],
+      [blueprint()],
+      TODAY,
+      fs,
+      dialog
+    );
+    expect(path).toBe('/l.json');
+    expect(dialog.pickSavePath).toHaveBeenCalledWith(
+      'scorinator-leagues-2026-11-09.json',
+      JSON_FILTER
+    );
+    const written = vi.mocked(fs.writeTextFile).mock.calls[0][1];
+    expect(parseLeagueFile(written).leagues).toHaveLength(1);
+  });
+
+  it('saves the Blueprints under the default name with the date', async () => {
+    const fs = fakeFs();
+    const dialog = fakeDialog('/b.json');
+    await saveBlueprintsFile([blueprint()], TODAY, fs, dialog);
+    expect(dialog.pickSavePath).toHaveBeenCalledWith(
+      'scorinator-team-blueprints-2026-11-09.json',
+      JSON_FILTER
+    );
+    expect(fs.writeTextFile).toHaveBeenCalledOnce();
+  });
+
+  it('gives null and writes nothing when the save dialog is canceled', async () => {
+    const fs = fakeFs();
+    expect(
+      await saveBlueprintsFile([blueprint()], TODAY, fs, fakeDialog(null))
+    ).toBeNull();
+    expect(fs.writeTextFile).not.toHaveBeenCalled();
+  });
+
+  it('reads a league file from the open dialog', async () => {
+    const text = serializeLeagueExport([leagueWrapper()], [blueprint()]);
+    const dialog = fakeDialog('/l.json');
+    const file = await openLeagueImportFile(fakeFs(text), dialog);
+    expect(file?.leagues.map((league) => league.uuid)).toEqual([LEAGUE]);
+    expect(dialog.pickOpenPath).toHaveBeenCalledWith(JSON_FILTER);
+  });
+
+  it('reads a Blueprint file from the open dialog', async () => {
+    const text = serializeBlueprintExport([blueprint()]);
+    const file = await openBlueprintImportFile(fakeFs(text), fakeDialog('/b.json'));
+    expect(file?.map((b) => b.uuid)).toEqual([SALT_MARSH]);
+  });
+
+  it('gives null when the open dialog is canceled', async () => {
+    expect(await openLeagueImportFile(fakeFs(), fakeDialog(null))).toBeNull();
+    expect(await openBlueprintImportFile(fakeFs(), fakeDialog(null))).toBeNull();
+  });
+
+  it('rejects with the wrong-file text', async () => {
+    const text = serializeBlueprintExport([blueprint()]);
+    await expect(
+      openLeagueImportFile(fakeFs(text), fakeDialog('/b.json'))
+    ).rejects.toThrow('Use "Import teams"');
   });
 });

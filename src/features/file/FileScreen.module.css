@@ -12,13 +12,18 @@
   color: var(--color-fg-muted);
 }
 
-.cards {
+.section {
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
 }
 
-.hint {
-  font-size: var(--font-size-md);
+.sectionTitle {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   color: var(--color-fg-muted);
 }

@@ -9,6 +9,7 @@ import { slug } from '@/engine/identity';
 import { leagueFinalRanking } from '@/app/state/finalRanking';
 import type { LeagueWrapper } from '@/domain';
 import type { FileFilter, FileSystem, SaveFileDialog } from '@/persistence/types';
+import { getLocalDate } from './localDate';
 
 /** The thin `app/` → `adapters/` data layer for "Import slug list"
  * (US-08.7), so `features/` never imports `adapters/` directly. */
@@ -31,13 +32,6 @@ export async function importSlugListTxt(
   return parseSlugList(opened.contents);
 }
 
-/** The local date of `today` as `YYYY-MM-DD`, for the comment line. */
-function localDate(today: Date): string {
-  const month = String(today.getMonth() + 1).padStart(2, '0');
-  const day = String(today.getDate()).padStart(2, '0');
-  return `${today.getFullYear()}-${month}-${day}`;
-}
-
 /**
  * "Export slug list (.txt)" (US-10.5, Task 148): asks where to write the
  * Instance slugs of a league in its final ranking (Task 147), then writes
@@ -55,7 +49,7 @@ export async function exportSlugListTxt(
   const slugOf = new Map(wrapper.teams.map((team) => [team.blueprintUuid, team.slug]));
   const contents = serializeSlugList({
     leagueName: wrapper.content.name,
-    date: localDate(today),
+    date: getLocalDate(today),
     slugs: leagueFinalRanking(wrapper).map((uuid) => slugOf.get(uuid) ?? uuid),
   });
   return saveTextFileWithDialog(

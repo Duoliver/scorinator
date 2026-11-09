@@ -1,6 +1,7 @@
 import type { JSX } from 'preact';
 import { Button } from '@/design-system';
 import { ROUTES } from '@/app/routes';
+import { FileImportDialogs } from '@/features/components';
 import { LeagueList } from './LeagueList';
 import { LeaguesEmptyState } from './LeaguesEmptyState';
 import { useLeaguesDashboard } from './useLeaguesDashboard';
@@ -19,7 +20,8 @@ import styles from './LeaguesDashboardScreen.module.css';
  * `LeaguesEmptyState` and hides `+ New League`, which would repeat the
  * empty state's Create league. */
 export function LeaguesDashboardScreen(): JSX.Element {
-  const { leagues, hasLeagues, subtitle } = useLeaguesDashboard();
+  const { leagues, hasLeagues, subtitle, handleImportLeague, importDialogs } =
+    useLeaguesDashboard();
 
   return (
     <div class={styles.screen}>
@@ -29,13 +31,20 @@ export function LeaguesDashboardScreen(): JSX.Element {
           <p class={styles.subtitle}>{subtitle}</p>
         </div>
         {hasLeagues && (
-          <Button href={ROUTES.leaguesNew} variant="primary" size="md">
-            + New League
-          </Button>
+          <div class={styles.actions}>
+            <Button variant="secondary" size="md" onClick={handleImportLeague}>
+              Import league...
+            </Button>
+            <Button href={ROUTES.leaguesNew} variant="primary" size="md">
+              + New League
+            </Button>
+          </div>
         )}
       </div>
 
       {hasLeagues ? <LeagueList leagues={leagues} /> : <LeaguesEmptyState />}
+
+      {importDialogs && <FileImportDialogs {...importDialogs} />}
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import type { RefObject } from 'preact';
-import type { FieldHandle, TabItem } from '@/design-system';
+import type { DropdownMenuItem, FieldHandle, TabItem } from '@/design-system';
 import type { LeagueWrapper } from '@/domain';
 
 export default interface LeagueDetailScreenProps {
@@ -20,6 +20,8 @@ export interface LeagueDetail {
   defaultTab: string;
   /** Opens a tab from outside `Tabs`: the new phase after a start. */
   tabsRef: RefObject<FieldHandle<string>>;
+  /** The items of the export menu (US-10.1). */
+  exportItems: DropdownMenuItem[];
   /** The confirm of a phase start while it is open (US-07.3). */
   startConfirm: PhaseStartConfirm | undefined;
 }

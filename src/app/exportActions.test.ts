@@ -1,11 +1,26 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { exportResults, exportTeams } from './exportActions';
+import {
+  exportAllBlueprints,
+  exportAllLeagues,
+  exportDatabase,
+  exportLeague,
+  exportResults,
+  exportSlugList,
+  exportTeams,
+} from './exportActions';
+import * as exportFile from '@/app/data/exportFile';
+import * as databaseZip from '@/app/data/databaseZip';
 import * as resultsTxt from '@/app/data/resultsTxt';
+import * as slugListTxt from '@/app/data/slugListTxt';
 import * as teamsCsv from '@/app/data/teamsCsv';
 import { useFileStore } from '@/app/state/fileStore';
 import type { TeamFields } from '@/domain';
+import { serializeLeagueWrapper } from '@/app/data/databaseFile';
+import { summarizeLeague } from '@/app/state/summarizeLeague';
+import { useDatabaseStore } from '@/app/state/databaseStore';
 import {
   LEAGUE,
+  OTHER_LEAGUE,
   openTestDatabase,
   openTestLeague,
   roundRobinLeague,
@@ -76,56 +91,127 @@ describe('exportTeams', () => {
   });
 });
 
-describe('exportResults', () => {
+describe('the exports of one league (Task 150)', () => {
   const coastal = (): ReturnType<typeof roundRobinLeague> =>
     openTestLeague(roundRobinLeague([{ name: 'FC United', colour: '#E53935' }]));
 
-  it('exports the league and reports the path', async () => {
+  it('exports the league file with the Blueprints of the store', async () => {
+    const league = coastal();
+    const save = vi.spyOn(exportFile, 'saveLeagueFile').mockResolvedValue('/c.json');
+
+    await exportLeague(league);
+
+    expect(save.mock.calls[0][0]).toBe(league);
+    expect(save.mock.calls[0][1]).toBe(useDatabaseStore.getState().blueprints);
+    expect(useFileStore.getState().status).toEqual({
+      tone: 'info',
+      message: 'Saved to /c.json',
+    });
+  });
+
+  it('exports the results text', async () => {
     const league = coastal();
     const write = vi.spyOn(resultsTxt, 'exportResultsTxt').mockResolvedValue('/r.txt');
 
-    await exportResults(LEAGUE);
+    await exportResults(league);
 
     expect(write.mock.calls[0][0]).toBe(league);
-    expect(useFileStore.getState().status).toEqual({
-      tone: 'info',
-      message: 'Exported Coastal Premier results to /r.txt',
-    });
+    expect(useFileStore.getState().status?.message).toBe('Saved to /r.txt');
   });
 
-  it('reports an unknown league and writes nothing', async () => {
-    const write = vi.spyOn(resultsTxt, 'exportResultsTxt');
+  it('exports the slug list', async () => {
+    const league = coastal();
+    const write = vi
+      .spyOn(slugListTxt, 'exportSlugListTxt')
+      .mockResolvedValue('/s.txt');
 
-    await exportResults('no-such-league');
+    await exportSlugList(league);
 
-    expect(write).not.toHaveBeenCalled();
-    expect(useFileStore.getState().status).toEqual({
-      tone: 'error',
-      message: 'Cannot export: the league was not found.',
-    });
+    expect(write.mock.calls[0][0]).toBe(league);
+    expect(useFileStore.getState().status?.message).toBe('Saved to /s.txt');
   });
 
   it('reports a canceled dialog', async () => {
-    coastal();
     vi.spyOn(resultsTxt, 'exportResultsTxt').mockResolvedValue(null);
+    await exportResults(coastal());
+    expect(useFileStore.getState().status?.message).toBe('Export canceled.');
+  });
 
-    await exportResults(LEAGUE);
+  it('reports an error, and does not throw', async () => {
+    vi.spyOn(slugListTxt, 'exportSlugListTxt').mockRejectedValue(
+      new Error('Disk full')
+    );
+    await exportSlugList(coastal());
+    expect(useFileStore.getState().status).toEqual({
+      tone: 'error',
+      message: 'Disk full',
+    });
+  });
+});
 
+describe('the bulk exports (Task 149)', () => {
+  const TEAMS = [{ name: 'FC United', colour: '#E53935' }];
+
+  /** One loaded league, and one that is only on disk, with its manifest row. */
+  function openTwoLeagues(): void {
+    const memory = openTestDatabase([team]);
+    openTestLeague(roundRobinLeague(TEAMS));
+    const other = roundRobinLeague(TEAMS, { uuid: OTHER_LEAGUE, name: 'Inland Cup' });
+    memory.files.wrappers[OTHER_LEAGUE] = serializeLeagueWrapper(other);
+    const rows = [...useDatabaseStore.getState().rows, summarizeLeague(other)];
+    useDatabaseStore.setState({ rows, savedRows: rows });
+  }
+
+  it('exports every league, also one that is not loaded, and keeps it closed', async () => {
+    openTwoLeagues();
+    const save = vi.spyOn(exportFile, 'saveLeaguesFile').mockResolvedValue('/l.json');
+
+    await exportAllLeagues();
+
+    expect(save.mock.calls[0][0].map((league) => league.uuid)).toEqual([
+      LEAGUE,
+      OTHER_LEAGUE,
+    ]);
+    expect(useDatabaseStore.getState().leagues[OTHER_LEAGUE]).toBeUndefined();
     expect(useFileStore.getState().status).toEqual({
       tone: 'info',
-      message: 'Export canceled.',
+      message: 'Saved to /l.json',
     });
   });
 
-  it('reports an error and does not throw', async () => {
-    coastal();
-    vi.spyOn(resultsTxt, 'exportResultsTxt').mockRejectedValue(new Error('No access.'));
+  it('exports every Blueprint', async () => {
+    const save = vi
+      .spyOn(exportFile, 'saveBlueprintsFile')
+      .mockResolvedValue('/b.json');
+    await exportAllBlueprints();
+    expect(teamFields(save.mock.calls[0][0])).toHaveLength(1);
+    expect(useFileStore.getState().status?.message).toBe('Saved to /b.json');
+  });
 
-    await exportResults(LEAGUE);
+  it('exports the database as a zip', async () => {
+    openTwoLeagues();
+    const save = vi
+      .spyOn(databaseZip, 'saveDatabaseZipFile')
+      .mockResolvedValue('/d.zip');
+    await exportDatabase();
+    expect(save.mock.calls[0][0]).toBeInstanceOf(Uint8Array);
+    expect(useFileStore.getState().status?.message).toBe('Saved to /d.zip');
+  });
 
+  it('reports a canceled dialog', async () => {
+    vi.spyOn(exportFile, 'saveBlueprintsFile').mockResolvedValue(null);
+    await exportAllBlueprints();
+    expect(useFileStore.getState().status?.message).toBe('Export canceled.');
+  });
+
+  it('reports an error, and does not throw', async () => {
+    vi.spyOn(databaseZip, 'saveDatabaseZipFile').mockRejectedValue(
+      new Error('Disk full')
+    );
+    await exportDatabase();
     expect(useFileStore.getState().status).toEqual({
       tone: 'error',
-      message: 'No access.',
+      message: 'Disk full',
     });
   });
 });

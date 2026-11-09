@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, render, screen, within } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { LeaguesDashboardScreen } from './LeaguesDashboardScreen';
+import * as exportFile from '@/app/data/exportFile';
 import * as teamsFile from '@/app/data/teamsFile';
 import { saveDatabase } from '@/app/state/databaseActions';
 import { useDatabaseStore } from '@/app/state/databaseStore';
@@ -16,6 +17,7 @@ import {
   openTestDatabase,
   openTestLeague,
   roundRobinLeague,
+  leagueWrapper,
 } from '@/test/databaseRecords';
 
 const coastal = (): LeagueWrapper =>
@@ -230,5 +232,52 @@ describe('LeaguesDashboardScreen', () => {
       leagueDetailPath(LEAGUE)
     );
     expect(leagueDetailPath(LEAGUE)).toBe(`/leagues/${LEAGUE}`);
+  });
+});
+
+describe('LeaguesDashboardScreen: Import league (US-10.3, Task 149)', () => {
+  it('imports from the header button, beside + New League', async () => {
+    openTestLeague(coastal());
+    vi.spyOn(exportFile, 'openLeagueImportFile').mockResolvedValue({
+      leagues: [leagueWrapper([], OTHER_LEAGUE)],
+      blueprints: [],
+    });
+    render(<LeaguesDashboardScreen />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Import league...' }));
+
+    expect(await screen.findByText('2 leagues running')).toBeInTheDocument();
+    expect(useFileStore.getState().status?.message).toBe('1 league imported.');
+  });
+
+  it('opens the picker for a file with many leagues', async () => {
+    openTestLeague(coastal());
+    vi.spyOn(exportFile, 'openLeagueImportFile').mockResolvedValue({
+      leagues: [
+        leagueWrapper([], OTHER_LEAGUE),
+        leagueWrapper([], '00000000-0000-4000-8000-0000000000b3'),
+      ],
+      blueprints: [],
+    });
+    render(<LeaguesDashboardScreen />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Import league...' }));
+
+    expect(
+      await screen.findByRole('dialog', { name: 'Import leagues' })
+    ).toBeInTheDocument();
+  });
+
+  it('imports from the empty state, then shows the league (choice 8)', async () => {
+    vi.spyOn(exportFile, 'openLeagueImportFile').mockResolvedValue({
+      leagues: [leagueWrapper([], OTHER_LEAGUE)],
+      blueprints: [],
+    });
+    render(<LeaguesDashboardScreen />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Import league...' }));
+
+    expect(await screen.findByText('1 league running')).toBeInTheDocument();
+    expect(screen.queryByText('No leagues yet.')).not.toBeInTheDocument();
   });
 });

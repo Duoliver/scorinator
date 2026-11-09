@@ -1,11 +1,18 @@
+import { planLeagueFileImport } from '@/app/importFileActions';
 import { readTeamsFromFile } from '@/app/loadActions';
-import { useTeamImport } from '@/features/components';
+import { useFileImport, useTeamImport } from '@/features/components';
 import type { LeaguesEmptyStateHandlers } from './types';
 
-/** The empty state loads teams only. A league lives in the database, and
- * Task 149 (M5) adds the league import (Task 161). The team import asks
- * first, with the counts (Task 168). */
+/** The ways to begin with no leagues. The team import asks first, with the
+ * counts (Task 168). The league import has the same steps as the File
+ * screen (choice 8). */
 export function useLeaguesEmptyState(): LeaguesEmptyStateHandlers {
   const { startImport, importConfirm } = useTeamImport();
-  return { handleLoadTeams: () => startImport(readTeamsFromFile), importConfirm };
+  const { startFileImport, importDialogs } = useFileImport();
+  return {
+    handleLoadTeams: () => startImport(readTeamsFromFile),
+    handleImportLeague: () => startFileImport(planLeagueFileImport),
+    importConfirm,
+    importDialogs,
+  };
 }

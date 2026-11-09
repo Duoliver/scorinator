@@ -6,6 +6,8 @@ function fakeFs(contents: string): FileSystem {
   return {
     readTextFile: vi.fn().mockResolvedValue(contents),
     writeTextFile: vi.fn(),
+    readBinaryFile: vi.fn(),
+    writeBinaryFile: vi.fn(),
     rename: vi.fn(),
     remove: vi.fn(),
     exists: vi.fn(),

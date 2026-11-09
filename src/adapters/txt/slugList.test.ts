@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseSlugList } from './index';
+import { parseSlugList, serializeSlugList } from './index';
 
 describe('parseSlugList (US-08.7)', () => {
   it('gives one slug for each line, in file order', () => {
@@ -84,5 +84,32 @@ describe('parseSlugList (US-08.7)', () => {
 
   it('names the trimmed line in the error', () => {
     expect(() => parseSlugList('   north fc   ')).toThrow('line 1, "north fc",');
+  });
+});
+
+describe('serializeSlugList (US-10.5, Task 148)', () => {
+  it('writes the comment line, then one slug on each line', () => {
+    expect(
+      serializeSlugList({
+        leagueName: 'Coastal Premier',
+        date: '2026-10-28',
+        slugs: ['salt-marsh-united', 'harborview-sc'],
+      })
+    ).toBe(
+      '# Coastal Premier — final ranking, 2026-10-28\nsalt-marsh-united\nharborview-sc\n'
+    );
+  });
+
+  it('writes "Untitled league" for a blank name', () => {
+    expect(serializeSlugList({ leagueName: ' ', date: '2026-10-28', slugs: [] })).toBe(
+      '# Untitled league — final ranking, 2026-10-28\n'
+    );
+  });
+
+  it('gives a file that parseSlugList reads back as the same slugs', () => {
+    const slugs = ['c', 'team-2', 'a-b-c'];
+    expect(
+      parseSlugList(serializeSlugList({ leagueName: 'L', date: '2026-11-04', slugs }))
+    ).toEqual(slugs);
   });
 });

@@ -21,6 +21,7 @@ import {
 import type { LeagueWrapper } from '@/domain';
 import {
   firstLeagueTab,
+  getExportItems,
   getLeagueTabs,
   getPhaseTabs,
   phaseTabId,
@@ -109,6 +110,7 @@ export function useLeagueDetail(uuid: string): LeagueDetailState {
           ? phaseTabId(Math.max(0, phases.length - 1))
           : firstLeagueTab(league, 0),
         tabsRef,
+        exportItems: getExportItems(league),
         startConfirm,
       },
     };

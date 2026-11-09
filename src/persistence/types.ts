@@ -6,6 +6,9 @@ import type { Tier } from '@/engine/tier-ovr';
 export interface FileSystem {
   readTextFile(path: string): Promise<string>;
   writeTextFile(path: string, contents: string): Promise<void>;
+  /** For the database `.zip` (Task 146). */
+  readBinaryFile(path: string): Promise<Uint8Array>;
+  writeBinaryFile(path: string, contents: Uint8Array): Promise<void>;
   rename(from: string, to: string): Promise<void>;
   remove(path: string): Promise<void>;
   exists(path: string): Promise<boolean>;

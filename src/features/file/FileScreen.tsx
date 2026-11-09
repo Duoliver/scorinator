@@ -1,13 +1,12 @@
 import type { JSX } from 'preact';
-import { Button, ConfirmDialog, Select } from '@/design-system';
-import { StatusLine } from '@/features/components';
+import { Button, ConfirmDialog } from '@/design-system';
+import { FileImportDialogs, StatusLine } from '@/features/components';
 import { FileCard } from './FileCard';
 import { useFileManager } from './useFileManager';
 import styles from './FileScreen.module.css';
 
-/** The File screen. Layout follows `Footballer - File Manager.dc.html`,
- * with no league save or load cards until Task 149 (Task 161).
- * `useFileManager` gives the data and the handlers. */
+/** The File screen. Layout follows `Footballer - File Manager.dc.html`, with
+ * the US-10.2 and US-10.4 texts in place of its MVP3 scope. */
 export function FileScreen(): JSX.Element {
   const file = useFileManager();
 
@@ -16,63 +15,93 @@ export function FileScreen(): JSX.Element {
       <div>
         <h1>File</h1>
         <p class={styles.subtitle}>
-          Import or export team lists, and export results. Ctrl+S saves your leagues and
-          teams.
+          Bulk export/import for leagues, team blueprints, and the whole database.
+          Exporting a single league is on that league's Detail screen.
         </p>
       </div>
 
       <StatusLine placement="page" />
 
-      <div class={styles.cards}>
+      <section class={styles.section}>
+        <h2 class={styles.sectionTitle}>Leagues</h2>
+        <FileCard
+          title="Export all leagues"
+          description="Every league in one JSON file, teams included."
+        >
+          <Button disabled={!file.hasLeagues} onClick={file.handleExportLeagues}>
+            Export .json
+          </Button>
+        </FileCard>
+        <FileCard
+          title="Import leagues"
+          description="Pick which leagues from the file to bring in."
+        >
+          <Button variant="secondary" onClick={file.handleImportLeagues}>
+            Import .json…
+          </Button>
+        </FileCard>
+      </section>
+
+      <section class={styles.section}>
+        <h2 class={styles.sectionTitle}>Team Blueprints</h2>
+        <FileCard
+          title="Export all team blueprints"
+          description="Full fidelity JSON, incl. UUID and provenance — not tied to any league."
+        >
+          <Button disabled={!file.hasBlueprints} onClick={file.handleExportBlueprints}>
+            Export .json
+          </Button>
+        </FileCard>
         <FileCard
           title="Import teams"
-          description="CSV columns: Slug, Name, Colour, Tier."
+          description="Pick which blueprints from the file to bring in."
         >
-          <Button variant="secondary" size="sm" onClick={file.handleImportJson}>
-            Import JSON...
-          </Button>
-          <Button variant="secondary" size="sm" onClick={file.handleImportCsv}>
-            Import CSV...
+          <Button variant="secondary" onClick={file.handleImportBlueprints}>
+            Import .json…
           </Button>
         </FileCard>
-
         <FileCard
-          title="Export teams"
-          description="Back up or reuse your current team list elsewhere."
+          title="Quick team list (CSV)"
+          description="ID/slug, Name, Colours, Tier, Location (optional). No provenance — for fast bulk edits, not identity-tracked sharing."
         >
-          <Button variant="secondary" size="sm" onClick={file.handleExportTeams}>
-            Export CSV...
+          <Button variant="secondary" onClick={file.handleImportCsv}>
+            Import .csv…
           </Button>
-        </FileCard>
-
-        <FileCard
-          title="Export results"
-          description="Read-only, human-readable summary — for reading, not re-importing."
-          input={
-            file.hasLeagues ? (
-              <Select
-                ref={file.resultsSelect}
-                label="League to export"
-                defaultValue={file.defaultLeagueUuid}
-                options={file.leagueOptions}
-              />
-            ) : (
-              <span class={styles.hint}>No leagues to export yet.</span>
-            )
-          }
-        >
           <Button
             variant="secondary"
-            size="sm"
-            disabled={!file.hasLeagues}
-            onClick={file.handleExportResults}
+            disabled={!file.hasBlueprints}
+            onClick={file.handleExportCsv}
           >
-            Export TXT...
+            Export .csv
           </Button>
         </FileCard>
-      </div>
+      </section>
+
+      <section class={styles.section}>
+        <h2 class={styles.sectionTitle}>Database</h2>
+        <FileCard
+          title="Export entire database"
+          description="Everything — team blueprints and leagues, with their teams."
+        >
+          <Button
+            disabled={!file.hasLeagues && !file.hasBlueprints}
+            onClick={file.handleExportDatabase}
+          >
+            Export .zip
+          </Button>
+        </FileCard>
+        <FileCard
+          title="Import entire database"
+          description="Merges into your local database — never a wholesale replace."
+        >
+          <Button variant="secondary" onClick={file.handleImportDatabase}>
+            Import .zip…
+          </Button>
+        </FileCard>
+      </section>
 
       {file.importConfirm && <ConfirmDialog {...file.importConfirm} />}
+      {file.importDialogs && <FileImportDialogs {...file.importDialogs} />}
     </div>
   );
 }

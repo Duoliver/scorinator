@@ -29,3 +29,19 @@ export function parseSlugList(text: string): string[] {
   });
   return slugs;
 }
+
+/**
+ * Writes a slug list file (US-10.5, Task 148): a comment line with the
+ * league name and the date, then one slug on each line, in the given order.
+ * The caller gives the date as text, for example `2026-10-28`, so this
+ * writer reads no clock (choice 5). `parseSlugList` skips the comment line.
+ */
+export function serializeSlugList(input: {
+  leagueName: string;
+  date: string;
+  slugs: readonly string[];
+}): string {
+  const name = input.leagueName.trim() || 'Untitled league';
+  const lines = [`# ${name} — final ranking, ${input.date}`, ...input.slugs];
+  return `${lines.join('\n')}\n`;
+}

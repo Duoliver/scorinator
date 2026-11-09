@@ -1,16 +1,19 @@
-import type { RefObject } from 'preact';
-import type { ConfirmDialogProps, FieldHandle, SelectOption } from '@/design-system';
+import type { ConfirmDialogProps } from '@/design-system';
+import type { FileImportDialogsProps } from '@/features/components';
 
 /** What `useFileManager` gives `FileScreen`. */
 export interface FileManager {
   hasLeagues: boolean;
-  leagueOptions: SelectOption[];
-  /** The league the results selector shows first: the first league. */
-  defaultLeagueUuid: string;
-  resultsSelect: RefObject<FieldHandle<string>>;
+  hasBlueprints: boolean;
+  handleExportLeagues: () => Promise<void>;
+  handleImportLeagues: () => Promise<void>;
+  handleExportBlueprints: () => Promise<void>;
+  handleImportBlueprints: () => Promise<void>;
   handleImportCsv: () => Promise<void>;
-  handleImportJson: () => Promise<void>;
+  handleExportCsv: () => Promise<void>;
+  handleExportDatabase: () => Promise<void>;
+  handleImportDatabase: () => Promise<void>;
+  /** The CSV import confirm (Task 75). */
   importConfirm: ConfirmDialogProps | null;
-  handleExportTeams: () => Promise<void>;
-  handleExportResults: () => Promise<void>;
+  importDialogs: FileImportDialogsProps | null;
 }

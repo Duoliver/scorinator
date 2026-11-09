@@ -1,6 +1,7 @@
 import type { JSX } from 'preact';
 import { BracketView, SeedList } from '@/features/bracket';
-import { Button, Tabs, type TabItem } from '@/design-system';
+import { Button, Tabs, type DropdownMenuItem, type TabItem } from '@/design-system';
+import { exportLeague, exportResults, exportSlugList } from '@/app/exportActions';
 import type { LeagueWrapper } from '@/domain';
 import { FixturesView } from '@/features/fixtures';
 import { GroupCards } from '@/features/leagues/GroupCards';
@@ -31,6 +32,14 @@ export interface GroupsDraw {
   onSwap: (blueprintUuid: string, otherUuid: string) => void;
   onShuffle: () => void;
 }
+
+/** The export menu of one league (US-10.1): the live league, with its
+ * unsaved changes. */
+export const getExportItems = (league: LeagueWrapper): DropdownMenuItem[] => [
+  { label: 'Export league (.json)', onSelect: () => exportLeague(league) },
+  { label: 'Export results (.txt)', onSelect: () => exportResults(league) },
+  { label: 'Export slug list (.txt)', onSelect: () => exportSlugList(league) },
+];
 
 /** The line under a draw that can change (Task 181 choice 4). */
 export const DRAW_RULE_LINE =

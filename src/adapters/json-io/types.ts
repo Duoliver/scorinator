@@ -135,10 +135,40 @@ export interface SavedWrapperLeague extends SavedProvenance {
   phases: SavedPhase[];
 }
 
-export interface SavedWrapper {
-  kind: 'wrapper';
-  formatVersion: typeof DATABASE_FORMAT_VERSION;
+/** One league with its Instances: the body of a wrapper file, and one item
+ * of a league file (Task 145). */
+export interface SavedLeagueEntry {
   uuid: string;
   teams: SavedInstance[];
   content: SavedWrapperLeague;
 }
+
+export interface SavedWrapper extends SavedLeagueEntry {
+  kind: 'wrapper';
+  formatVersion: typeof DATABASE_FORMAT_VERSION;
+}
+
+// ---------------------------------------------------------------------------
+// MVP2 export files (Task 145): the league file and the Blueprint file of the
+// File module (US-10.1, US-10.2). They use the format version of the
+// database files (choice 2).
+// ---------------------------------------------------------------------------
+
+/** A league file: one or many leagues, and one list of the Blueprint
+ * snapshots that their Instances name (choice 1). */
+export interface SavedLeagueFile {
+  kind: 'leagues';
+  formatVersion: typeof DATABASE_FORMAT_VERSION;
+  leagues: SavedLeagueEntry[];
+  blueprints: SavedBlueprint[];
+}
+
+/** A Blueprint file: every Blueprint, with its UUID and provenance. */
+export interface SavedBlueprintFile {
+  kind: 'blueprints';
+  formatVersion: typeof DATABASE_FORMAT_VERSION;
+  blueprints: SavedBlueprint[];
+}
+
+/** The `kind` of each MVP2 file. */
+export type SavedFileKind = 'manifest' | 'wrapper' | 'leagues' | 'blueprints';

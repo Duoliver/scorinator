@@ -1,13 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import {
-  applyTeamImport,
-  readTeamsFromCsv,
-  readTeamsFromFile,
-  readTeamsFromJson,
-} from './loadActions';
+import { applyTeamImport, readTeamsFromCsv, readTeamsFromFile } from './loadActions';
 import * as teamsCsv from '@/app/data/teamsCsv';
 import * as teamsFile from '@/app/data/teamsFile';
-import * as teamsJson from '@/app/data/teamsJson';
 import { useFileStore } from '@/app/state/fileStore';
 import { openTestDatabase, teamFields } from '@/test/databaseRecords';
 import { useDatabaseStore } from '@/app/state/databaseStore';
@@ -67,18 +61,6 @@ describe('team import reads', () => {
       tone: 'info',
       message: 'The file has no teams.',
     });
-  });
-
-  it('reads a JSON team list through the JSON import', async () => {
-    const importer = vi
-      .spyOn(teamsJson, 'importTeamsJson')
-      .mockResolvedValue([fcUnited]);
-    expect(await readTeamsFromJson()).toEqual({
-      records: [fcUnited],
-      added: 1,
-      updated: 0,
-    });
-    expect(importer).toHaveBeenCalledOnce();
   });
 
   it('reads a CSV or JSON team list through the one-dialog import', async () => {

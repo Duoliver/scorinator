@@ -3,10 +3,14 @@ import {
   tauriDialog,
   tauriFileSystem,
 } from '@/adapters/tauri-fs';
-import { serializeResultsTxt, type ResultsTxtInput } from '@/adapters/txt';
+import {
+  serializeResultsTxt,
+  type ResultsTxtInput,
+  type ResultsTxtPhase,
+} from '@/adapters/txt';
 import { slug } from '@/engine/identity';
-import { findCurrentPhase } from '@/app/state/currentPhase';
-import { leagueLotOf } from '@/app/state/phases';
+import { bracketTreeOf } from '@/app/state/bracket';
+import { leagueLotOf, phaseTeamLists } from '@/app/state/phases';
 import type { FileFilter, FileSystem, SaveFileDialog } from '@/persistence/types';
 import type { LeagueWrapper } from '@/domain';
 
@@ -20,26 +24,44 @@ import type { LeagueWrapper } from '@/domain';
  * back to its default `.json` filter. */
 const TXT_FILTERS: readonly FileFilter[] = [{ name: 'Text file', extensions: ['txt'] }];
 
-/** The current phase of a league, in the MVP1 text layout (Task 161).
- * Fixtures name teams by Blueprint UUID, so that is the team id. The fixed
- * lots order a joint place (Task 128). Task 148 writes every phase. */
+/** Every started phase of a league, for the v2 text layout (US-10.6, Task
+ * 148). Fixtures name teams by Blueprint UUID, so that is the team id. The
+ * fixed lots order a joint place (Task 128). */
 function toResultsTxtInput(wrapper: LeagueWrapper): ResultsTxtInput {
-  const { name, homeAdvantage, points } = wrapper.content;
-  const current = findCurrentPhase(wrapper);
-  // A bracket has no fixtures. Task 148 writes its ties.
-  const phase = current?.format === 'bracket' ? undefined : current;
+  const { name, homeAdvantage, points, plans } = wrapper.content;
+  const phases = wrapper.content.phases.map((phase, index): ResultsTxtPhase => {
+    if (phase.format === 'bracket') {
+      const tree = bracketTreeOf(wrapper, index);
+      return {
+        format: 'bracket',
+        rounds: tree.status === 'ready' ? tree.rounds : null,
+        results: phase.results,
+      };
+    }
+    return {
+      format: phase.format,
+      groups: phaseTeamLists(wrapper, index),
+      fixtures: phase.fixtures,
+      byes: phase.byes,
+      results: phase.results,
+    };
+  });
   return {
     league: { name, homeAdvantage, points },
+    plans: plans.map((plan) =>
+      plan.format === 'bracket'
+        ? { format: 'bracket' }
+        : { format: plan.format, legs: plan.legs }
+    ),
     teams: wrapper.teams.map((team) => ({ id: team.blueprintUuid, name: team.name })),
-    fixtures: phase?.fixtures ?? [],
-    byes: phase?.byes ?? [],
-    results: phase?.results ?? [],
+    phases,
     lotOf: leagueLotOf(wrapper),
   };
 }
 
 /** Asks where to write the plain-text results summary of one league, then
- * writes it, with the Instance names (US-09.2). Returns the path written,
+ * writes it, with every started phase and the Instance names (US-09.2,
+ * US-10.6). Returns the path written,
  * or `null` if the user cancels the dialog. */
 export async function exportResultsTxt(
   wrapper: LeagueWrapper,

@@ -1,6 +1,5 @@
 import { importTeamsCsv } from '@/app/data/teamsCsv';
 import { importTeamsFile } from '@/app/data/teamsFile';
-import { importTeamsJson } from '@/app/data/teamsJson';
 import { getErrorMessage } from '@/app/getErrorMessage';
 import { setFileStatus } from '@/app/state/fileActions';
 import {
@@ -13,8 +12,7 @@ import type { TeamListRecord } from '@/persistence/types';
  * same way. An import has two steps, so the screen can ask first (Task 75,
  * Task 168): a `readTeamsFrom*` action reads the file and gives the counts,
  * then `applyTeamImport` changes the Blueprints. Each one reports through
- * `fileStore`'s status line and never throws. A league lives in the
- * database, so no league file loads here until Task 149 (Task 161). */
+ * `fileStore`'s status line and never throws. */
 
 /** A team file that is read but not applied yet, with the counts of
  * `previewTeamImport` for the confirm. */
@@ -32,11 +30,6 @@ export function readTeamsFromFile(): Promise<TeamImportPreview | null> {
 /** Reads a team list from a `.csv` file. */
 export function readTeamsFromCsv(): Promise<TeamImportPreview | null> {
   return readTeams(importTeamsCsv);
-}
-
-/** Reads a team list from a `.json` file. */
-export function readTeamsFromJson(): Promise<TeamImportPreview | null> {
-  return readTeams(importTeamsJson);
 }
 
 /** Adds or updates the Blueprints by slug (Task 75 rule), and reports the

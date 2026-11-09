@@ -13,6 +13,7 @@ import {
   tauriDialog,
   tauriFileSystem,
 } from '@/adapters/tauri-fs';
+import { slug } from '@/engine/identity';
 import type { LeagueWrapper, TeamBlueprint } from '@/domain';
 import type { FileFilter, FileSystem, SaveFileDialog } from '@/persistence/types';
 import {
@@ -105,6 +106,24 @@ export function serializeBlueprintExport(blueprints: readonly TeamBlueprint[]): 
 export function readBlueprintImport(text: string): TeamBlueprint[] {
   rejectWrongFile(detectFileKind(text), 'blueprints');
   return parseBlueprintFile(text).blueprints.map(blueprintFromFile);
+}
+
+/** Asks where to write the file of one league, and writes it. The default
+ * name comes from the league name (US-10.1). Returns the path, or `null` on
+ * Cancel. */
+export function saveLeagueFile(
+  league: LeagueWrapper,
+  blueprints: readonly TeamBlueprint[],
+  fs: FileSystem = tauriFileSystem,
+  dialog: SaveFileDialog = tauriDialog
+): Promise<string | null> {
+  return saveTextFileWithDialog(
+    fs,
+    dialog,
+    serializeLeagueExport([league], blueprints),
+    `${slug(league.content.name)}.json`,
+    JSON_FILTERS
+  );
 }
 
 /** Asks where to write one league file with the given leagues, and writes

@@ -1,7 +1,11 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, fireEvent, render, screen, within } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { serializeLeagueWrapper } from '@/app/data/databaseFile';
+import * as exportFile from '@/app/data/exportFile';
+import * as resultsTxt from '@/app/data/resultsTxt';
+import * as slugListTxt from '@/app/data/slugListTxt';
+import { useFileStore } from '@/app/state/fileStore';
 import { saveDatabase } from '@/app/state/databaseActions';
 import { useDatabaseStore } from '@/app/state/databaseStore';
 import {
@@ -668,5 +672,113 @@ describe('LeagueDetailScreen', () => {
       expect(after.groups[0]).toContain(b);
       expect(after.groups[1]).toContain(a);
     });
+  });
+});
+
+describe('LeagueDetailScreen: the export menu (US-10.1, Task 150)', () => {
+  const pickItem = async (name: string): Promise<void> => {
+    await userEvent.click(screen.getByRole('button', { name: /^Export/ }));
+    await userEvent.click(await screen.findByRole('menuitem', { name }));
+  };
+  const statusMessage = (): string | undefined =>
+    useFileStore.getState().status?.message;
+
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    useFileStore.setState({ status: null });
+  });
+
+  it('lists the three exports, in order', async () => {
+    openTestLeague(league());
+    render(<LeagueDetailScreen uuid={LEAGUE} />);
+
+    await userEvent.click(screen.getByRole('button', { name: /^Export/ }));
+
+    expect(
+      (await screen.findAllByRole('menuitem')).map((item) => item.textContent)
+    ).toEqual([
+      'Export league (.json)',
+      'Export results (.txt)',
+      'Export slug list (.txt)',
+    ]);
+  });
+
+  it('exports the league file', async () => {
+    const wrapper = openTestLeague(league());
+    const save = vi.spyOn(exportFile, 'saveLeagueFile').mockResolvedValue('/c.json');
+    render(<LeagueDetailScreen uuid={LEAGUE} />);
+
+    await pickItem('Export league (.json)');
+
+    expect(save.mock.calls[0][0]).toBe(wrapper);
+    expect(statusMessage()).toBe('Saved to /c.json');
+  });
+
+  it('exports the results text', async () => {
+    const wrapper = openTestLeague(league());
+    const write = vi.spyOn(resultsTxt, 'exportResultsTxt').mockResolvedValue('/r.txt');
+    render(<LeagueDetailScreen uuid={LEAGUE} />);
+
+    await pickItem('Export results (.txt)');
+
+    expect(write.mock.calls[0][0]).toBe(wrapper);
+    expect(statusMessage()).toBe('Saved to /r.txt');
+  });
+
+  it('exports the slug list', async () => {
+    const wrapper = openTestLeague(league());
+    const write = vi
+      .spyOn(slugListTxt, 'exportSlugListTxt')
+      .mockResolvedValue('/s.txt');
+    render(<LeagueDetailScreen uuid={LEAGUE} />);
+
+    await pickItem('Export slug list (.txt)');
+
+    expect(write.mock.calls[0][0]).toBe(wrapper);
+    expect(statusMessage()).toBe('Saved to /s.txt');
+  });
+
+  it('exports the live league with its unsaved changes, and keeps it unsaved', async () => {
+    openTestLeague(league());
+    render(<LeagueDetailScreen uuid={LEAGUE} />);
+    act(() => {
+      scorinateMatchday(LEAGUE, 1);
+    });
+    const live = useDatabaseStore.getState().leagues[LEAGUE];
+    const save = vi.spyOn(exportFile, 'saveLeagueFile').mockResolvedValue('/c.json');
+
+    await pickItem('Export league (.json)');
+
+    expect(save.mock.calls[0][0]).toBe(live);
+    expect(screen.getByText('Unsaved')).toBeInTheDocument();
+  });
+
+  it('says so when the dialog is canceled', async () => {
+    openTestLeague(league());
+    vi.spyOn(resultsTxt, 'exportResultsTxt').mockResolvedValue(null);
+    render(<LeagueDetailScreen uuid={LEAGUE} />);
+
+    await pickItem('Export results (.txt)');
+
+    expect(statusMessage()).toBe('Export canceled.');
+  });
+
+  it('shows the error of a failed export', async () => {
+    openTestLeague(league());
+    vi.spyOn(exportFile, 'saveLeagueFile').mockRejectedValue(new Error('Disk full'));
+    render(<LeagueDetailScreen uuid={LEAGUE} />);
+
+    await pickItem('Export league (.json)');
+
+    expect(useFileStore.getState().status).toEqual({
+      tone: 'error',
+      message: 'Disk full',
+    });
+  });
+
+  it('has no menu for a league that is not found', () => {
+    render(<LeagueDetailScreen uuid={LEAGUE} />);
+    expect(screen.getByText('League not found.')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^Export/ })).not.toBeInTheDocument();
   });
 });

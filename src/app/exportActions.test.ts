@@ -3,12 +3,15 @@ import {
   exportAllBlueprints,
   exportAllLeagues,
   exportDatabase,
+  exportLeague,
   exportResults,
+  exportSlugList,
   exportTeams,
 } from './exportActions';
 import * as exportFile from '@/app/data/exportFile';
 import * as databaseZip from '@/app/data/databaseZip';
 import * as resultsTxt from '@/app/data/resultsTxt';
+import * as slugListTxt from '@/app/data/slugListTxt';
 import * as teamsCsv from '@/app/data/teamsCsv';
 import { useFileStore } from '@/app/state/fileStore';
 import type { TeamFields } from '@/domain';
@@ -88,56 +91,60 @@ describe('exportTeams', () => {
   });
 });
 
-describe('exportResults', () => {
+describe('the exports of one league (Task 150)', () => {
   const coastal = (): ReturnType<typeof roundRobinLeague> =>
     openTestLeague(roundRobinLeague([{ name: 'FC United', colour: '#E53935' }]));
 
-  it('exports the league and reports the path', async () => {
+  it('exports the league file with the Blueprints of the store', async () => {
+    const league = coastal();
+    const save = vi.spyOn(exportFile, 'saveLeagueFile').mockResolvedValue('/c.json');
+
+    await exportLeague(league);
+
+    expect(save.mock.calls[0][0]).toBe(league);
+    expect(save.mock.calls[0][1]).toBe(useDatabaseStore.getState().blueprints);
+    expect(useFileStore.getState().status).toEqual({
+      tone: 'info',
+      message: 'Saved to /c.json',
+    });
+  });
+
+  it('exports the results text', async () => {
     const league = coastal();
     const write = vi.spyOn(resultsTxt, 'exportResultsTxt').mockResolvedValue('/r.txt');
 
-    await exportResults(LEAGUE);
+    await exportResults(league);
 
     expect(write.mock.calls[0][0]).toBe(league);
-    expect(useFileStore.getState().status).toEqual({
-      tone: 'info',
-      message: 'Exported Coastal Premier results to /r.txt',
-    });
+    expect(useFileStore.getState().status?.message).toBe('Saved to /r.txt');
   });
 
-  it('reports an unknown league and writes nothing', async () => {
-    const write = vi.spyOn(resultsTxt, 'exportResultsTxt');
+  it('exports the slug list', async () => {
+    const league = coastal();
+    const write = vi
+      .spyOn(slugListTxt, 'exportSlugListTxt')
+      .mockResolvedValue('/s.txt');
 
-    await exportResults('no-such-league');
+    await exportSlugList(league);
 
-    expect(write).not.toHaveBeenCalled();
-    expect(useFileStore.getState().status).toEqual({
-      tone: 'error',
-      message: 'Cannot export: the league was not found.',
-    });
+    expect(write.mock.calls[0][0]).toBe(league);
+    expect(useFileStore.getState().status?.message).toBe('Saved to /s.txt');
   });
 
   it('reports a canceled dialog', async () => {
-    coastal();
     vi.spyOn(resultsTxt, 'exportResultsTxt').mockResolvedValue(null);
-
-    await exportResults(LEAGUE);
-
-    expect(useFileStore.getState().status).toEqual({
-      tone: 'info',
-      message: 'Export canceled.',
-    });
+    await exportResults(coastal());
+    expect(useFileStore.getState().status?.message).toBe('Export canceled.');
   });
 
-  it('reports an error and does not throw', async () => {
-    coastal();
-    vi.spyOn(resultsTxt, 'exportResultsTxt').mockRejectedValue(new Error('No access.'));
-
-    await exportResults(LEAGUE);
-
+  it('reports an error, and does not throw', async () => {
+    vi.spyOn(slugListTxt, 'exportSlugListTxt').mockRejectedValue(
+      new Error('Disk full')
+    );
+    await exportSlugList(coastal());
     expect(useFileStore.getState().status).toEqual({
       tone: 'error',
-      message: 'No access.',
+      message: 'Disk full',
     });
   });
 });

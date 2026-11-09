@@ -1,5 +1,5 @@
 import type { JSX } from 'preact';
-import { Badge, ConfirmDialog, Tabs } from '@/design-system';
+import { Badge, ConfirmDialog, DropdownMenu, Tabs } from '@/design-system';
 import { ROUTES } from '@/app/routes';
 import type LeagueDetailScreenProps from './types';
 import { useLeagueDetail } from './useLeagueDetail';
@@ -41,7 +41,12 @@ export function LeagueDetailScreen({ uuid }: LeagueDetailScreenProps): JSX.Eleme
             </div>
             <span class={styles.meta}>{detail.meta}</span>
           </div>
-          <Badge tone={detail.isComplete ? 'accent' : 'dark'}>{detail.progress}</Badge>
+          <div class={styles.headerEnd}>
+            <Badge tone={detail.isComplete ? 'accent' : 'dark'}>
+              {detail.progress}
+            </Badge>
+            <DropdownMenu label="Export" align="end" items={detail.exportItems} />
+          </div>
         </div>
       </div>
 

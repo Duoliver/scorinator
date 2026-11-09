@@ -1,12 +1,17 @@
 import { saveDatabaseZipFile } from '@/app/data/databaseZip';
-import { saveBlueprintsFile, saveLeaguesFile } from '@/app/data/exportFile';
+import {
+  saveBlueprintsFile,
+  saveLeagueFile,
+  saveLeaguesFile,
+} from '@/app/data/exportFile';
 import { exportResultsTxt } from '@/app/data/resultsTxt';
+import { exportSlugListTxt } from '@/app/data/slugListTxt';
 import { exportTeamsCsv } from '@/app/data/teamsCsv';
 import { getErrorMessage } from '@/app/getErrorMessage';
-import { openLeague } from '@/app/state/databaseActions';
-import { currentRows, useDatabaseStore } from '@/app/state/databaseStore';
+import { useDatabaseStore } from '@/app/state/databaseStore';
 import { exportDatabaseZip, readAllLeagues } from '@/app/state/databaseZipActions';
 import { setFileStatus } from '@/app/state/fileActions';
+import type { LeagueWrapper } from '@/domain';
 
 /** The export actions of the File screen, the same shape as
  * `saveActions.ts` and `loadActions.ts`. Each one reports through
@@ -50,30 +55,20 @@ export function exportDatabase(): Promise<void> {
   return reportExport(async () => saveDatabaseZipFile(await exportDatabaseZip()));
 }
 
-/** Writes the plain-text results summary of one league (Task 18). A league
- * that is not open yet is read from the database first (Task 161). */
-export async function exportResults(uuid: string): Promise<void> {
-  const known = currentRows(useDatabaseStore.getState()).some(
-    (row) => row.uuid === uuid
+/** Writes one league to its own league file, with its Blueprint snapshots
+ * (US-10.1). */
+export function exportLeague(league: LeagueWrapper): Promise<void> {
+  return reportExport(() =>
+    saveLeagueFile(league, useDatabaseStore.getState().blueprints)
   );
-  if (!known) {
-    setFileStatus({
-      tone: 'error',
-      message: 'Cannot export: the league was not found.',
-    });
-    return;
-  }
-  try {
-    const league = await openLeague(uuid);
-    const path = await exportResultsTxt(league);
-    setFileStatus({
-      tone: 'info',
-      message:
-        path === null
-          ? 'Export canceled.'
-          : `Exported ${league.content.name} results to ${path}`,
-    });
-  } catch (error) {
-    setFileStatus({ tone: 'error', message: getErrorMessage(error) });
-  }
+}
+
+/** Writes the plain-text results summary of one league (US-10.6). */
+export function exportResults(league: LeagueWrapper): Promise<void> {
+  return reportExport(() => exportResultsTxt(league));
+}
+
+/** Writes the slug list of one league, in its final ranking (US-10.5). */
+export function exportSlugList(league: LeagueWrapper): Promise<void> {
+  return reportExport(() => exportSlugListTxt(league));
 }

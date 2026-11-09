@@ -20,6 +20,7 @@ import {
   readBlueprintImport,
   readLeagueImport,
   saveBlueprintsFile,
+  saveLeagueFile,
   saveLeaguesFile,
   serializeBlueprintExport,
   serializeLeagueExport,
@@ -172,6 +173,21 @@ describe('the file dialogs of the File screen (Task 149)', () => {
     );
     const written = vi.mocked(fs.writeTextFile).mock.calls[0][1];
     expect(parseLeagueFile(written).leagues).toHaveLength(1);
+  });
+
+  it('saves one league under its slug, with no date (US-10.1, Task 150)', async () => {
+    const fs = fakeFs();
+    const dialog = fakeDialog('/c.json');
+    const path = await saveLeagueFile(leagueWrapper(), [blueprint()], fs, dialog);
+    expect(path).toBe('/c.json');
+    expect(dialog.pickSavePath).toHaveBeenCalledWith(
+      'coastal-premier.json',
+      JSON_FILTER
+    );
+    const written = vi.mocked(fs.writeTextFile).mock.calls[0][1];
+    const file = parseLeagueFile(written);
+    expect(file.leagues).toHaveLength(1);
+    expect(file.blueprints.map((b) => b.uuid)).toEqual([SALT_MARSH]);
   });
 
   it('saves the Blueprints under the default name with the date', async () => {

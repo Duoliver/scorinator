@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { aaaTextPairs } from './tokens';
+import { aaaTextPairs, colors, graphicPairs } from './tokens';
 
 function srgbToLinear(channel: number): number {
   const c = channel / 255;
@@ -29,4 +29,34 @@ describe('design tokens — WCAG AAA contrast', () => {
       expect(contrastRatio(foreground, background)).toBeGreaterThanOrEqual(7);
     }
   );
+
+  it.each([
+    [colors.fg, colors.zoneGreenTint],
+    [colors.fg, colors.zoneBlueTint],
+    [colors.fg, colors.zoneYellowTint],
+    [colors.fg, colors.zoneRedTint],
+    [colors.formFg, colors.formWin],
+    [colors.formFg, colors.formDraw],
+    [colors.formFg, colors.formLoss],
+  ])('%s on %s is in the AAA list', (foreground, background) => {
+    expect(aaaTextPairs).toContainEqual([foreground, background]);
+  });
+});
+
+describe('design tokens — WCAG graphics contrast', () => {
+  it.each(graphicPairs)(
+    '%s on %s meets the 3:1 ratio for a graphic that is not text',
+    (graphic, background) => {
+      expect(contrastRatio(graphic, background)).toBeGreaterThanOrEqual(3);
+    }
+  );
+
+  it('checks the stripe of each zone (US-12.5)', () => {
+    expect(graphicPairs).toEqual([
+      [colors.zoneGreen, colors.zoneGreenTint],
+      [colors.zoneBlue, colors.zoneBlueTint],
+      [colors.zoneYellow, colors.zoneYellowTint],
+      [colors.zoneRed, colors.zoneRedTint],
+    ]);
+  });
 });

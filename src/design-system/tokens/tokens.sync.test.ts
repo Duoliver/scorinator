@@ -25,6 +25,18 @@ describe('tokens.ts stays in sync with tokens.css', () => {
     ['color-warning-fg', colors.warningFg],
     ['color-row-positive', colors.rowPositive],
     ['color-row-caution', colors.rowCaution],
+    ['color-zone-green', colors.zoneGreen],
+    ['color-zone-green-tint', colors.zoneGreenTint],
+    ['color-zone-blue', colors.zoneBlue],
+    ['color-zone-blue-tint', colors.zoneBlueTint],
+    ['color-zone-yellow', colors.zoneYellow],
+    ['color-zone-yellow-tint', colors.zoneYellowTint],
+    ['color-zone-red', colors.zoneRed],
+    ['color-zone-red-tint', colors.zoneRedTint],
+    ['color-form-win', colors.formWin],
+    ['color-form-draw', colors.formDraw],
+    ['color-form-loss', colors.formLoss],
+    ['color-form-fg', colors.formFg],
   ])('--%s matches tokens.ts', (variable, tsValue) => {
     expect(cssValueOf(variable)?.toUpperCase()).toBe(tsValue.toUpperCase());
   });

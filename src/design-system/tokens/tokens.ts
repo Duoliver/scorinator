@@ -20,6 +20,20 @@ export const colors = {
   // place N + 1 rows of a best M. `#EAF3EA` is the MVP2 handoff value.
   rowPositive: '#EAF3EA',
   rowCaution: '#FBF3D6',
+  // Position zones (US-12.5): the stripe and legend colour, and the row tint.
+  zoneGreen: '#17551C',
+  zoneGreenTint: '#EAF3EA',
+  zoneBlue: '#1565C0',
+  zoneBlueTint: '#E3EEF9',
+  zoneYellow: '#9A7400',
+  zoneYellowTint: '#FBF3D6',
+  zoneRed: '#8C1414',
+  zoneRedTint: '#F9E6E6',
+  // Form dots (US-12.1).
+  formWin: '#17551C',
+  formDraw: '#545454',
+  formLoss: '#8C1414',
+  formFg: '#FFFFFF',
 } as const;
 
 /**
@@ -41,4 +55,23 @@ export const aaaTextPairs: Array<[foreground: string, background: string]> = [
   // The text of a tinted table row (Task 132).
   [colors.fg, colors.rowPositive],
   [colors.fg, colors.rowCaution],
+  // The text of a row in a zone, and the letter of a Form dot (Task 152).
+  [colors.fg, colors.zoneGreenTint],
+  [colors.fg, colors.zoneBlueTint],
+  [colors.fg, colors.zoneYellowTint],
+  [colors.fg, colors.zoneRedTint],
+  [colors.formFg, colors.formWin],
+  [colors.formFg, colors.formDraw],
+  [colors.formFg, colors.formLoss],
+];
+
+/**
+ * A graphic that is not text must reach 3:1 against what is next to it
+ * (WCAG 1.4.11). The stripe of a zone is on the tint of its row (Task 152).
+ */
+export const graphicPairs: Array<[graphic: string, background: string]> = [
+  [colors.zoneGreen, colors.zoneGreenTint],
+  [colors.zoneBlue, colors.zoneBlueTint],
+  [colors.zoneYellow, colors.zoneYellowTint],
+  [colors.zoneRed, colors.zoneRedTint],
 ];

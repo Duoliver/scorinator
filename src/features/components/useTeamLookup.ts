@@ -20,8 +20,8 @@ export function useTeamLookup(
     return (blueprintUuid: string): TeamDisplay => {
       const team = byUuid.get(blueprintUuid);
       return team
-        ? { name: team.name, colour: team.colour }
-        : { name: blueprintUuid, colour: '' };
+        ? { name: team.name, colour: team.colour, trigram: team.trigram }
+        : { name: blueprintUuid, colour: '', trigram: '' };
     };
   }, [teams]);
 }

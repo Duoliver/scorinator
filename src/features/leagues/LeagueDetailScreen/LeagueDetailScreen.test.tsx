@@ -157,13 +157,13 @@ describe('LeagueDetailScreen', () => {
       };
       useDatabaseStore.setState({ leagues: { [LEAGUE]: played } });
       render(<LeagueDetailScreen uuid={LEAGUE} />);
-      expect(screen.getAllByText('99')).not.toHaveLength(0);
+      expect(screen.getAllByText('Scored 99 · Conceded 99')).not.toHaveLength(0);
 
       await userEvent.click(screen.getByRole('tab', { name: 'Fixtures' }));
       await userEvent.click(screen.getByRole('button', { name: 'Re-scorinate' }));
       await userEvent.click(screen.getByRole('tab', { name: 'Standings' }));
 
-      expect(screen.queryByText('99')).not.toBeInTheDocument();
+      expect(screen.queryByText('Scored 99 · Conceded 99')).not.toBeInTheDocument();
       const rows = screen
         .getAllByRole('row')
         .slice(1)

@@ -80,7 +80,18 @@ export function TieCard({ card, onScorinate }: TieCardProps): JSX.Element {
         </div>
       ))}
       <div class={styles.footer}>
-        <span class={styles.footerText}>{card.footer}</span>
+        <span class={styles.footerText}>
+          {card.aggregate !== null && (
+            <>
+              <Tooltip underline content="Aggregate">
+                Agg
+              </Tooltip>{' '}
+              {card.aggregate}
+              {card.footer && ' · '}
+            </>
+          )}
+          {card.footer}
+        </span>
         {button}
       </div>
     </div>

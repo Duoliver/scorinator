@@ -1,10 +1,12 @@
 import type { JSX } from 'preact';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { act, render, screen, within } from '@testing-library/preact';
+import userEvent from '@testing-library/user-event';
 import { scorinateFixture } from '@/app/state/leagueWrapperActions';
 import { useDatabaseStore } from '@/app/state/databaseStore';
-import type { LeagueWrapper, PhaseResult } from '@/domain';
+import type { LeagueWrapper, PhaseResult, ScheduledPhase } from '@/domain';
 import { StandingsView } from './StandingsView';
+import { getTextWithoutHints } from '@/test/textWithoutHints';
 import {
   groupsLeague,
   LEAGUE,
@@ -56,12 +58,17 @@ function dataRows(): string[][] {
   return screen
     .getAllByRole('row')
     .slice(1)
-    .map((row) => Array.from(row.children).map((cell) => cell.textContent ?? ''));
+    .map((row) => Array.from(row.children).map(getTextWithoutHints));
 }
 
-/** The Pts cell, always the last one in a row. */
+/** The Pts cell of a round-robin row: #, Team, P, W, D, L, GD, Pts, Form. */
 function pointsOf(row: string[] | undefined): string | undefined {
-  return row?.[row.length - 1];
+  return row?.[7];
+}
+
+/** The Pts cell of a group card row, always the last one. */
+function groupPointsOf(row: string[]): string {
+  return row[row.length - 1];
 }
 
 /** `StandingsView` reads `league` as a plain prop, the same way
@@ -81,7 +88,7 @@ beforeEach(() => {
 describe('StandingsView', () => {
   it('shows the column headers from the design reference', () => {
     render(<StandingsView league={league()} />);
-    for (const header of ['#', 'Team', 'P', 'W', 'D', 'L', 'GF', 'GA', 'GD', 'Pts']) {
+    for (const header of ['#', 'Team', 'P', 'W', 'D', 'L', 'GD', 'Pts']) {
       expect(screen.getByText(header)).toBeInTheDocument();
     }
   });
@@ -97,9 +104,9 @@ describe('StandingsView', () => {
     );
 
     expect(dataRows()).toEqual([
-      ['1', 'FC United', '1', '1', '0', '0', '2', '0', '2', '3'],
-      ['2', 'FC Town', '1', '0', '1', '0', '1', '1', '0', '1'],
-      ['3', 'FC Rivals', '2', '0', '1', '1', '1', '3', '-2', '1'],
+      ['1', 'FC United', '1', '1', '0', '0', '2', '3', '—'],
+      ['2', 'FC Town', '1', '0', '1', '0', '0', '1', '—'],
+      ['3', 'FC Rivals', '2', '0', '1', '1', '-2', '1', '—'],
     ]);
   });
 
@@ -149,7 +156,7 @@ describe('StandingsView', () => {
     render(<StandingsView league={league()} />);
     expect(screen.getByText('No matches played yet.')).toBeInTheDocument();
     expect(dataRows()).toHaveLength(3);
-    expect(dataRows()[0]?.slice(2)).toEqual(['0', '0', '0', '0', '0', '0', '0', '0']);
+    expect(dataRows()[0]?.slice(2)).toEqual(['0', '0', '0', '0', '0', '0', '—']);
   });
 
   it('updates live when a match is scorinated', () => {
@@ -188,7 +195,7 @@ describe('StandingsView', () => {
       return within(table)
         .getAllByRole('row')
         .slice(1)
-        .map((row) => Array.from(row.children).map((cell) => cell.textContent ?? ''));
+        .map((row) => Array.from(row.children).map(getTextWithoutHints));
     }
 
     it('shows one card for each group, in group order, with its name', () => {
@@ -214,9 +221,7 @@ describe('StandingsView', () => {
       render(<StandingsView league={sixInTwo()} />);
       const table = screen.getByRole('table', { name: 'Group A' });
       expect(
-        within(table)
-          .getAllByRole('columnheader')
-          .map((cell) => cell.textContent)
+        within(table).getAllByRole('columnheader').map(getTextWithoutHints)
       ).toEqual(['#', 'Team', 'W', 'D', 'L', 'GD', 'Pts']);
     });
 
@@ -246,8 +251,8 @@ describe('StandingsView', () => {
       };
       render(<StandingsView league={played} />);
 
-      expect(pointsOf(groupRows('Group A')[0])).toBe('3');
-      expect(groupRows('Group B').map(pointsOf)).toEqual(['0', '0', '0']);
+      expect(groupPointsOf(groupRows('Group A')[0])).toBe('3');
+      expect(groupRows('Group B').map(groupPointsOf)).toEqual(['0', '0', '0']);
       expect(screen.queryByText('No matches played yet.')).not.toBeInTheDocument();
     });
 
@@ -327,6 +332,214 @@ describe('StandingsView', () => {
     it('tints nothing in the last phase', () => {
       render(<StandingsView league={league()} />);
       expect(tones('Standings')).toEqual([null, null, null]);
+    });
+  });
+});
+
+describe('StandingsView: Form, the GD hint, and header hints (Task 154)', () => {
+  const FOUR = [...TEAMS, { name: 'FC Rovers', colour: '#6A1B9A' }];
+
+  /** Every fixture of a team, in matchday order. */
+  function fixturesOf(
+    wrapper: LeagueWrapper,
+    team: string
+  ): ScheduledPhase['fixtures'] {
+    return scheduled(wrapper.content.phases[0])
+      .fixtures.filter((f) => f.home === team || f.away === team)
+      .sort((a, b) => a.matchday - b.matchday);
+  }
+
+  /** The league with these results: each entry gives the goals of `team`
+   * and of its opponent, for its next fixture. */
+  function withResults(
+    wrapper: LeagueWrapper,
+    team: string,
+    goals: [number, number][]
+  ): LeagueWrapper {
+    const results = fixturesOf(wrapper, team)
+      .slice(0, goals.length)
+      .map((f, index) => {
+        const [mine, theirs] = goals[index];
+        return f.home === team
+          ? score(f.id, f.home, f.away, mine, theirs)
+          : score(f.id, f.home, f.away, theirs, mine);
+      });
+    const phase = scheduled(wrapper.content.phases[0]);
+    return {
+      ...wrapper,
+      content: { ...wrapper.content, phases: [{ ...phase, results }] },
+    };
+  }
+
+  const rowOf = (name: string): HTMLElement =>
+    screen.getByRole('cell', { name: new RegExp(name) }).parentElement as HTMLElement;
+  const formCell = (name: string): HTMLElement =>
+    rowOf(name).children[8] as HTMLElement;
+
+  beforeEach(() => {
+    openTestDatabase();
+  });
+
+  it('has no GF and GA columns, and Form after Pts', () => {
+    render(<StandingsView league={league()} />);
+    expect(screen.getAllByRole('columnheader').map(getTextWithoutHints)).toEqual([
+      '#',
+      'Team',
+      'P',
+      'W',
+      'D',
+      'L',
+      'GD',
+      'Pts',
+      'Form',
+    ]);
+  });
+
+  it('shows a dash for a team with no match', () => {
+    render(<StandingsView league={league()} />);
+    expect(formCell('FC United')).toHaveTextContent('—');
+  });
+
+  it('shows a letter for each match, the oldest on the left', () => {
+    render(
+      <StandingsView
+        league={withResults(league(), UNITED, [
+          [2, 0],
+          [0, 1],
+          [1, 1],
+        ])}
+      />
+    );
+    expect(getTextWithoutHints(formCell('FC United'))).toBe('WLD');
+  });
+
+  it('shows at most the last 5', () => {
+    const wrapper = league([], {}, FOUR);
+    render(
+      <StandingsView
+        league={withResults(wrapper, UNITED, [
+          [0, 1],
+          [1, 0],
+          [1, 0],
+          [1, 0],
+          [1, 0],
+          [1, 0],
+        ])}
+      />
+    );
+    expect(getTextWithoutHints(formCell('FC United'))).toBe('WWWWW');
+  });
+
+  it('marks each dot with its outcome, for its colour', () => {
+    render(<StandingsView league={withResults(league(), UNITED, [[2, 0]])} />);
+    expect(within(formCell('FC United')).getByText('W')).toHaveAttribute(
+      'data-outcome',
+      'W'
+    );
+  });
+
+  it('gives each dot a hint with the trigram, H or A, the score, and the matchday', async () => {
+    const base = league();
+    const [first] = fixturesOf(base, UNITED);
+    const opponent = first.home === UNITED ? first.away : first.home;
+    const wrapper = {
+      ...base,
+      teams: base.teams.map((team) =>
+        team.blueprintUuid === opponent ? { ...team, trigram: 'ASH' } : team
+      ),
+    };
+    render(<StandingsView league={withResults(wrapper, UNITED, [[2, 1]])} />);
+
+    await userEvent.hover(within(formCell('FC United')).getByText('W'));
+
+    const venue = first.home === UNITED ? 'H' : 'A';
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(
+      `ASH · ${venue} · 2–1 · MD ${first.matchday}`
+    );
+  });
+
+  it('shows the opponent name in the hint when it has no trigram (choice 3)', async () => {
+    render(<StandingsView league={withResults(league(), UNITED, [[2, 1]])} />);
+    await userEvent.hover(within(formCell('FC United')).getByText('W'));
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(
+      /^FC (Rivals|Town) · /
+    );
+  });
+
+  it('shows the goals in the GD hint', async () => {
+    render(<StandingsView league={withResults(league(), UNITED, [[3, 1]])} />);
+    await userEvent.hover(
+      within(rowOf('FC United').children[6] as HTMLElement).getByText('2')
+    );
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(
+      'Scored 3 · Conceded 1'
+    );
+  });
+
+  it('underlines the GD number, because it has a hint', () => {
+    render(<StandingsView league={withResults(league(), UNITED, [[3, 1]])} />);
+    const number = within(rowOf('FC United').children[6] as HTMLElement).getByText('2');
+    expect(number.parentElement?.className).toMatch(/underline/);
+  });
+
+  it('names each short header with its full name', () => {
+    render(<StandingsView league={league()} />);
+    for (const name of [
+      'Position',
+      'Played',
+      'Won',
+      'Drawn',
+      'Lost',
+      'Goal difference',
+      'Points',
+      'Last 5 matches',
+    ]) {
+      expect(screen.getByRole('columnheader', { name })).toBeInTheDocument();
+    }
+  });
+
+  describe('a group card', () => {
+    const groups = (): LeagueWrapper =>
+      groupsLeague(FOUR, [
+        [1, 2],
+        [3, 4],
+      ]);
+
+    it('has no Form column', () => {
+      render(<StandingsView league={groups()} />);
+      expect(screen.queryByRole('columnheader', { name: 'Last 5 matches' })).toBeNull();
+    });
+
+    it('has the header hints', () => {
+      render(<StandingsView league={groups()} />);
+      for (const name of [
+        'Position',
+        'Won',
+        'Drawn',
+        'Lost',
+        'Goal difference',
+        'Points',
+      ]) {
+        expect(screen.getAllByRole('columnheader', { name })).toHaveLength(2);
+      }
+    });
+
+    it('has the GD hint', async () => {
+      const base = groups();
+      const phase = scheduled(base.content.phases[0]);
+      const f = phase.fixtures[0];
+      const wrapper = {
+        ...base,
+        content: {
+          ...base.content,
+          phases: [{ ...phase, results: [score(f.id, f.home, f.away, 5, 1)] }],
+        },
+      };
+      render(<StandingsView league={wrapper} />);
+      await userEvent.hover(screen.getByText('4'));
+      expect(await screen.findByRole('tooltip')).toHaveTextContent(
+        'Scored 5 · Conceded 1'
+      );
     });
   });
 });

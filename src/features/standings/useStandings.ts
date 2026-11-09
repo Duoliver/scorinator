@@ -1,9 +1,11 @@
 import { useMemo } from 'preact/hooks';
 import { groupLabel } from '@/engine/round-robin';
+import { getLastResults } from '@/engine/standings';
 import { phaseQualifierMarks, phaseStandings } from '@/app/state/phases';
 import { useTeamLookup } from '@/features/components';
 import type { LeagueWrapper } from '@/domain';
-import type { Standings, StandingsTable, StandingsViewRow } from './types';
+import { FORM_LENGTH } from './helpers';
+import type { FormDot, Standings, StandingsTable, StandingsViewRow } from './types';
 
 /** The tables of one started phase of one league, ready for
  * `StandingsView` to render: one table for a round robin, or one for each
@@ -26,6 +28,22 @@ export function useStandings(
   const tables = useMemo((): StandingsTable[] => {
     if (!phase) return [];
     const marks = phaseQualifierMarks(league, phaseIndex);
+    const formOf = (team: string): FormDot[] => {
+      if (phase.format !== 'round-robin') return [];
+      const results = getLastResults(team, phase.fixtures, phase.results, FORM_LENGTH);
+      return results.map((result): FormDot => {
+        const { name, colour, trigram } = lookupTeam(result.opponent);
+        return {
+          outcome: result.outcome,
+          opponent: trigram || name,
+          isTrigram: trigram !== '',
+          opponentColour: colour,
+          venue: result.isHome ? 'H' : 'A',
+          score: `${result.goalsFor}–${result.goalsAgainst}`,
+          matchday: result.matchday,
+        };
+      });
+    };
     return phaseStandings(league, phaseIndex).map((table, index) => ({
       name: phase.format === 'groups' ? `Group ${groupLabel(index)}` : 'Standings',
       rows: table.map((row): StandingsViewRow => {
@@ -35,6 +53,7 @@ export function useStandings(
           teamName: name,
           teamColour: colour,
           mark: marks.get(row.team),
+          form: formOf(row.team),
         };
       }),
     }));

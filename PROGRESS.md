@@ -111,7 +111,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 151 | M5 smoke check | all | ✅ Done | 2026-11-09 | 2026-11-09 | [151](/docs/tasks/151-m5-smoke-check.md) | M5 complete. End-to-end test added. The user checked the real app. |
 | 152 | Zone tokens, Form dot tokens, and their contrast test | `design-system/` | ✅ Done | 2026-11-09 | 2026-11-09 | [152](/docs/tasks/152-zone-form-tokens.md) | M6. US-12.1, 12.5. 12 tokens built. No screen uses them yet: Tasks 154, 155. |
 | 153 | The last N results, and the places by matchday | `engine/standings` | ✅ Done | 2026-11-09 | 2026-11-09 | [153](/docs/tasks/153-last-results-and-places.md) | M6. US-12.1, 12.4. 16 new tests. No caller yet: Tasks 154, 156. |
-| 154 | Standings table: Form with hints, GF and GA in the GD hint, header hints | `features/standings` | ⬜ Not started |  |  |  | M6. US-12.1 to 12.3. After 152, 153. |
+| 154 | Standings table: Form with hints, GF and GA in the GD hint, header hints | `features/standings` | ✅ Done | 2026-11-09 | 2026-11-09 | [154](/docs/tasks/154-standings-table.md) | M6. US-12.1 to 12.3. The user checked the real app. |
 | 155 | Zones: the wizard section, "Edit zones", tint, stripe, legend, in place of the highlight | `features/` | ⬜ Not started |  |  |  | M6. US-12.5, 02.2, 07.2. After 152. |
 | 156 | The position chart: the "Chart" sub-tab, SVG, the group selector | `features/standings` | ⬜ Not started |  |  |  | M6. US-12.4. After 153. |
 | 157 | Trigrams and Location on league screens: narrow tables, fixtures, the Location hint | `features/` | ⬜ Not started |  |  |  | M6. US-09.3, 09.6. After 154. |
@@ -186,6 +186,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-11-09 (Task 154 — the standings table):** The user agreed six choices. (1) `TableColumn` gets `headerHint`. (2) A Form dot is a circle. (3) A missing trigram shows the opponent name. (4) `useStandings` builds the Form entries. (5) Each dot and GD cell is a Tab stop, as the stories ask. (6) Only the word "Agg" gets its hint. Detail: [Task 154](/docs/tasks/154-standings-table.md).
 
 - **2026-11-09 (Task 153 — the last results and the places):** The user agreed five choices. (1) Each function takes the fixtures and the results of the phase. (2) A result with no fixture in the list does not count. (3) The fields of a result. (4) A point is a matchday and a `Map` of places. (5) A place is the row number. Detail: [Task 153](/docs/tasks/153-last-results-and-places.md).
 

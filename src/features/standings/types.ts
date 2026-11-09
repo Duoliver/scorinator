@@ -1,4 +1,4 @@
-import type { StandingsRow } from '@/engine/standings';
+import type { MatchOutcome, StandingsRow } from '@/engine/standings';
 import type { QualifierMark } from '@/app/state/phases';
 import type { LeagueWrapper } from '@/domain';
 
@@ -13,12 +13,28 @@ export default interface StandingsViewProps {
   advanceText?: string;
 }
 
+/** One dot of the Form column (US-12.1): the outcome, and the texts of its
+ * hint. */
+export interface FormDot {
+  outcome: MatchOutcome;
+  /** The opponent trigram, or its name when it has none (choice 3). */
+  opponent: string;
+  isTrigram: boolean;
+  opponentColour: string;
+  venue: 'H' | 'A';
+  /** The goals of the team first, for example "2–1". */
+  score: string;
+  matchday: number;
+}
+
 /** One standings row, with the Instance name and colour of its team. */
 export interface StandingsViewRow extends StandingsRow<string> {
   teamName: string;
   teamColour: string;
   /** How the row qualifies, for its tint (Task 132), or `undefined`. */
   mark: QualifierMark | undefined;
+  /** The last results of the team, the oldest first. Empty in a group card. */
+  form: FormDot[];
 }
 
 /** One table of a phase: the one table of a round robin, or one group

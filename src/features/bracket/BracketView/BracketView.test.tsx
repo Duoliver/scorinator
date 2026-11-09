@@ -8,6 +8,7 @@ import { useDatabaseStore } from '@/app/state/databaseStore';
 import { createLeague, scorinateBracket } from '@/app/state/leagueWrapperActions';
 import { instance, openTestDatabase, testUuid } from '@/test/databaseRecords';
 import { BracketView } from './BracketView';
+import { getTextWithoutHints } from '@/test/textWithoutHints';
 
 function teamsOf(n: number): TeamInstance[] {
   return Array.from({ length: n }, (_, i) =>
@@ -183,7 +184,7 @@ describe('BracketView (Task 141)', () => {
     const card = screen.getByRole('group', { name: `${nameOf(s1)} v ${nameOf(s4)}` });
     expect(within(card).getByText('L1')).toBeInTheDocument();
     expect(within(card).getByText('L2')).toBeInTheDocument();
-    expect(within(card).getByText(/^Agg \d+–\d+/)).toBeInTheDocument();
+    expect(getTextWithoutHints(card)).toMatch(/Agg \d+–\d+/);
     expect(
       within(column('Final')).getByText('Third-place playoff')
     ).toBeInTheDocument();

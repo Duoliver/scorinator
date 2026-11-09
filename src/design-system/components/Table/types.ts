@@ -8,6 +8,9 @@ export type TableRowTone = 'positive' | 'caution';
 export interface TableColumn<Row> {
   key: string;
   header: string;
+  /** The full name of a short header, for example "Played" for "P": a hint
+   * with a dotted underline, and the name a screen reader reads (US-12.3). */
+  headerHint?: string;
   /** CSS grid track for this column's width. Defaults to "1fr". */
   width?: string;
   align?: TableAlign;

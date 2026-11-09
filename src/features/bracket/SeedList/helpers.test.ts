@@ -11,9 +11,10 @@ import {
 
 const rowsOf = (...teams: string[]): StandingsRow<string>[] =>
   teams.map((team) => ({ team }) as StandingsRow<string>);
-const lookup = (id: string): { name: string; colour: string } => ({
+const lookup = (id: string): { name: string; colour: string; trigram: string } => ({
   name: id.toUpperCase(),
   colour: '#000000',
+  trigram: '',
 });
 
 describe('ordinal', () => {

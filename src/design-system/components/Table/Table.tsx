@@ -1,4 +1,5 @@
 import type { JSX } from 'preact';
+import { Tooltip } from '@/design-system/components/Tooltip';
 import type TableProps from './types';
 import type { TableColumn, TableAlign, TableRowTone } from './types';
 import styles from './Table.module.css';
@@ -33,8 +34,15 @@ export function Table<Row>({
             key={column.key}
             class={alignClass[column.align ?? 'left']}
             role="columnheader"
+            aria-label={column.headerHint}
           >
-            {column.header}
+            {column.headerHint ? (
+              <Tooltip underline content={column.headerHint}>
+                {column.header}
+              </Tooltip>
+            ) : (
+              column.header
+            )}
           </span>
         ))}
       </div>

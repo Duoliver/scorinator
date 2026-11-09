@@ -15,13 +15,18 @@ describe('useTeamLookup', () => {
     expect(result.current(HARBORVIEW)).toEqual({
       name: 'Harborview SC',
       colour: '#E53935',
+      trigram: 'SMU',
     });
   });
 
   it('falls back to the UUID and no colour for a team not in the league', () => {
     const { result } = renderHook(() => useTeamLookup(teams));
 
-    expect(result.current('fc-gone')).toEqual({ name: 'fc-gone', colour: '' });
+    expect(result.current('fc-gone')).toEqual({
+      name: 'fc-gone',
+      colour: '',
+      trigram: '',
+    });
   });
 
   it('keeps the same function while the Instances do not change', () => {

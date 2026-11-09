@@ -79,30 +79,36 @@ function scoreCell(match: TieMatch<string>, teamId: string): string {
   return match.aet ? `${goals}*` : goals;
 }
 
-// The footer of a played tie: the aggregate of two legs, then the tag of
-// the decision. The penalties put the top row first (Task 141 choice 6).
-function describeFooter(
+// The aggregate of two legs, top row first, or `null` for a single match.
+function getAggregate(
+  result: BracketTieResult<string> | undefined,
+  topId: string,
+  bottomId: string
+): string | null {
+  const legs = result?.matches.filter((match) => match.part !== 'replay') ?? [];
+  if (legs.length !== 2) return null;
+  const total = (id: string): number =>
+    legs.reduce((sum, leg) => sum + goalsIn(leg, id), 0);
+  return `${total(topId)}–${total(bottomId)}`;
+}
+
+// The tag of the decision of a played tie. The penalties put the top row
+// first (Task 141 choice 6).
+function describeDecision(
   result: BracketTieResult<string>,
   topId: string,
   bottomId: string
 ): string {
-  const parts: string[] = [];
-  const legs = result.matches.filter((match) => match.part !== 'replay');
-  if (legs.length === 2) {
-    const total = (id: string): number =>
-      legs.reduce((sum, leg) => sum + goalsIn(leg, id), 0);
-    parts.push(`Agg ${total(topId)}–${total(bottomId)}`);
-  }
   const last = result.matches[result.matches.length - 1];
   const { penalties } = result;
   if (result.decidedBy === 'penalties' && penalties && last) {
     const pens = (id: string): number =>
       last.homeId === id ? penalties.homeGoals : penalties.awayGoals;
-    parts.push(`Pens ${pens(topId)}-${pens(bottomId)}`);
+    return `Pens ${pens(topId)}-${pens(bottomId)}`;
   }
-  if (result.decidedBy === 'coin-toss') parts.push('Coin toss');
-  if (result.decidedBy === 'away-goals') parts.push('Away goals');
-  return parts.join(' · ');
+  if (result.decidedBy === 'coin-toss') return 'Coin toss';
+  if (result.decidedBy === 'away-goals') return 'Away goals';
+  return '';
 }
 
 function buildRow(
@@ -166,7 +172,8 @@ export function buildTieCard(
     isBye,
     rows,
     columns: parts.length > 1 ? parts.map((part) => PART_LABELS[part]) : [],
-    footer: result ? describeFooter(result, rows[0].key, rows[1].key) : 'Not played',
+    footer: result ? describeDecision(result, rows[0].key, rows[1].key) : 'Not played',
+    aggregate: getAggregate(result, rows[0].key, rows[1].key),
     hasResult: result !== undefined,
     canScorinate: !isBye && (playable || result !== undefined),
   };

@@ -8,6 +8,9 @@ import type { FileImportDialogsProps } from './FileImportDialogs';
 export interface TeamDisplay {
   name: string;
   colour: string;
+  /** The trigram of the league Instance. Empty for an Instance from an older
+   * file (Task 121). */
+  trigram: string;
 }
 
 /** What `useTeamImport` gives a screen with a team import button. */

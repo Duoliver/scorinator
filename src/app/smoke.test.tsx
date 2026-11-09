@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { act, render, screen, within } from '@testing-library/preact';
+import { act, render, screen, waitFor, within } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
-import { open } from '@tauri-apps/plugin-dialog';
+import { open, save } from '@tauri-apps/plugin-dialog';
 import { AppShell } from './AppShell';
 import { useFileStore } from '@/app/state/fileStore';
 import { useLeagueDraftStore } from '@/app/state/leagueDraftStore';
@@ -20,9 +20,12 @@ import { useDatabaseStore } from '@/app/state/databaseStore';
  * league. A third test runs the M3 flow (Task 133): a Groups phase from the
  * wizard draw, the phase start, the lock, and a later Shuffle. A fourth
  * test runs the M4 flow (Task 143): Groups, then a two-legged bracket with
- * a third place, played to its winner. */
+ * a third place, played to its winner. A fifth test runs the M5 flow
+ * (Task 151): each export, a database import into an empty database, a
+ * repeated import, and a conflict. */
 
 const disk = vi.hoisted(() => new Map<string, string>());
+const binaryDisk = vi.hoisted(() => new Map<string, Uint8Array>());
 
 vi.mock('@tauri-apps/plugin-fs', () => ({
   readTextFile: async (path: string): Promise<string> => {
@@ -41,6 +44,15 @@ vi.mock('@tauri-apps/plugin-fs', () => ({
   },
   remove: async (path: string): Promise<void> => {
     disk.delete(path);
+  },
+  // The database `.zip` (Task 146).
+  readFile: async (path: string): Promise<Uint8Array> => {
+    const contents = binaryDisk.get(path);
+    if (contents === undefined) throw new Error(`No file at ${path}`);
+    return contents;
+  },
+  writeFile: async (path: string, contents: Uint8Array): Promise<void> => {
+    binaryDisk.set(path, contents);
   },
   exists: async (path: string): Promise<boolean> => disk.has(path),
   // The in-memory disk has no folders: a path is just a key.
@@ -103,6 +115,7 @@ function standingsRows(): string[] {
 
 beforeEach(() => {
   disk.clear();
+  binaryDisk.clear();
   resetSession();
   openAt('/');
 });
@@ -544,5 +557,136 @@ describe('smoke: M4 bracket after groups (Task 143)', () => {
       leagueBefore
     );
     expect(screen.getByText(`Winner: ${winnerName}`)).toBeInTheDocument();
+  });
+});
+
+describe('smoke: M5 files, imports, and conflicts (Task 151)', () => {
+  const CSV_PATH = '/home/teams.csv';
+  const LEAGUE_PATH = '/home/coastal-premier.json';
+  const RESULTS_PATH = '/home/coastal-premier-results.txt';
+  const SLUGS_PATH = '/home/coastal-premier-ranking.txt';
+  const ZIP_PATH = '/home/database.zip';
+  const CSV = [
+    'Slug,Name,Colour,Tier',
+    'salt-marsh-united,Salt Marsh United,#E53935,B',
+    'harborview-sc,Harborview SC,#1E88E5,A',
+  ].join('\n');
+
+  const statusIs = async (message: string): Promise<void> => {
+    await waitFor(() => expect(useFileStore.getState().status?.message).toBe(message));
+  };
+
+  it('exports, imports into an empty database, and resolves a conflict', async () => {
+    const user = userEvent.setup();
+    disk.set(CSV_PATH, CSV);
+    vi.mocked(open).mockResolvedValueOnce(CSV_PATH);
+    const { unmount } = render(<AppShell />);
+    await screen.findByRole('heading', { name: 'No leagues yet.' });
+
+    const openFileScreen = async (): Promise<void> => {
+      await user.click(screen.getByRole('link', { name: 'File' }));
+    };
+    const clickCard = async (title: string): Promise<void> => {
+      await user.click(
+        within(screen.getByRole('group', { name: title })).getByRole('button')
+      );
+    };
+    const exportFromMenu = async (item: string, path: string): Promise<void> => {
+      vi.mocked(save).mockResolvedValueOnce(path);
+      await user.click(screen.getByRole('button', { name: /^Export/ }));
+      await user.click(await screen.findByRole('menuitem', { name: item }));
+      await statusIs(`Saved to ${path}`);
+    };
+
+    // 1. Import the teams, create a league, and save.
+    await user.click(screen.getByRole('link', { name: 'Teams' }));
+    await user.click(screen.getByRole('button', { name: 'Import teams...' }));
+    const confirm = await screen.findByRole('dialog', { name: 'Import teams?' });
+    await user.click(within(confirm).getByRole('button', { name: 'Import' }));
+    await user.click(screen.getByRole('link', { name: 'Leagues' }));
+    await user.click(screen.getByRole('link', { name: 'Create league' }));
+    await user.type(screen.getByLabelText('League name'), 'Coastal Premier');
+    await user.click(screen.getByRole('button', { name: 'Next: Phases →' }));
+    await user.click(screen.getByRole('button', { name: 'Next: Teams →' }));
+    await user.click(screen.getByRole('button', { name: 'Load them all' }));
+    await user.click(screen.getByRole('button', { name: 'Next: Review →' }));
+    await user.click(screen.getByRole('button', { name: 'Create league' }));
+    await screen.findByRole('heading', { level: 1, name: 'Coastal Premier' });
+    pressCtrlS();
+    await statusIs('Saved.');
+    const [leagueBefore] = Object.values(useDatabaseStore.getState().leagues);
+
+    // 2. The export menu writes the three files.
+    await exportFromMenu('Export league (.json)', LEAGUE_PATH);
+    await exportFromMenu('Export results (.txt)', RESULTS_PATH);
+    await exportFromMenu('Export slug list (.txt)', SLUGS_PATH);
+    expect(disk.get(LEAGUE_PATH)).toContain(leagueBefore.uuid);
+    expect(disk.get(RESULTS_PATH)).toContain('Coastal Premier');
+    const slugLines = disk.get(SLUGS_PATH)!.trimEnd().split('\n');
+    expect(slugLines[0]).toMatch(/^# Coastal Premier — final ranking, /);
+    expect(slugLines.slice(1).sort()).toEqual(['harborview-sc', 'salt-marsh-united']);
+
+    // 3. The File screen writes the database `.zip`.
+    await openFileScreen();
+    vi.mocked(save).mockResolvedValueOnce(ZIP_PATH);
+    await clickCard('Export entire database');
+    await statusIs(`Saved to ${ZIP_PATH}`);
+    expect(binaryDisk.get(ZIP_PATH)).toBeInstanceOf(Uint8Array);
+
+    // 4. A new session with an empty database: the `.zip` gives everything back.
+    unmount();
+    for (const path of [...disk.keys()]) {
+      if (path.startsWith('/appdata/')) disk.delete(path);
+    }
+    resetSession();
+    openAt('/');
+    const second = render(<AppShell />);
+    await screen.findByRole('heading', { name: 'No leagues yet.' });
+    await openFileScreen();
+    vi.mocked(open).mockResolvedValueOnce(ZIP_PATH);
+    await clickCard('Import entire database');
+    await statusIs('Teams: 2 imported. Leagues: 1 imported.');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(useDatabaseStore.getState().leagues[leagueBefore.uuid]).toEqual(
+      leagueBefore
+    );
+
+    // 5. The same league file again changes nothing, with no dialog.
+    vi.mocked(open).mockResolvedValueOnce(LEAGUE_PATH);
+    await clickCard('Import leagues');
+    await statusIs('0 leagues imported. 1 already up to date.');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(Object.keys(useDatabaseStore.getState().leagues)).toEqual([
+      leagueBefore.uuid,
+    ]);
+
+    // 6. After a result, the file is a conflict. "Import as new" forks it.
+    await user.click(screen.getByRole('link', { name: 'Leagues' }));
+    await user.click(screen.getByRole('link', { name: 'Open standings' }));
+    await user.click(await screen.findByRole('tab', { name: 'Fixtures' }));
+    await user.click(screen.getByRole('button', { name: 'Scorinate matchday' }));
+    const played = useDatabaseStore.getState().leagues[leagueBefore.uuid];
+    expect(played.content.phases[0]?.results).toHaveLength(1);
+
+    await openFileScreen();
+    vi.mocked(open).mockResolvedValueOnce(LEAGUE_PATH);
+    await clickCard('Import leagues');
+    const dialog = await screen.findByRole('dialog', { name: 'Resolve conflicts' });
+    await user.click(within(dialog).getByRole('radio', { name: 'Import as new' }));
+    await user.click(within(dialog).getByRole('button', { name: 'Confirm' }));
+    await statusIs('0 leagues imported. 1 imported as new.');
+    const { leagues } = useDatabaseStore.getState();
+    expect(Object.keys(leagues)).toHaveLength(2);
+    expect(leagues[leagueBefore.uuid]).toBe(played);
+
+    // 7. Ctrl+S, then a new session: both leagues are on the dashboard.
+    pressCtrlS();
+    await statusIs('Saved.');
+    second.unmount();
+    resetSession();
+    openAt('/');
+    render(<AppShell />);
+    expect(await screen.findByText('2 leagues running')).toBeInTheDocument();
+    expect(useDatabaseStore.getState().blueprints).toHaveLength(2);
   });
 });

@@ -108,7 +108,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 148 | Text v2: results with phases, groups, and ties, and the slug list writer | `adapters/txt`, `app/data` | ✅ Done | 2026-11-04 | 2026-11-09 | [148](/docs/tasks/148-text-v2-and-slug-list.md) | M5. US-10.5, 10.6. New tie layout from the review. The user agreed. |
 | 149 | File screen: the three sections, the picker, the conflict dialog, messages, dashboard "Import league" | `features/file` | ✅ Done | 2026-11-09 | 2026-11-09 | [149](/docs/tasks/149-file-screen.md) | M5. US-10.2 to 10.4, 11.2. The user checked the real app. Results export returns in 150. |
 | 150 | League Detail export menu: league `.json`, results `.txt`, slug list `.txt` | `features/leagues` | ✅ Done | 2026-11-09 | 2026-11-09 | [150](/docs/tasks/150-league-export-menu.md) | M5. US-10.1, 10.5, 10.6. The user checked the real app. |
-| 151 | M5 smoke check | all | ⬜ Not started |  |  |  | M5. After 149, 150. |
+| 151 | M5 smoke check | all | ✅ Done | 2026-11-09 | 2026-11-09 | [151](/docs/tasks/151-m5-smoke-check.md) | M5 complete. End-to-end test added. The user checked the real app. |
 | 152 | Zone tokens, Form dot tokens, and their contrast test | `design-system/` | ⬜ Not started |  |  |  | M6. US-12.1, 12.5. After 151. |
 | 153 | The last N results, and the places by matchday | `engine/standings` | ⬜ Not started |  |  |  | M6. US-12.1, 12.4. After 151. |
 | 154 | Standings table: Form with hints, GF and GA in the GD hint, header hints | `features/standings` | ⬜ Not started |  |  |  | M6. US-12.1 to 12.3. After 152, 153. |
@@ -186,6 +186,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-11-09 (Task 151 — the M5 smoke check):** The user agreed two choices. (1) The M5 end-to-end test uses one round-robin league through seven steps. (2) The manual check uses the 11 rows of the task file. Detail: [Task 151](/docs/tasks/151-m5-smoke-check.md).
 
 - **2026-11-09 (Task 150 — the League Detail export menu):** The user agreed four choices. (1) A `DropdownMenu` "Export" after the progress badge. (2) All three exports say "Saved to <path>". (3) Three actions that take the open league. (4) A new `saveLeagueFile` with the name `<league slug>.json`. Detail: [Task 150](/docs/tasks/150-league-export-menu.md).
 

@@ -15,7 +15,7 @@ export function leagueLotOf(wrapper: LeagueWrapper): LotOf<string> {
  * the team list order. A later round robin takes its teams in the order of
  * their first fixture or bye (Task 128 choice 3): the lots decide a tie, so
  * this order matters only for two equal lots. */
-function phaseTeamLists(wrapper: LeagueWrapper, phaseIndex: number): string[][] {
+export function phaseTeamLists(wrapper: LeagueWrapper, phaseIndex: number): string[][] {
   const phase = wrapper.content.phases[phaseIndex];
   if (!phase) {
     throw new RangeError(`The league has no started phase ${phaseIndex + 1}.`);

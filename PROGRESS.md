@@ -105,7 +105,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 145 | League and Blueprint files: one or many, format versions, wrong-file errors | `adapters/json-io`, `app/data` | ✅ Done | 2026-11-04 | 2026-11-04 | [145](/docs/tasks/145-league-blueprint-files.md) | M5. US-10.1 to 10.3. 37 new tests. The user agreed choices 1 to 8. |
 | 146 | The database `.zip` export and import | `adapters/json-io`, `adapters/tauri-fs`, `persistence/`, `app/` | ✅ Done | 2026-11-04 | 2026-11-04 | [146](/docs/tasks/146-database-zip.md) | M5. US-10.4. 16 new tests. The user agreed choices 1 to 7. |
 | 147 | The final ranking across phases | `engine/phases`, `app/state` | ✅ Done | 2026-11-04 | 2026-11-04 | [147](/docs/tasks/147-final-ranking.md) | M5. US-10.5. 13 new tests. The user agreed. |
-| 148 | Text v2: results with phases, groups, and ties, and the slug list writer | `adapters/txt` | ⬜ Not started |  |  |  | M5. US-10.5, 10.6. After 147. |
+| 148 | Text v2: results with phases, groups, and ties, and the slug list writer | `adapters/txt`, `app/data` | ✅ Done | 2026-11-04 | 2026-11-09 | [148](/docs/tasks/148-text-v2-and-slug-list.md) | M5. US-10.5, 10.6. New tie layout from the review. The user agreed. |
 | 149 | File screen: the three sections, the picker, the conflict dialog, messages, dashboard "Import league" | `features/file` | ⬜ Not started |  |  |  | M5. US-10.2 to 10.4, 11.2. After 145, 146. |
 | 150 | League Detail export menu: league `.json`, results `.txt`, slug list `.txt` | `features/leagues` | ⬜ Not started |  |  |  | M5. US-10.1, 10.5, 10.6. After 148. |
 | 151 | M5 smoke check | all | ⬜ Not started |  |  |  | M5. After 149, 150. |
@@ -186,6 +186,10 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-11-09 (Task 148 review — the tie layout):** The user replaced the one-line tie of choice 3. The total sits between the names, and the legs and the decision tag share one detail line centred below it: `1-0, 0-1 · Pens 3-5`. The third-place tie comes before the final. All rounds share one column set, which replaces choice 14. The user agreed choices 6 to 13. Detail: [Task 148](/docs/tasks/148-text-v2-and-slug-list.md).
+
+- **2026-11-04 (Task 148 — text v2 and the slug list):** The user agreed five choices. (1) `adapters/txt` keeps its own copy of the format line and the tie texts, pinned by tests. (2) One block for each group. (3) One line for each tie, top team first, with the tags after it. (4) The file name `<league slug>-ranking.txt`. (5) The caller gives the date. Detail: [Task 148](/docs/tasks/148-text-v2-and-slug-list.md).
 
 - **2026-11-04 (Task 147 — the final ranking):** The user agreed four choices. (1) A pure engine function over the tables and the tree, with the inputs built in `app/state`. (2) A bye team reached round 2 before any play. (3) A bracket that waits for its byes ranks by seed. (4) No text and no menu. Detail: [Task 147](/docs/tasks/147-final-ranking.md).
 

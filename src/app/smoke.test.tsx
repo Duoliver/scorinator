@@ -22,7 +22,9 @@ import { useDatabaseStore } from '@/app/state/databaseStore';
  * test runs the M4 flow (Task 143): Groups, then a two-legged bracket with
  * a third place, played to its winner. A fifth test runs the M5 flow
  * (Task 151): each export, a database import into an empty database, a
- * repeated import, and a conflict. */
+ * repeated import, and a conflict. A sixth test runs the M6 flow (Task
+ * 158): Form, the zones from the wizard and from "Edit zones", the chart
+ * with its zones, and the fixtures trigrams. */
 
 const disk = vi.hoisted(() => new Map<string, string>());
 const binaryDisk = vi.hoisted(() => new Map<string, Uint8Array>());
@@ -688,5 +690,136 @@ describe('smoke: M5 files, imports, and conflicts (Task 151)', () => {
     render(<AppShell />);
     expect(await screen.findByText('2 leagues running')).toBeInTheDocument();
     expect(useDatabaseStore.getState().blueprints).toHaveLength(2);
+  });
+});
+
+describe('smoke: M6 standings, zones, the chart, and trigrams (Task 158)', () => {
+  const CSV_PATH = '/home/six-m6.csv';
+  const CSV = [
+    'Slug,Name,Colour,Tier,Location,Trigrams',
+    'salt-marsh-united,Salt Marsh United,#E53935,B,Saltmarsh,SMU',
+    'harborview-sc,Harborview SC,#1E88E5,A,Harborview,HSC',
+    'ironbridge-athletic,Ironbridge Athletic,#2E7D32,C,Ironbridge,IRB',
+    'northgate-rovers,Northgate Rovers,#6A1B9A,B,Northgate,NGR',
+    'copper-hills-fc,Copper Hills FC,#F9A825,C,Copper Hills,CHF',
+    'westbrook-wanderers,Westbrook Wanderers,#00838F,A,Westbrook,WBW',
+  ].join('\n');
+
+  /** The zone tone of each row of the round-robin table. */
+  const tones = (): (string | null)[] =>
+    within(screen.getByRole('table', { name: 'Standings' }))
+      .getAllByRole('row')
+      .slice(1)
+      .map((row) => row.getAttribute('data-tone'));
+  const legend = (): string[] =>
+    within(screen.getByRole('list', { name: 'Zones' }))
+      .getAllByRole('listitem')
+      .map((item) => item.textContent ?? '');
+
+  /** Turns on one free zone row of a zone editor, with its places and label. */
+  async function addZone(
+    user: ReturnType<typeof userEvent.setup>,
+    scope: HTMLElement,
+    colour: string,
+    from: string,
+    to: string,
+    label: string
+  ): Promise<void> {
+    const row = within(scope).getByRole('group', { name: `${colour} zone` });
+    await user.click(within(row).getByRole('switch', { name: colour }));
+    await user.type(within(row).getByLabelText('From'), from);
+    await user.type(within(row).getByLabelText('To'), to);
+    await user.type(within(row).getByLabelText('Label'), label);
+  }
+
+  it('shows Form, zones, the chart, and trigrams, and keeps the zones in a new session', async () => {
+    const user = userEvent.setup();
+    disk.set(CSV_PATH, CSV);
+    vi.mocked(open).mockResolvedValueOnce(CSV_PATH);
+    const { unmount } = render(<AppShell />);
+    await screen.findByRole('heading', { name: 'No leagues yet.' });
+
+    // 1. Import the six teams. The wizard makes a round robin with a red
+    // zone for places 5 to 6.
+    await user.click(screen.getByRole('link', { name: 'Teams' }));
+    await user.click(screen.getByRole('button', { name: 'Import teams...' }));
+    const confirm = await screen.findByRole('dialog', { name: 'Import teams?' });
+    await user.click(within(confirm).getByRole('button', { name: 'Import' }));
+    await user.click(screen.getByRole('link', { name: 'Leagues' }));
+    await user.click(screen.getByRole('link', { name: 'Create league' }));
+    await user.type(screen.getByLabelText('League name'), 'Zone League');
+    await user.click(screen.getByRole('button', { name: 'Next: Phases →' }));
+    const phase1 = screen.getByRole('region', { name: 'Phase 1' });
+    await addZone(
+      user,
+      within(phase1).getByRole('region', { name: 'Zones' }),
+      'Red',
+      '5',
+      '6',
+      'Relegation'
+    );
+    await user.click(screen.getByRole('button', { name: 'Next: Teams →' }));
+    await user.click(screen.getByRole('button', { name: 'Load them all' }));
+    await user.click(screen.getByRole('button', { name: 'Next: Review →' }));
+    await user.click(screen.getByRole('button', { name: 'Create league' }));
+    await screen.findByRole('heading', { level: 1, name: 'Zone League' });
+
+    // 2. Two matchdays: two Form dots for each team, the red rows, and
+    // the legend.
+    await user.click(screen.getByRole('tab', { name: 'Fixtures' }));
+    await user.click(screen.getByRole('button', { name: 'Scorinate matchday' }));
+    await user.click(screen.getByRole('button', { name: 'Next matchday' }));
+    await user.click(screen.getByRole('button', { name: 'Scorinate matchday' }));
+    // 5. Each fixtures row has both trigrams.
+    expect(document.querySelectorAll('[data-part="trigram"]')).toHaveLength(6);
+    await user.click(screen.getByRole('tab', { name: 'Standings' }));
+    const rows = within(screen.getByRole('table', { name: 'Standings' }))
+      .getAllByRole('row')
+      .slice(1);
+    for (const row of rows) {
+      expect(row.querySelectorAll('[data-outcome]')).toHaveLength(2);
+    }
+    expect(tones()).toEqual([null, null, null, null, 'red', 'red']);
+    expect(legend()).toEqual(['Relegation']);
+
+    // 3. The chart: one line for each team, the red band, the legend.
+    await user.click(screen.getByRole('tab', { name: 'Chart' }));
+    expect(screen.getByRole('img', { name: 'Position chart' })).toBeInTheDocument();
+    expect(document.querySelectorAll('[data-team]')).toHaveLength(6);
+    const bands = (): (string | null)[] =>
+      [...document.querySelectorAll('[data-part="band"]')].map((band) =>
+        band.getAttribute('data-zone')
+      );
+    expect(bands()).toEqual(['red']);
+    expect(legend()).toEqual(['Relegation']);
+
+    // 4. "Edit zones" adds a blue zone for place 1. The league is unsaved.
+    pressCtrlS();
+    expect(await screen.findByText('Saved.')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Edit zones' }));
+    const drawer = screen.getByRole('dialog', { name: 'Zones' });
+    await addZone(user, drawer, 'Blue', '1', '1', 'Champion');
+    await user.click(within(drawer).getByRole('button', { name: 'Save' }));
+    expect(bands()).toEqual(['blue', 'red']);
+    expect(legend()).toEqual(['Champion', 'Relegation']);
+    expect(screen.getByText('Unsaved')).toBeInTheDocument();
+    await user.click(screen.getByRole('tab', { name: 'Standings' }));
+    expect(tones()).toEqual(['blue', null, null, null, 'red', 'red']);
+
+    // 6. Save, start a new session, and open the league again.
+    pressCtrlS();
+    expect(await screen.findByText('Saved.')).toBeInTheDocument();
+    const [leagueBefore] = Object.values(useDatabaseStore.getState().leagues);
+    unmount();
+    resetSession();
+    openAt('/');
+    render(<AppShell />);
+    await user.click(await screen.findByRole('link', { name: 'Open standings' }));
+    await screen.findByRole('heading', { level: 1, name: 'Zone League' });
+    expect(useDatabaseStore.getState().leagues[leagueBefore.uuid]).toEqual(
+      leagueBefore
+    );
+    expect(tones()).toEqual(['blue', null, null, null, 'red', 'red']);
+    expect(legend()).toEqual(['Champion', 'Relegation']);
   });
 });

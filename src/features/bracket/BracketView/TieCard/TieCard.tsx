@@ -1,6 +1,6 @@
 import type { JSX } from 'preact';
 import { Button, Tooltip } from '@/design-system';
-import { TeamSwatch } from '@/features/components';
+import { TeamName, TeamSwatch } from '@/features/components';
 import type TieCardProps from './types';
 import styles from './TieCard.module.css';
 
@@ -39,7 +39,9 @@ export function TieCard({ card, onScorinate }: TieCardProps): JSX.Element {
       <div role="group" aria-label={label} class={`${styles.card} ${styles.bye}`}>
         <div class={`${styles.row} ${styles.winnerRow}`}>
           <TeamSwatch colour={top.colour} size="sm" />
-          <span class={styles.name}>{top.name}</span>
+          <span class={styles.name}>
+            <TeamName name={top.name} location={top.location} />
+          </span>
         </div>
         <div class={styles.footer}>
           <span class={styles.byeText}>BYE — advances automatically</span>
@@ -71,7 +73,9 @@ export function TieCard({ card, onScorinate }: TieCardProps): JSX.Element {
           class={`${styles.row} ${row.isWinner ? styles.winnerRow : ''} ${row.isTbd ? styles.tbd : ''}`}
         >
           <TeamSwatch colour={row.colour} size="sm" />
-          <span class={styles.name}>{row.name}</span>
+          <span class={styles.name}>
+            <TeamName name={row.name} location={row.location} />
+          </span>
           {row.scores.map((score, i) => (
             <span key={i} class={styles.score}>
               {score}

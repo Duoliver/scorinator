@@ -605,3 +605,39 @@ describe('FixturesView', () => {
     });
   });
 });
+
+describe('FixturesView: the trigrams (Task 157, US-09.6)', () => {
+  it('shows the trigram of each team beside its swatch (choice 3)', () => {
+    const base = league(2);
+    const wrapper: LeagueWrapper = {
+      ...base,
+      teams: base.teams.map((team, i) => ({ ...team, trigram: ['UNI', 'RIV'][i] })),
+    };
+    const { container } = render(<FixturesView league={wrapper} />);
+    const fixture = fixturesOf(wrapper).fixtures[0];
+    const trigramOf = (uuid: string): string =>
+      wrapper.teams.find((team) => team.blueprintUuid === uuid)?.trigram ?? '';
+    const trigrams = [...container.querySelectorAll('[data-part="trigram"]')];
+    expect(trigrams.slice(0, 2).map((t) => t.textContent)).toEqual([
+      trigramOf(fixture.home),
+      trigramOf(fixture.away),
+    ]);
+    // Home: name, trigram, swatch. Away: swatch, trigram, name.
+    const [homeTrigram, awayTrigram] = trigrams;
+    expect(homeTrigram.previousElementSibling?.textContent).toBe(
+      wrapper.teams.find((team) => team.blueprintUuid === fixture.home)?.name
+    );
+    expect(homeTrigram.nextElementSibling?.getAttribute('aria-hidden')).toBe('true');
+    expect(awayTrigram.previousElementSibling?.getAttribute('aria-hidden')).toBe(
+      'true'
+    );
+    expect(awayTrigram.nextElementSibling?.textContent).toBe(
+      wrapper.teams.find((team) => team.blueprintUuid === fixture.away)?.name
+    );
+  });
+
+  it('shows no trigram for a team with none (choice 5)', () => {
+    const { container } = render(<FixturesView league={league(2)} />);
+    expect(container.querySelector('[data-part="trigram"]')).toBeNull();
+  });
+});

@@ -13,6 +13,8 @@ export default interface BracketViewProps {
 export interface TieCardRow {
   key: string;
   name: string;
+  /** The Location of the Blueprint, for the hint (US-09.3), or `''`. */
+  location: string;
   colour: string;
   isTbd: boolean;
   isWinner: boolean;

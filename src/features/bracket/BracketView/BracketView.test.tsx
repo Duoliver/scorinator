@@ -6,7 +6,12 @@ import type { PhasePlan } from '@/engine/phases';
 import type { BracketPhase, TeamInstance } from '@/domain';
 import { useDatabaseStore } from '@/app/state/databaseStore';
 import { createLeague, scorinateBracket } from '@/app/state/leagueWrapperActions';
-import { instance, openTestDatabase, testUuid } from '@/test/databaseRecords';
+import {
+  blueprint,
+  instance,
+  openTestDatabase,
+  testUuid,
+} from '@/test/databaseRecords';
 import { BracketView } from './BracketView';
 import { getTextWithoutHints } from '@/test/textWithoutHints';
 
@@ -237,5 +242,29 @@ describe('BracketView (Task 141)', () => {
       screen.getByText('Assign 1 / 2 byes to play the first round.')
     ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '⚽ Scorinate bracket' })).toBeDisabled();
+  });
+});
+
+describe('BracketView: the Location hint (Task 157, US-09.3)', () => {
+  beforeEach(() => {
+    createCup(4);
+    useDatabaseStore.setState({
+      blueprints: [blueprint({ uuid: testUuid(600), location: 'Coastal City' })],
+    });
+  });
+
+  it('gives a team with a Location a hint on its name in a tie card', async () => {
+    render(<FromStore />);
+    const [name] = screen.getAllByText('Team 1');
+    expect(name).toHaveAttribute('tabindex', '0');
+    await userEvent.hover(name);
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('Coastal City');
+    expect(screen.getByRole('tooltip')).toHaveAttribute('data-not-hoverable');
+  });
+
+  it('gives a team with no Location no hint and no Tab stop', () => {
+    render(<FromStore />);
+    const [name] = screen.getAllByText('Team 2');
+    expect(name).not.toHaveAttribute('tabindex');
   });
 });

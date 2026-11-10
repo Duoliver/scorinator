@@ -1,12 +1,23 @@
-import { describe, expect, it } from 'vitest';
-import { renderHook } from '@testing-library/preact';
-import { HARBORVIEW, instance, SALT_MARSH } from '@/test/databaseRecords';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { act, renderHook } from '@testing-library/preact';
+import { useDatabaseStore } from '@/app/state/databaseStore';
+import {
+  blueprint,
+  HARBORVIEW,
+  instance,
+  openTestDatabase,
+  SALT_MARSH,
+} from '@/test/databaseRecords';
 import { useTeamLookup } from './useTeamLookup';
 
 const teams = [
   instance(),
   instance({ blueprintUuid: HARBORVIEW, name: 'Harborview SC', colour: '#E53935' }),
 ];
+
+beforeEach(() => {
+  openTestDatabase();
+});
 
 describe('useTeamLookup', () => {
   it('gives the name and colour of a league Instance by its Blueprint UUID', () => {
@@ -16,6 +27,7 @@ describe('useTeamLookup', () => {
       name: 'Harborview SC',
       colour: '#E53935',
       trigram: 'SMU',
+      location: '',
     });
   });
 
@@ -26,6 +38,7 @@ describe('useTeamLookup', () => {
       name: 'fc-gone',
       colour: '',
       trigram: '',
+      location: '',
     });
   });
 
@@ -48,5 +61,21 @@ describe('useTeamLookup', () => {
 
     expect(result.current).not.toBe(first);
     expect(result.current(SALT_MARSH).name).toBe('Salt Marsh Renamed');
+  });
+
+  it('gives the Location of the Blueprint, also after an edit (US-09.3, Task 157)', () => {
+    useDatabaseStore.setState({
+      blueprints: [blueprint({ uuid: HARBORVIEW, location: 'Coastal City' })],
+    });
+    const { result } = renderHook(() => useTeamLookup(teams));
+    expect(result.current(HARBORVIEW).location).toBe('Coastal City');
+    expect(result.current(SALT_MARSH).location).toBe('');
+
+    act(() =>
+      useDatabaseStore.setState({
+        blueprints: [blueprint({ uuid: HARBORVIEW, location: 'Bay Town' })],
+      })
+    );
+    expect(result.current(HARBORVIEW).location).toBe('Bay Town');
   });
 });

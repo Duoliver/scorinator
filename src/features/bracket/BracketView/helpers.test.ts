@@ -1,3 +1,4 @@
+import type { TeamDisplay } from '@/features/components';
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_BRACKET_RULES, type PhasePlan } from '@/engine/phases';
 import type {
@@ -14,10 +15,11 @@ import {
 } from './helpers';
 
 const RULES: BracketRules = { ...DEFAULT_BRACKET_RULES, homeAdvantage: false };
-const lookup = (id: string): { name: string; colour: string; trigram: string } => ({
+const lookup = (id: string): TeamDisplay => ({
   name: id.toUpperCase(),
   colour: `#${id}`,
   trigram: '',
+  location: '',
 });
 
 describe('describeMethod (Task 141 choice 7)', () => {

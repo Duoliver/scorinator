@@ -31,6 +31,10 @@ export interface FormDot {
 export interface StandingsViewRow extends StandingsRow<string> {
   teamName: string;
   teamColour: string;
+  /** The league trigram, or `''` (Task 157). */
+  teamTrigram: string;
+  /** The Location of the Blueprint, or `''` (US-09.3). */
+  teamLocation: string;
   /** The zone of the row, for its tint and stripe (Task 155), or
    * `undefined`. */
   zone: ZoneColour | undefined;

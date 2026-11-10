@@ -1,0 +1,14 @@
+.teamName {
+  display: inline-flex;
+  min-width: 0;
+}
+
+.full {
+  min-width: 0;
+}
+
+/* Hidden until the screen CSS shows it in a narrow box (Task 157). */
+.short {
+  display: none;
+  font-family: var(--font-mono);
+}

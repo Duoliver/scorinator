@@ -551,6 +551,8 @@ describe('StandingsView: Form, the GD hint, and header hints (Task 154)', () => 
     expect(await screen.findByRole('tooltip')).toHaveTextContent(
       `ASH · ${venue} · 2–1 · MD ${first.matchday}`
     );
+    // The pointer goes through the hint to the next dot (Task 157 review).
+    expect(screen.getByRole('tooltip')).toHaveAttribute('data-not-hoverable');
   });
 
   it('shows the opponent name in the hint when it has no trigram (choice 3)', async () => {
@@ -636,5 +638,102 @@ describe('StandingsView: Form, the GD hint, and header hints (Task 154)', () => 
         'Scored 5 · Conceded 1'
       );
     });
+  });
+});
+
+describe('StandingsView: trigrams and the Location hint (Task 157, US-09.3, US-09.6)', () => {
+  const TRIGRAMS = ['UNI', 'RIV', 'TOW'];
+  const withTrigrams = (
+    wrapper: LeagueWrapper,
+    trigrams = TRIGRAMS
+  ): LeagueWrapper => ({
+    ...wrapper,
+    teams: wrapper.teams.map((team, i) => ({ ...team, trigram: trigrams[i] ?? '' })),
+  });
+  const teamCell = (name: string): HTMLElement => {
+    const row = screen.getAllByRole('row').find((candidate) => {
+      const full = candidate.querySelector('[data-part="full"]');
+      return full !== null && getTextWithoutHints(full) === name;
+    });
+    if (!row) throw new Error(`No row for ${name}`);
+    return row.children[1] as HTMLElement;
+  };
+  const part = (cell: HTMLElement, name: 'full' | 'short'): HTMLElement | null =>
+    cell.querySelector<HTMLElement>(`[data-part="${name}"]`);
+
+  beforeEach(() => {
+    openTestDatabase([
+      {
+        slug: 'fc-united',
+        name: 'FC United',
+        colour: '#E53935',
+        tier: 'B',
+        location: 'Coastal City',
+      },
+      { slug: 'fc-rivals', name: 'FC Rivals', colour: '#1E88E5', tier: 'B' },
+      { slug: 'fc-town', name: 'FC Town', colour: '#2E7D32', tier: 'B' },
+    ]);
+  });
+
+  it('gives a team with a Location a hint on its name, on hover and on focus', async () => {
+    render(<StandingsView league={withTrigrams(league())} />);
+    const full = part(teamCell('FC United'), 'full');
+    if (!full) throw new Error('No name');
+    await userEvent.hover(within(full).getByText('FC United'));
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('Coastal City');
+    // The pointer goes through the hint to the rows under it (review).
+    expect(screen.getByRole('tooltip')).toHaveAttribute('data-not-hoverable');
+    // A text trigger of `Tooltip` is a Tab stop, so a keyboard user gets
+    // the same hint on focus.
+    expect(within(full).getByText('FC United')).toHaveAttribute('tabindex', '0');
+  });
+
+  it('gives a team with no Location no hint and no Tab stop', () => {
+    render(<StandingsView league={withTrigrams(league())} />);
+    const full = part(teamCell('FC Rivals'), 'full');
+    expect(full?.querySelector('[tabindex]')).toBeNull();
+  });
+
+  it('has the trigram for a narrow table, with the name and the Location in its hint', async () => {
+    render(<StandingsView league={withTrigrams(league())} />);
+    const short = part(teamCell('FC United'), 'short');
+    expect(short).toHaveTextContent('UNI');
+    if (!short) throw new Error('No trigram');
+    await userEvent.hover(within(short).getByText('UNI'));
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(
+      'FC United · Coastal City'
+    );
+    expect(screen.getByRole('tooltip')).toHaveAttribute('data-not-hoverable');
+  });
+
+  it('gives a trigram of a team with no Location the name as its hint', async () => {
+    render(<StandingsView league={withTrigrams(league())} />);
+    const short = part(teamCell('FC Rivals'), 'short');
+    if (!short) throw new Error('No trigram');
+    await userEvent.hover(within(short).getByText('RIV'));
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('FC Rivals');
+  });
+
+  it('keeps the name only for a team with no trigram (choice 5)', () => {
+    render(<StandingsView league={withTrigrams(league(), ['UNI', '', 'TOW'])} />);
+    expect(part(teamCell('FC Rivals'), 'short')).toBeNull();
+    expect(part(teamCell('FC United'), 'short')).not.toBeNull();
+  });
+
+  it('has the trigram and the Location hint in a group card too', async () => {
+    const FOUR = [...TEAMS, { name: 'FC Rangers', colour: '#6A1B9A' }];
+    const drawn = groupsLeague(FOUR, [
+      [1, 2],
+      [3, 4],
+    ]);
+    render(
+      <StandingsView league={withTrigrams(drawn, ['UNI', 'RIV', 'TOW', 'RAN'])} />
+    );
+    const cell = teamCell('FC United');
+    expect(part(cell, 'short')).toHaveTextContent('UNI');
+    const full = part(cell, 'full');
+    if (!full) throw new Error('No name');
+    await userEvent.hover(within(full).getByText('FC United'));
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('Coastal City');
   });
 });

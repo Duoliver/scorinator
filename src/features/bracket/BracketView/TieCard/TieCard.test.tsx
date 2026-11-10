@@ -8,6 +8,7 @@ import { getTextWithoutHints } from '@/test/textWithoutHints';
 const row = (key: string, scores: string[]): TieCardRow => ({
   key,
   name: `Team ${key}`,
+  location: '',
   colour: '#123456',
   isTbd: false,
   isWinner: false,

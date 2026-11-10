@@ -11,9 +11,8 @@ import {
   planSlugListImport,
   teamListProblem,
 } from '@/app/state/teamInstances';
-import { formatTeamCount } from '@/features/components';
+import { formatTeamCount, useBlueprintLocation } from '@/features/components';
 import { settingsChipLabels } from '@/features/leagues/LeagueSetupScreen/steps/SetupChips';
-import { useBlueprintLocation } from '@/features/leagues/LeagueSetupScreen/useBlueprintLocation';
 import { formatLeagueName } from '@/features/leagues/leagueSummary';
 import type TeamsStepProps from './types';
 import type { TeamsStepOverlay, TeamsStepState } from './types';

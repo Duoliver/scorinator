@@ -1,6 +1,10 @@
 import type { JSX } from 'preact';
 import { Button, Card } from '@/design-system';
-import { TeamSwatch, formatTeamCount } from '@/features/components';
+import {
+  TeamSwatch,
+  formatTeamCount,
+  useBlueprintLocation,
+} from '@/features/components';
 import {
   SetupChips,
   settingsChipLabels,
@@ -16,7 +20,6 @@ import {
   GROUPS_LAST_WARNING,
 } from '@/features/leagues/LeagueSetupScreen/phaseChecks';
 import { TeamLabel } from '@/features/leagues/TeamLabel';
-import { useBlueprintLocation } from '@/features/leagues/LeagueSetupScreen/useBlueprintLocation';
 import type ReviewStepProps from './types';
 import styles from './ReviewStep.module.css';
 

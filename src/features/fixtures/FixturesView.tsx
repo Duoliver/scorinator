@@ -141,6 +141,11 @@ export function FixturesView(props: FixturesViewProps): JSX.Element {
             {row.groupTag && <GroupTag letter={row.groupTag} />}
             <div class={styles.home}>
               <span class={styles.teamName}>{row.home.name}</span>
+              {row.home.trigram && (
+                <span class={styles.trigram} data-part="trigram">
+                  {row.home.trigram}
+                </span>
+              )}
               <TeamSwatch
                 colour={row.home.colour}
                 size="sm"
@@ -160,6 +165,14 @@ export function FixturesView(props: FixturesViewProps): JSX.Element {
             </span>
             <div class={styles.away}>
               <TeamSwatch colour={row.away.colour} size="sm" />
+              {row.away.trigram && (
+                <span
+                  class={`${styles.trigram} ${styles.awayTrigram}`}
+                  data-part="trigram"
+                >
+                  {row.away.trigram}
+                </span>
+              )}
               <span class={styles.teamName}>{row.away.name}</span>
               <span
                 class={styles.goals}

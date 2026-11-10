@@ -116,7 +116,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 189 | Zone editors: the wizard "Zones" section, "Edit zones" in League Detail | `engine/phases`, `features/leagues`, `app/state` | ✅ Done | 2026-11-10 | 2026-11-10 | [189](/docs/tasks/189-zone-editors.md) | Split from 155 - 2026-11-10. US-12.5. 34 new tests. The user checked the real app. |
 | 156 | The position chart: the "Chart" sub-tab, SVG, the group selector | `features/chart`, `features/leagues`, `design-system/` | ✅ Done | 2026-11-10 | 2026-11-10 | [156](/docs/tasks/156-position-chart.md) | M6. US-12.4. 30 new tests. The user checked the real app. Zones in Task 190. |
 | 190 | Zones in the position chart: bands, tinted place numbers, the legend | `features/chart`, `features/components` | ✅ Done | 2026-11-10 | 2026-11-10 | [190](/docs/tasks/190-chart-zones.md) | Task created by User - 2026-11-10. From the Task 156 review. 7 new tests. The user checked the real app. |
-| 157 | Trigrams and Location on league screens: narrow tables, fixtures, the Location hint | `features/` | ⬜ Not started |  |  |  | M6. US-09.3, 09.6. After 154. |
+| 157 | Trigrams and Location on league screens: narrow tables, fixtures, the Location hint | `features/` | ✅ Done | 2026-11-10 | 2026-11-10 | [157](/docs/tasks/157-trigrams-location-league-screens.md) | M6. US-09.3, 09.6. 11 new tests. The user checked the real app. |
 | 184 | String unions to enums or named constants, across the codebase | all | ⬜ Not started |  |  | [184](/docs/tasks/184-string-unions-to-constants.md) | Task created by User - 2026-11-03. From the Task 137 review. Before 158. Criteria wait for the user. |
 | 158 | M6 smoke check: MVP2 complete | all | ⬜ Not started |  |  |  | M6. After 155, 156, 157, 189, 190. |
 | 159 | The commit workflow: commit at Done, the message pattern | `CLAUDE.md`, `PROGRESS.md` | ✅ Done | 2026-10-29 | 2026-10-29 | [159](/docs/tasks/159-commit-workflow.md) | Task created by User - 2026-10-29. Commit at Done. Push and branches stay with the user. |
@@ -188,6 +188,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-11-10 (Task 157 — trigrams and Location on league screens):** The user agreed six choices. (1) CSS container queries: trigrams below 47.5rem in the table, and below 20rem in a group card. (2) The hint gives the Location, or the name and the Location on a trigram. (3) The fixtures trigram beside each swatch. (4) `useBlueprintLocation` moves to `features/components/`. (5) No trigram: the name stays. (6) Task 180 stays separate. Detail: [Task 157](/docs/tasks/157-trigrams-location-league-screens.md).
 
 - **2026-11-10 (Task 190 — zones in the chart):** The user agreed three choices. (1) The chart shows the zones by place, also in a complete phase: the yellow band stays. (2) The Standings legend under the chart, for each zone that covers a chart place. (3) The legend moves to `features/components/ZoneLegend/`. Detail: [Task 190](/docs/tasks/190-chart-zones.md).
 

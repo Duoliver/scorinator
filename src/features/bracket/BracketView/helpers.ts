@@ -122,6 +122,7 @@ function buildRow(
     return {
       key: `${side.kind}-${index}`,
       name: side.kind === 'bye' ? 'BYE' : 'TBD',
+      location: '',
       colour: TBD_COLOUR,
       isTbd: side.kind === 'tbd',
       isWinner: false,
@@ -132,6 +133,7 @@ function buildRow(
   return {
     key: side.teamId,
     name: team.name,
+    location: team.location,
     colour: team.colour,
     isTbd: false,
     isWinner: result?.winnerId === side.teamId,

@@ -1,6 +1,6 @@
 import type { JSX } from 'preact';
 import { Tooltip, type TableColumn, type TableRowTone } from '@/design-system';
-import { TeamSwatch } from '@/features/components';
+import { TeamName, TeamSwatch } from '@/features/components';
 import type { FormDot, StandingsViewRow } from './types';
 import styles from './StandingsView.module.css';
 
@@ -31,7 +31,9 @@ const renderForm = (row: StandingsViewRow): JSX.Element => {
   return (
     <span class={styles.form}>
       {row.form.map((dot) => (
-        <Tooltip key={dot.matchday} content={renderFormHint(dot)}>
+        // `notHoverable`: the pointer goes through the hint to the next dot
+        // (Task 157 review).
+        <Tooltip key={dot.matchday} content={renderFormHint(dot)} notHoverable>
           <span class={styles.dot} data-outcome={dot.outcome}>
             {dot.outcome}
           </span>
@@ -68,7 +70,11 @@ export const COLUMNS: TableColumn<StandingsViewRow>[] = [
     render: (row) => (
       <span class={styles.team}>
         <TeamSwatch colour={row.teamColour} size="sm" />
-        {row.teamName}
+        <TeamName
+          name={row.teamName}
+          location={row.teamLocation}
+          trigram={row.teamTrigram}
+        />
       </span>
     ),
   },
@@ -112,7 +118,11 @@ export const GROUP_COLUMNS: TableColumn<StandingsViewRow>[] = [
     render: (row) => (
       <span class={styles.team}>
         <TeamSwatch colour={row.teamColour} size="sm" />
-        <span class={styles.teamName}>{row.teamName}</span>
+        <TeamName
+          name={row.teamName}
+          location={row.teamLocation}
+          trigram={row.teamTrigram}
+        />
       </span>
     ),
   },

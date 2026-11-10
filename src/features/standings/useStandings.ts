@@ -51,11 +51,13 @@ export function useStandings(
     const viewTables = phaseStandings(league, phaseIndex).map((table, index) => ({
       name: phase.format === 'groups' ? `Group ${groupLabel(index)}` : 'Standings',
       rows: table.map((row): StandingsViewRow => {
-        const { name, colour } = lookupTeam(row.team);
+        const { name, colour, trigram, location } = lookupTeam(row.team);
         return {
           ...row,
           teamName: name,
           teamColour: colour,
+          teamTrigram: trigram,
+          teamLocation: location,
           zone: zoneView.colours.get(row.team),
           form: formOf(row.team),
         };

@@ -74,5 +74,6 @@ export { SwatchPicker } from './components/SwatchPicker';
 export type { SwatchPickerProps, SwatchOption } from './components/SwatchPicker';
 
 export { colors, aaaTextPairs } from './tokens';
+export { getContrastRatio, hasLowGraphicContrast } from './tokens/contrast';
 export { TEAM_PALETTE, DEFAULT_TEAM_COLOUR } from './tokens/teamPalette';
 export type { TeamPaletteEntry } from './tokens/teamPalette';

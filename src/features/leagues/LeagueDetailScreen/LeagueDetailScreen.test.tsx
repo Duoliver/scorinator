@@ -76,7 +76,18 @@ describe('LeagueDetailScreen', () => {
       expect(screen.getAllByRole('tab').map((tab) => tab.textContent)).toEqual([
         'Standings',
         'Fixtures',
+        'Chart',
       ]);
+    });
+
+    it('shows the position chart on the Chart tab, after a scorinate (Task 156)', async () => {
+      render(<LeagueDetailScreen uuid={LEAGUE} />);
+      await userEvent.click(screen.getByRole('tab', { name: 'Chart' }));
+      expect(
+        screen.getByText('The chart shows after the first result.')
+      ).toBeInTheDocument();
+      act(() => scorinateMatchday(LEAGUE, 1));
+      expect(screen.getByRole('img', { name: 'Position chart' })).toBeInTheDocument();
     });
 
     it('renders the league name and a meta summary line', () => {
@@ -287,6 +298,18 @@ describe('LeagueDetailScreen', () => {
       expect(screen.queryByRole('tab', { name: 'Standings' })).not.toBeInTheDocument();
     });
 
+    it('has a Chart tab with a Group selector in a Groups phase (Task 156)', async () => {
+      openTestLeague(
+        groupsLeague(FOUR, [
+          [1, 2],
+          [3, 4],
+        ])
+      );
+      render(<LeagueDetailScreen uuid={LEAGUE} />);
+      await userEvent.click(screen.getByRole('tab', { name: 'Chart' }));
+      expect(screen.getByLabelText('Group')).toBeInTheDocument();
+    });
+
     describe('with two started phases', () => {
       beforeEach(() => {
         openTestLeague(
@@ -466,6 +489,8 @@ describe('LeagueDetailScreen', () => {
       expect(
         screen.getByRole('button', { name: '⚽ Scorinate bracket' })
       ).toBeEnabled();
+      // A bracket has no position chart (US-12.4, Task 156).
+      expect(screen.queryByRole('tab', { name: 'Chart' })).not.toBeInTheDocument();
       // The Seed List sub-tab comes after the Bracket tab (Task 142 choice 1).
       await userEvent.click(screen.getByRole('tab', { name: 'Seed List' }));
       expect(screen.getByRole('table', { name: 'Seed List' })).toBeInTheDocument();

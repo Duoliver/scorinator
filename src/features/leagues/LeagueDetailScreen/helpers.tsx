@@ -1,5 +1,6 @@
 import type { JSX } from 'preact';
 import { BracketView, SeedList } from '@/features/bracket';
+import { PositionChart } from '@/features/chart';
 import { Button, Tabs, type DropdownMenuItem, type TabItem } from '@/design-system';
 import { exportLeague, exportResults, exportSlugList } from '@/app/exportActions';
 import type { LeagueWrapper } from '@/domain';
@@ -90,8 +91,9 @@ const DrawEditor = ({
   </div>
 );
 
-/** Standings and Fixtures of one started phase, matching the design
- * reference: scorination is a button inside Fixtures, not its own tab. Both
+/** Standings, Fixtures, and Chart (Task 156) of one started phase, matching
+ * the design reference: scorination is a button inside Fixtures, not its
+ * own tab. Both
  * views read the same `league` wrapper, so a scorinate in Fixtures shows up
  * in Standings on the next tab switch. With a `draw`, the Standings tab
  * shows the draw cards in place of the tables (Task 181). A bracket phase
@@ -152,6 +154,11 @@ const getScheduledTabs = (
         onMatchdayChange={(matchday) => memory.setMatchday(phaseIndex, matchday)}
       />
     ),
+  },
+  {
+    id: 'chart',
+    label: 'Chart',
+    content: <PositionChart league={league} phaseIndex={phaseIndex} />,
   },
 ];
 

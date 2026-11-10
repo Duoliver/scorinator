@@ -44,6 +44,7 @@ Inside `design-system/`, import `FieldHandle` from `@/design-system/field`. An i
 - Each primitive lives in its own folder: `design-system/components/{ComponentName}/{ComponentName}.tsx`, plus `.module.css`, `.test.tsx`, and `types.ts` (see below). It also has a `package.json` whose `main`/`types` point at `./{ComponentName}.tsx`. This lets `./components/{ComponentName}` resolve as a directory import, with no need to rename the component file to `index.tsx`.
 - Tokens live in `design-system/tokens/`: `tokens.css`, `tokens.ts`, `fonts.css`, `elements.css`. This folder also has a `package.json` pointing `main`/`types` at `tokens.ts`. That lets `design-system/index.ts` import from `./tokens` the same way as a component.
 - `tokens.ts` is a plain-JS mirror of the colour values in `tokens.css`. This exists for the automated AAA contrast check, which cannot read CSS custom properties outside a DOM. `tokens/tokens.sync.test.ts` asserts the two stay in sync. Update both files together.
+- `tokens/contrast.ts` holds `getContrastRatio`, the one WCAG contrast function. The token test uses it. `hasLowGraphicContrast` uses it too: a colour below 3:1 on the page background needs a dark outline, as a team line in the position chart does (Task 156).
 
 ## Component types live in a sibling `types.ts`
 

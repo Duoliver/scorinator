@@ -114,7 +114,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 154 | Standings table: Form with hints, GF and GA in the GD hint, header hints | `features/standings` | ✅ Done | 2026-11-09 | 2026-11-09 | [154](/docs/tasks/154-standings-table.md) | M6. US-12.1 to 12.3. The user checked the real app. |
 | 155 | Zones: the rules, the files, tint, stripe, legend, in place of the highlight | `engine/phases`, `adapters/json-io`, `app/`, `design-system/`, `features/standings` | ✅ Done | 2026-11-09 | 2026-11-10 | [155](/docs/tasks/155-zones.md) | M6. US-12.5, 02.2, 07.2. 37 new tests. The user checked the real app. Editors in Task 189. |
 | 189 | Zone editors: the wizard "Zones" section, "Edit zones" in League Detail | `engine/phases`, `features/leagues`, `app/state` | ✅ Done | 2026-11-10 | 2026-11-10 | [189](/docs/tasks/189-zone-editors.md) | Split from 155 - 2026-11-10. US-12.5. 34 new tests. The user checked the real app. |
-| 156 | The position chart: the "Chart" sub-tab, SVG, the group selector | `features/standings` | ⬜ Not started |  |  |  | M6. US-12.4. After 153. |
+| 156 | The position chart: the "Chart" sub-tab, SVG, the group selector | `features/chart`, `features/leagues`, `design-system/` | ✅ Done | 2026-11-10 | 2026-11-10 | [156](/docs/tasks/156-position-chart.md) | M6. US-12.4. 30 new tests. The user checked the real app. Zones in Task 190. |
 | 157 | Trigrams and Location on league screens: narrow tables, fixtures, the Location hint | `features/` | ⬜ Not started |  |  |  | M6. US-09.3, 09.6. After 154. |
 | 184 | String unions to enums or named constants, across the codebase | all | ⬜ Not started |  |  | [184](/docs/tasks/184-string-unions-to-constants.md) | Task created by User - 2026-11-03. From the Task 137 review. Before 158. Criteria wait for the user. |
 | 158 | M6 smoke check: MVP2 complete | all | ⬜ Not started |  |  |  | M6. After 155, 156, 157, 189. |
@@ -187,6 +187,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-11-10 (Task 156 — the position chart):** The user agreed eight choices. (1) `features/chart/`. (2) The chart fills the tab width: a 38-matchday round robin shows in full on a 1920px screen, with a 1rem minimum step. (3) A dark outline for a team colour below 3:1 on the page background. (4) A point hint on hover only. (5) A legend of team buttons. (6) The name for a missing trigram. (7) 25% fade, 2px to 4px line. (8) "1st" in the hint, numbers on the axis. Detail: [Task 156](/docs/tasks/156-position-chart.md).
 
 - **2026-11-10 (Task 189 — the zone editors):** The user agreed seven choices. (1) `features/leagues/ZoneEditor/`. (2) Four fixed rows, one for each colour. (3) Store an automatic zone only with a label that is not the default, and a free zone only when it is on. (4) A wizard phase change drops the green or yellow zones that change kind, and a Bracket drops all. (5) The wizard section is always open. (6) "Edit zones" in the sub-tab row, in a `Drawer`. (7) No check of the places against the team count. Detail: [Task 189](/docs/tasks/189-zone-editors.md).
 

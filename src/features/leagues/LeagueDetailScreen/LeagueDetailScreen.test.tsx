@@ -869,6 +869,22 @@ describe('LeagueDetailScreen: "Edit zones" (Task 189, US-12.5)', () => {
     );
   });
 
+  it('shows a saved zone in the chart at once (Task 190)', async () => {
+    openTestLeague(league());
+    scorinateMatchday(LEAGUE, 1);
+    const { container } = render(<LeagueDetailScreen uuid={LEAGUE} />);
+    await userEvent.click(screen.getByRole('tab', { name: 'Chart' }));
+    expect(container.querySelector('[data-part="band"]')).toBeNull();
+    await editZones();
+    await addRedZone('2', '2');
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+
+    expect(container.querySelector('[data-part="band"]')).toHaveAttribute(
+      'data-zone',
+      'red'
+    );
+  });
+
   it('changes nothing on Cancel', async () => {
     const wrapper = openTestLeague(league());
     render(<LeagueDetailScreen uuid={LEAGUE} />);

@@ -1,6 +1,6 @@
 import type { JSX } from 'preact';
 import { Select } from '@/design-system';
-import { TeamSwatch } from '@/features/components';
+import { TeamSwatch, ZoneLegend } from '@/features/components';
 import { getMatchdayX, getPlaceY, MIN_MATCHDAY_WIDTH, PLACE_HEIGHT } from './helpers';
 import type PositionChartProps from './types';
 import type { ChartLine, PositionChartView } from './types';
@@ -71,7 +71,8 @@ const renderLine = (view: PositionChartView, line: ChartLine): JSX.Element => (
  * team after each matchday with a result, one line for each team in its
  * colour, with the trigram at its end. The chart fills the width of the
  * tab (choice 2). The SVG draws x in percent and y in `em`, and the place
- * numbers and the line ends are HTML columns of the same row height.
+ * numbers and the line ends are HTML columns of the same row height. The
+ * zones of the phase are bands behind the lines (Task 190).
  */
 export function PositionChart({ league, phaseIndex }: PositionChartProps): JSX.Element {
   const view = usePositionChart(league, phaseIndex);
@@ -103,7 +104,12 @@ export function PositionChart({ league, phaseIndex }: PositionChartProps): JSX.E
             >
               <div class={styles.places} aria-hidden="true">
                 {places.map((place) => (
-                  <span key={place} class={styles.row} data-part="place">
+                  <span
+                    key={place}
+                    class={styles.row}
+                    data-part="place"
+                    data-zone={view.getPlaceZone(place)}
+                  >
                     {place}
                   </span>
                 ))}
@@ -115,6 +121,19 @@ export function PositionChart({ league, phaseIndex }: PositionChartProps): JSX.E
                   aria-label="Position chart"
                   style={{ height: `${plotHeight}rem` }}
                 >
+                  {/* The zone bands, behind the grid and the lines (Task 190). */}
+                  {view.zones.map((zone) => (
+                    <rect
+                      key={zone.colour}
+                      class={styles.band}
+                      data-part="band"
+                      data-zone={zone.colour}
+                      x="0"
+                      width="100%"
+                      y={`${(zone.from - 1) * PLACE_HEIGHT}em`}
+                      height={`${(Math.min(zone.to, view.placeCount) - zone.from + 1) * PLACE_HEIGHT}em`}
+                    />
+                  ))}
                   {places.map((place) => (
                     <line
                       key={place}
@@ -164,6 +183,7 @@ export function PositionChart({ league, phaseIndex }: PositionChartProps): JSX.E
               </div>
             </div>
           </div>
+          <ZoneLegend zones={view.zones} />
           <ul class={styles.legend} aria-label="Teams">
             {view.lines.map((line) => (
               <li key={line.team}>

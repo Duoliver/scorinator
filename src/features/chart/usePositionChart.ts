@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'preact/hooks';
 import { hasLowGraphicContrast } from '@/design-system';
+import { getPhaseZones, type PhaseZone } from '@/engine/phases';
 import { groupLabel } from '@/engine/round-robin';
 import { getPlacesByMatchday } from '@/engine/standings';
 import { leagueLotOf, phaseTeamLists } from '@/app/state/phases';
@@ -27,7 +28,12 @@ export function usePositionChart(
 
   const chart = useMemo(() => {
     if (!phase || phase.format === 'bracket') {
-      return { groupCount: 0, matchdays: 0, lines: [] as ChartLine[] };
+      return {
+        groupCount: 0,
+        matchdays: 0,
+        lines: [] as ChartLine[],
+        zones: [] as PhaseZone[],
+      };
     }
     const lists = phaseTeamLists(league, phaseIndex);
     const teams = lists[groupIndex] ?? [];
@@ -63,10 +69,19 @@ export function usePositionChart(
         };
       })
       .sort((a, b) => a.lastPlace - b.lastPlace);
+    // The zones by place, also in a complete phase: the chart shows places,
+    // not teams, so the yellow band stays (Task 190 choice 1). A zone below
+    // the last place has no row here.
+    const plan = league.content.plans[phaseIndex];
+    const zones =
+      plan && plan.format !== 'bracket'
+        ? getPhaseZones(plan).filter((zone) => zone.from <= lines.length)
+        : [];
     return {
       groupCount: phase.format === 'groups' ? lists.length : 0,
       matchdays,
       lines,
+      zones,
     };
   }, [league, phase, phaseIndex, groupIndex, lookupTeam]);
 
@@ -87,6 +102,9 @@ export function usePositionChart(
     matchdays: chart.matchdays,
     placeCount: chart.lines.length,
     lines: chart.lines,
+    zones: chart.zones,
+    getPlaceZone: (place) =>
+      chart.zones.find((zone) => zone.from <= place && place <= zone.to)?.colour,
     highlight,
     setHighlight,
     hint,

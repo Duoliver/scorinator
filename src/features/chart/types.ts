@@ -1,4 +1,5 @@
 import type { SelectOption } from '@/design-system';
+import type { PhaseZone, ZoneColour } from '@/engine/phases';
 import type { LeagueWrapper } from '@/domain';
 
 export default interface PositionChartProps {
@@ -47,6 +48,11 @@ export interface PositionChartView {
   placeCount: number;
   /** One line for each team, by its last place. */
   lines: ChartLine[];
+  /** The zones of the phase that start on a place of the chart, in place
+   * order (Task 190). */
+  zones: PhaseZone[];
+  /** The zone colour of a place, or `undefined`. */
+  getPlaceZone: (place: number) => ZoneColour | undefined;
   /** The team that stands out, or `undefined`. */
   highlight: string | undefined;
   setHighlight: (team: string | undefined) => void;

@@ -62,6 +62,50 @@
   overflow: visible;
 }
 
+/* The zone bands (Task 190): the tints of the table rows. */
+.band[data-zone='green'] {
+  fill: var(--color-zone-green-tint);
+}
+
+.band[data-zone='blue'] {
+  fill: var(--color-zone-blue-tint);
+}
+
+.band[data-zone='yellow'] {
+  fill: var(--color-zone-yellow-tint);
+}
+
+.band[data-zone='red'] {
+  fill: var(--color-zone-red-tint);
+}
+
+/* The place numbers of a zone: the tint and the stripe of a table row.
+ * The stripe is an inset shadow, so the column does not move. */
+.places .row[data-zone] {
+  padding-left: var(--space-2);
+  color: var(--color-fg);
+}
+
+.places .row[data-zone='green'] {
+  background: var(--color-zone-green-tint);
+  box-shadow: inset var(--border-width-heavy) 0 0 var(--color-zone-green);
+}
+
+.places .row[data-zone='blue'] {
+  background: var(--color-zone-blue-tint);
+  box-shadow: inset var(--border-width-heavy) 0 0 var(--color-zone-blue);
+}
+
+.places .row[data-zone='yellow'] {
+  background: var(--color-zone-yellow-tint);
+  box-shadow: inset var(--border-width-heavy) 0 0 var(--color-zone-yellow);
+}
+
+.places .row[data-zone='red'] {
+  background: var(--color-zone-red-tint);
+  box-shadow: inset var(--border-width-heavy) 0 0 var(--color-zone-red);
+}
+
 .grid {
   stroke: var(--color-border);
   stroke-opacity: 0.15;

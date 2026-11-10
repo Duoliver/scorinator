@@ -1,7 +1,8 @@
 import type { JSX } from 'preact';
 import { Table } from '@/design-system';
 import type StandingsViewProps from './types';
-import { COLUMNS, GROUP_COLUMNS, getZoneLegendText, rowKey, rowTone } from './helpers';
+import { ZoneLegend } from '@/features/components';
+import { COLUMNS, GROUP_COLUMNS, rowKey, rowTone } from './helpers';
 import { useStandings } from './useStandings';
 import styles from './StandingsView.module.css';
 
@@ -60,16 +61,7 @@ export function StandingsView({
           </div>
         </div>
       )}
-      {zones.length > 0 && (
-        <ul class={styles.legend} aria-label="Zones">
-          {zones.map((zone) => (
-            <li class={styles.legendItem} key={zone.colour}>
-              <span class={styles.legendSwatch} data-zone={zone.colour} />
-              {getZoneLegendText(zone)}
-            </li>
-          ))}
-        </ul>
-      )}
+      <ZoneLegend zones={zones} />
       {advanceText && <p class={styles.note}>{advanceText}</p>}
       {!hasResults && <p class={styles.note}>No matches played yet.</p>}
     </div>

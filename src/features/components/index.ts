@@ -18,4 +18,6 @@ export { formatTeamCount } from './formatTeamCount';
 export { StatusLine } from './StatusLine';
 export type { StatusLineProps, StatusLinePlacement } from './StatusLine';
 export { TeamSwatch } from './TeamSwatch';
+export { ZoneLegend } from './ZoneLegend';
+export type { ZoneLegendProps } from './ZoneLegend';
 export type { TeamSwatchProps, TeamSwatchSize } from './TeamSwatch';

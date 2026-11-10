@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { fireEvent, render, screen, within } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import type { LeagueWrapper, PhaseResult } from '@/domain';
+import type { PhasePlan, PlanZone } from '@/engine/phases';
 import {
   groupsLeague,
   roundRobinLeague,
@@ -209,6 +210,134 @@ describe('PositionChart (Task 156, US-12.4)', () => {
     await userEvent.selectOptions(screen.getByLabelText('Group'), '1');
     expect(container.querySelector(`[data-team="${testUuid(3)}"]`)).not.toBeNull();
     expect(container.querySelector(`[data-team="${testUuid(1)}"]`)).toBeNull();
+  });
+});
+
+describe('PositionChart: zones (Task 190, US-12.5)', () => {
+  /** The league after matchday 1, with these zones on its one plan. */
+  const zoned = (zones: PlanZone[]): LeagueWrapper => {
+    const wrapper = league(playMatchdayOne);
+    const plans: PhasePlan[] = [{ format: 'round-robin', legs: 'two-way', zones }];
+    return { ...wrapper, content: { ...wrapper.content, plans } };
+  };
+  const bands = (container: Element): (string | null)[] =>
+    [...container.querySelectorAll('[data-part="band"]')].map((band) =>
+      band.getAttribute('data-zone')
+    );
+  const placeZones = (container: Element): (string | null)[] =>
+    [...container.querySelectorAll('[data-part="place"]')].map((place) =>
+      place.getAttribute('data-zone')
+    );
+
+  it('draws a band for each zone, behind the team lines', () => {
+    const { container } = render(
+      <PositionChart
+        league={zoned([
+          { colour: 'red', places: { from: 3, to: 4 }, label: 'Out' },
+          { colour: 'blue', places: { from: 1, to: 1 }, label: '' },
+        ])}
+      />
+    );
+    expect(bands(container)).toEqual(['blue', 'red']);
+    const band = container.querySelector('[data-part="band"]');
+    const line = container.querySelector('[data-team]');
+    if (!band || !line) throw new Error('No band or line');
+    expect(
+      band.compareDocumentPosition(line) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+  });
+
+  it('gives the place numbers of a zone its tone', () => {
+    const { container } = render(
+      <PositionChart
+        league={zoned([
+          { colour: 'red', places: { from: 3, to: 4 }, label: 'Out' },
+          { colour: 'blue', places: { from: 1, to: 1 }, label: '' },
+        ])}
+      />
+    );
+    expect(placeZones(container)).toEqual(['blue', null, 'red', 'red']);
+  });
+
+  it('shows the zone legend under the chart', () => {
+    render(
+      <PositionChart
+        league={zoned([
+          { colour: 'red', places: { from: 3, to: 4 }, label: 'Out' },
+          { colour: 'blue', places: { from: 1, to: 1 }, label: '' },
+        ])}
+      />
+    );
+    const legend = screen.getByRole('list', { name: 'Zones' });
+    expect(
+      within(legend)
+        .getAllByRole('listitem')
+        .map((item) => item.textContent)
+    ).toEqual(['Place 1', 'Out']);
+  });
+
+  it('leaves out a zone below the last place, and cuts a zone at the last place', () => {
+    const { container } = render(
+      <PositionChart
+        league={zoned([
+          { colour: 'red', places: { from: 18, to: 20 }, label: '' },
+          { colour: 'blue', places: { from: 3, to: 10 }, label: '' },
+        ])}
+      />
+    );
+    expect(bands(container)).toEqual(['blue']);
+    expect(placeZones(container)).toEqual([null, null, 'blue', 'blue']);
+    expect(screen.getByRole('list', { name: 'Zones' })).toHaveTextContent(
+      'Places 3–10'
+    );
+    expect(screen.getByRole('list', { name: 'Zones' })).not.toHaveTextContent('18');
+  });
+
+  it('shows no zone and no zone legend with no zones', () => {
+    const { container } = render(<PositionChart league={league(playMatchdayOne)} />);
+    expect(bands(container)).toEqual([]);
+    expect(screen.queryByRole('list', { name: 'Zones' })).not.toBeInTheDocument();
+  });
+
+  it('keeps the yellow band of a complete Groups phase (choice 1)', () => {
+    const SIX = [
+      ...TEAMS,
+      { name: 'FC Dunes', colour: '#00838F' },
+      { name: 'FC Vale', colour: '#2E7D32' },
+    ];
+    const drawn = groupsLeague(
+      SIX,
+      [
+        [1, 2, 3],
+        [4, 5, 6],
+      ],
+      [
+        {
+          format: 'groups',
+          legs: 'two-way',
+          grouping: { by: 'count', count: 2 },
+          advance: { top: 1, bestOfNext: 1 },
+        },
+        { format: 'bracket' },
+      ]
+    );
+    const phase = scheduled(drawn.content.phases[0]);
+    const results = phase.fixtures.map((f) => ({
+      fixtureId: f.id,
+      home: f.home,
+      away: f.away,
+      homeGoals: 1,
+      awayGoals: 0,
+    }));
+    const complete: LeagueWrapper = {
+      ...drawn,
+      content: { ...drawn.content, phases: [{ ...phase, results }] },
+    };
+    const { container } = render(<PositionChart league={complete} />);
+    expect(bands(container)).toEqual(['green', 'yellow']);
+    expect(screen.getByRole('list', { name: 'Zones' })).toHaveTextContent(
+      'Best 1 of place 2'
+    );
   });
 });
 

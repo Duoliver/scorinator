@@ -2,8 +2,9 @@ import type { ComponentChildren } from 'preact';
 
 export type TableAlign = 'left' | 'center' | 'right';
 
-/** The tint of one row (Task 132): "positive" or the lighter "caution". */
-export type TableRowTone = 'positive' | 'caution';
+/** The tone of one row (Task 155): the tint and the left stripe of a
+ * position zone (US-12.5). */
+export type TableRowTone = 'green' | 'blue' | 'yellow' | 'red';
 
 export interface TableColumn<Row> {
   key: string;
@@ -26,7 +27,7 @@ export default interface TableProps<Row> {
   /** Smaller gaps, padding, and text, for a table in a narrow card, such
    * as a group card (Task 131). Default (false) is the full-size table. */
   compact?: boolean;
-  /** The tint of each row, or `undefined` for none. The screen decides what
-   * a tone means, for example a qualifier place. */
+  /** The tone of each row, or `undefined` for none. The screen decides what
+   * a tone means, for example a position zone. */
   rowTone?: (row: Row) => TableRowTone | undefined;
 }

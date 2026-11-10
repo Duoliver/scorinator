@@ -72,9 +72,10 @@
   color: var(--color-fg-muted);
 }
 
-/* The winner: bold, with the positive row tint (choice 4). */
+/* The winner: bold, with the green zone tint, the tint of a qualifier row
+ * (choice 4, Task 155). */
 .winnerRow {
-  background: var(--color-row-positive);
+  background: var(--color-zone-green-tint);
   font-weight: 700;
 }
 

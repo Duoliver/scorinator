@@ -5,6 +5,7 @@ import userEvent from '@testing-library/user-event';
 import { scorinateFixture } from '@/app/state/leagueWrapperActions';
 import { useDatabaseStore } from '@/app/state/databaseStore';
 import type { LeagueWrapper, PhaseResult, ScheduledPhase } from '@/domain';
+import type { PhasePlan } from '@/engine/phases';
 import { StandingsView } from './StandingsView';
 import { getTextWithoutHints } from '@/test/textWithoutHints';
 import {
@@ -26,6 +27,10 @@ const TEAMS = [
   { name: 'FC Rivals', colour: '#1E88E5' },
   { name: 'FC Town', colour: '#2E7D32' },
 ];
+
+/** The name of one of the three `TEAMS`, by its Blueprint UUID. */
+const nameOf = (uuid: string): string =>
+  TEAMS[[UNITED, RIVALS, TOWN].indexOf(uuid)].name;
 
 /** A three-team league with the given results in phase 1, and other
  * league fields from `details`. */
@@ -275,63 +280,153 @@ describe('StandingsView', () => {
     });
   });
 
-  describe('the qualifier tint (Task 132, US-02.2, US-07.2)', () => {
+  describe('the zones (Task 155, US-12.5, US-02.2, US-07.2)', () => {
     const SIX = [
       ...TEAMS,
       { name: 'FC Harbour', colour: '#6A1B9A' },
       { name: 'FC Valley', colour: '#F9A825' },
       { name: 'FC Dunes', colour: '#00838F' },
     ];
+    const GROUPS_BEST_M: PhasePlan[] = [
+      {
+        format: 'groups',
+        legs: 'two-way',
+        grouping: { by: 'count', count: 2 },
+        advance: { top: 1, bestOfNext: 1 },
+      },
+      { format: 'bracket' },
+    ];
     const tones = (name: string): (string | null)[] =>
       within(screen.getByRole('table', { name }))
         .getAllByRole('row')
         .slice(1)
         .map((row) => row.getAttribute('data-tone'));
+    const legend = (): string[] =>
+      within(screen.getByRole('list', { name: 'Zones' }))
+        .getAllByRole('listitem')
+        .map((item) => item.textContent ?? '');
+    const withPlans = (base: LeagueWrapper, plans: PhasePlan[]): LeagueWrapper => ({
+      ...base,
+      content: { ...base.content, plans },
+    });
 
-    it('tints the top N of each group, and place N + 1 lighter with a best M', () => {
-      const wrapper = groupsLeague(
+    it('colours the top N of each group green, and place N + 1 yellow, with a best M', () => {
+      render(
+        <StandingsView
+          league={groupsLeague(
+            SIX,
+            [
+              [1, 2, 3],
+              [4, 5, 6],
+            ],
+            GROUPS_BEST_M
+          )}
+        />
+      );
+      expect(tones('Group A')).toEqual(['green', 'yellow', null]);
+      expect(tones('Group B')).toEqual(['green', 'yellow', null]);
+      expect(legend()).toEqual(['Qualify', 'Best 1 of place 2']);
+    });
+
+    it('shows one legend under many group cards', () => {
+      render(
+        <StandingsView
+          league={groupsLeague(
+            SIX,
+            [
+              [1, 2, 3],
+              [4, 5, 6],
+            ],
+            GROUPS_BEST_M
+          )}
+        />
+      );
+      expect(screen.getAllByRole('list', { name: 'Zones' })).toHaveLength(1);
+    });
+
+    it('colours the top N of a round robin that is not the last green, with its line', () => {
+      const wrapper = withPlans(league(), [
+        { format: 'round-robin', legs: 'two-way', advance: { top: 2 } },
+        { format: 'bracket' },
+      ]);
+      render(
+        <StandingsView league={wrapper} advanceText="Top 2 advance to the Bracket." />
+      );
+      expect(tones('Standings')).toEqual(['green', 'green', null]);
+      expect(screen.getByText('Top 2 advance to the Bracket.')).toBeInTheDocument();
+    });
+
+    it('shows no zone and no legend in a last phase with no zones', () => {
+      render(<StandingsView league={league()} />);
+      expect(tones('Standings')).toEqual([null, null, null]);
+      expect(screen.queryByRole('list', { name: 'Zones' })).not.toBeInTheDocument();
+    });
+
+    it('shows the free zones of a last phase, with the places when a zone has no label', () => {
+      const wrapper = withPlans(league(), [
+        {
+          format: 'round-robin',
+          legs: 'two-way',
+          zones: [
+            { colour: 'red', places: { from: 2, to: 3 }, label: '' },
+            { colour: 'blue', places: { from: 1, to: 1 }, label: '' },
+          ],
+        },
+      ]);
+      render(<StandingsView league={wrapper} />);
+      expect(tones('Standings')).toEqual(['blue', 'red', 'red']);
+      expect(legend()).toEqual(['Place 1', 'Places 2–3']);
+    });
+
+    it('follows the current order after a scorinate', () => {
+      const wrapper = withPlans(league(), [
+        { format: 'round-robin', legs: 'two-way', advance: { top: 1 } },
+        { format: 'bracket' },
+      ]);
+      const phase = scheduled(wrapper.content.phases[0]);
+      const fixture = phase.fixtures[0];
+      const played = {
+        ...wrapper,
+        content: {
+          ...wrapper.content,
+          phases: [
+            {
+              ...phase,
+              results: [score(fixture.id, fixture.home, fixture.away, 0, 3)],
+            },
+          ],
+        },
+      };
+      render(<StandingsView league={played} />);
+      const rows = within(screen.getByRole('table', { name: 'Standings' }))
+        .getAllByRole('row')
+        .slice(1);
+      expect(rows[0]).toHaveAttribute('data-tone', 'green');
+      expect(within(rows[0]).getByText(nameOf(fixture.away))).toBeInTheDocument();
+    });
+
+    it('turns the best M green and clears the other yellow rows of a complete phase', () => {
+      const drawn = groupsLeague(
         SIX,
         [
           [1, 2, 3],
           [4, 5, 6],
         ],
-        [
-          {
-            format: 'groups',
-            legs: 'two-way',
-            grouping: { by: 'count', count: 2 },
-            advance: { top: 1, bestOfNext: 1 },
-          },
-          { format: 'bracket' },
-        ]
+        GROUPS_BEST_M
       );
-      render(<StandingsView league={wrapper} />);
-      expect(tones('Group A')).toEqual(['positive', 'caution', null]);
-      expect(tones('Group B')).toEqual(['positive', 'caution', null]);
-    });
-
-    it('tints the top N of a round robin that is not the last, with its line', () => {
-      const base = league();
-      const wrapper: LeagueWrapper = {
-        ...base,
-        content: {
-          ...base.content,
-          plans: [
-            { format: 'round-robin', legs: 'two-way', advance: { top: 2 } },
-            { format: 'bracket' },
-          ],
-        },
+      const phase = scheduled(drawn.content.phases[0]);
+      // Every home team wins 1-0, so places 1 to 3 are level in each group:
+      // the lots and `pickQualifiers` decide the order and the best place 2.
+      const results = phase.fixtures.map((f) => score(f.id, f.home, f.away, 1, 0));
+      const complete: LeagueWrapper = {
+        ...drawn,
+        content: { ...drawn.content, phases: [{ ...phase, results }] },
       };
-      render(
-        <StandingsView league={wrapper} advanceText="Top 2 advance to the Bracket." />
-      );
-      expect(tones('Standings')).toEqual(['positive', 'positive', null]);
-      expect(screen.getByText('Top 2 advance to the Bracket.')).toBeInTheDocument();
-    });
-
-    it('tints nothing in the last phase', () => {
-      render(<StandingsView league={league()} />);
-      expect(tones('Standings')).toEqual([null, null, null]);
+      render(<StandingsView league={complete} />);
+      const all = [...tones('Group A'), ...tones('Group B')];
+      expect(all.filter((tone) => tone === 'green')).toHaveLength(3);
+      expect(all).not.toContain('yellow');
+      expect(legend()).toEqual(['Qualify']);
     });
   });
 });

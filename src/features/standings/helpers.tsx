@@ -1,5 +1,6 @@
 import type { JSX } from 'preact';
 import { Tooltip, type TableColumn, type TableRowTone } from '@/design-system';
+import type { PhaseZone } from '@/engine/phases';
 import { TeamSwatch } from '@/features/components';
 import type { FormDot, StandingsViewRow } from './types';
 import styles from './StandingsView.module.css';
@@ -43,11 +44,16 @@ const renderForm = (row: StandingsViewRow): JSX.Element => {
 
 export const rowKey = (row: StandingsViewRow): string => row.team;
 
-/** The tint of a row (Task 132 choice 9): a qualifier place is "positive",
- * a place N + 1 of a best M is the lighter "caution". */
-export const rowTone = (row: StandingsViewRow): TableRowTone | undefined => {
-  if (row.mark === 'qualifier') return 'positive';
-  return row.mark === 'best-of-next' ? 'caution' : undefined;
+/** The tone of a row: the colour of its zone (Task 155). */
+export const rowTone = (row: StandingsViewRow): TableRowTone | undefined => row.zone;
+
+/** The legend text of a zone (US-12.5): its label, or its places when it
+ * has no label, for example "Places 18–20" or "Place 3" (choice 7). */
+export const getZoneLegendText = (zone: PhaseZone): string => {
+  if (zone.label) return zone.label;
+  return zone.from === zone.to
+    ? `Place ${zone.from}`
+    : `Places ${zone.from}–${zone.to}`;
 };
 
 function getColumn(key: string): TableColumn<StandingsViewRow> {

@@ -23,8 +23,6 @@ describe('tokens.ts stays in sync with tokens.css', () => {
     ['color-error-fg', colors.errorFg],
     ['color-warning', colors.warning],
     ['color-warning-fg', colors.warningFg],
-    ['color-row-positive', colors.rowPositive],
-    ['color-row-caution', colors.rowCaution],
     ['color-zone-green', colors.zoneGreen],
     ['color-zone-green-tint', colors.zoneGreenTint],
     ['color-zone-blue', colors.zoneBlue],

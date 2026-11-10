@@ -12,7 +12,7 @@ import {
   type SavedWrapper,
   type SavedWrapperSummary,
 } from '@/adapters/json-io';
-import type { PhasePlan } from '@/engine/phases';
+import type { PhasePlan, PlanZone } from '@/engine/phases';
 import type {
   LeagueWrapper,
   Manifest,
@@ -64,6 +64,7 @@ function planCopy(plan: PhasePlan): PhasePlan {
         format: 'round-robin',
         legs: plan.legs,
         ...(plan.advance ? { advance: { top: plan.advance.top } } : {}),
+        ...zonesCopy(plan.zones),
       };
     case 'groups':
       return {
@@ -71,8 +72,22 @@ function planCopy(plan: PhasePlan): PhasePlan {
         legs: plan.legs,
         grouping: { ...plan.grouping },
         ...(plan.advance ? { advance: { ...plan.advance } } : {}),
+        ...zonesCopy(plan.zones),
       };
   }
+}
+
+/** A copy of the zones of a plan (Task 155), or no field for a plan with
+ * no zone list. */
+function zonesCopy(zones: PlanZone[] | undefined): { zones?: PlanZone[] } {
+  if (!zones) return {};
+  return {
+    zones: zones.map((zone) => ({
+      colour: zone.colour,
+      ...(zone.places ? { places: { ...zone.places } } : {}),
+      label: zone.label,
+    })),
+  };
 }
 
 function summaryToFile(row: WrapperSummary): SavedWrapperSummary {

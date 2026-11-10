@@ -121,6 +121,46 @@
   white-space: pre;
 }
 
+/* The zone legend under the tables (US-12.5, choice 7): one swatch and
+ * one text for each zone, in place order. */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--font-size-sm);
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.legendSwatch {
+  width: var(--space-4);
+  height: var(--space-4);
+  border: var(--border-width) solid var(--color-fg);
+}
+
+.legendSwatch[data-zone='green'] {
+  background: var(--color-zone-green);
+}
+
+.legendSwatch[data-zone='blue'] {
+  background: var(--color-zone-blue);
+}
+
+.legendSwatch[data-zone='yellow'] {
+  background: var(--color-zone-yellow);
+}
+
+.legendSwatch[data-zone='red'] {
+  background: var(--color-zone-red);
+}
+
 .note {
   margin: 0;
   color: var(--color-fg-muted);

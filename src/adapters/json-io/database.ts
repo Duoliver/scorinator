@@ -7,9 +7,14 @@ import { isUuidV4 } from '@/engine/identity';
 import {
   bracketRulesOf,
   checkPhaseChain,
+  checkZones,
+  ZONE_LABEL_MAX,
   type GroupBye,
   type Legs,
   type PhaseChainProblem,
+  type PlanZone,
+  type ZoneColour,
+  type ZoneProblem,
 } from '@/engine/phases';
 import type { Bye, GroupSetting, PhaseFixture } from '@/engine/round-robin';
 import type { PointsConfig } from '@/engine/standings';
@@ -715,6 +720,60 @@ function readGrouping(value: unknown, label: string): GroupSetting {
   return failWrapper(`${label} has no valid group setting.`);
 }
 
+const ZONE_COLOURS: readonly ZoneColour[] = ['green', 'blue', 'yellow', 'red'];
+
+/** One stored zone (Task 155 choice 3). `checkZones` checks the rules. */
+function readZone(value: unknown, label: string): PlanZone {
+  const places = isRecord(value) ? value.places : undefined;
+  const valid =
+    isRecord(value) &&
+    ZONE_COLOURS.includes(value.colour as ZoneColour) &&
+    typeof value.label === 'string' &&
+    (places === undefined ||
+      (isRecord(places) && isFiniteNumber(places.from) && isFiniteNumber(places.to)));
+  if (!valid) failWrapper(`${label} has a zone that is not valid.`);
+  return {
+    colour: value.colour as ZoneColour,
+    ...(isRecord(places)
+      ? { places: { from: places.from as number, to: places.to as number } }
+      : {}),
+    label: value.label as string,
+  };
+}
+
+/** The text of a zone problem (US-12.5): the import error. */
+function zoneProblemText(problem: ZoneProblem): string {
+  switch (problem.code) {
+    case 'repeated-colour':
+      return `two ${problem.colour} zones.`;
+    case 'label-too-long':
+      return `a ${problem.colour} zone label longer than ${ZONE_LABEL_MAX} characters.`;
+    case 'places-on-automatic':
+      return `places on its automatic ${problem.colour} zone.`;
+    case 'missing-places':
+      return `a ${problem.colour} zone with no places.`;
+    case 'bad-places':
+      return `a ${problem.colour} zone with places that are not valid.`;
+    case 'shared-place':
+      return `a ${problem.colours[0]} zone and a ${problem.colours[1]} zone that share a place.`;
+  }
+}
+
+/** The zones of a plan, added to it (Task 155). A plan with no zone list
+ * keeps none, so a file from before Task 155 reads as it is (choice 4). */
+function withZones<Plan extends Exclude<SavedPhasePlan, { format: 'bracket' }>>(
+  plan: Plan,
+  value: unknown,
+  label: string
+): Plan {
+  if (value === undefined) return plan;
+  if (!Array.isArray(value)) failWrapper(`${label} has no valid zone list.`);
+  const zoned = { ...plan, zones: value.map((zone) => readZone(zone, label)) };
+  const [problem] = checkZones(zoned);
+  if (problem) failWrapper(`${label} has ${zoneProblemText(problem)}`);
+  return zoned;
+}
+
 /** One phase plan (Task 126). The numbers must be whole. The fit rules
  * (Task 126 `checkPhaseFit`) are the wizard's: a file keeps what the
  * wizard made. */
@@ -739,13 +798,14 @@ function readPlan(value: unknown, index: number): SavedPhasePlan {
   }
 
   if (value.format === 'round-robin') {
-    return {
+    const plan: SavedPhasePlan = {
       format: 'round-robin',
       legs: value.legs,
       ...(isRecord(advance) ? { advance: { top: advance.top as number } } : {}),
     };
+    return withZones(plan, value.zones, label);
   }
-  return {
+  const plan: SavedPhasePlan = {
     format: 'groups',
     legs: value.legs,
     grouping: readGrouping(value.grouping, label),
@@ -758,6 +818,7 @@ function readPlan(value: unknown, index: number): SavedPhasePlan {
         }
       : {}),
   };
+  return withZones(plan, value.zones, label);
 }
 
 /** The text of a chain problem (US-01.3): the import error. */

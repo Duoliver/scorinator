@@ -59,6 +59,26 @@ describe('the league export (US-10.1, US-10.2, Task 145)', () => {
     expect(file.blueprints.map((b) => b.uuid)).toEqual([SALT_MARSH, HARBORVIEW]);
   });
 
+  it('keeps the zones of each plan (Task 155, US-12.5)', () => {
+    const zoned = {
+      ...played,
+      content: {
+        ...played.content,
+        plans: [
+          {
+            format: 'round-robin' as const,
+            legs: 'two-way' as const,
+            zones: [{ colour: 'blue' as const, places: { from: 1, to: 1 }, label: '' }],
+          },
+        ],
+      },
+    };
+    const read = readLeagueImport(
+      serializeLeagueExport([zoned], [blueprint(), harborview])
+    );
+    expect(read.leagues[0].content.plans).toEqual(zoned.content.plans);
+  });
+
   it('has no snapshot of a deleted Blueprint (US-09.4)', () => {
     const file = parseLeagueFile(serializeLeagueExport([played], [blueprint()]));
     expect(file.blueprints.map((b) => b.uuid)).toEqual([SALT_MARSH]);

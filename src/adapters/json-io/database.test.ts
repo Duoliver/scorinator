@@ -524,6 +524,115 @@ function groupsText(change: (raw: RawFile) => void = () => {}): string {
   return JSON.stringify(raw);
 }
 
+describe('zones (Task 155, US-12.5)', () => {
+  const ZONES = [
+    { colour: 'green', label: 'Knockout' },
+    { colour: 'red', places: { from: 2, to: 2 }, label: 'Out' },
+  ];
+
+  it('gives the same zones after a round trip', () => {
+    const text = groupsText((raw) => (raw.content.plans[0].zones = ZONES));
+    const wrapper = parseWrapper(text);
+    expect(wrapper.content.plans[0]).toMatchObject({ zones: ZONES });
+    expect(parseWrapper(serializeWrapper(wrapper))).toEqual(wrapper);
+  });
+
+  it('reads a plan with no zones, with no "zones" field, in version 4', () => {
+    const [plan] = parseWrapper(groupsText()).content.plans;
+    expect('zones' in plan).toBe(false);
+  });
+
+  it('reads an empty zone list', () => {
+    const text = wrapperText((raw) => (raw.content.plans[0].zones = []));
+    expect(parseWrapper(text).content.plans[0]).toMatchObject({ zones: [] });
+  });
+
+  it.each<[string, (raw: RawFile) => void, string]>([
+    [
+      'a zone list that is not a list',
+      (raw): unknown => (raw.content.plans[0].zones = {}),
+      'plan 1 has no valid zone list.',
+    ],
+    [
+      'a zone that is not an object',
+      (raw): unknown => (raw.content.plans[0].zones = ['red']),
+      'plan 1 has a zone that is not valid.',
+    ],
+    [
+      'a colour that is not known',
+      (raw): unknown =>
+        (raw.content.plans[0].zones = [
+          { colour: 'pink', places: { from: 1, to: 1 }, label: '' },
+        ]),
+      'plan 1 has a zone that is not valid.',
+    ],
+    [
+      'a label that is not text',
+      (raw): unknown =>
+        (raw.content.plans[0].zones = [
+          { colour: 'red', places: { from: 1, to: 1 }, label: 3 },
+        ]),
+      'plan 1 has a zone that is not valid.',
+    ],
+    [
+      'places that are not two numbers',
+      (raw): unknown =>
+        (raw.content.plans[0].zones = [
+          { colour: 'red', places: { from: 1 }, label: '' },
+        ]),
+      'plan 1 has a zone that is not valid.',
+    ],
+    [
+      'a colour used twice',
+      (raw): unknown =>
+        (raw.content.plans[0].zones = [
+          { colour: 'red', places: { from: 1, to: 1 }, label: '' },
+          { colour: 'red', places: { from: 2, to: 2 }, label: '' },
+        ]),
+      'plan 1 has two red zones.',
+    ],
+    [
+      'a label that is too long',
+      (raw): unknown =>
+        (raw.content.plans[0].zones = [
+          { colour: 'red', places: { from: 1, to: 1 }, label: 'x'.repeat(25) },
+        ]),
+      'plan 1 has a red zone label longer than 24 characters.',
+    ],
+    [
+      'places on an automatic zone',
+      (raw): unknown =>
+        (raw.content.plans[0].zones = [
+          { colour: 'green', places: { from: 1, to: 1 }, label: '' },
+        ]),
+      'plan 1 has places on its automatic green zone.',
+    ],
+    [
+      'a free zone with no places',
+      (raw): unknown => (raw.content.plans[0].zones = [{ colour: 'blue', label: '' }]),
+      'plan 1 has a blue zone with no places.',
+    ],
+    [
+      'a range that is not valid',
+      (raw): unknown =>
+        (raw.content.plans[0].zones = [
+          { colour: 'blue', places: { from: 3, to: 2 }, label: '' },
+        ]),
+      'plan 1 has a blue zone with places that are not valid.',
+    ],
+    [
+      'two zones that share a place',
+      (raw): unknown =>
+        (raw.content.plans[0].zones = [
+          { colour: 'blue', places: { from: 1, to: 2 }, label: '' },
+        ]),
+      'plan 1 has a green zone and a blue zone that share a place.',
+    ],
+  ])('rejects %s', (_, change, message) => {
+    expect(() => parseWrapper(groupsText(change))).toThrow(message);
+  });
+});
+
 describe('phases, plans, and legs (Task 176)', () => {
   it('gives the same Groups league after a round trip, with its plans and draw', () => {
     expect(parseWrapper(serializeWrapper(buildGroupsWrapper()))).toEqual(

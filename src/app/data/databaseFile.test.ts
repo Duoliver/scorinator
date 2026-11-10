@@ -81,6 +81,26 @@ describe('the wrapper map (Task 108)', () => {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- a test edits the raw JSON freely, to make a bad file
 type RawFile = any;
 
+describe('the zones of a plan (Task 155, US-12.5)', () => {
+  it('keeps the zones after a round trip, as a copy', () => {
+    const base = leagueWrapper();
+    const zones = [
+      { colour: 'red' as const, places: { from: 2, to: 2 }, label: 'Out' },
+    ];
+    const wrapper: LeagueWrapper = {
+      ...base,
+      content: {
+        ...base.content,
+        plans: [{ format: 'round-robin', legs: 'two-way', zones }],
+      },
+    };
+    const read = parseLeagueWrapper(serializeLeagueWrapper(wrapper));
+    expect(read).toEqual(wrapper);
+    const [plan] = read.content.plans;
+    expect(plan.format !== 'bracket' && plan.zones?.[0]).not.toBe(zones[0]);
+  });
+});
+
 describe('the bracket files (Task 139)', () => {
   const RULES = {
     format: 'two-legged' as const,

@@ -1,5 +1,5 @@
+import type { PhaseZone, ZoneColour } from '@/engine/phases';
 import type { MatchOutcome, StandingsRow } from '@/engine/standings';
-import type { QualifierMark } from '@/app/state/phases';
 import type { LeagueWrapper } from '@/domain';
 
 export default interface StandingsViewProps {
@@ -31,8 +31,9 @@ export interface FormDot {
 export interface StandingsViewRow extends StandingsRow<string> {
   teamName: string;
   teamColour: string;
-  /** How the row qualifies, for its tint (Task 132), or `undefined`. */
-  mark: QualifierMark | undefined;
+  /** The zone of the row, for its tint and stripe (Task 155), or
+   * `undefined`. */
+  zone: ZoneColour | undefined;
   /** The last results of the team, the oldest first. Empty in a group card. */
   form: FormDot[];
 }
@@ -49,6 +50,9 @@ export interface Standings {
   /** True for a Groups phase: the tables show as group cards. */
   isGroups: boolean;
   tables: StandingsTable[];
+  /** The zones of the legend (US-12.5), in place order: only the zones
+   * that colour a row. */
+  zones: PhaseZone[];
   hasTeams: boolean;
   hasResults: boolean;
 }

@@ -15,6 +15,7 @@ import type { Tier } from '@/engine/tier-ovr';
  * change that an older parser cannot read raises it. Version 3 (Task 176)
  * adds the phase plans, the legs, and the Groups phase. Version 4 (Task 139)
  * adds the bracket phase, the bracket plan rules, and the bracket progress.
+ * Task 155 adds an optional zone list to a plan, with no version change.
  * The parsers also read versions 2 and 3, with defaults. */
 export const DATABASE_FORMAT_VERSION = 4;
 

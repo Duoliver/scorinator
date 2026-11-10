@@ -79,6 +79,7 @@ export type Phase = ScheduledPhase | BracketPhase;
  *   so a league has no slug.
  * - `points` is one points system for the whole league (US-01.1).
  * - `plans` is the whole phase chain, fixed at "Create league" (Task 176).
+ *   Only the zone list of a plan can change later (Task 155 choice 2).
  * - `phases` holds the started phases only, in order. "Create league"
  *   builds phase 1, and each later phase builds at its own start (US-07.3).
  *   The current phase is the last one.

@@ -45,6 +45,7 @@ export function PhaseCard({ view, phaseList }: PhaseCardProps): JSX.Element {
     problems,
     suggestion,
     bracket,
+    ranges,
   } = view;
   const bestRef = useRef<FieldHandle<string>>(null);
   const number = index + 1;
@@ -131,7 +132,9 @@ export function PhaseCard({ view, phaseList }: PhaseCardProps): JSX.Element {
                   label={
                     plan.grouping.by === GroupBy.SIZE ? 'Group size' : 'Group count'
                   }
-                  inputMode="numeric"
+                  type="number"
+                  min={ranges.group?.min}
+                  max={ranges.group?.max}
                   defaultValue={numberText(
                     plan.grouping.by === GroupBy.SIZE
                       ? plan.grouping.size
@@ -151,7 +154,9 @@ export function PhaseCard({ view, phaseList }: PhaseCardProps): JSX.Element {
                 <div class={styles['number-field']}>
                   <Input
                     label="Top"
-                    inputMode="numeric"
+                    type="number"
+                    min={ranges.top?.min}
+                    max={ranges.top?.max}
                     defaultValue={numberText(advance.top)}
                     onChange={(text) => phaseList.setTop(index, parseWholeNumber(text))}
                   />
@@ -167,7 +172,9 @@ export function PhaseCard({ view, phaseList }: PhaseCardProps): JSX.Element {
                   <Input
                     ref={bestRef}
                     label={`Best of ${nextPlace}`}
-                    inputMode="numeric"
+                    type="number"
+                    min={ranges.best?.min}
+                    max={ranges.best?.max}
                     defaultValue={numberText(bestOfNext)}
                     onChange={(text) =>
                       phaseList.setBestOfNext(index, parseWholeNumber(text))

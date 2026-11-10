@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { render, screen, within } from '@testing-library/preact';
+import { fireEvent, render, screen, within } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import type { GroupsPlan, PlanZone, RoundRobinPlan } from '@/engine/phases';
 import { ZoneEditor } from './ZoneEditor';
@@ -85,7 +85,7 @@ describe('ZoneEditor (Task 189, US-12.5)', () => {
     render(<ZoneEditor plan={plan} onChange={vi.fn()} />);
     expect(within(row('Green')).getByLabelText('Label')).toHaveValue('');
     expect(within(row('Red')).getByRole('switch', { name: 'Red' })).toBeChecked();
-    expect(within(row('Red')).getByLabelText('From')).toHaveValue('4');
+    expect(within(row('Red')).getByLabelText('From')).toHaveValue(4);
     expect(within(row('Red')).getByLabelText('Label')).toHaveValue('Out');
   });
 
@@ -106,5 +106,27 @@ describe('ZoneEditor (Task 189, US-12.5)', () => {
     expect(
       screen.getByText('The blue zone label is longer than 24 characters.')
     ).toBeInTheDocument();
+  });
+
+  it('makes From and To number fields from place 1, and the Up arrow changes the zone (Task 191)', async () => {
+    const onChange = vi.fn();
+    render(<ZoneEditor plan={lastRoundRobin} onChange={onChange} />);
+    await userEvent.click(within(row('Red')).getByRole('switch', { name: 'Red' }));
+    for (const name of ['From', 'To']) {
+      const field = within(row('Red')).getByLabelText(name);
+      expect(field).toHaveAttribute('type', 'number');
+      expect(field).toHaveAttribute('min', '1');
+      expect(field).not.toHaveAttribute('max');
+    }
+    const from = within(row('Red')).getByLabelText('From') as HTMLInputElement;
+    const to = within(row('Red')).getByLabelText('To') as HTMLInputElement;
+    // What the browser does on the Up arrow of an empty number field.
+    from.stepUp();
+    fireEvent.input(from);
+    to.stepUp();
+    fireEvent.input(to);
+    expect(lastZones(onChange)).toEqual([
+      { colour: 'red', places: { from: 1, to: 1 }, label: '' },
+    ]);
   });
 });

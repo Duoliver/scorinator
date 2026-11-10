@@ -4,6 +4,7 @@ import {
   bestMSuggestion,
   bracketWarning,
   endsWithGroups,
+  getPhaseFieldRanges,
   phaseChecks,
   phaseCountLines,
   phaseProblemText,
@@ -52,6 +53,7 @@ export function usePhasesStep(
         lines: phaseCountLines(plans, counts, index),
         problems: textsOf(index + 1),
         suggestion: bestMSuggestion(plans, counts, index),
+        ranges: getPhaseFieldRanges(plans, counts, index),
         bracket:
           plan.format === PhaseFormat.BRACKET
             ? {

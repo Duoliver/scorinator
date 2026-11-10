@@ -45,7 +45,8 @@ export function ZoneEditor(props: ZoneEditorProps): JSX.Element {
                   <div class={styles.place}>
                     <Input
                       label="From"
-                      inputMode="numeric"
+                      type="number"
+                      min={1}
                       defaultValue={row.values.from}
                       onChange={(from) => changeRow(row.colour, { from })}
                     />
@@ -53,7 +54,8 @@ export function ZoneEditor(props: ZoneEditorProps): JSX.Element {
                   <div class={styles.place}>
                     <Input
                       label="To"
-                      inputMode="numeric"
+                      type="number"
+                      min={1}
                       defaultValue={row.values.to}
                       onChange={(to) => changeRow(row.colour, { to })}
                     />

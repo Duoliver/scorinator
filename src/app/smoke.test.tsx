@@ -337,7 +337,7 @@ describe('smoke: M3 phases, groups, and the phase start (Task 133)', () => {
     const phase2 = screen.getByRole('region', { name: 'Phase 2' });
     await user.selectOptions(within(phase2).getByLabelText('Format'), 'grp2');
     await user.selectOptions(within(phase2).getByLabelText('Set by'), 'count');
-    expect(within(phase1()).getByLabelText('Top')).toHaveValue('2');
+    expect(within(phase1()).getByLabelText('Top')).toHaveValue(2);
 
     // 3. The Teams step draws the teams into two cards of three.
     await user.click(screen.getByRole('button', { name: 'Next: Teams →' }));

@@ -212,3 +212,56 @@ export function bracketWarning(qualifiers: number): string | undefined {
   const teams = byes === 1 ? '1 team gets' : `${byes} teams get`;
   return `${qualifiers} qualifiers: the bracket has ${slots} slots, so ${teams} a bye.`;
 }
+
+/** The lowest value of a number field, and its highest value when the team
+ * count is known (Task 191). */
+export interface FieldRange {
+  min: number;
+  max?: number;
+}
+
+/** The ranges of the number fields of one phase card: the group size or
+ * count, Top, and the best M. A field the card does not show has none. */
+export interface PhaseFieldRanges {
+  group?: FieldRange;
+  top?: FieldRange;
+  best?: FieldRange;
+}
+
+/**
+ * The lowest and highest values of the number fields of one phase card
+ * (Task 191), the same as the fit check uses (`checkPhaseFit`). The
+ * highest values need the team count of the phase, so they show only when
+ * `counts` has it. The arrow keys of a number field stop at these values.
+ */
+export function getPhaseFieldRanges(
+  plans: readonly PhasePlan[],
+  counts: readonly PhaseTeamCount[] | undefined,
+  index: number
+): PhaseFieldRanges {
+  const plan = plans[index];
+  if (!plan || plan.format === PhaseFormat.BRACKET) return {};
+  const count = counts?.[index];
+  const teams = count && count.teams >= 2 ? count.teams : undefined;
+  const ranges: PhaseFieldRanges = {};
+
+  if (plan.format === PhaseFormat.GROUPS) {
+    const max =
+      teams === undefined
+        ? undefined
+        : plan.grouping.by === GroupBy.SIZE
+          ? teams
+          : Math.floor(teams / 2);
+    ranges.group = max === undefined ? { min: 2 } : { min: 2, max };
+  }
+  if (!plan.advance) return ranges;
+
+  if (plan.format === PhaseFormat.ROUND_ROBIN) {
+    ranges.top = teams === undefined ? { min: 1 } : { min: 1, max: teams - 1 };
+    return ranges;
+  }
+  const sizes = count?.groupSizes;
+  ranges.top = sizes ? { min: 1, max: Math.min(...sizes) - 1 } : { min: 1 };
+  ranges.best = sizes ? { min: 0, max: sizes.length - 1 } : { min: 0 };
+  return ranges;
+}

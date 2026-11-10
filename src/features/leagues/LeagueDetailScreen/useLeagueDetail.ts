@@ -32,6 +32,7 @@ import {
   type PhaseStart,
 } from './helpers';
 import type { LeagueDetailState, PhaseStartConfirm, ZoneDrawerView } from './types';
+import { PhaseFormat } from '@/engine/phases';
 
 /** The league with this UUID, ready for League Detail (Task 161). A league
  * in the manifest that is not open yet is read from its file once, with
@@ -114,7 +115,7 @@ export function useLeagueDetail(uuid: string): LeagueDetailState {
           ? getPhaseTabs(league, memory, start, findGroupsDraw(league), setZonePhase)
           : getLeagueTabs(league, 0, memory),
         tabsActions:
-          hasPhaseTabs || !onePlan || onePlan.format === 'bracket'
+          hasPhaseTabs || !onePlan || onePlan.format === PhaseFormat.BRACKET
             ? undefined
             : renderEditZonesButton(() => setZonePhase(0)),
         // The current phase is the last started one.
@@ -159,7 +160,7 @@ function findZoneDrawer(
 ): ZoneDrawerView | undefined {
   if (phaseIndex === undefined) return undefined;
   const plan = league.content.plans[phaseIndex];
-  if (!plan || plan.format === 'bracket') return undefined;
+  if (!plan || plan.format === PhaseFormat.BRACKET) return undefined;
   return {
     title: hasPhaseTabs ? `Zones · Phase ${phaseIndex + 1}` : 'Zones',
     plan,
@@ -190,7 +191,7 @@ function changeDraw(change: () => void): void {
 function findGroupsDraw(league: LeagueWrapper): GroupsDraw | undefined {
   if (!canChangeCurrentGroups(league)) return undefined;
   const current = league.content.phases[league.content.phases.length - 1];
-  if (current?.format !== 'groups') return undefined;
+  if (current?.format !== PhaseFormat.GROUPS) return undefined;
   return {
     groups: current.groups,
     onMove: (team, groupIndex) =>

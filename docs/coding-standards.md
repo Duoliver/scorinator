@@ -293,6 +293,23 @@ import { getErrorMessage } from '@/app/getErrorMessage';
 
 This applies to `app/` and `features/`. `engine/` and `adapters/` must not import `app/`. They have no `catch` that shows a message today.
 
+## A value set of the data model is an `as const` object
+
+A set of string values that the data model stores or reads, such as the legs of a phase or the format of a tie, is an `as const` object with a type of the same name. Do not use a TypeScript `enum`. The user set the rule at Task 184 (2026-11-10).
+
+```ts
+export const Legs = { TWO_WAY: 'two-way', SINGLE_DUELS: 'single-duels' } as const;
+export type Legs = (typeof Legs)[keyof typeof Legs];
+```
+
+- **The members are UPPER_SNAKE_CASE,** as the other constants of the codebase, for example `TIER_ORDER`.
+- **The code uses the members:** write `Legs.TWO_WAY`, not `'two-way'`. The compiler still takes the plain string, so the code review checks this.
+- **A type declaration keeps the string:** a discriminant such as `format: 'bracket'` in an interface stays a string literal type.
+- **The tests keep the plain strings:** a test then also checks that the stored values do not change.
+- **A file reader takes its valid values from the object:** `Object.values(TieFormat)`.
+- **Where:** beside its type, in `engine/` or `adapters/`. `domain/` holds types only, so `PhaseFormat` lives in `engine/phases`.
+- **Not for:** the design-system props (`variant="primary"`), the `kind` or `code` of a result, a problem, or a state union, and a union that one feature uses.
+
 ## Comments: say why, and search for an old name after a rename
 
 A comment goes stale when the code it names changes. Task 52 fixed 12 stale comments. Each one named a function, a file, or a caller that a rename or a move changed. Two rules keep this from coming back.

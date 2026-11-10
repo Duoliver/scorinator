@@ -1,12 +1,14 @@
 import type { Rng } from '@/engine/rng';
-import { playTie, type TieRules } from '@/engine/tiebreak';
-import type {
-  BracketRound,
-  BracketRules,
-  BracketSlot,
-  BracketTie,
-  BracketTieResult,
-  TieSide,
+import { playTie, type TieRules, TieFormat } from '@/engine/tiebreak';
+import {
+  type BracketRound,
+  type BracketRules,
+  type BracketSlot,
+  type BracketTie,
+  type BracketTieResult,
+  type TieSide,
+  BracketTieKind,
+  TieSideKind,
 } from './types';
 
 type Rounds<TeamId> = readonly BracketRound<TeamId>[];
@@ -48,9 +50,9 @@ function readSlot<TeamId>(
 ): TieSide<TeamId> {
   if (slot.kind === 'team' || slot.kind === 'bye') return slot;
   const result = findResult(results, slot.tieId);
-  if (!result) return { kind: 'tbd' };
+  if (!result) return { kind: TieSideKind.TBD };
   const teamId = slot.kind === 'winner-of' ? result.winnerId : result.loserId;
-  return { kind: 'team', teamId, seed: findSeed(rounds, teamId) };
+  return { kind: TieSideKind.TEAM, teamId, seed: findSeed(rounds, teamId) };
 }
 
 /**
@@ -74,7 +76,9 @@ function isPlayable<TeamId>(
   tie: BracketTie<TeamId>
 ): boolean {
   if (isByeTie(tie) || findResult(results, tie.id)) return false;
-  return findTieTeams(rounds, results, tie.id).every((side) => side.kind === 'team');
+  return findTieTeams(rounds, results, tie.id).every(
+    (side) => side.kind === TieSideKind.TEAM
+  );
 }
 
 /**
@@ -135,9 +139,9 @@ export function rulesForTie<TeamId>(
   rules: BracketRules
 ): TieRules {
   const { format, awayGoals, playsAet, method, homeAdvantage } = rules;
-  if (tie.kind !== 'regular' && rules.singleMatchFinal) {
+  if (tie.kind !== BracketTieKind.REGULAR && rules.singleMatchFinal) {
     return {
-      format: 'single-match',
+      format: TieFormat.SINGLE_MATCH,
       awayGoals: false,
       playsAet,
       method,
@@ -169,7 +173,7 @@ export function playBracketTie<TeamId>(
   if (isByeTie(tie))
     throw new RangeError(`The tie "${tieId}" is a bye. It has no match.`);
   const sides = findTieTeams(rounds, results, tieId);
-  const teams = sides.flatMap((side) => (side.kind === 'team' ? [side] : []));
+  const teams = sides.flatMap((side) => (side.kind === TieSideKind.TEAM ? [side] : []));
   if (teams.length !== 2) {
     throw new RangeError(`The tie "${tieId}" has a TBD team. It cannot play yet.`);
   }
@@ -236,6 +240,6 @@ export function findBracketWinner<TeamId>(
   results: Results<TeamId>
 ): TeamId | undefined {
   if (!isBracketComplete(rounds, results)) return undefined;
-  const final = listTies(rounds).find((tie) => tie.kind === 'final');
+  const final = listTies(rounds).find((tie) => tie.kind === BracketTieKind.FINAL);
   return final && findResult(results, final.id)?.winnerId;
 }

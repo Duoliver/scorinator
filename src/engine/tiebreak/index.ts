@@ -9,14 +9,11 @@ export {
   tossCoin,
 } from './penalties';
 export { playTie } from './tie';
-export type {
+export type { TieMatch, TieResult, TieRules, TieTeam } from './types';
+export {
   CoinSide,
   TieDecision,
   TieFormat,
-  TieMatch,
   TieMatchPart,
-  TieResult,
-  TieRules,
-  TieTeam,
   TiebreakMethod,
 } from './types';

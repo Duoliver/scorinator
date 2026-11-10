@@ -5,6 +5,7 @@ import { CHOICE_OPTIONS, DESCRIPTION, TYPE_LABELS } from './helpers';
 import type ResolveConflictsDialogProps from './types';
 import { useResolveConflicts } from './useResolveConflicts';
 import styles from './ResolveConflictsDialog.module.css';
+import { ImportChoice } from '@/engine/identity';
 
 export type { ResolveConflictsDialogProps };
 
@@ -29,10 +30,18 @@ export function ResolveConflictsDialog({
     >
       <div class={styles.body}>
         <div class={styles.allButtons}>
-          <Button variant="secondary" size="sm" onClick={() => setAllChoices('skip')}>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setAllChoices(ImportChoice.SKIP)}
+          >
             Skip all
           </Button>
-          <Button variant="secondary" size="sm" onClick={() => setAllChoices('new')}>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setAllChoices(ImportChoice.NEW)}
+          >
             Import all as new
           </Button>
         </div>
@@ -48,7 +57,7 @@ export function ResolveConflictsDialog({
                 label={`Choice for ${row.name}`}
                 hideLabel
                 options={CHOICE_OPTIONS}
-                defaultValue="skip"
+                defaultValue={ImportChoice.SKIP}
               />
             </li>
           ))}

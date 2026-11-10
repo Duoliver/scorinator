@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'preact/hooks';
-import type { PhasePlan } from '@/engine/phases';
+import { type PhasePlan, PhaseFormat } from '@/engine/phases';
 import { createSeededRng, type Rng } from '@/engine/rng';
 import { drawGroups, moveToGroup } from '@/engine/round-robin';
 import type { TeamBlueprint } from '@/domain';
@@ -41,7 +41,8 @@ export function usePhaseOneGroups(
   const plan = plans[0];
   const uuids = teamList.teams.map((team) => team.blueprintUuid);
   // Only the format and the group setting of phase 1 change the draw.
-  const planKey = plan?.format === 'groups' ? JSON.stringify(plan.grouping) : 'none';
+  const planKey =
+    plan?.format === PhaseFormat.GROUPS ? JSON.stringify(plan.grouping) : 'none';
 
   useEffect(() => {
     setGroups((current) => groupsForPlan(current, plan, uuids, freshRng()));
@@ -54,7 +55,7 @@ export function usePhaseOneGroups(
     groups,
     addTeams: (blueprints: readonly TeamBlueprint[]): void => {
       teamList.addTeams(blueprints);
-      if (plan?.format !== 'groups') return;
+      if (plan?.format !== PhaseFormat.GROUPS) return;
       setGroups((current) => {
         if (!current) return current;
         const drawn = new Set(current.flat());
@@ -64,7 +65,7 @@ export function usePhaseOneGroups(
     },
     removeTeam: (blueprintUuid: string): void => {
       teamList.removeTeam(blueprintUuid);
-      if (plan?.format !== 'groups') return;
+      if (plan?.format !== PhaseFormat.GROUPS) return;
       setGroups((current) =>
         current?.flat().includes(blueprintUuid)
           ? groupsAfterRemove(current, plan, blueprintUuid, freshRng())

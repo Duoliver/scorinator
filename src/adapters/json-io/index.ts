@@ -20,7 +20,6 @@ export { DATABASE_FORMAT_VERSION } from './types';
 export type {
   SavedBlueprint,
   SavedBlueprintFile,
-  SavedFileKind,
   SavedInstance,
   SavedLeagueEntry,
   SavedLeagueFile,
@@ -38,3 +37,4 @@ export type {
   SavedWrapperLeague,
   SavedWrapperSummary,
 } from './types';
+export { SavedFileKind } from './types';

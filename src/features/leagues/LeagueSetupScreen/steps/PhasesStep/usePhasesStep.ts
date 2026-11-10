@@ -1,5 +1,5 @@
 import { useMemo } from 'preact/hooks';
-import { bracketRulesOf } from '@/engine/phases';
+import { bracketRulesOf, PhaseFormat } from '@/engine/phases';
 import {
   bestMSuggestion,
   bracketWarning,
@@ -53,7 +53,7 @@ export function usePhasesStep(
         problems: textsOf(index + 1),
         suggestion: bestMSuggestion(plans, counts, index),
         bracket:
-          plan.format === 'bracket'
+          plan.format === PhaseFormat.BRACKET
             ? {
                 rules: bracketRulesOf(plan),
                 thirdPlaceAllowed: canHaveThirdPlace(counts?.[index]?.teams),

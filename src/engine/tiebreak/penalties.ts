@@ -1,6 +1,6 @@
 import type { Rng } from '@/engine/rng';
 import type { MatchScore } from '@/engine/scorination';
-import type { CoinSide } from './types';
+import { CoinSide } from './types';
 
 /**
  * The penalty model of Task 80: about 75% of kicks score in real football,
@@ -80,5 +80,5 @@ export function scorinatePenalties(
 
 /** A pure 50/50 coin toss (US-03.3). Team strength plays no part. */
 export function tossCoin(rng: Rng): CoinSide {
-  return rng() < 0.5 ? 'home' : 'away';
+  return rng() < 0.5 ? CoinSide.HOME : CoinSide.AWAY;
 }

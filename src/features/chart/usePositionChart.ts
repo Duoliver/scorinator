@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'preact/hooks';
 import { hasLowGraphicContrast } from '@/design-system';
-import { getPhaseZones, type PhaseZone } from '@/engine/phases';
+import { getPhaseZones, type PhaseZone, PhaseFormat } from '@/engine/phases';
 import { groupLabel } from '@/engine/round-robin';
 import { getPlacesByMatchday } from '@/engine/standings';
 import { leagueLotOf, phaseTeamLists } from '@/app/state/phases';
@@ -27,7 +27,7 @@ export function usePositionChart(
   const phase = league.content.phases[phaseIndex];
 
   const chart = useMemo(() => {
-    if (!phase || phase.format === 'bracket') {
+    if (!phase || phase.format === PhaseFormat.BRACKET) {
       return {
         groupCount: 0,
         matchdays: 0,
@@ -74,11 +74,11 @@ export function usePositionChart(
     // the last place has no row here.
     const plan = league.content.plans[phaseIndex];
     const zones =
-      plan && plan.format !== 'bracket'
+      plan && plan.format !== PhaseFormat.BRACKET
         ? getPhaseZones(plan).filter((zone) => zone.from <= lines.length)
         : [];
     return {
-      groupCount: phase.format === 'groups' ? lists.length : 0,
+      groupCount: phase.format === PhaseFormat.GROUPS ? lists.length : 0,
       matchdays,
       lines,
       zones,

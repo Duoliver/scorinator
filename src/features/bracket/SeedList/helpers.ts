@@ -2,6 +2,7 @@ import { groupLabel } from '@/engine/round-robin';
 import type { StandingsRow } from '@/engine/standings';
 import type { TeamDisplay } from '@/features/components';
 import type { SeedRow } from './types';
+import { PhaseFormat } from '@/engine/phases';
 
 /** The Seed List text of a bracket with byes (US-04.10). */
 export const BYE_HELP_TEXT =
@@ -29,7 +30,9 @@ export function seedTagsOf(
     table.forEach((row, place) => {
       tags.set(
         row.team,
-        format === 'groups' ? `${groupLabel(group)}${place + 1}` : ordinal(place + 1)
+        format === PhaseFormat.GROUPS
+          ? `${groupLabel(group)}${place + 1}`
+          : ordinal(place + 1)
       );
     });
   });

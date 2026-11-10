@@ -22,7 +22,12 @@ export type BracketSlot<TeamId> =
 
 /** The kind of a tie. The final and the third-place tie can play as one
  * match (US-04.13). */
-export type BracketTieKind = 'regular' | 'final' | 'third';
+export const BracketTieKind = {
+  REGULAR: 'regular',
+  FINAL: 'final',
+  THIRD: 'third',
+} as const;
+export type BracketTieKind = (typeof BracketTieKind)[keyof typeof BracketTieKind];
 
 /** One tie of the tree. A bye tie has a team in the first slot, a `bye` in
  * the second, and no match (US-04.11). The final is tie 1 of the last
@@ -73,3 +78,7 @@ export type BracketTieResult<TeamId> = TieResult<TeamId> & { tieId: string };
  * while its tie has no result (US-04.7). */
 export type TieSide<TeamId> =
   { kind: 'team'; teamId: TeamId; seed: number } | { kind: 'bye' } | { kind: 'tbd' };
+
+/** The `kind` of a `TieSide` (Task 184). */
+export const TieSideKind = { TEAM: 'team', BYE: 'bye', TBD: 'tbd' } as const;
+export type TieSideKind = (typeof TieSideKind)[keyof typeof TieSideKind];

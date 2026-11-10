@@ -1,4 +1,4 @@
-import { finalRanking, type PhaseOrderInput } from '@/engine/phases';
+import { finalRanking, type PhaseOrderInput, PhaseFormat } from '@/engine/phases';
 import type { LeagueWrapper } from '@/domain';
 import { bracketTreeOf } from './bracket';
 import { leagueLotOf, phaseStandings } from './phases';
@@ -11,12 +11,12 @@ import { leagueLotOf, phaseStandings } from './phases';
  */
 export function leagueFinalRanking(wrapper: LeagueWrapper): string[] {
   const inputs = wrapper.content.phases.map((phase, index): PhaseOrderInput<string> => {
-    if (phase.format !== 'bracket') {
+    if (phase.format !== PhaseFormat.BRACKET) {
       return { format: phase.format, tables: phaseStandings(wrapper, index) };
     }
     const tree = bracketTreeOf(wrapper, index);
     return {
-      format: 'bracket',
+      format: PhaseFormat.BRACKET,
       seeds: phase.seeds,
       rounds: tree.status === 'ready' ? tree.rounds : null,
       results: phase.results,

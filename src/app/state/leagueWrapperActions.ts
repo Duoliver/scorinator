@@ -8,6 +8,8 @@ import {
   type BuiltPhase,
   type PhasePlan,
   type PlanZone,
+  PhaseFormat,
+  Legs,
 } from '@/engine/phases';
 import { createSeededRng } from '@/engine/rng';
 import {
@@ -62,13 +64,13 @@ export interface CreateLeagueInput {
 }
 
 const DEFAULT_PLANS: readonly PhasePlan[] = [
-  { format: 'round-robin', legs: 'two-way' },
+  { format: PhaseFormat.ROUND_ROBIN, legs: Legs.TWO_WAY },
 ];
 
 /** A built phase of the engine, as a domain phase with no results yet. A
  * bracket starts with the Task 185 rule on. */
 function startedPhase(built: BuiltPhase<string>): Phase {
-  if (built.format === 'bracket')
+  if (built.format === PhaseFormat.BRACKET)
     return { ...built, results: [], avoidGroupTies: true };
   return { ...built, results: [] };
 }
@@ -158,7 +160,7 @@ export function createLeague(
   const uuids = teams.map((team) => team.blueprintUuid);
   const plans = input.plans ?? DEFAULT_PLANS;
   const [firstPlan] = plans;
-  const groups = firstPlan?.format === 'groups' ? input.groups : undefined;
+  const groups = firstPlan?.format === PhaseFormat.GROUPS ? input.groups : undefined;
   checkPlans(plans, uuids.length, groups);
   if (groups) checkDraw(groups, uuids);
   const phaseOne = startedPhase(buildPhase(firstPlan, 1, uuids, rng, groups));
@@ -236,7 +238,7 @@ function changeCurrentPhase(
 /** The current phase as a round robin or Groups phase. Throws a
  * `RangeError` for a bracket: it has ties, not fixtures (Task 139). */
 function requireScheduled(phase: Phase): ScheduledPhase {
-  if (phase.format === 'bracket') {
+  if (phase.format === PhaseFormat.BRACKET) {
     throw new RangeError('The current phase is a bracket. It has ties, not fixtures.');
   }
   return phase;
@@ -371,7 +373,7 @@ function redrawCurrentGroups(
     const { phases, plans } = wrapper.content;
     const index = phases.length - 1;
     const current = phases[index];
-    if (!canChangeCurrentGroups(wrapper) || current?.format !== 'groups') {
+    if (!canChangeCurrentGroups(wrapper) || current?.format !== PhaseFormat.GROUPS) {
       throw new RangeError(
         'Only a later Groups phase with no result can change its draw.'
       );
@@ -426,7 +428,7 @@ export function swapTeamsInCurrentGroups(
 /** The current phase as a bracket, with its index. Throws a `RangeError`
  * for a round robin or Groups phase. */
 function requireBracket(phase: Phase): BracketPhase {
-  if (phase.format !== 'bracket') {
+  if (phase.format !== PhaseFormat.BRACKET) {
     throw new RangeError(
       'The current phase is not a bracket. It has fixtures, not ties.'
     );
@@ -561,7 +563,7 @@ export function setPhaseZones(
   const wrapper = state.leagues[leagueUuid];
   if (!wrapper) throw new RangeError(`No open league has the UUID ${leagueUuid}.`);
   const plan = wrapper.content.plans[phaseIndex];
-  if (!plan || plan.format === 'bracket') {
+  if (!plan || plan.format === PhaseFormat.BRACKET) {
     throw new RangeError(`Phase ${phaseIndex + 1} has no round-robin or Groups plan.`);
   }
   const zoned = { ...plan, zones: zones.map((zone) => ({ ...zone })) };

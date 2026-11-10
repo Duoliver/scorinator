@@ -7,13 +7,14 @@ import {
   parseWholeNumber,
   type PhaseFormatKey,
 } from '@/features/leagues/LeagueSetupScreen/phasePlans';
-import { getAutomaticZones } from '@/engine/phases';
+import { getAutomaticZones, PhaseFormat } from '@/engine/phases';
 import { phaseShortName } from '@/features/leagues/leagueSummary';
 import { ZoneEditor } from '@/features/leagues/ZoneEditor';
 import { BracketSettings } from '@/features/leagues/LeagueSetupScreen/steps/PhasesStep/BracketSettings';
 import type PhaseCardProps from './types';
 import type { PhaseCardView } from './types';
 import styles from './PhaseCard.module.css';
+import { GroupBy } from '@/engine/round-robin';
 
 export type { PhaseCardProps, PhaseCardView };
 
@@ -56,8 +57,9 @@ export function PhaseCard({ view, phaseList }: PhaseCardProps): JSX.Element {
   const formatOptions = isLast
     ? FORMAT_OPTIONS
     : FORMAT_OPTIONS.filter((option) => option.value !== 'bracket');
-  const advance = plan.format === 'bracket' ? undefined : plan.advance;
-  const bestOfNext = plan.format === 'groups' ? plan.advance?.bestOfNext : undefined;
+  const advance = plan.format === PhaseFormat.BRACKET ? undefined : plan.advance;
+  const bestOfNext =
+    plan.format === PhaseFormat.GROUPS ? plan.advance?.bestOfNext : undefined;
   const nextPlace =
     advance && Number.isFinite(advance.top)
       ? `place ${advance.top + 1}`
@@ -113,7 +115,7 @@ export function PhaseCard({ view, phaseList }: PhaseCardProps): JSX.Element {
             />
           </div>
 
-          {plan.format === 'groups' && (
+          {plan.format === PhaseFormat.GROUPS && (
             <div class={styles.fields}>
               <Select
                 label="Set by"
@@ -126,10 +128,12 @@ export function PhaseCard({ view, phaseList }: PhaseCardProps): JSX.Element {
               <div class={styles['number-field']}>
                 <Input
                   key={plan.grouping.by}
-                  label={plan.grouping.by === 'size' ? 'Group size' : 'Group count'}
+                  label={
+                    plan.grouping.by === GroupBy.SIZE ? 'Group size' : 'Group count'
+                  }
                   inputMode="numeric"
                   defaultValue={numberText(
-                    plan.grouping.by === 'size'
+                    plan.grouping.by === GroupBy.SIZE
                       ? plan.grouping.size
                       : plan.grouping.count
                   )}
@@ -153,7 +157,7 @@ export function PhaseCard({ view, phaseList }: PhaseCardProps): JSX.Element {
                   />
                 </div>
                 <span class={styles['advance-text']}>
-                  {plan.format === 'groups'
+                  {plan.format === PhaseFormat.GROUPS
                     ? 'advance per group'
                     : 'advance to the next phase'}
                 </span>
@@ -174,7 +178,7 @@ export function PhaseCard({ view, phaseList }: PhaseCardProps): JSX.Element {
             </div>
           )}
 
-          {plan.format !== 'bracket' && (
+          {plan.format !== PhaseFormat.BRACKET && (
             <section class={styles.zones} aria-label="Zones">
               <h4 class={styles.zonesTitle}>Zones</h4>
               {/* A change of the automatic zones gives the rows new start

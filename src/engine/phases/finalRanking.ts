@@ -2,8 +2,11 @@ import {
   findTieTeams,
   type BracketRound,
   type BracketTieResult,
+  TieSideKind,
+  BracketTieKind,
 } from '@/engine/bracket';
 import { orderAcrossGroups, type LotOf, type StandingsRow } from '@/engine/standings';
+import { PhaseFormat } from './types';
 
 /**
  * What the final ranking needs from one started phase (Task 147 choice 1).
@@ -52,7 +55,7 @@ function phaseOrder<TeamId>(
   phase: PhaseOrderInput<TeamId>,
   lotOf?: LotOf<TeamId>
 ): TeamId[] {
-  if (phase.format === 'bracket') return bracketOrder(phase);
+  if (phase.format === PhaseFormat.BRACKET) return bracketOrder(phase);
   return tableOrder(phase.tables, lotOf);
 }
 
@@ -102,11 +105,11 @@ function bracketOrder<TeamId>(phase: {
   );
   for (const round of rounds) {
     for (const tie of round.ties) {
-      const level = round.round * 2 + (tie.kind === 'final' ? 1 : 0);
+      const level = round.round * 2 + (tie.kind === BracketTieKind.FINAL ? 1 : 0);
       const result = results.find((r) => r.tieId === tie.id);
-      const decides = tie.kind !== 'regular' && result !== undefined;
+      const decides = tie.kind !== BracketTieKind.REGULAR && result !== undefined;
       for (const side of findTieTeams(rounds, results, tie.id)) {
-        if (side.kind !== 'team') continue;
+        if (side.kind !== TieSideKind.TEAM) continue;
         const current = reach.get(side.teamId);
         if (current === undefined || level < current.level) continue;
         current.level = level;

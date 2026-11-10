@@ -1,6 +1,6 @@
 import { roundName } from '@/engine/bracket';
 import type { LeagueProgress, PhaseSummary, WrapperSummary } from '@/domain';
-import type { PhasePlan } from '@/engine/phases';
+import { type PhasePlan, PhaseFormat, Legs } from '@/engine/phases';
 import type { PointsConfig } from '@/engine/standings';
 import { formatTeamCount } from '@/features/components';
 
@@ -39,9 +39,9 @@ export function describeLeague(
 /** The full label of a phase format (US-01.2), from a manifest phase or a
  * phase plan: both have the format and, but for a bracket, the legs. */
 export function formatPhaseLabel(phase: PhaseSummary): string {
-  if (phase.format === 'bracket') return 'Bracket';
-  const legs = phase.legs === 'two-way' ? '(two-way)' : '(single duels)';
-  return phase.format === 'groups'
+  if (phase.format === PhaseFormat.BRACKET) return 'Bracket';
+  const legs = phase.legs === Legs.TWO_WAY ? '(two-way)' : '(single duels)';
+  return phase.format === PhaseFormat.GROUPS
     ? `Groups round robin ${legs}`
     : `Round robin ${legs}`;
 }
@@ -49,8 +49,8 @@ export function formatPhaseLabel(phase: PhaseSummary): string {
 /** The fixed short name of a phase format family (US-01.2): "Round robin",
  * "Group Stage", or "Bracket". */
 export function phaseShortName(phase: PhaseSummary): string {
-  if (phase.format === 'bracket') return 'Bracket';
-  return phase.format === 'groups' ? 'Group Stage' : 'Round robin';
+  if (phase.format === PhaseFormat.BRACKET) return 'Bracket';
+  return phase.format === PhaseFormat.GROUPS ? 'Group Stage' : 'Round robin';
 }
 
 /** The format text of a league (US-01.2): the full label of a one-phase
@@ -93,9 +93,11 @@ export function formatAdvanceText(
 ): string | undefined {
   const plan = plans[phaseIndex];
   const next = plans[phaseIndex + 1];
-  if (!plan || plan.format === 'bracket' || !plan.advance || !next) return undefined;
+  if (!plan || plan.format === PhaseFormat.BRACKET || !plan.advance || !next)
+    return undefined;
   const target = `advance to the ${phaseShortName(next)}.`;
-  if (plan.format === 'round-robin') return `Top ${plan.advance.top} ${target}`;
+  if (plan.format === PhaseFormat.ROUND_ROBIN)
+    return `Top ${plan.advance.top} ${target}`;
   const { top, bestOfNext } = plan.advance;
   const best = bestOfNext > 0 ? ` and the best ${bestOfNext} of place ${top + 1}` : '';
   return `Top ${top} of each group${best} ${target}`;

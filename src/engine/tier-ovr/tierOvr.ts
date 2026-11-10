@@ -1,7 +1,15 @@
 import type { Rng } from '@/engine/rng';
-import type { Tier, TierOvrRange } from './types';
+import { Tier, type TierOvrRange } from './types';
 
-export const TIER_ORDER: readonly Tier[] = ['S', 'A', 'B', 'C', 'D', 'E', 'F'];
+export const TIER_ORDER: readonly Tier[] = [
+  Tier.S,
+  Tier.A,
+  Tier.B,
+  Tier.C,
+  Tier.D,
+  Tier.E,
+  Tier.F,
+];
 
 /**
  * Default Tier -> OVR range table (MVP1). The spec gives only one anchor

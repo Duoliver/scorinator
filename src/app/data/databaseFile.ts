@@ -11,8 +11,9 @@ import {
   type SavedPhase,
   type SavedWrapper,
   type SavedWrapperSummary,
+  SavedFileKind,
 } from '@/adapters/json-io';
-import type { PhasePlan, PlanZone } from '@/engine/phases';
+import { type PhasePlan, type PlanZone, PhaseFormat } from '@/engine/phases';
 import type {
   LeagueWrapper,
   Manifest,
@@ -46,8 +47,8 @@ export function blueprintToFile(blueprint: TeamBlueprint): SavedBlueprint {
 }
 
 function phaseSummaryCopy(phase: PhaseSummary): PhaseSummary {
-  return phase.format === 'bracket'
-    ? { format: 'bracket' }
+  return phase.format === PhaseFormat.BRACKET
+    ? { format: PhaseFormat.BRACKET }
     : { format: phase.format, legs: phase.legs };
 }
 
@@ -55,20 +56,20 @@ function phaseSummaryCopy(phase: PhaseSummary): PhaseSummary {
  * the domain and in the file, so one copy serves both ways. */
 function planCopy(plan: PhasePlan): PhasePlan {
   switch (plan.format) {
-    case 'bracket':
+    case PhaseFormat.BRACKET:
       return plan.rules
-        ? { format: 'bracket', rules: { ...plan.rules } }
-        : { format: 'bracket' };
-    case 'round-robin':
+        ? { format: PhaseFormat.BRACKET, rules: { ...plan.rules } }
+        : { format: PhaseFormat.BRACKET };
+    case PhaseFormat.ROUND_ROBIN:
       return {
-        format: 'round-robin',
+        format: PhaseFormat.ROUND_ROBIN,
         legs: plan.legs,
         ...(plan.advance ? { advance: { top: plan.advance.top } } : {}),
         ...zonesCopy(plan.zones),
       };
-    case 'groups':
+    case PhaseFormat.GROUPS:
       return {
-        format: 'groups',
+        format: PhaseFormat.GROUPS,
         legs: plan.legs,
         grouping: { ...plan.grouping },
         ...(plan.advance ? { advance: { ...plan.advance } } : {}),
@@ -116,9 +117,9 @@ function instanceToFile(team: TeamInstance): SavedInstance {
 }
 
 function phaseToFile(phase: Phase): SavedPhase {
-  if (phase.format === 'bracket') {
+  if (phase.format === PhaseFormat.BRACKET) {
     return {
-      format: 'bracket',
+      format: PhaseFormat.BRACKET,
       seeds: [...phase.seeds],
       byeTeams: [...phase.byeTeams],
       results: structuredClone(phase.results),
@@ -127,9 +128,9 @@ function phaseToFile(phase: Phase): SavedPhase {
   }
   const fixtures = phase.fixtures.map((fixture) => ({ ...fixture }));
   const results = phase.results.map((result) => ({ ...result }));
-  if (phase.format === 'groups') {
+  if (phase.format === PhaseFormat.GROUPS) {
     return {
-      format: 'groups',
+      format: PhaseFormat.GROUPS,
       legs: phase.legs,
       groups: phase.groups.map((group) => [...group]),
       fixtures,
@@ -138,7 +139,7 @@ function phaseToFile(phase: Phase): SavedPhase {
     };
   }
   return {
-    format: 'round-robin',
+    format: PhaseFormat.ROUND_ROBIN,
     legs: phase.legs,
     fixtures,
     byes: phase.byes.map((bye) => ({ ...bye })),
@@ -157,7 +158,7 @@ const phaseFromFile = (file: SavedPhase): Phase => phaseToFile(file);
 
 export function serializeManifestRecord(manifest: Manifest): string {
   const file: SavedManifest = {
-    kind: 'manifest',
+    kind: SavedFileKind.MANIFEST,
     formatVersion: DATABASE_FORMAT_VERSION,
     installationUuid: manifest.installationUuid,
     blueprints: manifest.blueprints.map(blueprintToFile),
@@ -217,7 +218,7 @@ export function leagueFromFile(file: SavedLeagueEntry): LeagueWrapper {
 
 export function serializeLeagueWrapper(wrapper: LeagueWrapper): string {
   const file: SavedWrapper = {
-    kind: 'wrapper',
+    kind: SavedFileKind.WRAPPER,
     formatVersion: DATABASE_FORMAT_VERSION,
     ...leagueToFile(wrapper),
   };

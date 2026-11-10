@@ -14,7 +14,13 @@ import {
   type StandingsRow,
 } from '@/engine/standings';
 import { defaultByeTeams, drawBracketSeeds } from '@/engine/bracket';
-import type { BuiltPhase, GroupBye, Legs, PhasePlan } from './types';
+import {
+  type BuiltPhase,
+  type GroupBye,
+  Legs,
+  type PhasePlan,
+  PhaseFormat,
+} from './types';
 
 /**
  * The qualifiers of a finished phase, in seed order (US-01.4, US-01.6,
@@ -36,11 +42,11 @@ export function pickQualifiers<TeamId>(
   tables: readonly (readonly StandingsRow<TeamId>[])[],
   lotOf?: LotOf<TeamId>
 ): TeamId[] {
-  if (plan.format === 'bracket' || !plan.advance) {
+  if (plan.format === PhaseFormat.BRACKET || !plan.advance) {
     throw new RangeError('pickQualifiers needs a phase with an advancement.');
   }
 
-  if (plan.format === 'round-robin') {
+  if (plan.format === PhaseFormat.ROUND_ROBIN) {
     const { top } = plan.advance;
     if (tables.length !== 1 || tables[0].length < top) {
       throw new RangeError(
@@ -102,15 +108,15 @@ export function buildPhase<TeamId>(
   rng: Rng,
   groups?: readonly (readonly TeamId[])[]
 ): BuiltPhase<TeamId> {
-  if (plan.format === 'bracket') {
+  if (plan.format === PhaseFormat.BRACKET) {
     const seeds = phase === 1 ? drawBracketSeeds(teams, rng) : [...teams];
-    return { format: 'bracket', seeds, byeTeams: defaultByeTeams(seeds) };
+    return { format: PhaseFormat.BRACKET, seeds, byeTeams: defaultByeTeams(seeds) };
   }
 
-  if (plan.format === 'round-robin') {
+  if (plan.format === PhaseFormat.ROUND_ROBIN) {
     const schedule = makeSchedule(plan.legs, teams, rng);
     return {
-      format: 'round-robin',
+      format: PhaseFormat.ROUND_ROBIN,
       legs: plan.legs,
       fixtures: assignFixtureIds(schedule.fixtures, { phase, group: 1 }),
       byes: schedule.byes,
@@ -121,7 +127,7 @@ export function buildPhase<TeamId>(
     ? groups.map((group) => [...group])
     : drawGroups(teams, groupCountFor(teams.length, plan.grouping), rng);
   const built: BuiltPhase<TeamId> = {
-    format: 'groups',
+    format: PhaseFormat.GROUPS,
     legs: plan.legs,
     groups: drawn,
     fixtures: [],
@@ -143,7 +149,7 @@ function makeSchedule<TeamId>(
   teams: readonly TeamId[],
   rng: Rng
 ): RoundRobinSchedule<TeamId> {
-  return legs === 'two-way'
+  return legs === Legs.TWO_WAY
     ? generateRoundRobin(teams, rng)
     : generateSingleDuels(teams, rng);
 }

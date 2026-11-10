@@ -10,7 +10,8 @@ export interface MatchdayFixture {
 
 export type FixtureResult<TeamId> = MatchResult<TeamId> & { fixtureId: string };
 
-export type MatchOutcome = 'W' | 'D' | 'L';
+export const MatchOutcome = { WIN: 'W', DRAW: 'D', LOSS: 'L' } as const;
+export type MatchOutcome = (typeof MatchOutcome)[keyof typeof MatchOutcome];
 
 /** One match from the view of one team (US-12.1). */
 export interface TeamMatchResult<TeamId> {
@@ -47,8 +48,8 @@ function getResultsByMatchday<TeamId>(
 }
 
 function getOutcome(goalsFor: number, goalsAgainst: number): MatchOutcome {
-  if (goalsFor > goalsAgainst) return 'W';
-  return goalsFor < goalsAgainst ? 'L' : 'D';
+  if (goalsFor > goalsAgainst) return MatchOutcome.WIN;
+  return goalsFor < goalsAgainst ? MatchOutcome.LOSS : MatchOutcome.DRAW;
 }
 
 /**

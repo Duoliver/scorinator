@@ -14,9 +14,11 @@ import {
   type BracketTie,
   type BracketTieResult,
   type TieSide,
+  BracketTieKind,
+  TieSideKind,
 } from '@/engine/bracket';
-import type { Legs } from '@/engine/phases';
-import type { TieMatch } from '@/engine/tiebreak';
+import { Legs, PhaseFormat } from '@/engine/phases';
+import { type TieMatch, TieMatchPart, TieDecision } from '@/engine/tiebreak';
 
 /** One started phase for the results summary (US-10.6, Task 148). Teams are
  * named by an `id`, and a result finds its fixture by `fixtureId` (Task 77).
@@ -95,18 +97,19 @@ function renderTable(
 type PlanText = ResultsTxtInput['plans'][number];
 
 function legsLabel(legs: Legs): string {
-  return legs === 'two-way' ? '(two-way)' : '(single duels)';
+  return legs === Legs.TWO_WAY ? '(two-way)' : '(single duels)';
 }
 
 function phaseLabel(plan: PlanText): string {
-  if (plan.format === 'bracket') return 'Bracket';
-  const prefix = plan.format === 'groups' ? 'Groups round robin' : 'Round robin';
+  if (plan.format === PhaseFormat.BRACKET) return 'Bracket';
+  const prefix =
+    plan.format === PhaseFormat.GROUPS ? 'Groups round robin' : 'Round robin';
   return `${prefix} ${legsLabel(plan.legs)}`;
 }
 
 function phaseShortName(format: PlanText['format']): string {
-  if (format === 'bracket') return 'Bracket';
-  return format === 'groups' ? 'Group Stage' : 'Round robin';
+  if (format === PhaseFormat.BRACKET) return 'Bracket';
+  return format === PhaseFormat.GROUPS ? 'Group Stage' : 'Round robin';
 }
 
 function formatLine(input: ResultsTxtInput): string {
@@ -227,7 +230,7 @@ function scheduledLines(
   const played = fixtures.filter((fixture) => resultByFixture.has(fixture.id)).length;
   const lines = [playedLine('Matches', played, fixtures.length)];
 
-  if (phase.format === 'round-robin') {
+  if (phase.format === PhaseFormat.ROUND_ROBIN) {
     const teams = phase.groups.flat();
     lines.push('', 'STANDINGS', ...standingsLines(teams, results, input, nameOf));
     lines.push('', 'RESULTS');
@@ -286,13 +289,13 @@ function decisionTags(
 ): string[] {
   const last = result.matches[result.matches.length - 1];
   const { penalties } = result;
-  if (result.decidedBy === 'penalties' && penalties && last) {
+  if (result.decidedBy === TieDecision.PENALTIES && penalties && last) {
     const pens = (id: string): number =>
       last.homeId === id ? penalties.homeGoals : penalties.awayGoals;
     return [`Pens ${pens(top)}-${pens(bottom)}`];
   }
-  if (result.decidedBy === 'coin-toss') return ['Coin toss'];
-  if (result.decidedBy === 'away-goals') return ['Away goals'];
+  if (result.decidedBy === TieDecision.COIN_TOSS) return ['Coin toss'];
+  if (result.decidedBy === TieDecision.AWAY_GOALS) return ['Away goals'];
   return [];
 }
 
@@ -304,17 +307,17 @@ function tieText(
   const rounds = phase.rounds ?? [];
   const [top, bottom] = findTieTeams(rounds, phase.results, tie.id);
   const sideName = (side: TieSide<string>): string =>
-    side.kind === 'team' ? nameOf(side.teamId) : 'TBD';
-  if (bottom.kind === 'bye') {
+    side.kind === TieSideKind.TEAM ? nameOf(side.teamId) : 'TBD';
+  if (bottom.kind === TieSideKind.BYE) {
     return { top: sideName(top), middle: 'Bye', bottom: '', detail: '' };
   }
 
   const result = phase.results.find((r) => r.tieId === tie.id);
-  if (!result || top.kind !== 'team' || bottom.kind !== 'team') {
+  if (!result || top.kind !== TieSideKind.TEAM || bottom.kind !== TieSideKind.TEAM) {
     return { top: sideName(top), middle: 'vs', bottom: sideName(bottom), detail: '' };
   }
   // The main line holds the total of the legs. A replay is not part of it.
-  const legs = result.matches.filter((match) => match.part !== 'replay');
+  const legs = result.matches.filter((match) => match.part !== TieMatchPart.REPLAY);
   const total = (id: string): number =>
     legs.reduce((sum, leg) => sum + goalsIn(leg, id), 0);
   const scores = result.matches.map((match) => {
@@ -377,8 +380,8 @@ function bracketLines(phase: BracketInput, nameOf: NameOf): string[] {
 
   for (const round of rounds) {
     const ordered = [...round.ties].sort((a, b) => a.tie - b.tie);
-    const own = ordered.filter((tie) => tie.kind !== 'third');
-    const third = ordered.find((tie) => tie.kind === 'third');
+    const own = ordered.filter((tie) => tie.kind !== BracketTieKind.THIRD);
+    const third = ordered.find((tie) => tie.kind === BracketTieKind.THIRD);
     if (third) {
       lines.push(
         '',
@@ -430,7 +433,7 @@ export function serializeResultsTxt(input: ResultsTxtInput): string {
   input.phases.forEach((phase, index) => {
     lines.push('', `Phase ${index + 1} · ${phaseShortName(phase.format)}`);
     lines.push(
-      ...(phase.format === 'bracket'
+      ...(phase.format === PhaseFormat.BRACKET
         ? bracketLines(phase, nameOf)
         : scheduledLines(phase, input, nameOf))
     );

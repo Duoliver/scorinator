@@ -22,6 +22,7 @@ import {
 import { TeamLabel } from '@/features/leagues/TeamLabel';
 import type ReviewStepProps from './types';
 import styles from './ReviewStep.module.css';
+import { PhaseFormat } from '@/engine/phases';
 
 export type { ReviewStepProps };
 
@@ -54,7 +55,7 @@ export function ReviewStep({
         <ol class={styles.phaseList} aria-label="Phases">
           {plans.map((plan, index) => (
             <li key={index}>
-              {`${index + 1} · ${phaseShortName(plan)} · ${describePhasePlan(plan, plan.format === 'bracket' ? bracketQualifiers : undefined)}`}
+              {`${index + 1} · ${phaseShortName(plan)} · ${describePhasePlan(plan, plan.format === PhaseFormat.BRACKET ? bracketQualifiers : undefined)}`}
             </li>
           ))}
         </ol>

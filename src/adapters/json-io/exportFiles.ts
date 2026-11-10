@@ -13,7 +13,7 @@ import {
   DATABASE_FORMAT_VERSION,
   type SavedBlueprint,
   type SavedBlueprintFile,
-  type SavedFileKind,
+  SavedFileKind,
   type SavedLeagueEntry,
   type SavedLeagueFile,
 } from './types';
@@ -36,12 +36,7 @@ const LEAGUE_FILE_PREFIX = 'A league file is not valid: ';
  * is wrong with it. */
 export type DetectedFileKind = SavedFileKind | 'mvp1' | 'unknown';
 
-const KINDS: readonly SavedFileKind[] = [
-  'manifest',
-  'wrapper',
-  'leagues',
-  'blueprints',
-];
+const KINDS: readonly SavedFileKind[] = Object.values(SavedFileKind);
 
 /** Finds the kind of a file before the import reads it, so a wrong file can
  * name the right import button (US-10.3, choice 4). */
@@ -80,7 +75,7 @@ export function serializeLeagueFile(file: SavedLeagueFile): string {
  * league names it, for example "league 2: team 1 has no valid OVR." */
 export function parseLeagueFile(text: string): SavedLeagueFile {
   const fail: Fail = failLeagueFile;
-  const { raw, version } = readFileHeader(text, 'leagues', fail);
+  const { raw, version } = readFileHeader(text, SavedFileKind.LEAGUES, fail);
   const items = readList(raw.leagues, 'leagues', fail);
   if (items.length === 0) fail('the file has no league.');
 
@@ -104,7 +99,7 @@ export function parseLeagueFile(text: string): SavedLeagueFile {
   );
 
   return {
-    kind: 'leagues',
+    kind: SavedFileKind.LEAGUES,
     formatVersion: DATABASE_FORMAT_VERSION,
     leagues,
     blueprints: readBlueprints(raw.blueprints, fail),
@@ -119,8 +114,12 @@ export function serializeBlueprintFile(file: SavedBlueprintFile): string {
  * `A team blueprints file is not valid:`. */
 export function parseBlueprintFile(text: string): SavedBlueprintFile {
   const fail: Fail = failBlueprintFile;
-  const { raw } = readFileHeader(text, 'blueprints', fail);
+  const { raw } = readFileHeader(text, SavedFileKind.BLUEPRINTS, fail);
   const blueprints = readBlueprints(raw.blueprints, fail);
   if (blueprints.length === 0) fail('the file has no Blueprint.');
-  return { kind: 'blueprints', formatVersion: DATABASE_FORMAT_VERSION, blueprints };
+  return {
+    kind: SavedFileKind.BLUEPRINTS,
+    formatVersion: DATABASE_FORMAT_VERSION,
+    blueprints,
+  };
 }

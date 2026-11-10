@@ -9,6 +9,7 @@ import { GroupCards } from '@/features/leagues/GroupCards';
 import { formatAdvanceText, phaseShortName } from '@/features/leagues/leagueSummary';
 import { StandingsView } from '@/features/standings';
 import styles from './LeagueDetailScreen.module.css';
+import { PhaseFormat } from '@/engine/phases';
 
 /** Keeps the visible matchday of each phase, from 0, across tab switches:
  * `Tabs` unmounts an inactive tab. */
@@ -104,7 +105,7 @@ export const getLeagueTabs = (
   memory: MatchdayMemory,
   draw?: GroupsDraw
 ): TabItem[] =>
-  league.content.phases[phaseIndex]?.format === 'bracket'
+  league.content.phases[phaseIndex]?.format === PhaseFormat.BRACKET
     ? [
         {
           id: 'bracket',
@@ -122,7 +123,9 @@ export const getLeagueTabs = (
 /** The first sub-tab of a started phase: "Bracket" for a bracket, and
  * "Standings" for the others (Task 141). */
 export const firstLeagueTab = (league: LeagueWrapper, phaseIndex: number): string =>
-  league.content.phases[phaseIndex]?.format === 'bracket' ? 'bracket' : 'standings';
+  league.content.phases[phaseIndex]?.format === PhaseFormat.BRACKET
+    ? 'bracket'
+    : 'standings';
 
 const getScheduledTabs = (
   league: LeagueWrapper,
@@ -183,7 +186,7 @@ export const getPhaseTabs = (
     const isCurrent = index === league.content.phases.length - 1;
     const currentDraw = isCurrent ? draw : undefined;
     const editZones =
-      plan.format === 'bracket' ? undefined : (
+      plan.format === PhaseFormat.BRACKET ? undefined : (
         <EditZonesButton onClick={() => onEditZones(index)} />
       );
     let actions: JSX.Element | undefined;

@@ -16,6 +16,7 @@ import { useTeamLookup } from '@/features/components';
 import type BracketViewProps from './types';
 import type { BracketColumn, BracketViewState } from './types';
 import { buildTieCard, describeBracketHeader } from './helpers';
+import { PhaseFormat } from '@/engine/phases';
 
 /**
  * The Bracket view data (Task 141): the header line, one column for each
@@ -30,7 +31,7 @@ export function useBracketView({
   const [confirmTie, setConfirmTie] = useState<string | null>(null);
   const lookup = useTeamLookup(league.teams);
   const phase = league.content.phases[phaseIndex];
-  const results = phase?.format === 'bracket' ? phase.results : [];
+  const results = phase?.format === PhaseFormat.BRACKET ? phase.results : [];
   const rules = bracketRulesFor(league, phaseIndex);
   const tree = bracketTreeOf(league, phaseIndex);
   const rounds = tree.status === 'ready' ? tree.rounds : [];

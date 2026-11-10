@@ -7,6 +7,7 @@ import {
   pickQualifiers,
   type PhaseZone,
   type ZoneColour,
+  PhaseFormat,
 } from '@/engine/phases';
 import { calculateStandings, type LotOf, type StandingsRow } from '@/engine/standings';
 import type { LeagueWrapper } from '@/domain';
@@ -28,8 +29,9 @@ export function phaseTeamLists(wrapper: LeagueWrapper, phaseIndex: number): stri
   if (!phase) {
     throw new RangeError(`The league has no started phase ${phaseIndex + 1}.`);
   }
-  if (phase.format === 'bracket') return [];
-  if (phase.format === 'groups') return phase.groups.map((group) => [...group]);
+  if (phase.format === PhaseFormat.BRACKET) return [];
+  if (phase.format === PhaseFormat.GROUPS)
+    return phase.groups.map((group) => [...group]);
   if (phaseIndex === 0) return [wrapper.teams.map((team) => team.blueprintUuid)];
   const teams = new Set<string>();
   for (const fixture of phase.fixtures) {
@@ -55,7 +57,7 @@ export function phaseStandings(
   const { phases, points } = wrapper.content;
   const lotOf = leagueLotOf(wrapper);
   const phase = phases[phaseIndex];
-  const results = phase && phase.format !== 'bracket' ? phase.results : [];
+  const results = phase && phase.format !== PhaseFormat.BRACKET ? phase.results : [];
   return phaseTeamLists(wrapper, phaseIndex).map((teams) => {
     const members = new Set(teams);
     const own = results.filter(
@@ -71,7 +73,11 @@ export function canStartNextPhase(wrapper: LeagueWrapper): boolean {
   const { phases, plans } = wrapper.content;
   const current = phases[phases.length - 1];
   // A bracket is always the last phase (US-01.3), so it has no next phase.
-  if (!current || current.format === 'bracket' || phases.length >= plans.length) {
+  if (
+    !current ||
+    current.format === PhaseFormat.BRACKET ||
+    phases.length >= plans.length
+  ) {
     return false;
   }
   return isPhaseComplete(current.fixtures, current.results);
@@ -84,7 +90,11 @@ export function canChangeCurrentGroups(wrapper: LeagueWrapper): boolean {
   const { phases } = wrapper.content;
   const index = phases.length - 1;
   const current = phases[index];
-  return index >= 1 && current?.format === 'groups' && canChangeDraw(current.results);
+  return (
+    index >= 1 &&
+    current?.format === PhaseFormat.GROUPS &&
+    canChangeDraw(current.results)
+  );
 }
 
 /** The zones of one phase, and the zone colour of each team by Blueprint
@@ -111,7 +121,12 @@ export function getPhaseZoneView(
 ): PhaseZoneView {
   const plan = wrapper.content.plans[phaseIndex];
   const phase = wrapper.content.phases[phaseIndex];
-  if (!plan || !phase || plan.format === 'bracket' || phase.format === 'bracket') {
+  if (
+    !plan ||
+    !phase ||
+    plan.format === PhaseFormat.BRACKET ||
+    phase.format === PhaseFormat.BRACKET
+  ) {
     return { zones: [], colours: new Map() };
   }
   const zones = getPhaseZones(plan);

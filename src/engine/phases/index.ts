@@ -30,14 +30,13 @@ export type {
   BuiltPhase,
   GroupBye,
   GroupsPlan,
-  Legs,
   PhaseChainProblem,
   PhaseFitProblem,
   PhasePlan,
   PhaseZone,
   PlanZone,
   RoundRobinPlan,
-  ZoneColour,
   ZonePlaces,
   ZoneProblem,
 } from './types';
+export { Legs, PhaseFormat, ZoneColour } from './types';

@@ -2,14 +2,14 @@ import {
   getAutomaticZones,
   ZONE_LABEL_MAX,
   type PlanZone,
-  type ZoneColour,
+  ZoneColour,
   type ZonePlan,
   type ZoneProblem,
 } from '@/engine/phases';
 import type { ZoneRowValues } from './types';
 
 /** The four rows of the editor, in this order (Task 189 choice 2). */
-export const ZONE_COLOURS: readonly ZoneColour[] = ['green', 'blue', 'yellow', 'red'];
+export const ZONE_COLOURS: readonly ZoneColour[] = Object.values(ZoneColour);
 
 /** The row name of a colour: "Green". */
 export const getColourName = (colour: ZoneColour): string =>

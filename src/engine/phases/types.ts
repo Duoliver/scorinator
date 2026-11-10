@@ -3,10 +3,27 @@ import type { Bye, GroupSetting, PhaseFixture } from '@/engine/round-robin';
 
 /** One or two meetings of each pair of teams (US-01.2): `two-way` is
  * `generateRoundRobin`, `single-duels` is `generateSingleDuels`. */
-export type Legs = 'two-way' | 'single-duels';
+export const Legs = { TWO_WAY: 'two-way', SINGLE_DUELS: 'single-duels' } as const;
+export type Legs = (typeof Legs)[keyof typeof Legs];
+
+/** The format of a phase (US-01.2). The record types of `domain/` and the
+ * file types of `adapters/` use it too: `domain/` holds types only, so the
+ * value set lives here, beside the plans (Task 184). */
+export const PhaseFormat = {
+  ROUND_ROBIN: 'round-robin',
+  GROUPS: 'groups',
+  BRACKET: 'bracket',
+} as const;
+export type PhaseFormat = (typeof PhaseFormat)[keyof typeof PhaseFormat];
 
 /** The four zone colours (US-12.5), each one used once at most. */
-export type ZoneColour = 'green' | 'blue' | 'yellow' | 'red';
+export const ZoneColour = {
+  GREEN: 'green',
+  BLUE: 'blue',
+  YELLOW: 'yellow',
+  RED: 'red',
+} as const;
+export type ZoneColour = (typeof ZoneColour)[keyof typeof ZoneColour];
 
 /** The first and the last place of a zone, from 1. */
 export interface ZonePlaces {

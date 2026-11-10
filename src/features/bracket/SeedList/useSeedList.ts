@@ -7,6 +7,7 @@ import { useTeamLookup } from '@/features/components';
 import type SeedListProps from './types';
 import type { SeedListState } from './types';
 import { buildSeedRows, describeByes, seedTagsOf, toggleBye } from './helpers';
+import { PhaseFormat } from '@/engine/phases';
 
 /**
  * The Seed List data (Task 142): the rows in seed order with their tags
@@ -18,14 +19,14 @@ export function useSeedList({ league, phaseIndex }: SeedListProps): SeedListStat
   const [pending, setPending] = useState<string[] | null>(null);
   const lookup = useTeamLookup(league.teams);
   const phase = league.content.phases[phaseIndex];
-  const seeds = phase?.format === 'bracket' ? phase.seeds : [];
-  const byeTeams = phase?.format === 'bracket' ? phase.byeTeams : [];
-  const hasResults = phase?.format === 'bracket' && phase.results.length > 0;
+  const seeds = phase?.format === PhaseFormat.BRACKET ? phase.seeds : [];
+  const byeTeams = phase?.format === PhaseFormat.BRACKET ? phase.byeTeams : [];
+  const hasResults = phase?.format === PhaseFormat.BRACKET && phase.results.length > 0;
   const byes = seeds.length >= 2 ? bracketSlotCount(seeds.length) - seeds.length : 0;
 
   const before = league.content.plans[phaseIndex - 1];
   const tags =
-    before && before.format !== 'bracket'
+    before && before.format !== PhaseFormat.BRACKET
       ? seedTagsOf(phaseStandings(league, phaseIndex - 1), before.format)
       : new Map<string, string>();
 

@@ -1,5 +1,10 @@
-import { groupCountFor, groupSizes } from '@/engine/round-robin';
-import type { PhaseChainProblem, PhaseFitProblem, PhasePlan } from './types';
+import { groupCountFor, groupSizes, GroupBy } from '@/engine/round-robin';
+import {
+  type PhaseChainProblem,
+  type PhaseFitProblem,
+  type PhasePlan,
+  PhaseFormat,
+} from './types';
 
 /**
  * Checks the order of the phases (US-01.3): a bracket only as the last
@@ -14,7 +19,7 @@ export function checkPhaseChain(plans: readonly PhasePlan[]): PhaseChainProblem[
   plans.forEach((plan, index) => {
     const phase = index + 1;
     const isLast = phase === plans.length;
-    if (plan.format === 'bracket') {
+    if (plan.format === PhaseFormat.BRACKET) {
       if (!isLast) problems.push({ code: 'bracket-not-last', phase });
       return;
     }
@@ -32,10 +37,10 @@ export function checkPhaseChain(plans: readonly PhasePlan[]): PhaseChainProblem[
  * last phase.
  */
 export function qualifierCount(plan: PhasePlan, groupCount: number): number {
-  if (plan.format === 'bracket' || !plan.advance) {
+  if (plan.format === PhaseFormat.BRACKET || !plan.advance) {
     throw new RangeError('qualifierCount needs a phase with an advancement.');
   }
-  if (plan.format === 'round-robin') return plan.advance.top;
+  if (plan.format === PhaseFormat.ROUND_ROBIN) return plan.advance.top;
   return groupCount * plan.advance.top + plan.advance.bestOfNext;
 }
 
@@ -90,7 +95,7 @@ export function phaseTeamCounts(
 
   for (const [index, plan] of plans.entries()) {
     let groupCount = 1;
-    if (plan.format === 'groups') {
+    if (plan.format === PhaseFormat.GROUPS) {
       const sizes =
         teams >= 2
           ? groupSizesOf(plan, teams, index === 0 ? firstGroupSizes : undefined)
@@ -101,7 +106,8 @@ export function phaseTeamCounts(
     } else {
       counts.push({ teams });
     }
-    if (teams < 2 || plan.format === 'bracket' || !plan.advance) return counts;
+    if (teams < 2 || plan.format === PhaseFormat.BRACKET || !plan.advance)
+      return counts;
     const next = qualifierCount(plan, groupCount);
     if (!Number.isInteger(next)) return counts;
     teams = next;
@@ -136,9 +142,9 @@ export function checkPhaseFit(
       problems.push({ code: 'too-few-teams', phase, teams });
       break;
     }
-    if (plan.format === 'bracket') break;
+    if (plan.format === PhaseFormat.BRACKET) break;
 
-    if (plan.format === 'round-robin') {
+    if (plan.format === PhaseFormat.ROUND_ROBIN) {
       const top = plan.advance?.top;
       if (top !== undefined && !isWholeInRange(top, 1, teams - 1)) {
         problems.push({ code: 'top-out-of-range', phase, top, max: teams - 1 });
@@ -186,7 +192,7 @@ function groupSizesOf(
 ): number[] | undefined {
   if (realSizes) return [...realSizes];
   const setting = plan.grouping;
-  const value = setting.by === 'size' ? setting.size : setting.count;
+  const value = setting.by === GroupBy.SIZE ? setting.size : setting.count;
   if (!isWholeInRange(value, 2, Infinity)) return undefined;
   return groupSizes(teams, groupCountFor(teams, setting));
 }

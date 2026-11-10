@@ -1,10 +1,11 @@
-import type {
-  GroupsPlan,
-  PhaseZone,
-  PlanZone,
-  RoundRobinPlan,
+import {
+  type GroupsPlan,
+  type PhaseZone,
+  type PlanZone,
+  type RoundRobinPlan,
   ZoneColour,
-  ZoneProblem,
+  type ZoneProblem,
+  PhaseFormat,
 } from './types';
 
 /** A plan with a table, so a plan that can have zones (US-12.5). */
@@ -21,12 +22,12 @@ export function getAutomaticZones(plan: ZonePlan): PhaseZone[] {
   if (!plan.advance) return [];
   const { top } = plan.advance;
   const zones: PhaseZone[] = [
-    { colour: 'green', from: 1, to: top, label: 'Qualify', automatic: true },
+    { colour: ZoneColour.GREEN, from: 1, to: top, label: 'Qualify', automatic: true },
   ];
-  const bestOfNext = plan.format === 'groups' ? plan.advance.bestOfNext : 0;
+  const bestOfNext = plan.format === PhaseFormat.GROUPS ? plan.advance.bestOfNext : 0;
   if (bestOfNext > 0) {
     zones.push({
-      colour: 'yellow',
+      colour: ZoneColour.YELLOW,
       from: top + 1,
       to: top + 1,
       label: `Best ${bestOfNext} of place ${top + 1}`,
@@ -150,8 +151,8 @@ export function getZoneColours<TeamId>(
         (candidate) => candidate.from <= place && place <= candidate.to
       );
       if (!zone) return;
-      if (qualifiers && zone.automatic && zone.colour === 'yellow') {
-        if (qualifiers.has(team)) colours.set(team, 'green');
+      if (qualifiers && zone.automatic && zone.colour === ZoneColour.YELLOW) {
+        if (qualifiers.has(team)) colours.set(team, ZoneColour.GREEN);
         return;
       }
       colours.set(team, zone.colour);

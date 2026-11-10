@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { PhasePlan } from '@/engine/phases';
+import { type PhasePlan, Legs, PhaseFormat } from '@/engine/phases';
 import { DEFAULT_POINTS_CONFIG, type PointsConfig } from '@/engine/standings';
 import type { TeamInstance } from '@/domain';
 
@@ -33,7 +33,7 @@ export function emptyLeagueDraft(): LeagueDraft {
     details: { name: '', points: DEFAULT_POINTS_CONFIG, homeAdvantage: false },
     teams: [],
     fixedTrigrams: {},
-    plans: [{ format: 'round-robin', legs: 'two-way' }],
+    plans: [{ format: PhaseFormat.ROUND_ROBIN, legs: Legs.TWO_WAY }],
     groups: null,
     step: 'details',
   };

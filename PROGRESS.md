@@ -117,7 +117,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 156 | The position chart: the "Chart" sub-tab, SVG, the group selector | `features/chart`, `features/leagues`, `design-system/` | ✅ Done | 2026-11-10 | 2026-11-10 | [156](/docs/tasks/156-position-chart.md) | M6. US-12.4. 30 new tests. The user checked the real app. Zones in Task 190. |
 | 190 | Zones in the position chart: bands, tinted place numbers, the legend | `features/chart`, `features/components` | ✅ Done | 2026-11-10 | 2026-11-10 | [190](/docs/tasks/190-chart-zones.md) | Task created by User - 2026-11-10. From the Task 156 review. 7 new tests. The user checked the real app. |
 | 157 | Trigrams and Location on league screens: narrow tables, fixtures, the Location hint | `features/` | ✅ Done | 2026-11-10 | 2026-11-10 | [157](/docs/tasks/157-trigrams-location-league-screens.md) | M6. US-09.3, 09.6. 11 new tests. The user checked the real app. |
-| 184 | String unions to enums or named constants, across the codebase | all | ⬜ Not started |  |  | [184](/docs/tasks/184-string-unions-to-constants.md) | Task created by User - 2026-11-03. From the Task 137 review. Before 158. Criteria wait for the user. |
+| 184 | String unions to enums or named constants, across the codebase | all | ✅ Done | 2026-11-10 | 2026-11-10 | [184](/docs/tasks/184-string-unions-to-constants.md) | Task created by User - 2026-11-03. 18 value sets, 303 sites. The user reviewed the code. |
 | 158 | M6 smoke check: MVP2 complete | all | ⬜ Not started |  |  |  | M6. After 155, 156, 157, 189, 190. |
 | 159 | The commit workflow: commit at Done, the message pattern | `CLAUDE.md`, `PROGRESS.md` | ✅ Done | 2026-10-29 | 2026-10-29 | [159](/docs/tasks/159-commit-workflow.md) | Task created by User - 2026-10-29. Commit at Done. Push and branches stay with the user. |
 | 160 | v2 actions: Blueprint create and edit (UUID, unique slug, provenance), league create (Instances, phase 1, fixture ids), scorinate in phase 1 | `app/state` | ✅ Done | 2026-10-29 | 2026-10-29 | [160](/docs/tasks/160-v2-actions.md) | Task created by User - 2026-10-29, split from 108. M1. Built. Seven choices agreed. |
@@ -188,6 +188,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-11-10 (Task 184 — named value sets):** The user agreed four choices. (1) An `as const` object and a type of the same name, no `enum`. Members in UPPER_SNAKE_CASE (review change). (2) The 18 value sets of the data model in `engine/`, `domain/`, and `adapters/`. (3) The tests keep the plain strings. (4) One task. Detail: [Task 184](/docs/tasks/184-string-unions-to-constants.md).
 
 - **2026-11-10 (Task 157 — trigrams and Location on league screens):** The user agreed six choices. (1) CSS container queries: trigrams below 47.5rem in the table, and below 20rem in a group card. (2) The hint gives the Location, or the name and the Location on a trigram. (3) The fixtures trigram beside each swatch. (4) `useBlueprintLocation` moves to `features/components/`. (5) No trigram: the name stays. (6) Task 180 stays separate. Detail: [Task 157](/docs/tasks/157-trigrams-location-league-screens.md).
 

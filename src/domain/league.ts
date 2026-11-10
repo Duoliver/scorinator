@@ -1,12 +1,13 @@
 import type { BracketTieResult } from '@/engine/bracket';
-import type { GroupBye, Legs, PhasePlan } from '@/engine/phases';
+import type { GroupBye, Legs, PhaseFormat, PhasePlan } from '@/engine/phases';
 import type { Bye, PhaseFixture } from '@/engine/round-robin';
 import type { MatchResult, PointsConfig } from '@/engine/standings';
 import type { Provenance } from './provenance';
 
 /** The format of a started phase (US-01.2). The legs of a round robin or
- * Groups phase say two-way or single duels (Task 176). */
-export type PhaseFormat = 'round-robin' | 'groups' | 'bracket';
+ * Groups phase say two-way or single duels (Task 176). The value set lives
+ * in `engine/phases`, because `domain/` holds types only (Task 184). */
+export type { PhaseFormat };
 
 /** One scorinated match of a phase. `fixtureId` finds its fixture (Task 77):
  * code treats the id as opaque and never parses it. `home` and `away` are

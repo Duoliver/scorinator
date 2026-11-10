@@ -5,7 +5,7 @@ import { getPhaseZoneView, phaseStandings } from '@/app/state/phases';
 import { useTeamLookup } from '@/features/components';
 import type { LeagueWrapper } from '@/domain';
 import { FORM_LENGTH } from './helpers';
-import type { PhaseZone } from '@/engine/phases';
+import { type PhaseZone, PhaseFormat } from '@/engine/phases';
 import type { FormDot, Standings, StandingsTable, StandingsViewRow } from './types';
 
 /** The tables of one started phase of one league, ready for
@@ -33,7 +33,7 @@ export function useStandings(
     if (!phase) return { tables: [], zones: [] };
     const zoneView = getPhaseZoneView(league, phaseIndex);
     const formOf = (team: string): FormDot[] => {
-      if (phase.format !== 'round-robin') return [];
+      if (phase.format !== PhaseFormat.ROUND_ROBIN) return [];
       const results = getLastResults(team, phase.fixtures, phase.results, FORM_LENGTH);
       return results.map((result): FormDot => {
         const { name, colour, trigram } = lookupTeam(result.opponent);
@@ -49,7 +49,10 @@ export function useStandings(
       });
     };
     const viewTables = phaseStandings(league, phaseIndex).map((table, index) => ({
-      name: phase.format === 'groups' ? `Group ${groupLabel(index)}` : 'Standings',
+      name:
+        phase.format === PhaseFormat.GROUPS
+          ? `Group ${groupLabel(index)}`
+          : 'Standings',
       rows: table.map((row): StandingsViewRow => {
         const { name, colour, trigram, location } = lookupTeam(row.team);
         return {
@@ -73,7 +76,7 @@ export function useStandings(
   }, [league, phase, phaseIndex, lookupTeam]);
 
   return {
-    isGroups: phase?.format === 'groups',
+    isGroups: phase?.format === PhaseFormat.GROUPS,
     tables,
     zones,
     hasTeams: league.teams.length > 0,

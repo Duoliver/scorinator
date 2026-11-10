@@ -5,25 +5,37 @@ import {
 } from '@/engine/bracket';
 import { isUuidV4 } from '@/engine/identity';
 import {
+  TieDecision,
+  TieFormat,
+  TieMatchPart,
+  TiebreakMethod,
+} from '@/engine/tiebreak';
+import {
   bracketRulesOf,
   checkPhaseChain,
   checkZones,
   ZONE_LABEL_MAX,
   type GroupBye,
-  type Legs,
+  Legs,
   type PhaseChainProblem,
   type PlanZone,
-  type ZoneColour,
+  ZoneColour,
   type ZoneProblem,
+  PhaseFormat,
 } from '@/engine/phases';
-import type { Bye, GroupSetting, PhaseFixture } from '@/engine/round-robin';
+import {
+  type Bye,
+  type GroupSetting,
+  type PhaseFixture,
+  GroupBy,
+} from '@/engine/round-robin';
 import type { PointsConfig } from '@/engine/standings';
 import { isTier } from '@/engine/tier-ovr';
 import {
   DATABASE_FORMAT_VERSION,
   OLDEST_DATABASE_FORMAT_VERSION,
   type SavedBlueprint,
-  type SavedFileKind,
+  SavedFileKind,
   type SavedLeagueEntry,
   type SavedBracketPhase,
   type SavedInstance,
@@ -52,8 +64,11 @@ import {
 export type Fail = (message: string) => never;
 export type Raw = Record<string, unknown>;
 
-const PHASE_FORMATS: readonly SavedPhaseFormat[] = ['round-robin', 'groups'];
-const LEGS: readonly Legs[] = ['two-way', 'single-duels'];
+const PHASE_FORMATS: readonly SavedPhaseFormat[] = [
+  PhaseFormat.ROUND_ROBIN,
+  PhaseFormat.GROUPS,
+];
+const LEGS: readonly Legs[] = Object.values(Legs);
 
 /** The format version of the file being read: 2 or 3 (Task 176). A version-2
  * file gets the defaults of version 3. */
@@ -120,10 +135,10 @@ export function checkUnique<T>(
 
 /** The name of each file kind in an error text. */
 const KIND_NAMES: Record<SavedFileKind, string> = {
-  manifest: 'manifest',
-  wrapper: 'wrapper',
-  leagues: 'league file',
-  blueprints: 'team blueprints file',
+  [SavedFileKind.MANIFEST]: 'manifest',
+  [SavedFileKind.WRAPPER]: 'wrapper',
+  [SavedFileKind.LEAGUES]: 'league file',
+  [SavedFileKind.BLUEPRINTS]: 'team blueprints file',
 };
 
 export function readFileHeader(
@@ -226,7 +241,7 @@ function readProgress(
     if (!isPositiveInteger(phase) || phase > phaseCount || !isRound) {
       fail(`${label} has no valid progress.`);
     }
-    return { kind: 'bracket', phase, round };
+    return { kind: PhaseFormat.BRACKET, phase, round };
   }
   if (
     !isRecord(value) ||
@@ -249,7 +264,8 @@ function readProgress(
 
 /** One phase of a manifest row (Task 176 choice 4). */
 function readPhaseSummary(value: unknown, label: string): SavedPhaseSummary {
-  if (isRecord(value) && value.format === 'bracket') return { format: 'bracket' };
+  if (isRecord(value) && value.format === 'bracket')
+    return { format: PhaseFormat.BRACKET };
   if (!isRecord(value) || !isPhaseFormat(value.format) || !isLegs(value.legs)) {
     failManifest(`${label} has a phase that is not valid.`);
   }
@@ -269,7 +285,7 @@ function readSummaryPhases(
     if (!formats.every(isPhaseFormat)) {
       fail(`${label} has a phase format that is not known.`);
     }
-    return formats.map((format) => ({ format, legs: 'two-way' }));
+    return formats.map((format) => ({ format, legs: Legs.TWO_WAY }));
   }
   return readList(value.phases, 'phases', fail).map((phase) =>
     readPhaseSummary(phase, label)
@@ -313,7 +329,7 @@ export function serializeManifest(manifest: SavedManifest): string {
  * `manifest.json is not valid:` and says what is wrong. */
 export function parseManifest(text: string): SavedManifest {
   const fail: Fail = failManifest;
-  const { raw, version } = readFileHeader(text, 'manifest', fail);
+  const { raw, version } = readFileHeader(text, SavedFileKind.MANIFEST, fail);
   if (!isUuidV4(raw.installationUuid)) fail('the installation UUID is not a UUID v4.');
 
   const blueprints = readList(raw.blueprints, 'blueprints', fail).map((value, index) =>
@@ -343,7 +359,7 @@ export function parseManifest(text: string): SavedManifest {
   );
 
   return {
-    kind: 'manifest',
+    kind: SavedFileKind.MANIFEST,
     formatVersion: DATABASE_FORMAT_VERSION,
     installationUuid: raw.installationUuid,
     blueprints,
@@ -466,10 +482,12 @@ function readPhase(
   }
   if (!isPhaseFormat(value.format)) fail(`${label} has a format that is not known.`);
   // A version-2 phase has no legs: it is a two-way round robin.
-  const legs = version === 2 ? (value.legs ?? 'two-way') : value.legs;
+  const legs = version === 2 ? (value.legs ?? Legs.TWO_WAY) : value.legs;
   if (!isLegs(legs)) fail(`${label} has no valid legs.`);
   const groups =
-    value.format === 'groups' ? readGroups(value.groups, label, teams) : undefined;
+    value.format === PhaseFormat.GROUPS
+      ? readGroups(value.groups, label, teams)
+      : undefined;
 
   const fixtures = readList(value.fixtures, 'fixtures', fail).map((item, i) =>
     readFixture(item, `${label}, fixture ${i + 1}`)
@@ -517,7 +535,7 @@ function readPhase(
 
   if (groups) {
     return {
-      format: 'groups',
+      format: PhaseFormat.GROUPS,
       legs,
       groups,
       fixtures,
@@ -525,22 +543,16 @@ function readPhase(
       results,
     };
   }
-  return { format: 'round-robin', legs, fixtures, byes, results };
+  return { format: PhaseFormat.ROUND_ROBIN, legs, fixtures, byes, results };
 }
 
 // --- Brackets (Task 139) -------------------------------------------------
 
-const TIE_FORMATS: readonly string[] = ['single-match', 'two-legged'];
-const TIEBREAK_METHODS: readonly string[] = ['penalties', 'replay-coin-toss'];
-const MATCH_PARTS: readonly string[] = ['leg1', 'leg2', 'replay'];
-const TIE_DECISIONS: readonly string[] = [
-  'regulation',
-  'away-goals',
-  'aet',
-  'penalties',
-  'replay',
-  'coin-toss',
-];
+// The valid values of a file come from the value sets (Task 184).
+const TIE_FORMATS: readonly string[] = Object.values(TieFormat);
+const TIEBREAK_METHODS: readonly string[] = Object.values(TiebreakMethod);
+const MATCH_PARTS: readonly string[] = Object.values(TieMatchPart);
+const TIE_DECISIONS: readonly string[] = Object.values(TieDecision);
 
 function readBracketRules(value: unknown, label: string): BracketPlanRules {
   const fail: Fail = failWrapper;
@@ -664,7 +676,7 @@ function readBracketPhase(
     fail(`${label} has no valid "avoidGroupTies" flag.`);
   }
   return {
-    format: 'bracket',
+    format: PhaseFormat.BRACKET,
     seeds,
     byeTeams,
     results,
@@ -681,7 +693,7 @@ function checkBracketResults(
 ): void {
   const fail: Fail = failWrapper;
   const label = `phase ${index + 1}`;
-  if (plan.format !== 'bracket') return;
+  if (plan.format !== PhaseFormat.BRACKET) return;
   let tieIds: Set<string>;
   try {
     const tree = buildBracketTree(
@@ -712,15 +724,15 @@ function checkBracketResults(
 
 function readGrouping(value: unknown, label: string): GroupSetting {
   if (isRecord(value) && value.by === 'size' && isPositiveInteger(value.size)) {
-    return { by: 'size', size: value.size };
+    return { by: GroupBy.SIZE, size: value.size };
   }
   if (isRecord(value) && value.by === 'count' && isPositiveInteger(value.count)) {
-    return { by: 'count', count: value.count };
+    return { by: GroupBy.COUNT, count: value.count };
   }
   return failWrapper(`${label} has no valid group setting.`);
 }
 
-const ZONE_COLOURS: readonly ZoneColour[] = ['green', 'blue', 'yellow', 'red'];
+const ZONE_COLOURS: readonly ZoneColour[] = Object.values(ZoneColour);
 
 /** One stored zone (Task 155 choice 3). `checkZones` checks the rules. */
 function readZone(value: unknown, label: string): PlanZone {
@@ -783,8 +795,8 @@ function readPlan(value: unknown, index: number): SavedPhasePlan {
   if (!isRecord(value)) fail(`${label} is not an object.`);
   if (value.format === 'bracket') {
     // A plan with no rules plays with the defaults (Task 139 choice 2).
-    if (value.rules === undefined) return { format: 'bracket' };
-    return { format: 'bracket', rules: readBracketRules(value.rules, label) };
+    if (value.rules === undefined) return { format: PhaseFormat.BRACKET };
+    return { format: PhaseFormat.BRACKET, rules: readBracketRules(value.rules, label) };
   }
   if (!isPhaseFormat(value.format)) fail(`${label} has a format that is not known.`);
   if (!isLegs(value.legs)) fail(`${label} has no valid legs.`);
@@ -793,20 +805,21 @@ function readPlan(value: unknown, index: number): SavedPhasePlan {
     const valid =
       isRecord(advance) &&
       isPositiveInteger(advance.top) &&
-      (value.format === 'round-robin' || isNonNegativeInteger(advance.bestOfNext));
+      (value.format === PhaseFormat.ROUND_ROBIN ||
+        isNonNegativeInteger(advance.bestOfNext));
     if (!valid) fail(`${label} has no valid advancement.`);
   }
 
-  if (value.format === 'round-robin') {
+  if (value.format === PhaseFormat.ROUND_ROBIN) {
     const plan: SavedPhasePlan = {
-      format: 'round-robin',
+      format: PhaseFormat.ROUND_ROBIN,
       legs: value.legs,
       ...(isRecord(advance) ? { advance: { top: advance.top as number } } : {}),
     };
     return withZones(plan, value.zones, label);
   }
   const plan: SavedPhasePlan = {
-    format: 'groups',
+    format: PhaseFormat.GROUPS,
     legs: value.legs,
     grouping: readGrouping(value.grouping, label),
     ...(isRecord(advance)
@@ -836,9 +849,9 @@ function chainProblemText(problem: PhaseChainProblem): string {
 }
 
 const FORMAT_NAMES: Record<SavedPhasePlan['format'], string> = {
-  'round-robin': 'a round robin',
-  groups: 'a Groups phase',
-  bracket: 'a bracket',
+  [PhaseFormat.ROUND_ROBIN]: 'a round robin',
+  [PhaseFormat.GROUPS]: 'a Groups phase',
+  [PhaseFormat.BRACKET]: 'a bracket',
 };
 
 /** The plans of a league (Task 176 choice 6). A version-2 league has none:
@@ -846,8 +859,8 @@ const FORMAT_NAMES: Record<SavedPhasePlan['format'], string> = {
 function readPlans(value: Raw, phaseCount: number, version: Version): SavedPhasePlan[] {
   if (version === 2 && value.plans === undefined) {
     return Array.from({ length: phaseCount }, () => ({
-      format: 'round-robin',
-      legs: 'two-way',
+      format: PhaseFormat.ROUND_ROBIN,
+      legs: Legs.TWO_WAY,
     }));
   }
   return readList(value.plans, 'plans', failWrapper).map(readPlan);
@@ -873,7 +886,7 @@ function checkPlansAndPhases(
         `phase ${index + 1} is ${FORMAT_NAMES[phase.format]}, but its plan is ${FORMAT_NAMES[plan.format]}.`
       );
     }
-    if (phase.format === 'bracket') {
+    if (phase.format === PhaseFormat.BRACKET) {
       checkBracketResults(phase, index, plan);
     } else if ('legs' in plan && plan.legs !== phase.legs) {
       fail(`phase ${index + 1} has other legs than its plan.`);
@@ -921,9 +934,9 @@ export function serializeWrapper(wrapper: SavedWrapper): string {
 /** Parses and checks one `wrapper-{uuid}.json`. Throws an `Error` that
  * starts with `A league file is not valid:` and says what is wrong. */
 export function parseWrapper(text: string): SavedWrapper {
-  const { raw, version } = readFileHeader(text, 'wrapper', failWrapper);
+  const { raw, version } = readFileHeader(text, SavedFileKind.WRAPPER, failWrapper);
   return {
-    kind: 'wrapper',
+    kind: SavedFileKind.WRAPPER,
     formatVersion: DATABASE_FORMAT_VERSION,
     ...readWrapperBody(raw, version),
   };

@@ -51,6 +51,18 @@ const StartButton = ({ start }: { start: PhaseStart }): JSX.Element => (
   </Button>
 );
 
+/** "Edit zones" of one round-robin or Groups phase (US-12.5, Task 189). */
+const EditZonesButton = ({ onClick }: { onClick: () => void }): JSX.Element => (
+  <Button variant="secondary" size="sm" onClick={onClick}>
+    Edit zones
+  </Button>
+);
+
+/** "Edit zones" at the end of the top tab row of a one-phase league. */
+export const renderEditZonesButton = (onClick: () => void): JSX.Element => (
+  <EditZonesButton onClick={onClick} />
+);
+
 const ShuffleButton = ({ draw }: { draw: GroupsDraw }): JSX.Element => (
   <Button variant="secondary" size="sm" onClick={draw.onShuffle}>
     ⟲ Shuffle groups
@@ -148,19 +160,25 @@ const getScheduledTabs = (
  * switch between phases mounts fresh views. The current phase has the
  * Start button of the next phase at the end of that row, when it can start
  * (Task 132 choice 2), or "⟲ Shuffle groups" while its draw can change
- * (Task 181 choice 2). A phase not started yet holds the US-07.3 line
- * (Task 132 choice 6). */
+ * (Task 181 choice 2). A round-robin or Groups phase also has "Edit zones"
+ * (Task 189 choice 6). A phase not started yet holds the US-07.3 line
+ * (Task 132 choice 6), and its "Edit zones" under it. */
 export const getPhaseTabs = (
   league: LeagueWrapper,
   memory: MatchdayMemory,
   start: PhaseStart | undefined,
-  draw: GroupsDraw | undefined
+  draw: GroupsDraw | undefined,
+  onEditZones: (phaseIndex: number) => void
 ): TabItem[] =>
   league.content.plans.map((plan, index) => {
     const number = index + 1;
     const started = index < league.content.phases.length;
     const isCurrent = index === league.content.phases.length - 1;
     const currentDraw = isCurrent ? draw : undefined;
+    const editZones =
+      plan.format === 'bracket' ? undefined : (
+        <EditZonesButton onClick={() => onEditZones(index)} />
+      );
     let actions: JSX.Element | undefined;
     if (isCurrent && start) actions = <StartButton start={start} />;
     else if (currentDraw) actions = <ShuffleButton draw={currentDraw} />;
@@ -172,12 +190,22 @@ export const getPhaseTabs = (
           key={phaseTabId(index)}
           tabs={getLeagueTabs(league, index, memory, currentDraw)}
           defaultTab={firstLeagueTab(league, index)}
-          actions={actions}
+          actions={
+            (editZones || actions) && (
+              <div class={styles.tabActions}>
+                {editZones}
+                {actions}
+              </div>
+            )
+          }
         />
       ) : (
-        <p class={styles.note}>
-          This phase starts when phase {number - 1} is complete.
-        </p>
+        <div class={styles.notStarted}>
+          <p class={styles.note}>
+            This phase starts when phase {number - 1} is complete.
+          </p>
+          {editZones}
+        </div>
       ),
     };
   });

@@ -33,9 +33,13 @@ export function usePhasesStep(
   const { plans } = phaseList;
   return useMemo(() => {
     const { counts, problems } = phaseChecks(plans, teamCount, firstGroupSizes);
+    // The Zones section shows its own problems (Task 189).
     const textsOf = (phase: number): string[] =>
       problems
-        .filter((problem) => 'phase' in problem && problem.phase === phase)
+        .filter(
+          (problem) =>
+            'phase' in problem && problem.phase === phase && problem.code !== 'zone'
+        )
         .map((problem) => phaseProblemText(problem, plans));
     return {
       cards: plans.map((plan, index) => ({

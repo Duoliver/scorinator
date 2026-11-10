@@ -1,15 +1,18 @@
 import {
   checkPhaseChain,
   checkPhaseFit,
+  checkZones,
   phaseTeamCounts,
   suggestBestM,
   type PhaseChainProblem,
   type PhaseFitProblem,
   type PhasePlan,
   type PhaseTeamCount,
+  type ZoneProblem,
 } from '@/engine/phases';
 import { bracketSlotCount } from '@/engine/bracket';
 import { groupLabel } from '@/engine/round-robin';
+import { getZoneProblemText } from '@/features/leagues/ZoneEditor';
 
 /**
  * The counts, the suggestion, and the problem texts of the wizard Phases
@@ -17,7 +20,27 @@ import { groupLabel } from '@/engine/round-robin';
  * count.
  */
 
-export type PhaseProblem = PhaseChainProblem | PhaseFitProblem;
+/** A zone problem of one phase (Task 189). `phase` counts from 1. */
+export interface PhaseZoneProblem {
+  code: 'zone';
+  phase: number;
+  zone: ZoneProblem;
+}
+
+export type PhaseProblem = PhaseChainProblem | PhaseFitProblem | PhaseZoneProblem;
+
+/** The zone problems of each round-robin and Groups phase (US-12.5). */
+function checkPlanZones(plans: readonly PhasePlan[]): PhaseZoneProblem[] {
+  return plans.flatMap((plan, index) =>
+    plan.format === 'bracket'
+      ? []
+      : checkZones(plan).map((zone) => ({
+          code: 'zone' as const,
+          phase: index + 1,
+          zone,
+        }))
+  );
+}
 
 /** The US-01.5 warning when the last phase is Groups. It blocks nothing. */
 export const GROUPS_LAST_WARNING =
@@ -39,10 +62,11 @@ export function phaseChecks(
   firstGroupSizes?: readonly number[]
 ): { counts: PhaseTeamCount[] | undefined; problems: PhaseProblem[] } {
   const chain = checkPhaseChain(plans);
-  if (teamCount < 2) return { counts: undefined, problems: chain };
+  const zones = checkPlanZones(plans);
+  if (teamCount < 2) return { counts: undefined, problems: [...chain, ...zones] };
   return {
     counts: phaseTeamCounts(plans, teamCount, firstGroupSizes),
-    problems: [...chain, ...checkPhaseFit(plans, teamCount, firstGroupSizes)],
+    problems: [...chain, ...checkPhaseFit(plans, teamCount, firstGroupSizes), ...zones],
   };
 }
 
@@ -95,6 +119,10 @@ export function phaseProblemText(
     }
     case 'best-m-place-missing':
       return `Phase ${problem.phase}: the smallest group has no place ${problem.place}.`;
+    case 'zone': {
+      const text = getZoneProblemText(problem.zone);
+      return `Phase ${problem.phase}: ${text.charAt(0).toLowerCase()}${text.slice(1)}`;
+    }
   }
 }
 

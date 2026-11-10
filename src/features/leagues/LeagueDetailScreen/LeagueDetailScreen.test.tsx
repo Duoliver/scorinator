@@ -782,3 +782,135 @@ describe('LeagueDetailScreen: the export menu (US-10.1, Task 150)', () => {
     expect(screen.queryByRole('button', { name: /^Export/ })).not.toBeInTheDocument();
   });
 });
+
+describe('LeagueDetailScreen: "Edit zones" (Task 189, US-12.5)', () => {
+  const FOUR = [
+    { name: 'FC United', colour: '#E53935' },
+    { name: 'FC Rivals', colour: '#1E88E5' },
+    { name: 'FC Town', colour: '#2E7D32' },
+    { name: 'FC Rangers', colour: '#6A1B9A' },
+  ];
+  const toRoundRobin = (): LeagueWrapper =>
+    groupsLeague(
+      FOUR,
+      [
+        [1, 2],
+        [3, 4],
+      ],
+      [
+        {
+          format: 'groups',
+          legs: 'two-way',
+          grouping: { by: 'count', count: 2 },
+          advance: { top: 1, bestOfNext: 0 },
+        },
+        { format: 'round-robin', legs: 'two-way' },
+      ]
+    );
+  const editZones = (): Promise<void> =>
+    userEvent.click(screen.getByRole('button', { name: 'Edit zones' }));
+  const drawerRow = (name: string): HTMLElement =>
+    within(screen.getByRole('dialog')).getByRole('group', { name: `${name} zone` });
+  const tones = (name: string): (string | null)[] =>
+    within(screen.getByRole('table', { name }))
+      .getAllByRole('row')
+      .slice(1)
+      .map((row) => row.getAttribute('data-tone'));
+
+  async function addRedZone(from: string, to: string): Promise<void> {
+    await userEvent.click(
+      within(drawerRow('Red')).getByRole('switch', { name: 'Red' })
+    );
+    await userEvent.type(within(drawerRow('Red')).getByLabelText('From'), from);
+    await userEvent.type(within(drawerRow('Red')).getByLabelText('To'), to);
+  }
+
+  it('saves the zones of a one-phase league: the table, the legend, and Unsaved', async () => {
+    openTestLeague(league());
+    render(<LeagueDetailScreen uuid={LEAGUE} />);
+    await editZones();
+    expect(screen.getByRole('dialog', { name: 'Zones' })).toBeInTheDocument();
+    await addRedZone('2', '2');
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(tones('Standings')).toEqual([null, 'red']);
+    expect(screen.getByRole('list', { name: 'Zones' })).toHaveTextContent('Place 2');
+    expect(screen.getByText('Unsaved')).toBeInTheDocument();
+    expect(useDatabaseStore.getState().leagues[LEAGUE]?.content.plans[0]).toMatchObject(
+      {
+        zones: [{ colour: 'red', places: { from: 2, to: 2 }, label: '' }],
+      }
+    );
+  });
+
+  it('changes nothing on Cancel', async () => {
+    const wrapper = openTestLeague(league());
+    render(<LeagueDetailScreen uuid={LEAGUE} />);
+    await editZones();
+    await addRedZone('1', '2');
+    await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(useDatabaseStore.getState().leagues[LEAGUE]).toBe(wrapper);
+  });
+
+  it('turns Save off while the zones have a problem', async () => {
+    openTestLeague(league());
+    render(<LeagueDetailScreen uuid={LEAGUE} />);
+    await editZones();
+    await userEvent.click(
+      within(drawerRow('Blue')).getByRole('switch', { name: 'Blue' })
+    );
+    expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
+  });
+
+  it('starts from the automatic zones, and saves a new label', async () => {
+    openTestLeague(toRoundRobin());
+    render(<LeagueDetailScreen uuid={LEAGUE} />);
+    await editZones();
+    expect(screen.getByRole('dialog', { name: 'Zones · Phase 1' })).toBeInTheDocument();
+    const label = within(drawerRow('Green')).getByLabelText('Label');
+    await userEvent.clear(label);
+    await userEvent.type(label, 'Through');
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+
+    expect(screen.getByRole('list', { name: 'Zones' })).toHaveTextContent('Through');
+  });
+
+  it('has "Edit zones" on a phase that has not started', async () => {
+    openTestLeague(toRoundRobin());
+    render(<LeagueDetailScreen uuid={LEAGUE} />);
+    await userEvent.click(screen.getByRole('tab', { name: '2 · Round robin' }));
+    await editZones();
+    expect(screen.getByRole('dialog', { name: 'Zones · Phase 2' })).toBeInTheDocument();
+  });
+
+  it('has no "Edit zones" on a Bracket phase', async () => {
+    openTestLeague(
+      groupsLeague(FOUR, [
+        [1, 2],
+        [3, 4],
+      ])
+    );
+    render(<LeagueDetailScreen uuid={LEAGUE} />);
+    await userEvent.click(screen.getByRole('tab', { name: '2 · Bracket' }));
+    expect(
+      screen.queryByRole('button', { name: 'Edit zones' })
+    ).not.toBeInTheDocument();
+  });
+
+  it('works on a locked phase', async () => {
+    openTestLeague(toRoundRobin());
+    scorinateMatchday(LEAGUE, 1);
+    scorinateMatchday(LEAGUE, 2);
+    startNextPhase(LEAGUE);
+    render(<LeagueDetailScreen uuid={LEAGUE} />);
+    await userEvent.click(screen.getByRole('tab', { name: '1 · Group Stage' }));
+    await editZones();
+    await addRedZone('2', '2');
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+
+    expect(tones('Group A')).toEqual(['green', 'red']);
+  });
+});

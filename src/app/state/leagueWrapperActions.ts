@@ -3,9 +3,11 @@ import {
   buildPhase,
   checkPhaseChain,
   checkPhaseFit,
+  checkZones,
   pickQualifiers,
   type BuiltPhase,
   type PhasePlan,
+  type PlanZone,
 } from '@/engine/phases';
 import { createSeededRng } from '@/engine/rng';
 import {
@@ -520,4 +522,65 @@ export function setBracketByes(leagueUuid: string, byeTeams: readonly string[]):
     bracketTreeOf({ ...wrapper, content: { ...wrapper.content, phases } }, index);
     return changed;
   });
+}
+
+/** True when two zone lists hold the same zones, in the same order. */
+function isSameZones(a: readonly PlanZone[], b: readonly PlanZone[]): boolean {
+  return (
+    a.length === b.length &&
+    a.every((zone, i) => {
+      const other = b[i];
+      return (
+        zone.colour === other.colour &&
+        zone.label === other.label &&
+        zone.places?.from === other.places?.from &&
+        zone.places?.to === other.places?.to
+      );
+    })
+  );
+}
+
+/**
+ * Sets the stored zones of one phase plan, from "Edit zones" (US-12.5, Task
+ * 189). It works at any time, also on a locked phase or a phase that has not
+ * started: the zones change only the display. A real change stamps the
+ * league with the local installation, as a change of the league (US-11.1).
+ * The same zones change nothing.
+ *
+ * Throws a `RangeError` for an unknown league, a phase with no plan, a
+ * bracket plan, and zones that `checkZones` rejects. "Save" stays off for
+ * those zones, so a throw here is a fault.
+ */
+export function setPhaseZones(
+  leagueUuid: string,
+  phaseIndex: number,
+  zones: readonly PlanZone[]
+): void {
+  const state = useDatabaseStore.getState();
+  const { installationUuid } = requireOpenDatabase(state);
+  const wrapper = state.leagues[leagueUuid];
+  if (!wrapper) throw new RangeError(`No open league has the UUID ${leagueUuid}.`);
+  const plan = wrapper.content.plans[phaseIndex];
+  if (!plan || plan.format === 'bracket') {
+    throw new RangeError(`Phase ${phaseIndex + 1} has no round-robin or Groups plan.`);
+  }
+  const zoned = { ...plan, zones: zones.map((zone) => ({ ...zone })) };
+  const [problem] = checkZones(zoned);
+  if (problem)
+    throw new RangeError(`The zones of phase ${phaseIndex + 1} are not valid.`);
+  if (isSameZones(plan.zones ?? [], zones)) return;
+
+  const changed: LeagueWrapper = {
+    ...wrapper,
+    content: {
+      ...wrapper.content,
+      lastModifiedByInstallation: installationUuid,
+      plans: wrapper.content.plans.map((candidate, i) =>
+        i === phaseIndex ? zoned : candidate
+      ),
+    },
+  };
+  useDatabaseStore.setState((now) => ({
+    leagues: { ...now.leagues, [leagueUuid]: changed },
+  }));
 }

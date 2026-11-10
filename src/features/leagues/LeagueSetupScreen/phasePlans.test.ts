@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_BRACKET_RULES, type PhasePlan } from '@/engine/phases';
+import { DEFAULT_BRACKET_RULES, type PhasePlan, type PlanZone } from '@/engine/phases';
 import {
   DEFAULT_PHASE_PLANS,
   addPhase,
@@ -15,6 +15,7 @@ import {
   setGroupBy,
   setGroupNumber,
   setPhaseFormat,
+  setPhaseZones,
   setTop,
 } from './phasePlans';
 
@@ -262,5 +263,56 @@ describe('describePhasePlan for a bracket (Task 140 choice 6)', () => {
     expect(describePhasePlan(bracket({ thirdPlace: true }), 3)).toBe(
       'Bracket · Single match · AET on · Penalties'
     );
+  });
+});
+
+describe('the zones of a plan (Task 189, US-12.5)', () => {
+  const RED = { colour: 'red' as const, places: { from: 4, to: 4 }, label: 'Out' };
+  const FREE_GREEN = {
+    colour: 'green' as const,
+    places: { from: 1, to: 1 },
+    label: '',
+  };
+  /** A Groups phase 1 with top 2 and no best M, with these zones. */
+  const zonedGroups = (zones: PlanZone[]): PhasePlan => ({
+    format: 'groups',
+    legs: 'two-way',
+    grouping: { by: 'size', size: 4 },
+    advance: { top: 2, bestOfNext: 0 },
+    zones,
+  });
+  const zonesOf = (plan: PhasePlan | undefined): unknown =>
+    plan && plan.format !== 'bracket' ? plan.zones : undefined;
+
+  it('sets the zones of one phase', () => {
+    expect(zonesOf(setPhaseZones([rr2], 0, [RED])[0])).toEqual([RED]);
+  });
+
+  it('keeps blue and red on a format change, and a Bracket drops all zones (choice 4)', () => {
+    const plans: PhasePlan[] = [zonedGroups([RED]), rr2];
+    expect(zonesOf(setPhaseFormat(plans, 0, 'rr1')[0])).toEqual([RED]);
+    const last: PhasePlan[] = [groups(2), { ...rr2, zones: [RED] }];
+    expect(setPhaseFormat(last, 1, 'bracket')[1]).toEqual(bracket);
+  });
+
+  it('drops a free green zone when a move makes its phase not the last', () => {
+    const plans: PhasePlan[] = [groups(2), { ...rr2, zones: [FREE_GREEN, RED] }];
+    const moved = movePhase(plans, 1, -1);
+    expect(zonesOf(moved[0])).toEqual([RED]);
+  });
+
+  it('drops the automatic label when a removal makes the phase the last', () => {
+    const plans: PhasePlan[] = [
+      zonedGroups([{ colour: 'green', label: 'Knockout' }]),
+      rr2,
+    ];
+    expect(zonesOf(removePhase(plans, 1)[0])).toEqual([]);
+  });
+
+  it('drops a free yellow zone when a best M makes yellow automatic', () => {
+    const yellow = { colour: 'yellow' as const, places: { from: 3, to: 3 }, label: '' };
+    const plans: PhasePlan[] = [zonedGroups([yellow]), rr2];
+    expect(zonesOf(setBestOfNext(plans, 0, 1)[0])).toEqual([]);
+    expect(zonesOf(setBestOfNext(plans, 0, 0)[0])).toEqual([yellow]);
   });
 });

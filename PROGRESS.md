@@ -113,7 +113,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 153 | The last N results, and the places by matchday | `engine/standings` | ✅ Done | 2026-11-09 | 2026-11-09 | [153](/docs/tasks/153-last-results-and-places.md) | M6. US-12.1, 12.4. 16 new tests. No caller yet: Tasks 154, 156. |
 | 154 | Standings table: Form with hints, GF and GA in the GD hint, header hints | `features/standings` | ✅ Done | 2026-11-09 | 2026-11-09 | [154](/docs/tasks/154-standings-table.md) | M6. US-12.1 to 12.3. The user checked the real app. |
 | 155 | Zones: the rules, the files, tint, stripe, legend, in place of the highlight | `engine/phases`, `adapters/json-io`, `app/`, `design-system/`, `features/standings` | ✅ Done | 2026-11-09 | 2026-11-10 | [155](/docs/tasks/155-zones.md) | M6. US-12.5, 02.2, 07.2. 37 new tests. The user checked the real app. Editors in Task 189. |
-| 189 | Zone editors: the wizard "Zones" section, "Edit zones" in League Detail | `features/leagues` | ⬜ Not started |  |  |  | Split from 155 - 2026-11-10. US-12.5. After 155, before 158. |
+| 189 | Zone editors: the wizard "Zones" section, "Edit zones" in League Detail | `engine/phases`, `features/leagues`, `app/state` | ✅ Done | 2026-11-10 | 2026-11-10 | [189](/docs/tasks/189-zone-editors.md) | Split from 155 - 2026-11-10. US-12.5. 34 new tests. The user checked the real app. |
 | 156 | The position chart: the "Chart" sub-tab, SVG, the group selector | `features/standings` | ⬜ Not started |  |  |  | M6. US-12.4. After 153. |
 | 157 | Trigrams and Location on league screens: narrow tables, fixtures, the Location hint | `features/` | ⬜ Not started |  |  |  | M6. US-09.3, 09.6. After 154. |
 | 184 | String unions to enums or named constants, across the codebase | all | ⬜ Not started |  |  | [184](/docs/tasks/184-string-unions-to-constants.md) | Task created by User - 2026-11-03. From the Task 137 review. Before 158. Criteria wait for the user. |
@@ -187,6 +187,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-11-10 (Task 189 — the zone editors):** The user agreed seven choices. (1) `features/leagues/ZoneEditor/`. (2) Four fixed rows, one for each colour. (3) Store an automatic zone only with a label that is not the default, and a free zone only when it is on. (4) A wizard phase change drops the green or yellow zones that change kind, and a Bracket drops all. (5) The wizard section is always open. (6) "Edit zones" in the sub-tab row, in a `Drawer`. (7) No check of the places against the team count. Detail: [Task 189](/docs/tasks/189-zone-editors.md).
 
 - **2026-11-10 (Task 155 — zones):** The user agreed seven choices. (1) Task 189 takes the two zone editors. (2) An optional `zones` list on the round-robin and Groups plans. (3) An automatic green or yellow stores only its label. (4) The file version stays 4. (5) A place is the row number. (6) `TableRowTone` becomes the four colour names, with an inset stripe. (7) One legend under the tables, in place order. During the work, also agreed: (A) yellow is free with no best M, (B) the legend shows only the zones that colour a row, (C) the tie card winner uses the green zone tint. Detail: [Task 155](/docs/tasks/155-zones.md).
 

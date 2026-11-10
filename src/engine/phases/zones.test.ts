@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   checkZones,
+  fitZones,
+  getAutomaticZones,
   getPhaseZones,
   getZoneColours,
   ZONE_LABEL_MAX,
@@ -234,5 +236,51 @@ describe('getZoneColours (US-12.5, US-07.2)', () => {
     );
     const colours = getZoneColours(free, [['x', 'y']], new Set(['x']));
     expect(colours.get('y')).toBe('yellow');
+  });
+});
+
+describe('getAutomaticZones (Task 189)', () => {
+  it('gives the automatic zones with their default labels, and none for a last phase', () => {
+    expect(getAutomaticZones(groups(2, 4, [{ colour: 'green', label: 'X' }]))).toEqual([
+      { colour: 'green', from: 1, to: 2, label: 'Qualify', automatic: true },
+      { colour: 'yellow', from: 3, to: 3, label: 'Best 4 of place 3', automatic: true },
+    ]);
+    expect(getAutomaticZones(roundRobin())).toEqual([]);
+  });
+});
+
+describe('fitZones (Task 189 choice 4)', () => {
+  it('keeps a plan with no zone list as it is', () => {
+    const plan = roundRobin(2);
+    expect(fitZones(plan)).toBe(plan);
+  });
+
+  it('drops the places and the label of a zone that becomes automatic', () => {
+    const plan = groups(2, 1, [
+      { colour: 'green', places: { from: 1, to: 1 }, label: 'Champions' },
+      { colour: 'yellow', places: { from: 4, to: 4 }, label: 'Play-off' },
+      { colour: 'red', places: { from: 6, to: 6 }, label: 'Out' },
+    ]);
+    expect(fitZones(plan).zones).toEqual([
+      { colour: 'red', places: { from: 6, to: 6 }, label: 'Out' },
+    ]);
+  });
+
+  it('drops an automatic label when its zone becomes free, so the free zone is off', () => {
+    const plan = roundRobin(undefined, [
+      { colour: 'green', label: 'Knockout' },
+      { colour: 'blue', places: { from: 3, to: 3 }, label: '' },
+    ]);
+    expect(fitZones(plan).zones).toEqual([
+      { colour: 'blue', places: { from: 3, to: 3 }, label: '' },
+    ]);
+  });
+
+  it('keeps every zone that still fits', () => {
+    const plan = groups(2, 4, [
+      { colour: 'green', label: 'Knockout' },
+      { colour: 'red', places: { from: 4, to: 4 }, label: '' },
+    ]);
+    expect(fitZones(plan)).toEqual(plan);
   });
 });

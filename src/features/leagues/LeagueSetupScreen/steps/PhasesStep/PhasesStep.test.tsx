@@ -408,3 +408,55 @@ describe('the Bracket card settings (Task 140)', () => {
     expect(within(card(1)).queryByRole('switch', { name: 'Plays AET' })).toBeNull();
   });
 });
+
+describe('PhasesStep: the Zones section (Task 189, US-12.5)', () => {
+  const zones = (phase: number): HTMLElement =>
+    within(card(phase)).getByRole('region', { name: 'Zones' });
+  const zoneRow = (phase: number, name: string): HTMLElement =>
+    within(zones(phase)).getByRole('group', { name: `${name} zone` });
+
+  it('shows a Zones section on a round-robin and a Groups card, and none on a Bracket', () => {
+    render(<Harness initial={groupsThenBracket} />);
+    expect(zones(1)).toBeInTheDocument();
+    expect(within(card(2)).queryByRole('region', { name: 'Zones' })).toBeNull();
+  });
+
+  it('puts the zones of the section in the plan', async () => {
+    render(<Harness />);
+    await userEvent.click(
+      within(zoneRow(1, 'Red')).getByRole('switch', { name: 'Red' })
+    );
+    await userEvent.type(within(zoneRow(1, 'Red')).getByLabelText('From'), '3');
+    await userEvent.type(within(zoneRow(1, 'Red')).getByLabelText('To'), '4');
+    expect(plans()[0]).toMatchObject({
+      zones: [{ colour: 'red', places: { from: 3, to: 4 }, label: '' }],
+    });
+  });
+
+  it('makes yellow automatic when a best M is set, and drops the free yellow zone', async () => {
+    render(<Harness initial={groupsThenBracket} teamCount={8} />);
+    await userEvent.click(
+      within(zoneRow(1, 'Yellow')).getByRole('switch', { name: 'Yellow' })
+    );
+    await userEvent.type(within(zoneRow(1, 'Yellow')).getByLabelText('From'), '3');
+    await userEvent.type(within(zoneRow(1, 'Yellow')).getByLabelText('To'), '3');
+    const best = within(card(1)).getByLabelText('Best of place 3');
+    await userEvent.clear(best);
+    await userEvent.type(best, '2');
+    expect(
+      within(zoneRow(1, 'Yellow')).getByText('Place 3 · from the advancement')
+    ).toBeInTheDocument();
+    expect(plans()[0]).toMatchObject({ zones: [] });
+  });
+
+  it('shows a zone problem once, in the Zones section', async () => {
+    render(<Harness />);
+    await userEvent.click(
+      within(zoneRow(1, 'Blue')).getByRole('switch', { name: 'Blue' })
+    );
+    const text =
+      'The blue zone needs whole places from 1, with "To" not before "From".';
+    expect(screen.getAllByText(text)).toHaveLength(1);
+    expect(within(zones(1)).getByText(text)).toBeInTheDocument();
+  });
+});

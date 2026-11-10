@@ -3,6 +3,7 @@ import { Badge, ConfirmDialog, DropdownMenu, Tabs } from '@/design-system';
 import { ROUTES } from '@/app/routes';
 import type LeagueDetailScreenProps from './types';
 import { useLeagueDetail } from './useLeagueDetail';
+import { ZoneDrawer } from './ZoneDrawer';
 import styles from './LeagueDetailScreen.module.css';
 
 export type { LeagueDetailScreenProps };
@@ -50,7 +51,12 @@ export function LeagueDetailScreen({ uuid }: LeagueDetailScreenProps): JSX.Eleme
         </div>
       </div>
 
-      <Tabs ref={detail.tabsRef} tabs={detail.tabs} defaultTab={detail.defaultTab} />
+      <Tabs
+        ref={detail.tabsRef}
+        tabs={detail.tabs}
+        defaultTab={detail.defaultTab}
+        actions={detail.tabsActions}
+      />
 
       {detail.startConfirm && (
         <ConfirmDialog
@@ -59,6 +65,14 @@ export function LeagueDetailScreen({ uuid }: LeagueDetailScreenProps): JSX.Eleme
           confirmLabel={detail.startConfirm.confirmLabel}
           onConfirm={detail.startConfirm.onConfirm}
           onCancel={detail.startConfirm.onCancel}
+        />
+      )}
+      {detail.zoneDrawer && (
+        <ZoneDrawer
+          title={detail.zoneDrawer.title}
+          plan={detail.zoneDrawer.plan}
+          onSave={detail.zoneDrawer.onSave}
+          onCancel={detail.zoneDrawer.onCancel}
         />
       )}
     </div>

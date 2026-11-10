@@ -23,6 +23,7 @@ import {
   rescorinateFixture,
   scorinateFixture,
   scorinateMatchday,
+  setPhaseZones,
   shuffleCurrentGroups,
   swapTeamsInCurrentGroups,
   startNextPhase,
@@ -609,5 +610,57 @@ describe('shuffle and move in a later Groups phase (Task 128 choice 5)', () => {
     expect(() => shuffleCurrentGroups(groupsLeague.uuid)).toThrow(RangeError);
     const roundRobin = createLeague(phaseInput(roundRobinThenGroups));
     expect(() => shuffleCurrentGroups(roundRobin.uuid)).toThrow(RangeError);
+  });
+});
+
+describe('setPhaseZones (Task 189, US-12.5, US-11.1)', () => {
+  const RED = { colour: 'red' as const, places: { from: 2, to: 2 }, label: 'Out' };
+
+  it('sets the zones of the plan, stamps the league, and marks it unsaved', async () => {
+    await openWithLeague();
+    setPhaseZones(LEAGUE, 0, [RED]);
+    const { content } = state().leagues[LEAGUE];
+    expect(content.plans[0]).toEqual({
+      format: 'round-robin',
+      legs: 'two-way',
+      zones: [RED],
+    });
+    expect(content.lastModifiedByInstallation).toBe(INSTALLATION);
+    expect(isLeagueUnsaved(state(), LEAGUE)).toBe(true);
+  });
+
+  it('changes nothing for the same zones', async () => {
+    await openWithLeague();
+    setPhaseZones(LEAGUE, 0, [RED]);
+    const after = state().leagues[LEAGUE];
+    setPhaseZones(LEAGUE, 0, [{ ...RED, places: { from: 2, to: 2 } }]);
+    expect(state().leagues[LEAGUE]).toBe(after);
+  });
+
+  it('changes nothing for an empty list on a plan with no zones', async () => {
+    await openWithLeague();
+    const before = state().leagues[LEAGUE];
+    setPhaseZones(LEAGUE, 0, []);
+    expect(state().leagues[LEAGUE]).toBe(before);
+  });
+
+  it('throws a RangeError for zones with a problem, a bracket plan, or no plan', async () => {
+    await openWithLeague();
+    expect(() => setPhaseZones(LEAGUE, 0, [RED, { ...RED, colour: 'blue' }])).toThrow(
+      RangeError
+    );
+    expect(() => setPhaseZones(LEAGUE, 1, [RED])).toThrow(RangeError);
+    useDatabaseStore.setState((now) => {
+      const wrapper = now.leagues[LEAGUE];
+      return {
+        leagues: {
+          [LEAGUE]: {
+            ...wrapper,
+            content: { ...wrapper.content, plans: [{ format: 'bracket' }] },
+          },
+        },
+      };
+    });
+    expect(() => setPhaseZones(LEAGUE, 0, [RED])).toThrow(RangeError);
   });
 });

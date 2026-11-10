@@ -17,7 +17,7 @@ export const ZONE_LABEL_MAX = 24;
  * (US-12.5). Only a phase that is not the last has an advancement
  * (`checkPhaseChain`), so a last phase has none. A yellow zone is automatic
  * only with a best M. With no best M, yellow is free (Task 155). */
-function getAutomaticZones(plan: ZonePlan): PhaseZone[] {
+export function getAutomaticZones(plan: ZonePlan): PhaseZone[] {
   if (!plan.advance) return [];
   const { top } = plan.advance;
   const zones: PhaseZone[] = [
@@ -63,6 +63,22 @@ export function getPhaseZones(plan: ZonePlan): PhaseZone[] {
         ]
   );
   return [...automatic, ...free].sort((a, b) => a.from - b.from);
+}
+
+/**
+ * The plan with only the stored zones that fit its kind of zone (Task 189
+ * choice 4): an automatic colour keeps only a label, and a free colour
+ * keeps only a zone with places. A wizard change of the format, the order,
+ * or the best M can change the kind of green and yellow. A plan with no
+ * zone list stays as it is.
+ */
+export function fitZones<Plan extends ZonePlan>(plan: Plan): Plan {
+  if (!plan.zones) return plan;
+  const automatic = new Set(getAutomaticZones(plan).map((zone) => zone.colour));
+  const zones = plan.zones.filter((zone) =>
+    automatic.has(zone.colour) ? !zone.places : Boolean(zone.places)
+  );
+  return zones.length === plan.zones.length ? plan : { ...plan, zones };
 }
 
 function hasValidPlaces(zone: PlanZone): boolean {

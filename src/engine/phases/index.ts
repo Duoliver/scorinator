@@ -16,7 +16,14 @@ export {
   isPhaseLocked,
   pickQualifiers,
 } from './phaseStart';
-export { checkZones, getPhaseZones, getZoneColours, ZONE_LABEL_MAX } from './zones';
+export {
+  checkZones,
+  fitZones,
+  getAutomaticZones,
+  getPhaseZones,
+  getZoneColours,
+  ZONE_LABEL_MAX,
+} from './zones';
 export type { ZonePlan } from './zones';
 export type {
   BracketPlan,

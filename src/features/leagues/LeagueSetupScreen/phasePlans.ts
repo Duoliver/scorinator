@@ -1,12 +1,18 @@
 import type { BracketPlanRules } from '@/engine/bracket';
-import { bracketRulesOf, type PhasePlan } from '@/engine/phases';
+import {
+  bracketRulesOf,
+  fitZones,
+  type PhasePlan,
+  type PlanZone,
+} from '@/engine/phases';
 import { formatPhaseLabel } from '@/features/leagues/leagueSummary';
 
 /**
  * The phase chain of the League Setup wizard (Task 129): pure edits of a
  * plan list. Each edit gives a new list, and keeps the advancement rule:
  * each phase but the last has an advancement, and the last has none
- * (US-01.4). A phase that stops being the last gets Top 2 (choice 5).
+ * (US-01.4). A phase that stops being the last gets Top 2 (choice 5). Each
+ * edit also keeps only the zones that fit each plan (`fitZones`, Task 189).
  */
 
 /** The value of each format option of the format field (US-01.2). */
@@ -53,12 +59,18 @@ function withTop(plan: PhasePlan, top: number | undefined): PhasePlan {
     : { ...rest, advance: { top, bestOfNext: advance?.bestOfNext ?? 0 } };
 }
 
+/** The plan with only the zones that fit it (Task 189 choice 4). */
+const withFitZones = (plan: PhasePlan): PhasePlan =>
+  plan.format === 'bracket' ? plan : fitZones(plan);
+
 /** Each phase but the last keeps or gets an advancement. The last has none. */
 function normalized(plans: readonly PhasePlan[]): PhasePlan[] {
   return plans.map((plan, index) =>
-    index === plans.length - 1
-      ? withTop(plan, undefined)
-      : withTop(plan, topOf(plan) ?? DEFAULT_TOP)
+    withFitZones(
+      index === plans.length - 1
+        ? withTop(plan, undefined)
+        : withTop(plan, topOf(plan) ?? DEFAULT_TOP)
+    )
   );
 }
 
@@ -101,7 +113,7 @@ export function movePhase(
 
 /** Changes the format of one phase, in its place (US-01.2). The top N
  * stays. A new Groups phase gets size 4. A legs change of a Groups phase
- * keeps its group setting. */
+ * keeps its group setting. The zones stay, except on a Bracket (Task 189). */
 export function setPhaseFormat(
   plans: readonly PhasePlan[],
   index: number,
@@ -124,6 +136,7 @@ export function setPhaseFormat(
               : { by: 'size', size: DEFAULT_GROUP_SIZE },
         }
       : { format: 'round-robin', legs };
+    if (old.format !== 'bracket' && old.zones) plan = { ...plan, zones: old.zones };
   }
   return normalized(plans.map((p, i) => (i === index ? withTop(plan, top) : p)));
 }
@@ -185,7 +198,20 @@ export function setBestOfNext(
   bestOfNext: number
 ): PhasePlan[] {
   return editGroups(plans, index, (plan) =>
-    plan.advance ? { ...plan, advance: { ...plan.advance, bestOfNext } } : plan
+    plan.advance
+      ? withFitZones({ ...plan, advance: { ...plan.advance, bestOfNext } })
+      : plan
+  );
+}
+
+/** The zones of one round-robin or Groups phase (US-12.5, Task 189). */
+export function setPhaseZones(
+  plans: readonly PhasePlan[],
+  index: number,
+  zones: PlanZone[]
+): PhasePlan[] {
+  return plans.map((plan, i) =>
+    i === index && plan.format !== 'bracket' ? { ...plan, zones } : plan
   );
 }
 

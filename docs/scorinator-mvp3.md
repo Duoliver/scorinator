@@ -1,80 +1,82 @@
 # Scorinator — MVP 3 Specification
 
-Builds on MVP 1 (single round-robin league) and MVP 2 (mixed-format phases). MVP 3 introduces **locations**, **location-based tournaments**, and a **league tier system** (promotion/relegation linkage between leagues).
+Builds on MVP 1 (one round-robin league) and MVP 2 (leagues with phases). MVP 3 introduces the **Season**: a group of leagues that share their teams, with Season playoffs. It also adds a team **condition**, search and collections in the lists, and smaller items from MVP2.
 
-## 1. Confirmed Design Decisions
+*Rewritten on 2026-11-11 (Task 195). The user cut the scope. Locations (Country, Region, City), location-based tournaments, and the league tier links (promotion and relegation) left MVP3. The earlier text is in the git history.*
 
-### Location Model
-- Hierarchy: **Country → Region → City**, strict containment.
-- A team selects a **City**; its **Region** and **Nation** are automatically derived from that City (not independently settable).
-- **Region adjacency** (from MVP2): each Region has a manually-linked list of adjacent Regions, usable when building geographically-aware groupings.
+## 0. Scope and ranks
 
-### Tournament ↔ Location Linking
-- A league's **Scope** (City / Regional / National — from the original doc) remains a descriptive label.
-- The actual location linkage is **flexible**: a league can be tied to a **custom multi-select of Cities and/or Regions**, not strictly one single city/region/nation. This lets a "regional" tournament span multiple adjacent regions if desired, or a "national" cup include only specific cities, etc.
-- **Location is filtering/eligibility only, never automatic enrollment.** A team's City/Region/Nation is used to *suggest or narrow down candidate teams* when building a tournament (e.g. "show me teams based in this City"), but actual participation is always a **separate, explicit membership assignment**. This is what allows a team promoted to a national tier to stop appearing in its old City tournament without any special-casing — it was never automatically entered in the first place.
+Each item has a rank from the user: **Must**, **Should**, **Could**. MVP3 can end with the Must items only. The refinement covers the Must and the Should items at least. A Could item gets refined stories only when the user asks. The candidate IDs (C1 and on) come from [Task 195](/docs/tasks/195-mvp3-scope.md).
 
-### League Tier System (Promotion / Relegation Linkage)
-- Each league can configure (per the original doc's League Rules):
-  - **Promotes to**: which league(s) its top N finishers move up to.
-  - **Relegates to**: which league it relegates its bottom N finishers to.
-- **MVP3 scope is one-time setup only**:
-  - Upper-tier leagues (e.g. Série A/B/C equivalents) can start with a **fixed member team list**, manually assigned by the user.
-  - The lowest tier in a chain can be **auto-populated** from the best-performing teams of its linked regional/city tournaments — excluding any teams that are already members of an upper-tier league.
-  - Running an actual promotion/relegation cycle automatically **after a season completes** is out of scope for MVP3 — that's a Story Mode (MVP4) behavior, executed within a **Season** (see below). MVP3 only defines and stores the linkage/config so a Season has something to execute later.
+The epic numbers go on from MVP2, which ends at epic 12, so the story IDs stay unique (`docs/user-stories/README.md`).
 
-### Season (standalone grouping, precursor to Story Mode)
-- A **Season** is a standalone entity that groups a set of linked leagues (e.g. a City→Regional→National chain, or any set the user links together). It's introduced now, independent of Story Mode, so Story Mode (MVP4) can reuse it as-is rather than needing its own grouping machinery.
-- A Season can run **entirely on its own**, with none of MVP4's story features (events, mergers, newcomers) enabled — it's just "a set of linked leagues that share team state and a promotion/relegation pipeline."
-- **Team Instance scope**: per MVP2's Blueprint/Instance split, a Team Blueprint's live state (current OVR, current Tier, league memberships) is scoped to one **Instance Wrapper** — not strictly to a Season. An Instance Wrapper holds a set of Team Instances alongside either a single standalone League or a full Season; a standalone League therefore has its own scoped Team Instances without needing to be wrapped inside a Season at all. Within a wrapper, a Blueprint has exactly one shared Instance across every league it's concurrently a member of (whether that's the wrapper's one standalone League, or all the leagues linked inside its Season). If the same Blueprint is also used in a *different* wrapper (a different standalone League, or an unrelated Season — even within the same local database), it gets an **independent Instance** there — the two don't affect each other. *(See the technical caveats doc for the Instance Wrapper's structure and identity handling.)*
-- A single database can contain **multiple independent Instance Wrappers** running in parallel (e.g. a standalone Cup League alongside a full City→Regional→National Season, or two unrelated hobby league setups), each with its own Team Instances.
-- Promotion/Relegation execution (once implemented in Story Mode, MVP4) operates **within** a Season's set of linked leagues.
+| Epic | Items |
+|---|---|
+| 13. Season | C1, C2, C3, C4, C5 (Must), C6 (Should) |
+| 14. Team condition | C10 (Must) |
+| 15. Teams module | C36, C44 (Must), C7 (Should), C11, C12 (Could) |
+| 16. League and Season lists | C21, C45, C46 (Must), C23 (Should), C22 (Could) |
+| 17. Brackets and phases | C25, C27, C29 (Should) |
+| 18. Debug mode | C16 (Should) |
+| 19. Fixes and polish | C19 (Should), C17, C43 (Could) |
 
-### Team ↔ League Membership
-- A team **can belong to more than one league at the same time** (e.g. a City league and a Cup, or any other combination). Membership is not exclusive.
+**Not in MVP3:** the score before AET on the tie card (future features §22) and the seeded group draw (§18) are Later. The rows that the user discarded are in Task 195.
 
-### Team CSV Format (extended)
-- The Team CSV (import/export) from MVP1 gains a **`City`** column, since teams now carry location data. Region and Nation are **not** included as separate columns — they're auto-derived from City on import, per the strict containment rule above.
-- Updated columns: `ID/slug`, `Name`, `Colours`, `Tier`, `City`.
+## 1. Confirmed design decisions
 
-### Team Colours
-- **The 16-colour palette ships in MVP1, not MVP3** (changed on 2026-10-05, MVP1 Task 34). See MVP1 §1, Team Colours, for the palette and its placeholder values.
-- **MVP3 adds a custom colour**, for a colour that is not in the palette: a **hex field**, a **live preview**, and **RGB sliders**, all kept in sync. The design of this custom colour picker is pending (see Open Items).
-- The palette stays available in MVP3, next to the custom colour picker.
+### Season
 
----
+- A **Season** is a standalone entity that groups a set of leagues. It runs on its own, with no story features.
+- The leagues of a Season play at the same time (C2).
+- **Team Instance scope:** a Team Blueprint's live state (current OVR, current Tier, league memberships) is scoped to one **Instance Wrapper**. An Instance Wrapper holds a set of Team Instances, with either one standalone League or a full Season. Inside a wrapper, a Blueprint has exactly one Instance, shared by every league of that wrapper. In a different wrapper, the same Blueprint gets an independent Instance. See `src/persistence/PERSISTENCE.md` §2a.
+- A team can belong to more than one league at the same time, for example a league and a cup (C3).
+- One database can hold more than one Season, each with its own Team Instances (C4).
+- **Season playoffs** (C5): single matches that belong to the Season, not to a league. A playoff can have a name. A link from a playoff to a league can come later.
+- A standalone league can move into a Season (C6, Should). Open: does its team state carry over? See `scorinator-future-features.md` §3.
 
-## 2. User Stories — MVP 3
+### Team condition
 
-### Epic: Location Management
-- As a user, I want to create Countries, Regions, and Cities, so that I can represent the geography my leagues will use.
-- As a user, I want to link a Region to other adjacent Regions, so that adjacency can inform tournament grouping.
-- As a user, when I create a team, I want to pick its City and have Region/Nation auto-fill, so that team location data stays consistent.
-- As a user, I want the Team CSV import/export to include a City column (with Region/Nation auto-derived), so that location data round-trips correctly.
+- An input sets the **condition** of a team: a buff or a nerf for the Season, with no direct change to its Tier (C10).
+- The ranked slug list export (US-10.5) carries the condition, so a later league can import the team with its condition.
 
-### Epic: Location-Based Tournaments
-- As a user, I want to create a City, Regional, or National tournament, so that I can run competitions scoped to a level of the location hierarchy.
-- As a user, I want to link a tournament to a custom set of Cities and/or Regions (not strictly one), so that I can model tournaments that don't perfectly match a single hierarchy level.
-- As a user, I want to use a team's location to filter/suggest candidates when adding teams to a tournament, but still explicitly confirm each team's membership, so that a team's location never silently enrolls it somewhere (e.g. a nationally-promoted team isn't auto-kept in its old city tournament).
+### Teams module
 
-### Epic: League Tier Linking
-- As a user, I want to configure a league's "Promotes to" and "Relegates to" targets with a count of teams, so that the tier system's rules are explicit.
-- As a user, I want to manually assign a fixed member list to an upper-tier league, so that established divisions start with the correct teams.
-- As a user, I want the lowest tier in a chain to auto-populate from the best teams of its linked local tournaments (excluding teams already in an upper tier), so that I don't have to manually curate that list.
+- **Blueprint collections** (C36): see `scorinator-future-features.md` §21 for the first notes.
+- A **search** on the Teams screen (C44).
+- **A custom team colour** (C7, Should): a hex field, RGB sliders, and a live preview, kept in sync. The palette stays next to it. This needs a `Slider` primitive in `design-system/`.
+- Could: copy the Instances of a league to the database, as a new Blueprint or over an existing one (C11). Restore a deleted Blueprint from a league (C12, future features §11).
 
-### Epic: League Tier Linking (continued)
-- As a user, I want a team to be able to belong to multiple leagues at once (e.g. its regular league and a cup), so that overlapping competitions are supported.
+### League and Season lists
 
-### Epic: Season
-- As a user, I want to group a set of linked leagues into a Season, so that they share team state and a promotion/relegation pipeline without needing full Story Mode.
-- As a user, I want a team's OVR/Tier to stay consistent across every league it plays within the same Season, so that its strength doesn't fragment across competitions.
-- As a user, I want to run multiple independent Seasons in the same database, so that unrelated league setups don't interfere with each other.
+- **Rename and delete a league** (C21, future features §20).
+- A **search** on the leagues dashboard (C45) and on the Season list (C46).
+- Should: the current phase on the league card (C23, future features §19).
+- Could: custom phase names (C22, future features §7).
 
-### Epic: Team Colours
-- As a user, I want to set a custom team colour with a hex field or RGB sliders, and see a live preview, so that a team can use a colour outside the palette. *(The palette itself ships in MVP1.)*
-- As a user, I want the crest generator (from the original spec) to use the team's selected colours when no custom crest image is provided, so that every team has a usable visual identity.
+### Brackets and phases
 
----
+- Should: a qualifiers list for a round-robin or Groups phase (C25, future features §10).
+- Should: a toggle for the host of the second leg (C27, future features §6).
+- Should: a choice of bracket seeding before the bracket starts (C29, future features §23).
+- A replay stays at a neutral venue in MVP3.
 
-## 3. Open Items
-- Custom colour picker design (hex field, live preview, RGB sliders) — pending the user's design. It also needs a `Slider` primitive in `design-system/`.
+### Debug mode
+
+- Should: extra engine data on the league screens (C16). Two items so far: `[S | 93]` (the Tier and the OVR) beside each team name, and the home and away count of each team in a single-duels phase (future features §8).
+
+### Fixes and polish
+
+- Should: the unsaved changes dialog opens in a corner of the screen the first time (C19). A bug.
+- Could: an empty state for the Review step of the wizard (C17).
+- Could: the team plural in `Imported 1 team.` (C43). See the open question of 2026-10-19 in `PROGRESS.md`.
+
+### Team Location
+
+- The Location stays a free-text label on the Blueprint (US-09.3). MVP3 adds no City (C15, 2026-11-11).
+
+## 2. Open items
+
+The refinement of each epic settles its details with the user. Known open items:
+
+- The custom colour picker design and its `Slider` primitive (C7).
+- The team state of a standalone league that moves into a Season (C6).

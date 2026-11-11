@@ -65,4 +65,4 @@ The user agreed these criteria and choices 1 to 6 on 2026-11-01.
 - **What is left, what is next:**
   - No caller passes `lotOf` yet. Task 128 passes `fixedLot` from the league UUID and each Instance UUID (choice 3). Until then, `useStandings` and `resultsTxt` keep the roster order.
   - Task 126 uses `pickBestOfPlace` for the qualifiers and does the fit checks.
-  - `docs/mvp1-to-mvp2-impact-review.md` lines 104 and 105 still name the old rules. It is a historical review, so it stays as it is.
+  - `docs/archive/mvp2/mvp1-to-mvp2-impact-review.md` lines 104 and 105 still name the old rules. It is a historical review, so it stays as it is.

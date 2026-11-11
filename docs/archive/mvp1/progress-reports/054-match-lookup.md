@@ -12,7 +12,7 @@
 | `adapters/txt/resultsTxt.ts` | Its own `matchKey` is gone. It uses the engine `matchKey`. |
 | `features/fixtures/` | `fixtureKey` and `MatchIdentity` are gone. The hooks call the engine lookups with `league.fixtures` and `league.results`. |
 | `features/scorination/` | Deleted. Its tests moved to `engine/fixtures/schedule.test.ts`. |
-| `docs/mvp1-to-mvp2-impact-review.md` | Line 94 names the new functions. |
+| `docs/archive/mvp2/mvp1-to-mvp2-impact-review.md` | Line 94 names the new functions. |
 
 **Decisions made:**
 

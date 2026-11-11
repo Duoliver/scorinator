@@ -1,6 +1,6 @@
 # Epic 07: Phase Transition
 
-Refined in [Task 92](/docs/tasks/092-refine-phase-transition.md). Source: [`docs/scorinator-mvp2.md`](/docs/scorinator-mvp2.md) §1 Phase Chaining, §2 Epic: Phase Transition. Layout reference: the MVP2 handoff, `Footballer - League Detail - Mixed`.
+Refined in [Task 92](/docs/archive/mvp2/tasks/092-refine-phase-transition.md). Source: [`docs/scorinator-mvp2.md`](/docs/scorinator-mvp2.md) §1 Phase Chaining, §2 Epic: Phase Transition. Layout reference: the MVP2 handoff, `Footballer - League Detail - Mixed`.
 
 **Terms used in this file:**
 

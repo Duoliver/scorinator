@@ -1,6 +1,6 @@
 # Epic 10: File Module
 
-Refined in [Task 95](/docs/tasks/095-refine-file-module.md). Source: [`docs/scorinator-mvp2.md`](/docs/scorinator-mvp2.md) §1 File Module (generalized), §2 Epic: File Module. Layout reference: the MVP2 handoff, `Footballer - File Manager`.
+Refined in [Task 95](/docs/archive/mvp2/tasks/095-refine-file-module.md). Source: [`docs/scorinator-mvp2.md`](/docs/scorinator-mvp2.md) §1 File Module (generalized), §2 Epic: File Module. Layout reference: the MVP2 handoff, `Footballer - File Manager`.
 
 **Terms used in this file:**
 

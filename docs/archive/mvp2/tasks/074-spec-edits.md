@@ -4,7 +4,7 @@
 
 ## Goal
 
-Apply the spec and doc edits listed in `docs/mvp1-to-mvp2-impact-review.md` §3, so the MVP2 spec agrees with the decisions of the impact review and with the MVP2 scope.
+Apply the spec and doc edits listed in `docs/archive/mvp2/mvp1-to-mvp2-impact-review.md` §3, so the MVP2 spec agrees with the decisions of the impact review and with the MVP2 scope.
 
 ## Acceptance criteria
 
@@ -18,7 +18,7 @@ This task started before the task file format existed (Task 85), so the report b
 
 **Applied on 2026-10-26.** The user approved all edits as written. Edits 1 to 6 are in `docs/scorinator-mvp2.md`, and edit 8 is in `docs/module-boundaries.md`. The impact review §3 now says that its list is applied. The line numbers below are the ones from before the edits.
 
-Source: `docs/mvp1-to-mvp2-impact-review.md` §3 lists 8 edits. The user owns the spec docs, so each edit needs approval before Claude applies it. Line numbers are in `docs/scorinator-mvp2.md` unless a heading says otherwise.
+Source: `docs/archive/mvp2/mvp1-to-mvp2-impact-review.md` §3 lists 8 edits. The user owns the spec docs, so each edit needs approval before Claude applies it. Line numbers are in `docs/scorinator-mvp2.md` unless a heading says otherwise.
 
 ## Changes to the list in the review
 

@@ -1,6 +1,6 @@
 # Epic 12: Standings display
 
-Refined in [Task 102](/docs/tasks/102-standings-display.md). Source: `docs/unplanned-features-draft.md` (features #2, #3, #4, #5, and #7), approved as MVP2 scope on 2026-10-28. The MVP2 spec has it since 2026-10-28.
+Refined in [Task 102](/docs/archive/mvp2/tasks/102-standings-display.md). Source: `docs/unplanned-features-draft.md` (features #2, #3, #4, #5, and #7), approved as MVP2 scope on 2026-10-28. The MVP2 spec has it since 2026-10-28.
 
 **Terms used in this file:**
 

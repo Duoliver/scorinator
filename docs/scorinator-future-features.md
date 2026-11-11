@@ -136,3 +136,13 @@ In MVP2, a `Tooltip` hint sits above the centre of its trigger. Small triggers t
 A new Blueprint field: a short, informal name, for example "Munique" for "CF Barrio de Munique". The full name stays the input that makes the slug. Standings, fixtures, and other league screens show the short name, with a setting to show the full name there in its place (§16). When two teams in one view have the same short name, each one gets its place in parentheses: "Munique (San Leo)" and "Munique (Piraporinha)". The user chose the parentheses because the app is in English, but the worldbuilding is language-agnostic. Settled by the user on 2026-11-02: the short name has no link with the trigrams, and the clash check looks at one league only. Still open: what the place in the parentheses is, now that City is out of MVP3.
 
 *Raised during: MVP2, 2026-11-02, as an open question for MVP3. Parked here at Task 195 (MVP3 scope, 2026-11-11).*
+
+## 27. A Statistics tab
+A "Statistics" tab in the Season view, and one for a single league. The user named it for MVP4 at the Season refinement. No content is defined yet.
+
+*Raised during: MVP3, Task 196 (Season refinement), 2026-11-11.*
+
+## 28. An OVR for each league team in a Season
+In MVP3, a Season has one Instance for each Blueprint, and every league of the Season uses it: one base OVR and one Tier (`scorinator-mvp3.md` §1, `PERSISTENCE.md` §2a). Later, each league can keep its own OVR for a team. The Season team is then a middle layer between the Blueprint and the league team: a change to the Season team does not change a running league, and a league keeps the logic of a single league. A standalone league that a Season imports can also keep its own OVR, or offer the choice.
+
+*Raised during: MVP3, Task 196 (Season refinement), 2026-11-11. The user parked it at review for a later release.*

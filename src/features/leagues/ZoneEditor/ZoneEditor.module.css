@@ -1,20 +1,32 @@
+/* The box that the narrow rule below measures. A container query cannot
+ * change the container itself, so the editor sits inside it. */
+.container {
+  container-type: inline-size;
+}
+
 .editor {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
 }
 
-/* One colour row: the swatch, the name or switch, and the fields. The
- * fields wrap under the name in a narrow card. */
+/* One colour row: the lead (the swatch, the name or switch) and the fields.
+ * The row aligns to the top, so the lead stays in place when the fields
+ * show or hide (Task 178). */
 .row {
   display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
+  align-items: flex-start;
   gap: var(--space-3);
 }
 
+.lead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-shrink: 0;
+}
+
 .swatch {
-  align-self: center;
   width: var(--space-4);
   height: var(--space-4);
   flex-shrink: 0;
@@ -41,7 +53,6 @@
 .name {
   display: flex;
   flex-direction: column;
-  align-self: center;
   gap: var(--space-1);
   min-width: 10rem;
 }
@@ -54,6 +65,7 @@
 
 .fields {
   display: flex;
+  flex: 1;
   flex-wrap: wrap;
   align-items: flex-end;
   gap: var(--space-3);
@@ -63,8 +75,32 @@
   width: 5rem;
 }
 
+/* The label takes the rest of the row, from 15rem up (Task 178). */
 .label {
-  width: 15rem;
+  flex: 1 1 15rem;
+  min-width: 0;
+}
+
+/* A narrow editor, as in a narrow card or the "Edit zones" drawer: the
+ * fields go under the lead in every row. 39rem is the width of a free row:
+ * the lead (11.75rem), From and To (5rem each), the label (15rem), and four
+ * gaps. The gap between rows grows above the gap inside a row, so a switch
+ * sits nearer its own fields than the fields of the row above (Task 178). */
+@container (max-width: 39rem) {
+  .editor {
+    gap: var(--space-6);
+  }
+
+  .row {
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  /* A column row does not stretch its items, so the fields ask for the
+   * full width, and the label can take the rest of it. */
+  .fields {
+    align-self: stretch;
+  }
 }
 
 .problem {

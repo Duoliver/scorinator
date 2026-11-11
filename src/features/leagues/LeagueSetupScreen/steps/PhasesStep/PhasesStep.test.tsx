@@ -113,7 +113,13 @@ describe('PhasesStep', () => {
     expect(
       within(card(1)).getByRole('heading', { name: 'Group Stage' })
     ).toBeInTheDocument();
-    expect(within(card(1)).getByLabelText('Set by')).toHaveValue('size');
+    expect(
+      within(card(1)).getByRole('radiogroup', { name: 'Set by' })
+    ).toBeInTheDocument();
+    expect(within(card(1)).getByRole('radio', { name: 'Group size' })).toHaveAttribute(
+      'aria-checked',
+      'true'
+    );
     expect(within(card(1)).getByLabelText('Group size')).toHaveValue(4);
     expect(within(card(1)).getByText('advance per group')).toBeInTheDocument();
     expect(within(card(1)).getByLabelText('Best of place 3')).toHaveValue(0);
@@ -121,7 +127,7 @@ describe('PhasesStep', () => {
 
   it('switches Set by to Group count, with count 2', async () => {
     render(<Harness initial={groupsThenBracket} />);
-    await userEvent.selectOptions(within(card(1)).getByLabelText('Set by'), 'count');
+    await userEvent.click(within(card(1)).getByRole('radio', { name: 'Group count' }));
     expect(within(card(1)).getByLabelText('Group count')).toHaveValue(2);
     expect(plans()[0]).toMatchObject({ grouping: { by: 'count', count: 2 } });
   });

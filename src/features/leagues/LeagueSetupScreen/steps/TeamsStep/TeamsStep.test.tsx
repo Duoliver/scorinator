@@ -631,6 +631,13 @@ describe('TeamsStep with a phase-1 draw (Task 130)', () => {
     expect(onShuffleGroups).toHaveBeenCalledOnce();
   });
 
+  it('has a small ⋮ row menu button, as the handoff (Task 178)', () => {
+    renderGroups({});
+    expect(screen.getByRole('button', { name: 'Options for Alpha' }).className).toMatch(
+      /icon-sm/
+    );
+  });
+
   it('has a row menu with Edit, Switch, Move to each other group, and Remove', async () => {
     const onMoveTeam = vi.fn();
     const onRemoveTeam = vi.fn();

@@ -166,7 +166,7 @@ function editGroups(
 export function setGroupBy(
   plans: readonly PhasePlan[],
   index: number,
-  by: 'size' | 'count'
+  by: GroupBy
 ): PhasePlan[] {
   return editGroups(plans, index, (plan) => ({
     ...plan,

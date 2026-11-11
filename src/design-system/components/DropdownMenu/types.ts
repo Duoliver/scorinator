@@ -20,6 +20,9 @@ export default interface DropdownMenuProps {
   label: string;
   /** Makes the trigger a square icon button with this glyph, as `⋮`. */
   icon?: string;
+  /** Off by default. On: the icon trigger is the smaller `icon-sm` square,
+   * as the handoff ⋮ of a group row (Task 178). No effect without `icon`. */
+  compact?: boolean;
   items: DropdownMenuItem[];
   align?: DropdownMenuAlign;
 }

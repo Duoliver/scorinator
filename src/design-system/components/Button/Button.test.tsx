@@ -107,6 +107,16 @@ describe('Button', () => {
       expect(button.className).not.toMatch(/fill/);
     });
 
+    it('renders a smaller square with icon-sm (Task 178)', () => {
+      render(
+        <Button size="icon-sm" aria-label="Team options">
+          ⋮
+        </Button>
+      );
+      const button = screen.getByRole('button', { name: 'Team options' });
+      expect(button.className).toMatch(/icon-sm/);
+    });
+
     it('fills its container with fill (Task 169)', () => {
       render(
         <Button size="icon" aria-label="Regenerate slug" fill>

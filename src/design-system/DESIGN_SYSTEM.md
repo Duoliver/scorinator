@@ -25,6 +25,8 @@ Every size in `design-system/` is expressed in `rem`, not `px`. This includes fo
 
 **What is exempt:** `--border-width`/`--border-width-heavy` and the `--shadow-offset-*`/hover-active `translate()` values form their own token system — the neubrutalist hard-offset-shadow language, not layout spacing. They do not need to land on the `--space-*` grid.
 
+**A field label is `--font-size-sm`.** A bold, uppercase label above a field uses `--font-size-sm`, as the `Input` label, not `--font-size-xs`. Two labels in one row then match, such as "Set by" and "Group size" (Task 178, 2026-11-11). The inverted header bands, the `Table` header row and the `PickerDialog` panel title, are not field labels.
+
 ## Base HTML element typography lives in `tokens/elements.css`, not inline
 
 `h1`, `h2`, and `h3` carry their type style (`font-family`, `font-size`, `margin: 0`) from a global rule in `tokens/elements.css`, imported once in `main.tsx` alongside `tokens.css`/`fonts.css`. A screen or component using a plain heading element for a page, section, or sub-section title needs no `style` prop at all.

@@ -183,6 +183,25 @@ describe('TeamsStep, the add dialog (US-08.1)', () => {
     ).not.toBeInTheDocument();
   });
 
+  it('asks for a name or a location in the add and the Switch search (Task 165)', async () => {
+    const placeholder = 'Search by name or location…';
+    render(<Harness />);
+    const add = await openDialog();
+    expect(within(add).getByRole('textbox', { name: 'Search' })).toHaveAttribute(
+      'placeholder',
+      placeholder
+    );
+    await userEvent.click(within(add).getByRole('button', { name: 'Old Town' }));
+    await userEvent.click(within(add).getByRole('button', { name: 'Add 1 team' }));
+
+    await userEvent.click(screen.getByRole('button', { name: 'Switch Old Town' }));
+    const dialog = screen.getByRole('dialog', { name: 'Switch team' });
+    expect(within(dialog).getByRole('textbox', { name: 'Search' })).toHaveAttribute(
+      'placeholder',
+      placeholder
+    );
+  });
+
   it('adds the selected teams in the order of selection, each with a rolled OVR', async () => {
     render(<Harness onTeams={track} />);
     const dialog = await openDialog();

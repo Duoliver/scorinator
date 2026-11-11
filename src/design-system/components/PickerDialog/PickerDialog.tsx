@@ -21,6 +21,8 @@ export type {
   SinglePickerProps,
 };
 
+const DEFAULT_SEARCH_PLACEHOLDER = 'Search…';
+
 const SINGLE_HINT =
   'Pick a replacement from Available — this closes the dialog right away.';
 
@@ -42,7 +44,14 @@ function matches(item: PickerItem, query: string): boolean {
  * caller mounts the dialog to open it, as `Modal`.
  */
 export function PickerDialog(props: PickerDialogProps): JSX.Element {
-  const { title, description, items, availableAction, onCancel } = props;
+  const {
+    title,
+    description,
+    items,
+    searchPlaceholder = DEFAULT_SEARCH_PLACEHOLDER,
+    availableAction,
+    onCancel,
+  } = props;
   const [query, setQuery] = useState('');
   const searchRef = useRef<FieldHandle<string>>(null);
 
@@ -68,7 +77,7 @@ export function PickerDialog(props: PickerDialogProps): JSX.Element {
         <Input
           ref={searchRef}
           aria-label="Search"
-          placeholder="Search by name…"
+          placeholder={searchPlaceholder}
           onChange={setQuery}
         />
         <div class={styles.panels}>

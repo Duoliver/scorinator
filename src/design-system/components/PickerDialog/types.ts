@@ -23,6 +23,9 @@ interface PickerDialogBase {
   description?: string;
   /** The items the user can pick, in list order. */
   items: readonly PickerItem[];
+  /** The placeholder of the search field. "Search…" when it has none. Say
+   * what the search matches, for example "Search by name or location…". */
+  searchPlaceholder?: string;
   availableAction?: PickerAction;
   /** Called on Escape, the ✕, a backdrop click, and "Cancel". */
   onCancel: () => void;

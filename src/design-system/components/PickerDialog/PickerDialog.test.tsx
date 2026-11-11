@@ -184,6 +184,33 @@ describe('PickerDialog, multi mode', () => {
   });
 });
 
+describe('PickerDialog, the search placeholder (Task 165)', () => {
+  it('says "Search…" when the caller gives no placeholder', () => {
+    render(<MultiPicker />);
+    expect(screen.getByRole('textbox', { name: 'Search' })).toHaveAttribute(
+      'placeholder',
+      'Search…'
+    );
+  });
+
+  it('shows the placeholder of the caller', () => {
+    render(
+      <PickerDialog
+        mode="single"
+        title="Switch team"
+        items={ITEMS}
+        searchPlaceholder="Search by name or location…"
+        onPick={vi.fn()}
+        onCancel={vi.fn()}
+      />
+    );
+    expect(screen.getByRole('textbox', { name: 'Search' })).toHaveAttribute(
+      'placeholder',
+      'Search by name or location…'
+    );
+  });
+});
+
 describe('PickerDialog, single mode', () => {
   const renderSingle = (): { onPick: () => void; onCancel: () => void } => {
     const onPick = vi.fn();

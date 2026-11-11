@@ -1,10 +1,11 @@
 import { bracketSlotCount, bracketTieId, standardPlacement } from './placement';
-import type {
-  BracketRound,
-  BracketSlot,
-  BracketTie,
+import {
+  type BracketRound,
+  type BracketSlot,
+  type BracketTie,
   BracketTieKind,
-  BracketTree,
+  type BracketTree,
+  TieSideKind,
 } from './types';
 
 /**
@@ -42,7 +43,11 @@ function placeTeams<TeamId>(
   const ordered = [...seeds.filter(isBye), ...seeds.filter((team) => !isBye(team))];
   const byNumber = new Map<number, BracketSlot<TeamId>>();
   ordered.forEach((teamId, i) => {
-    byNumber.set(i + 1, { kind: 'team', teamId, seed: seeds.indexOf(teamId) + 1 });
+    byNumber.set(i + 1, {
+      kind: TieSideKind.TEAM,
+      teamId,
+      seed: seeds.indexOf(teamId) + 1,
+    });
   });
   return byNumber;
 }
@@ -54,7 +59,11 @@ function makeTie<TeamId>(
   kind: BracketTieKind,
   slots: [BracketSlot<TeamId>, BracketSlot<TeamId>]
 ): BracketTie<TeamId> {
-  const id = bracketTieId({ phase, round, tie: kind === 'regular' ? tie : kind });
+  const id = bracketTieId({
+    phase,
+    round,
+    tie: kind === BracketTieKind.REGULAR ? tie : kind,
+  });
   return { id, round, tie, kind, slots };
 }
 
@@ -162,13 +171,13 @@ export function buildBracketTree<TeamId>(
 
   const roundCount = Math.log2(slotCount);
   const kindOf = (round: number): BracketTieKind =>
-    round === roundCount ? 'final' : 'regular';
+    round === roundCount ? BracketTieKind.FINAL : BracketTieKind.REGULAR;
   const byNumber = placeTeams(seeds, byeTeams);
   const placement = standardPlacement(slotCount);
   const firstTies: BracketTie<TeamId>[] = [];
   for (let i = 0; i < slotCount; i += 2) {
-    const top = byNumber.get(placement[i]) ?? { kind: 'bye' };
-    const bottom = byNumber.get(placement[i + 1]) ?? { kind: 'bye' };
+    const top = byNumber.get(placement[i]) ?? { kind: TieSideKind.BYE };
+    const bottom = byNumber.get(placement[i + 1]) ?? { kind: TieSideKind.BYE };
     firstTies.push(makeTie(phase, 1, i / 2 + 1, kindOf(1), [top, bottom]));
   }
 
@@ -194,7 +203,7 @@ export function buildBracketTree<TeamId>(
     const last = rounds[rounds.length - 1];
     const [semi1, semi2] = rounds[rounds.length - 2].ties;
     last.ties.unshift(
-      makeTie(phase, last.round, 2, 'third', [
+      makeTie(phase, last.round, 2, BracketTieKind.THIRD, [
         { kind: 'loser-of', tieId: semi1.id },
         { kind: 'loser-of', tieId: semi2.id },
       ])

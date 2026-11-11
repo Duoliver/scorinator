@@ -26,9 +26,9 @@ export type {
   BracketRules,
   BracketSlot,
   BracketTie,
-  BracketTieKind,
   BracketTiePosition,
   BracketTieResult,
   BracketTree,
   TieSide,
 } from './types';
+export { BracketTieKind, TieSideKind } from './types';

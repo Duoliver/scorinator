@@ -7,13 +7,16 @@ import {
   type MatchScore,
 } from '@/engine/scorination';
 import { scorinatePenalties, tossCoin } from './penalties';
-import type {
+import {
   TieDecision,
-  TieMatch,
+  type TieMatch,
   TieMatchPart,
-  TieResult,
-  TieRules,
-  TieTeam,
+  type TieResult,
+  type TieRules,
+  type TieTeam,
+  TiebreakMethod,
+  CoinSide,
+  TieFormat,
 } from './types';
 
 // A played match, with what its AET needs: the OVRs it played with, home
@@ -87,7 +90,7 @@ function pickRegularWinner<TeamId>(
   const total = (team: TieTeam<TeamId>): number =>
     legs.reduce((sum, leg) => sum + goalsFor(leg, team), 0);
   if (total(higher) !== total(lower)) {
-    return [total(higher) > total(lower) ? higher : lower, 'regulation'];
+    return [total(higher) > total(lower) ? higher : lower, TieDecision.REGULATION];
   }
   if (!awayGoals) return undefined;
   const away = (team: TieTeam<TeamId>): number =>
@@ -95,7 +98,7 @@ function pickRegularWinner<TeamId>(
       .filter((leg) => leg.away === team)
       .reduce((sum, leg) => sum + goalsFor(leg, team), 0);
   if (away(higher) === away(lower)) return undefined;
-  return [away(higher) > away(lower) ? higher : lower, 'away-goals'];
+  return [away(higher) > away(lower) ? higher : lower, TieDecision.AWAY_GOALS];
 }
 
 function playLegs<TeamId>(
@@ -106,12 +109,12 @@ function playLegs<TeamId>(
 ): PlayedMatch<TeamId>[] {
   // A single match is at a neutral venue (Task 74). The higher seed takes
   // the home slot, with no boost (Task 135 choice 4).
-  if (rules.format === 'single-match')
-    return [playPart('leg1', higher, lower, false, rng)];
+  if (rules.format === TieFormat.SINGLE_MATCH)
+    return [playPart(TieMatchPart.LEG1, higher, lower, false, rng)];
   // The higher seed plays the second leg at home (Task 79).
   return [
-    playPart('leg1', lower, higher, rules.homeAdvantage, rng),
-    playPart('leg2', higher, lower, rules.homeAdvantage, rng),
+    playPart(TieMatchPart.LEG1, lower, higher, rules.homeAdvantage, rng),
+    playPart(TieMatchPart.LEG2, higher, lower, rules.homeAdvantage, rng),
   ];
 }
 
@@ -124,13 +127,16 @@ function playReplay<TeamId>(
   matches: TieMatch<TeamId>[],
   rng: Rng
 ): [TieTeam<TeamId>, TieDecision] {
-  const replay = playPart('replay', higher, lower, false, rng);
+  const replay = playPart(TieMatchPart.REPLAY, higher, lower, false, rng);
   matches.push(replay.match);
   const winner =
     pickWinner(replay.match.score, replay) ??
     (playsAet ? playAet(replay, rng) : undefined);
-  if (winner) return [winner, 'replay'];
-  return [tossCoin(rng) === 'home' ? replay.home : replay.away, 'coin-toss'];
+  if (winner) return [winner, TieDecision.REPLAY];
+  return [
+    tossCoin(rng) === CoinSide.HOME ? replay.home : replay.away,
+    TieDecision.COIN_TOSS,
+  ];
 }
 
 /**
@@ -164,12 +170,12 @@ export function playTie<TeamId>(
 
   const last = legs[legs.length - 1];
   const aetWinner = rules.playsAet ? playAet(last, rng) : undefined;
-  if (aetWinner) return finish([aetWinner, 'aet']);
+  if (aetWinner) return finish([aetWinner, TieDecision.AET]);
 
-  if (rules.method === 'replay-coin-toss') {
+  if (rules.method === TiebreakMethod.REPLAY_COIN_TOSS) {
     return finish(playReplay(higherSeed, lowerSeed, rules.playsAet, matches, rng));
   }
   const penalties = scorinatePenalties(last.home.ovr, last.away.ovr, rng);
   const winner = penalties.homeGoals > penalties.awayGoals ? last.home : last.away;
-  return { ...finish([winner, 'penalties']), penalties };
+  return { ...finish([winner, TieDecision.PENALTIES]), penalties };
 }

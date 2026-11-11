@@ -68,6 +68,8 @@ describe('rollOVR', () => {
     const exportedNames = Object.keys(tierOvrModule);
     expect(exportedNames.sort()).toEqual(
       [
+        // The value set of the Tier letters (Task 184), not an OVR setter.
+        'Tier',
         'TIER_ORDER',
         'TIER_OVR_RANGES',
         'isOvrInTier',

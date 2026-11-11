@@ -29,10 +29,22 @@
   --color-error-fg: #ffffff;
   --color-warning: #d9a900;
   --color-warning-fg: #1a1a1a;
-  /* Table row tints (Task 132): "positive" for the qualifier rows, and the
-   * lighter "caution" for the place N + 1 rows of a best M. */
-  --color-row-positive: #eaf3ea;
-  --color-row-caution: #fbf3d6;
+  /* Position zones (US-12.5): the stripe and legend colour, and the row
+   * tint. Yellow is a dark mustard, so its stripe reaches 3:1 on its tint
+   * (Task 152). */
+  --color-zone-green: #17551c;
+  --color-zone-green-tint: #eaf3ea;
+  --color-zone-blue: #1565c0;
+  --color-zone-blue-tint: #e3eef9;
+  --color-zone-yellow: #9a7400;
+  --color-zone-yellow-tint: #fbf3d6;
+  --color-zone-red: #8c1414;
+  --color-zone-red-tint: #f9e6e6;
+  /* Form dots (US-12.1). */
+  --color-form-win: #17551c;
+  --color-form-draw: #545454;
+  --color-form-loss: #8c1414;
+  --color-form-fg: #ffffff;
 
   /* Typography */
   --font-heading: 'Barlow', sans-serif;

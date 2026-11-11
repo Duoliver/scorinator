@@ -101,6 +101,15 @@
   font-weight: 600;
 }
 
+/* The trigram beside each swatch, so the row is symmetric (US-09.6, Task
+ * 157 choice 3). */
+.trigram {
+  color: var(--color-fg-muted);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  font-weight: 400;
+}
+
 .score {
   font-family: var(--font-mono);
   font-weight: 700;
@@ -236,6 +245,15 @@
 
   .homeSwatch {
     order: -1;
+  }
+
+  /* One line for each team: swatch, name, trigram, goals, on both lines. */
+  .awayTrigram {
+    order: 1;
+  }
+
+  .away .goals {
+    order: 2;
   }
 
   .teamName {

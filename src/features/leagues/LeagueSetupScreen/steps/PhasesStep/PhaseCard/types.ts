@@ -1,3 +1,4 @@
+import type { PhaseFieldRanges } from '@/features/leagues/LeagueSetupScreen/phaseChecks';
 import type { BracketPlanRules } from '@/engine/bracket';
 import type { PhasePlan } from '@/engine/phases';
 import type { PhaseList } from '@/features/leagues/LeagueSetupScreen/types';
@@ -21,6 +22,8 @@ export interface PhaseCardView {
    * defaults, whether a third-place tie can exist, and the US-04.9
    * power-of-2 warning. */
   bracket?: { rules: BracketPlanRules; thirdPlaceAllowed: boolean; warning?: string };
+  /** The lowest and highest values of the number fields (Task 191). */
+  ranges: PhaseFieldRanges;
 }
 
 export default interface PhaseCardProps {

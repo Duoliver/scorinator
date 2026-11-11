@@ -341,6 +341,47 @@ describe('LeagueSetupScreen', () => {
       expect(scheduled(league.content.phases[0]).fixtures).toHaveLength(1);
     });
 
+    it('creates the league with the zones of the Phases step (Task 189)', async () => {
+      render(<LeagueSetupScreen />);
+      await userEvent.type(screen.getByLabelText('League name'), 'Coastal Premier');
+      await userEvent.click(screen.getByText('Next: Phases →'));
+      const red = screen.getByRole('group', { name: 'Red zone' });
+      await userEvent.click(within(red).getByRole('switch', { name: 'Red' }));
+      await userEvent.type(within(red).getByLabelText('From'), '2');
+      await userEvent.type(within(red).getByLabelText('To'), '2');
+      await userEvent.click(screen.getByText('Next: Teams →'));
+      await addTwoTeams();
+      await userEvent.click(screen.getByText('Next: Review →'));
+      await userEvent.click(screen.getByText('Create league'));
+
+      const [league] = Object.values(useDatabaseStore.getState().leagues);
+      expect(league.content.plans).toEqual([
+        {
+          format: 'round-robin',
+          legs: 'two-way',
+          zones: [{ colour: 'red', places: { from: 2, to: 2 }, label: '' }],
+        },
+      ]);
+    });
+
+    it('turns "Create league" off for a zone problem, with its text (Task 189)', async () => {
+      render(<LeagueSetupScreen />);
+      await userEvent.type(screen.getByLabelText('League name'), 'Coastal Premier');
+      await userEvent.click(screen.getByText('Next: Phases →'));
+      const blue = screen.getByRole('group', { name: 'Blue zone' });
+      await userEvent.click(within(blue).getByRole('switch', { name: 'Blue' }));
+      await userEvent.click(screen.getByText('Next: Teams →'));
+      await addTwoTeams();
+      await userEvent.click(screen.getByText('Next: Review →'));
+
+      expect(screen.getByRole('button', { name: 'Create league' })).toBeDisabled();
+      expect(
+        screen.getAllByText(
+          'Phase 1: the blue zone needs whole places from 1, with "To" not before "From".'
+        ).length
+      ).toBeGreaterThan(0);
+    });
+
     it('lists each phase on the Review step, and the format chip joins the short names', async () => {
       useLeagueDraftStore.setState({
         plans: [

@@ -1,10 +1,10 @@
 import type { SegmentedOption } from '@/design-system';
-import type { ImportChoice } from '@/engine/identity';
+import { ImportChoice } from '@/engine/identity';
 import type { ImportRow } from '@/app/importFileActions';
 
 export const CHOICE_OPTIONS: SegmentedOption<ImportChoice>[] = [
-  { value: 'skip', label: 'Skip' },
-  { value: 'new', label: 'Import as new' },
+  { value: ImportChoice.SKIP, label: 'Skip' },
+  { value: ImportChoice.NEW, label: 'Import as new' },
 ];
 
 export const TYPE_LABELS: Record<ImportRow['type'], string> = {

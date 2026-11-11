@@ -1,12 +1,13 @@
 import type { BracketTieResult } from '@/engine/bracket';
-import type { GroupBye, Legs, PhasePlan } from '@/engine/phases';
+import type { GroupBye, Legs, PhaseFormat, PhasePlan } from '@/engine/phases';
 import type { Bye, PhaseFixture } from '@/engine/round-robin';
 import type { MatchResult, PointsConfig } from '@/engine/standings';
 import type { Provenance } from './provenance';
 
 /** The format of a started phase (US-01.2). The legs of a round robin or
- * Groups phase say two-way or single duels (Task 176). */
-export type PhaseFormat = 'round-robin' | 'groups' | 'bracket';
+ * Groups phase say two-way or single duels (Task 176). The value set lives
+ * in `engine/phases`, because `domain/` holds types only (Task 184). */
+export type { PhaseFormat };
 
 /** One scorinated match of a phase. `fixtureId` finds its fixture (Task 77):
  * code treats the id as opaque and never parses it. `home` and `away` are
@@ -79,6 +80,7 @@ export type Phase = ScheduledPhase | BracketPhase;
  *   so a league has no slug.
  * - `points` is one points system for the whole league (US-01.1).
  * - `plans` is the whole phase chain, fixed at "Create league" (Task 176).
+ *   Only the zone list of a plan can change later (Task 155 choice 2).
  * - `phases` holds the started phases only, in order. "Create league"
  *   builds phase 1, and each later phase builds at its own start (US-07.3).
  *   The current phase is the last one.

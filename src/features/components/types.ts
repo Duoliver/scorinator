@@ -8,6 +8,12 @@ import type { FileImportDialogsProps } from './FileImportDialogs';
 export interface TeamDisplay {
   name: string;
   colour: string;
+  /** The trigram of the league Instance. Empty for an Instance from an older
+   * file (Task 121). */
+  trigram: string;
+  /** The Location of the Blueprint (US-09.3, Task 157). Empty for no
+   * Location or a deleted Blueprint. */
+  location: string;
 }
 
 /** What `useTeamImport` gives a screen with a team import button. */

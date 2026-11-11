@@ -5,7 +5,8 @@
  */
 
 /** The choice for one conflict in the "Resolve conflicts" dialog. */
-export type ImportChoice = 'skip' | 'new';
+export const ImportChoice = { SKIP: 'skip', NEW: 'new' } as const;
+export type ImportChoice = (typeof ImportChoice)[keyof typeof ImportChoice];
 
 /** What an import does with one incoming item. `new`: its UUID is unknown.
  * `same`: a local item has its UUID and the same content. `conflict`: a
@@ -38,7 +39,7 @@ export function planImport<T extends { uuid: string }>(
 ): ImportStep<T>[] {
   return incoming.map((item) => {
     const local = findLocal(item.uuid);
-    if (local === undefined) return { kind: 'new', incoming: item };
+    if (local === undefined) return { kind: ImportChoice.NEW, incoming: item };
     if (sameContent(item, local)) return { kind: 'same', incoming: item };
     return { kind: 'conflict', incoming: item, local };
   });
@@ -63,7 +64,7 @@ export function resolveImport<T extends { uuid: string }>(
       outcome.counts.imported++;
     } else if (step.kind === 'same') {
       outcome.counts.upToDate++;
-    } else if (choiceOf(step.incoming.uuid) === 'new') {
+    } else if (choiceOf(step.incoming.uuid) === ImportChoice.NEW) {
       outcome.toAdd.push({ item: step.incoming, asNew: true });
       outcome.counts.importedAsNew++;
     } else {

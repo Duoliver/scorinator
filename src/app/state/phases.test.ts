@@ -17,7 +17,7 @@ import {
   canChangeCurrentGroups,
   canStartNextPhase,
   leagueLotOf,
-  phaseQualifierMarks,
+  getPhaseZoneView,
   phaseStandings,
 } from './phases';
 
@@ -175,7 +175,7 @@ describe('canStartNextPhase (Task 128)', () => {
   });
 });
 
-describe('phaseQualifierMarks (Task 132, US-02.2, US-07.2)', () => {
+describe('getPhaseZoneView (Task 155, US-12.5, US-02.2, US-07.2)', () => {
   const TEAMS = ['A', 'B', 'C', 'D', 'E', 'F'].map((name) => ({
     name,
     colour: '#1565C0',
@@ -205,11 +205,52 @@ describe('phaseQualifierMarks (Task 132, US-02.2, US-07.2)', () => {
     };
   }
 
-  it('marks nothing in the last phase', () => {
-    expect(phaseQualifierMarks(roundRobinLeague(TEAMS.slice(0, 4)), 0).size).toBe(0);
+  it('gives no zone and no colour to a last phase with no stored zones', () => {
+    const view = getPhaseZoneView(roundRobinLeague(TEAMS.slice(0, 4)), 0);
+    expect(view.zones).toEqual([]);
+    expect(view.colours.size).toBe(0);
   });
 
-  it('marks the top N rows of a round robin that is not the last', () => {
+  it('gives the free zones of a last phase to the rows of their places', () => {
+    const base = roundRobinLeague(TEAMS.slice(0, 4));
+    const wrapper: LeagueWrapper = {
+      ...base,
+      content: {
+        ...base.content,
+        plans: [
+          {
+            format: 'round-robin',
+            legs: 'two-way',
+            zones: [{ colour: 'red', places: { from: 3, to: 4 }, label: 'Out' }],
+          },
+        ],
+      },
+    };
+    const [table] = phaseStandings(wrapper, 0);
+    const view = getPhaseZoneView(wrapper, 0);
+    expect(view.zones).toEqual([
+      { colour: 'red', from: 3, to: 4, label: 'Out', automatic: false },
+    ]);
+    expect([...view.colours.keys()]).toEqual(table.slice(2).map((row) => row.team));
+    expect([...view.colours.values()]).toEqual(['red', 'red']);
+  });
+
+  it('gives no zone to a bracket phase that has not started', () => {
+    const view = getPhaseZoneView(
+      drawnGroupsLeague(
+        TEAMS,
+        [
+          [1, 2, 3],
+          [4, 5, 6],
+        ],
+        GROUPS_BEST_OF_NEXT
+      ),
+      1
+    );
+    expect(view).toEqual({ zones: [], colours: new Map() });
+  });
+
+  it('colours the top N rows of a round robin that is not the last green', () => {
     const base = roundRobinLeague(TEAMS.slice(0, 4));
     const wrapper: LeagueWrapper = {
       ...base,
@@ -222,12 +263,12 @@ describe('phaseQualifierMarks (Task 132, US-02.2, US-07.2)', () => {
       },
     };
     const [table] = phaseStandings(wrapper, 0);
-    const marks = phaseQualifierMarks(wrapper, 0);
-    expect([...marks.keys()]).toEqual(table.slice(0, 2).map((row) => row.team));
-    expect([...marks.values()]).toEqual(['qualifier', 'qualifier']);
+    const { colours } = getPhaseZoneView(wrapper, 0);
+    expect([...colours.keys()]).toEqual(table.slice(0, 2).map((row) => row.team));
+    expect([...colours.values()]).toEqual(['green', 'green']);
   });
 
-  it('marks the top N of each group, and place N + 1 lighter, during the phase', () => {
+  it('colours the top N of each group green, and place N + 1 yellow, during the phase', () => {
     const wrapper = drawnGroupsLeague(
       TEAMS,
       [
@@ -237,15 +278,15 @@ describe('phaseQualifierMarks (Task 132, US-02.2, US-07.2)', () => {
       GROUPS_BEST_OF_NEXT
     );
     const tables = phaseStandings(wrapper, 0);
-    const marks = phaseQualifierMarks(wrapper, 0);
+    const { colours } = getPhaseZoneView(wrapper, 0);
     for (const table of tables) {
-      expect(marks.get(table[0].team)).toBe('qualifier');
-      expect(marks.get(table[1].team)).toBe('best-of-next');
-      expect(marks.has(table[2].team)).toBe(false);
+      expect(colours.get(table[0].team)).toBe('green');
+      expect(colours.get(table[1].team)).toBe('yellow');
+      expect(colours.has(table[2].team)).toBe(false);
     }
   });
 
-  it('marks the qualifiers of pickQualifiers only, when the phase is complete', () => {
+  it('colours the qualifiers of pickQualifiers only, when the phase is complete', () => {
     const wrapper = playAll(
       drawnGroupsLeague(
         TEAMS,
@@ -261,10 +302,10 @@ describe('phaseQualifierMarks (Task 132, US-02.2, US-07.2)', () => {
       phaseStandings(wrapper, 0),
       leagueLotOf(wrapper)
     );
-    const marks = phaseQualifierMarks(wrapper, 0);
-    expect([...marks.keys()].sort()).toEqual([...qualifiers].sort());
+    const { colours } = getPhaseZoneView(wrapper, 0);
+    expect([...colours.keys()].sort()).toEqual([...qualifiers].sort());
     expect(qualifiers).toHaveLength(3);
-    expect([...marks.values()].every((mark) => mark === 'qualifier')).toBe(true);
+    expect([...colours.values()].every((colour) => colour === 'green')).toBe(true);
   });
 });
 

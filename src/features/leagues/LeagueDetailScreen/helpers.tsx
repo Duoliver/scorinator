@@ -1,5 +1,6 @@
 import type { JSX } from 'preact';
 import { BracketView, SeedList } from '@/features/bracket';
+import { PositionChart } from '@/features/chart';
 import { Button, Tabs, type DropdownMenuItem, type TabItem } from '@/design-system';
 import { exportLeague, exportResults, exportSlugList } from '@/app/exportActions';
 import type { LeagueWrapper } from '@/domain';
@@ -8,6 +9,7 @@ import { GroupCards } from '@/features/leagues/GroupCards';
 import { formatAdvanceText, phaseShortName } from '@/features/leagues/leagueSummary';
 import { StandingsView } from '@/features/standings';
 import styles from './LeagueDetailScreen.module.css';
+import { PhaseFormat } from '@/engine/phases';
 
 /** Keeps the visible matchday of each phase, from 0, across tab switches:
  * `Tabs` unmounts an inactive tab. */
@@ -51,6 +53,18 @@ const StartButton = ({ start }: { start: PhaseStart }): JSX.Element => (
   </Button>
 );
 
+/** "Edit zones" of one round-robin or Groups phase (US-12.5, Task 189). */
+const EditZonesButton = ({ onClick }: { onClick: () => void }): JSX.Element => (
+  <Button variant="secondary" size="sm" onClick={onClick}>
+    Edit zones
+  </Button>
+);
+
+/** "Edit zones" at the end of the top tab row of a one-phase league. */
+export const renderEditZonesButton = (onClick: () => void): JSX.Element => (
+  <EditZonesButton onClick={onClick} />
+);
+
 const ShuffleButton = ({ draw }: { draw: GroupsDraw }): JSX.Element => (
   <Button variant="secondary" size="sm" onClick={draw.onShuffle}>
     ⟲ Shuffle groups
@@ -78,8 +92,9 @@ const DrawEditor = ({
   </div>
 );
 
-/** Standings and Fixtures of one started phase, matching the design
- * reference: scorination is a button inside Fixtures, not its own tab. Both
+/** Standings, Fixtures, and Chart (Task 156) of one started phase, matching
+ * the design reference: scorination is a button inside Fixtures, not its
+ * own tab. Both
  * views read the same `league` wrapper, so a scorinate in Fixtures shows up
  * in Standings on the next tab switch. With a `draw`, the Standings tab
  * shows the draw cards in place of the tables (Task 181). A bracket phase
@@ -90,7 +105,7 @@ export const getLeagueTabs = (
   memory: MatchdayMemory,
   draw?: GroupsDraw
 ): TabItem[] =>
-  league.content.phases[phaseIndex]?.format === 'bracket'
+  league.content.phases[phaseIndex]?.format === PhaseFormat.BRACKET
     ? [
         {
           id: 'bracket',
@@ -108,7 +123,9 @@ export const getLeagueTabs = (
 /** The first sub-tab of a started phase: "Bracket" for a bracket, and
  * "Standings" for the others (Task 141). */
 export const firstLeagueTab = (league: LeagueWrapper, phaseIndex: number): string =>
-  league.content.phases[phaseIndex]?.format === 'bracket' ? 'bracket' : 'standings';
+  league.content.phases[phaseIndex]?.format === PhaseFormat.BRACKET
+    ? 'bracket'
+    : 'standings';
 
 const getScheduledTabs = (
   league: LeagueWrapper,
@@ -141,6 +158,11 @@ const getScheduledTabs = (
       />
     ),
   },
+  {
+    id: 'chart',
+    label: 'Chart',
+    content: <PositionChart league={league} phaseIndex={phaseIndex} />,
+  },
 ];
 
 /** One tab for each planned phase (US-01.2): "1 · Group Stage". A started
@@ -148,19 +170,25 @@ const getScheduledTabs = (
  * switch between phases mounts fresh views. The current phase has the
  * Start button of the next phase at the end of that row, when it can start
  * (Task 132 choice 2), or "⟲ Shuffle groups" while its draw can change
- * (Task 181 choice 2). A phase not started yet holds the US-07.3 line
- * (Task 132 choice 6). */
+ * (Task 181 choice 2). A round-robin or Groups phase also has "Edit zones"
+ * (Task 189 choice 6). A phase not started yet holds the US-07.3 line
+ * (Task 132 choice 6), and its "Edit zones" under it. */
 export const getPhaseTabs = (
   league: LeagueWrapper,
   memory: MatchdayMemory,
   start: PhaseStart | undefined,
-  draw: GroupsDraw | undefined
+  draw: GroupsDraw | undefined,
+  onEditZones: (phaseIndex: number) => void
 ): TabItem[] =>
   league.content.plans.map((plan, index) => {
     const number = index + 1;
     const started = index < league.content.phases.length;
     const isCurrent = index === league.content.phases.length - 1;
     const currentDraw = isCurrent ? draw : undefined;
+    const editZones =
+      plan.format === PhaseFormat.BRACKET ? undefined : (
+        <EditZonesButton onClick={() => onEditZones(index)} />
+      );
     let actions: JSX.Element | undefined;
     if (isCurrent && start) actions = <StartButton start={start} />;
     else if (currentDraw) actions = <ShuffleButton draw={currentDraw} />;
@@ -172,12 +200,22 @@ export const getPhaseTabs = (
           key={phaseTabId(index)}
           tabs={getLeagueTabs(league, index, memory, currentDraw)}
           defaultTab={firstLeagueTab(league, index)}
-          actions={actions}
+          actions={
+            (editZones || actions) && (
+              <div class={styles.tabActions}>
+                {editZones}
+                {actions}
+              </div>
+            )
+          }
         />
       ) : (
-        <p class={styles.note}>
-          This phase starts when phase {number - 1} is complete.
-        </p>
+        <div class={styles.notStarted}>
+          <p class={styles.note}>
+            This phase starts when phase {number - 1} is complete.
+          </p>
+          {editZones}
+        </div>
       ),
     };
   });

@@ -1,11 +1,19 @@
 import type { MatchScore } from '@/engine/scorination';
 
 /** The tie format of a bracket phase (US-04.1). */
-export type TieFormat = 'single-match' | 'two-legged';
+export const TieFormat = {
+  SINGLE_MATCH: 'single-match',
+  TWO_LEGGED: 'two-legged',
+} as const;
+export type TieFormat = (typeof TieFormat)[keyof typeof TieFormat];
 
 /** What decides a tie that is still level after AET, or without AET
  * (US-03.2). A replay that stays level goes to the coin toss. */
-export type TiebreakMethod = 'penalties' | 'replay-coin-toss';
+export const TiebreakMethod = {
+  PENALTIES: 'penalties',
+  REPLAY_COIN_TOSS: 'replay-coin-toss',
+} as const;
+export type TiebreakMethod = (typeof TiebreakMethod)[keyof typeof TiebreakMethod];
 
 /**
  * The rules of one tie. Task 140 stores the first four in the bracket plan.
@@ -29,7 +37,8 @@ export interface TieTeam<TeamId> {
 
 /** The part of a tie a match plays. It is the last part of the fixture id
  * (Task 77), for example `p3.r2.t1.leg2`. */
-export type TieMatchPart = 'leg1' | 'leg2' | 'replay';
+export const TieMatchPart = { LEG1: 'leg1', LEG2: 'leg2', REPLAY: 'replay' } as const;
+export type TieMatchPart = (typeof TieMatchPart)[keyof typeof TieMatchPart];
 
 /**
  * One match of a tie. `score` is the score after 90 minutes. `aet` holds the
@@ -47,11 +56,19 @@ export interface TieMatch<TeamId> {
 /** The step that gave the tie its winner. `regulation` is the 90-minute
  * score of a single match, or the aggregate of two legs. `replay` includes
  * the AET of the replay. */
-export type TieDecision =
-  'regulation' | 'away-goals' | 'aet' | 'penalties' | 'replay' | 'coin-toss';
+export const TieDecision = {
+  REGULATION: 'regulation',
+  AWAY_GOALS: 'away-goals',
+  AET: 'aet',
+  PENALTIES: 'penalties',
+  REPLAY: 'replay',
+  COIN_TOSS: 'coin-toss',
+} as const;
+export type TieDecision = (typeof TieDecision)[keyof typeof TieDecision];
 
 /** The side of a match that wins a coin toss. */
-export type CoinSide = 'home' | 'away';
+export const CoinSide = { HOME: 'home', AWAY: 'away' } as const;
+export type CoinSide = (typeof CoinSide)[keyof typeof CoinSide];
 
 /**
  * A played tie. The matches are in play order. `penalties` is the shootout

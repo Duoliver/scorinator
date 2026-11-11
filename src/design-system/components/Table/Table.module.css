@@ -31,13 +31,27 @@
   border-bottom: none;
 }
 
-/* The row tints of `rowTone` (Task 132). */
-.row[data-tone='positive'] {
-  background: var(--color-row-positive);
+/* The zone tones of `rowTone` (Task 155, US-12.5): a tint, and a stripe on
+ * the left side. The stripe is an inset shadow, so it takes no width and
+ * the columns do not move (choice 6). */
+.row[data-tone='green'] {
+  background: var(--color-zone-green-tint);
+  box-shadow: inset var(--border-width-heavy) 0 0 var(--color-zone-green);
 }
 
-.row[data-tone='caution'] {
-  background: var(--color-row-caution);
+.row[data-tone='blue'] {
+  background: var(--color-zone-blue-tint);
+  box-shadow: inset var(--border-width-heavy) 0 0 var(--color-zone-blue);
+}
+
+.row[data-tone='yellow'] {
+  background: var(--color-zone-yellow-tint);
+  box-shadow: inset var(--border-width-heavy) 0 0 var(--color-zone-yellow);
+}
+
+.row[data-tone='red'] {
+  background: var(--color-zone-red-tint);
+  box-shadow: inset var(--border-width-heavy) 0 0 var(--color-zone-red);
 }
 
 .alignLeft {

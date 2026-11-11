@@ -6,7 +6,7 @@ import {
   uniqueSlug,
   type TrigramListProblem,
 } from '@/engine/identity';
-import { TIER_ORDER, type Tier } from '@/engine/tier-ovr';
+import { TIER_ORDER, Tier } from '@/engine/tier-ovr';
 
 export const TIER_OPTIONS: SelectOption[] = TIER_ORDER.map((tier) => ({
   label: tier,
@@ -18,7 +18,7 @@ export const COLOUR_OPTIONS: SwatchOption[] = TEAM_PALETTE.map(({ name, hex }) =
   value: hex,
 }));
 
-export const DEFAULT_TIER: Tier = 'C';
+export const DEFAULT_TIER: Tier = Tier.C;
 
 export const TEAM_NAME_INVALID =
   'Enter a team name with at least one letter or number.';

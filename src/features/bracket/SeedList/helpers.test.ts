@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { StandingsRow } from '@/engine/standings';
+import type { TeamDisplay } from '@/features/components';
 import {
   BYE_HELP_TEXT,
   buildSeedRows,
@@ -11,9 +12,11 @@ import {
 
 const rowsOf = (...teams: string[]): StandingsRow<string>[] =>
   teams.map((team) => ({ team }) as StandingsRow<string>);
-const lookup = (id: string): { name: string; colour: string } => ({
+const lookup = (id: string): TeamDisplay => ({
   name: id.toUpperCase(),
   colour: '#000000',
+  trigram: '',
+  location: '',
 });
 
 describe('ordinal', () => {

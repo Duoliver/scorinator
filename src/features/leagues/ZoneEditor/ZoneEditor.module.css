@@ -1,0 +1,74 @@
+.editor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* One colour row: the swatch, the name or switch, and the fields. The
+ * fields wrap under the name in a narrow card. */
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3);
+}
+
+.swatch {
+  align-self: center;
+  width: var(--space-4);
+  height: var(--space-4);
+  flex-shrink: 0;
+  border: var(--border-width) solid var(--color-fg);
+}
+
+.swatch[data-zone='green'] {
+  background: var(--color-zone-green);
+}
+
+.swatch[data-zone='blue'] {
+  background: var(--color-zone-blue);
+}
+
+.swatch[data-zone='yellow'] {
+  background: var(--color-zone-yellow);
+}
+
+.swatch[data-zone='red'] {
+  background: var(--color-zone-red);
+}
+
+/* The same width for each name, so the fields line up. */
+.name {
+  display: flex;
+  flex-direction: column;
+  align-self: center;
+  gap: var(--space-1);
+  min-width: 10rem;
+}
+
+.places {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  color: var(--color-fg-muted);
+}
+
+.fields {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3);
+}
+
+.place {
+  width: 5rem;
+}
+
+.label {
+  width: 15rem;
+}
+
+.problem {
+  margin: 0;
+  font-size: var(--font-size-md);
+  color: var(--color-error);
+}

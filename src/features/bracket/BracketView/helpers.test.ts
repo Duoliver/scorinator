@@ -1,3 +1,4 @@
+import type { TeamDisplay } from '@/features/components';
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_BRACKET_RULES, type PhasePlan } from '@/engine/phases';
 import type {
@@ -14,9 +15,11 @@ import {
 } from './helpers';
 
 const RULES: BracketRules = { ...DEFAULT_BRACKET_RULES, homeAdvantage: false };
-const lookup = (id: string): { name: string; colour: string } => ({
+const lookup = (id: string): TeamDisplay => ({
   name: id.toUpperCase(),
   colour: `#${id}`,
+  trigram: '',
+  location: '',
 });
 
 describe('describeMethod (Task 141 choice 7)', () => {
@@ -156,7 +159,8 @@ describe('buildTieCard (US-04.8, US-04.7, US-04.11)', () => {
       [['2', '1'], true],
       [['1', '0'], false],
     ]);
-    expect(card.footer).toBe('Agg 3–1');
+    expect(card.aggregate).toBe('3–1');
+    expect(card.footer).toBe('');
     expect(card.hasResult).toBe(true);
     expect(card.canScorinate).toBe(true);
   });
@@ -189,7 +193,8 @@ describe('buildTieCard (US-04.8, US-04.7, US-04.11)', () => {
       ['0', '2*'],
       ['1', '1*'],
     ]);
-    expect(card.footer).toBe('Agg 2–2 · Pens 4-5');
+    expect(card.aggregate).toBe('2–2');
+    expect(card.footer).toBe('Pens 4-5');
     expect(card.rows[1].isWinner).toBe(true);
   });
 
@@ -244,9 +249,9 @@ describe('buildTieCard (US-04.8, US-04.7, US-04.11)', () => {
       loserId: 'b',
       decidedBy: 'away-goals',
     };
-    expect(buildTieCard(tie(), sides, result, twoLegs, lookup, false).footer).toBe(
-      'Agg 1–1 · Away goals'
-    );
+    const card = buildTieCard(tie(), sides, result, twoLegs, lookup, false);
+    expect(card.aggregate).toBe('1–1');
+    expect(card.footer).toBe('Away goals');
   });
 
   it('a TBD side shows "TBD" in grey, and the tie cannot play', () => {

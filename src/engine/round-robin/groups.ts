@@ -1,5 +1,5 @@
 import type { Rng } from '@/engine/rng';
-import type { GroupSetting } from './types';
+import { type GroupSetting, GroupBy } from './types';
 
 /**
  * The group count of a Groups phase (US-02.1). Count mode gives the count.
@@ -11,7 +11,7 @@ import type { GroupSetting } from './types';
  */
 export function groupCountFor(teamCount: number, setting: GroupSetting): number {
   assertWhole('groupCountFor', 'team count', teamCount, 0);
-  if (setting.by === 'count') {
+  if (setting.by === GroupBy.COUNT) {
     assertWhole('groupCountFor', 'group count', setting.count, 2);
     return setting.count;
   }

@@ -3,7 +3,7 @@ import {
   type BracketRules,
   type BracketTree,
 } from '@/engine/bracket';
-import { bracketRulesOf } from '@/engine/phases';
+import { bracketRulesOf, PhaseFormat } from '@/engine/phases';
 import type { BracketPhase, LeagueWrapper } from '@/domain';
 
 function findBracket(
@@ -13,7 +13,7 @@ function findBracket(
   const { phases, plans, homeAdvantage } = wrapper.content;
   const phase = phases[phaseIndex];
   const plan = plans[phaseIndex];
-  if (phase?.format !== 'bracket' || plan?.format !== 'bracket') {
+  if (phase?.format !== PhaseFormat.BRACKET || plan?.format !== PhaseFormat.BRACKET) {
     throw new RangeError(
       `Phase ${phaseIndex + 1} of the league is not a started bracket.`
     );
@@ -57,7 +57,7 @@ function groupsBefore(
   phaseIndex: number
 ): Map<string, number> | undefined {
   const before = wrapper.content.phases[phaseIndex - 1];
-  if (before?.format !== 'groups') return undefined;
+  if (before?.format !== PhaseFormat.GROUPS) return undefined;
   return new Map(
     before.groups.flatMap((members, group) =>
       members.map((team): [string, number] => [team, group])

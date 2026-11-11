@@ -1,5 +1,5 @@
 import type { BracketTieResult } from '@/engine/bracket';
-import type { GroupBye, Legs, PhasePlan } from '@/engine/phases';
+import type { GroupBye, Legs, PhaseFormat, PhasePlan } from '@/engine/phases';
 import type { Bye, PhaseFixture } from '@/engine/round-robin';
 import type { MatchResult, PointsConfig } from '@/engine/standings';
 import type { Tier } from '@/engine/tier-ovr';
@@ -15,6 +15,7 @@ import type { Tier } from '@/engine/tier-ovr';
  * change that an older parser cannot read raises it. Version 3 (Task 176)
  * adds the phase plans, the legs, and the Groups phase. Version 4 (Task 139)
  * adds the bracket phase, the bracket plan rules, and the bracket progress.
+ * Task 155 adds an optional zone list to a plan, with no version change.
  * The parsers also read versions 2 and 3, with defaults. */
 export const DATABASE_FORMAT_VERSION = 4;
 
@@ -36,7 +37,7 @@ export interface SavedBlueprint extends SavedProvenance {
   trigrams: string[];
 }
 
-export type SavedPhaseFormat = 'round-robin' | 'groups';
+export type SavedPhaseFormat = Exclude<PhaseFormat, 'bracket'>;
 
 /** The phase plan of the `engine/phases` type (Task 126): the format, the
  * legs, the group setting, and the advancement. */
@@ -171,4 +172,10 @@ export interface SavedBlueprintFile {
 }
 
 /** The `kind` of each MVP2 file. */
-export type SavedFileKind = 'manifest' | 'wrapper' | 'leagues' | 'blueprints';
+export const SavedFileKind = {
+  MANIFEST: 'manifest',
+  WRAPPER: 'wrapper',
+  LEAGUES: 'leagues',
+  BLUEPRINTS: 'blueprints',
+} as const;
+export type SavedFileKind = (typeof SavedFileKind)[keyof typeof SavedFileKind];

@@ -13,6 +13,8 @@ export default interface BracketViewProps {
 export interface TieCardRow {
   key: string;
   name: string;
+  /** The Location of the Blueprint, for the hint (US-09.3), or `''`. */
+  location: string;
   colour: string;
   isTbd: boolean;
   isWinner: boolean;
@@ -27,7 +29,10 @@ export interface TieCardModel {
   isBye: boolean;
   rows: [TieCardRow, TieCardRow];
   columns: string[];
+  /** The tag of the decision, "Not played", or empty. */
   footer: string;
+  /** The aggregate of two legs, for example "3–1", or `null`. */
+  aggregate: string | null;
   hasResult: boolean;
   canScorinate: boolean;
 }

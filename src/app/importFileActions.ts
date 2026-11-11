@@ -15,6 +15,7 @@ import {
 } from '@/app/state/importActions';
 import type { ImportChoice, ImportCounts, ImportStep } from '@/engine/identity';
 import type { LeagueWrapper, TeamBlueprint } from '@/domain';
+import { SavedFileKind } from '@/adapters/json-io';
 
 /**
  * The imports of the File module (US-10.3, US-10.4, US-11.2, Task 149). An
@@ -58,7 +59,7 @@ export function planLeagueFileImport(): Promise<PendingFileImport | null> {
     const file = await openLeagueImportFile();
     if (file === null) return null;
     return {
-      kind: 'leagues',
+      kind: SavedFileKind.LEAGUES,
       steps: await planLeagueImport(file.leagues),
       embedded: file.blueprints,
     };
@@ -70,7 +71,7 @@ export function planBlueprintFileImport(): Promise<PendingFileImport | null> {
   return runPlan(async () => {
     const blueprints = await openBlueprintImportFile();
     if (blueprints === null) return null;
-    return { kind: 'blueprints', steps: planBlueprintImport(blueprints) };
+    return { kind: SavedFileKind.BLUEPRINTS, steps: planBlueprintImport(blueprints) };
   });
 }
 

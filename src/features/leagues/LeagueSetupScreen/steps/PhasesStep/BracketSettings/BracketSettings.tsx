@@ -1,19 +1,19 @@
 import type { JSX } from 'preact';
 import { SegmentedControl, Switch } from '@/design-system';
-import type { TieFormat, TiebreakMethod } from '@/engine/tiebreak';
+import { TieFormat, TiebreakMethod } from '@/engine/tiebreak';
 import type BracketSettingsProps from './types';
 import styles from './BracketSettings.module.css';
 
 export type { BracketSettingsProps };
 
 const METHOD_OPTIONS: { value: TiebreakMethod; label: string }[] = [
-  { value: 'penalties', label: 'Penalties' },
-  { value: 'replay-coin-toss', label: 'Replay → Coin toss' },
+  { value: TiebreakMethod.PENALTIES, label: 'Penalties' },
+  { value: TiebreakMethod.REPLAY_COIN_TOSS, label: 'Replay → Coin toss' },
 ];
 
 const FORMAT_OPTIONS: { value: TieFormat; label: string }[] = [
-  { value: 'single-match', label: 'Single match' },
-  { value: 'two-legged', label: 'Two-legged' },
+  { value: TieFormat.SINGLE_MATCH, label: 'Single match' },
+  { value: TieFormat.TWO_LEGGED, label: 'Two-legged' },
 ];
 
 /**
@@ -31,7 +31,7 @@ export function BracketSettings({
   const { rules, thirdPlaceAllowed, warning } = bracket;
   const set = (change: Parameters<typeof phaseList.setBracketRules>[1]): void =>
     phaseList.setBracketRules(index, change);
-  const twoLegged = rules.format === 'two-legged';
+  const twoLegged = rules.format === TieFormat.TWO_LEGGED;
 
   return (
     <div class={styles.settings}>

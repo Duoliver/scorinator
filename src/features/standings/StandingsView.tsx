@@ -1,6 +1,7 @@
 import type { JSX } from 'preact';
 import { Table } from '@/design-system';
 import type StandingsViewProps from './types';
+import { ZoneLegend } from '@/features/components';
 import { COLUMNS, GROUP_COLUMNS, rowKey, rowTone } from './helpers';
 import { useStandings } from './useStandings';
 import styles from './StandingsView.module.css';
@@ -9,7 +10,7 @@ export type { StandingsViewProps };
 
 /** The tables of one phase of one league: the league table of a round
  * robin, or one card for each group of a Groups phase (Task 131), with the
- * qualifier tints and the advancement line (Task 132).
+ * zones and their legend (Task 155) and the advancement line (Task 132).
  * `useStandings` gives the rows, and `helpers.tsx` holds the static column
  * setup. */
 export function StandingsView({
@@ -17,7 +18,10 @@ export function StandingsView({
   phaseIndex,
   advanceText,
 }: StandingsViewProps): JSX.Element {
-  const { isGroups, tables, hasTeams, hasResults } = useStandings(league, phaseIndex);
+  const { isGroups, tables, zones, hasTeams, hasResults } = useStandings(
+    league,
+    phaseIndex
+  );
 
   if (!hasTeams) {
     return <p class={styles.note}>No teams in this league yet.</p>;
@@ -57,6 +61,7 @@ export function StandingsView({
           </div>
         </div>
       )}
+      <ZoneLegend zones={zones} />
       {advanceText && <p class={styles.note}>{advanceText}</p>}
       {!hasResults && <p class={styles.note}>No matches played yet.</p>}
     </div>

@@ -34,3 +34,7 @@ export interface FixturePosition {
  * maximum, or by the group count. */
 export type GroupSetting =
   { by: 'size'; size: number } | { by: 'count'; count: number };
+
+/** The `by` of a `GroupSetting` (Task 184). */
+export const GroupBy = { SIZE: 'size', COUNT: 'count' } as const;
+export type GroupBy = (typeof GroupBy)[keyof typeof GroupBy];

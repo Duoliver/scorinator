@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { render, screen, within } from '@testing-library/preact';
+import userEvent from '@testing-library/user-event';
 import { Table, type TableColumn } from './Table';
 
 interface StandingsRow {
@@ -114,18 +115,47 @@ describe('Table', () => {
     expect(screen.getByRole('table').className).not.toBe(defaultClass);
   });
 
-  it('gives each row the tone of rowTone, and no tone for undefined (Task 132)', () => {
+  it('gives each row the zone tone of rowTone, and no tone for undefined (Task 155)', () => {
     render(
       <Table
         label="Standings"
         columns={columns}
         rows={rows}
         rowKey={(r) => r.id}
-        rowTone={(r) => (r.pos === 1 ? 'positive' : undefined)}
+        rowTone={(r) => (r.pos === 1 ? 'blue' : undefined)}
       />
     );
     const [, first, second] = screen.getAllByRole('row');
-    expect(first).toHaveAttribute('data-tone', 'positive');
+    expect(first).toHaveAttribute('data-tone', 'blue');
     expect(second).not.toHaveAttribute('data-tone');
+  });
+
+  describe('a header hint (US-12.3, Task 154)', () => {
+    const hinted: TableColumn<{ id: string }>[] = [
+      { key: 'id', header: 'P', headerHint: 'Played' },
+      { key: 'other', header: 'Plain' },
+    ];
+    const renderHinted = (): void => {
+      render(<Table label="T" columns={hinted} rows={[]} rowKey={(row) => row.id} />);
+    };
+
+    it('names the header with its full name for a screen reader', () => {
+      renderHinted();
+      expect(screen.getByRole('columnheader', { name: 'Played' })).toHaveTextContent(
+        'P'
+      );
+    });
+
+    it('shows the full name on hover', async () => {
+      renderHinted();
+      await userEvent.hover(screen.getByText('P'));
+      expect(await screen.findByRole('tooltip')).toHaveTextContent('Played');
+    });
+
+    it('underlines only a header with a hint, and makes it a Tab stop', () => {
+      renderHinted();
+      expect(screen.getByText('P')).toHaveAttribute('tabindex', '0');
+      expect(screen.getByText('Plain')).not.toHaveAttribute('tabindex');
+    });
   });
 });

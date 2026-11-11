@@ -47,5 +47,7 @@ export function usePhaseList(initialPlans: readonly PhasePlan[]): PhaseList {
       change((current) => edits.setBestOfNext(current, index, bestOfNext)),
     setBracketRules: (index, rules) =>
       change((current) => edits.setBracketRules(current, index, rules)),
+    setZones: (index, zones) =>
+      change((current) => edits.setPhaseZones(current, index, zones)),
   };
 }

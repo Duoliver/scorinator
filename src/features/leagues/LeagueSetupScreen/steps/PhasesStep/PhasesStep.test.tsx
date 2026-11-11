@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { JSX } from 'preact';
-import { render, screen, within } from '@testing-library/preact';
+import { fireEvent, render, screen, within } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import type { PhasePlan } from '@/engine/phases';
 import { usePhaseList } from '@/features/leagues/LeagueSetupScreen/usePhaseList';
@@ -71,7 +71,7 @@ describe('PhasesStep', () => {
     render(<Harness />);
     await addPhase();
     expect(screen.getAllByRole('region', { name: /^Phase \d+$/ })).toHaveLength(2);
-    expect(within(card(1)).getByLabelText('Top')).toHaveValue('2');
+    expect(within(card(1)).getByLabelText('Top')).toHaveValue(2);
     expect(within(card(1)).getByText('advance to the next phase')).toBeInTheDocument();
     expect(within(card(2)).queryByLabelText('Top')).not.toBeInTheDocument();
   });
@@ -114,15 +114,15 @@ describe('PhasesStep', () => {
       within(card(1)).getByRole('heading', { name: 'Group Stage' })
     ).toBeInTheDocument();
     expect(within(card(1)).getByLabelText('Set by')).toHaveValue('size');
-    expect(within(card(1)).getByLabelText('Group size')).toHaveValue('4');
+    expect(within(card(1)).getByLabelText('Group size')).toHaveValue(4);
     expect(within(card(1)).getByText('advance per group')).toBeInTheDocument();
-    expect(within(card(1)).getByLabelText('Best of place 3')).toHaveValue('0');
+    expect(within(card(1)).getByLabelText('Best of place 3')).toHaveValue(0);
   });
 
   it('switches Set by to Group count, with count 2', async () => {
     render(<Harness initial={groupsThenBracket} />);
     await userEvent.selectOptions(within(card(1)).getByLabelText('Set by'), 'count');
-    expect(within(card(1)).getByLabelText('Group count')).toHaveValue('2');
+    expect(within(card(1)).getByLabelText('Group count')).toHaveValue(2);
     expect(plans()[0]).toMatchObject({ grouping: { by: 'count', count: 2 } });
   });
 
@@ -197,7 +197,7 @@ describe('PhasesStep', () => {
     await userEvent.click(
       within(card(2)).getByRole('button', { name: 'Move phase 2 up' })
     );
-    expect(within(card(1)).getByLabelText('Group size')).toHaveValue('6');
+    expect(within(card(1)).getByLabelText('Group size')).toHaveValue(6);
     expect(within(card(2)).getByLabelText('Format')).toHaveValue('rr2');
   });
 
@@ -247,7 +247,7 @@ describe('PhasesStep', () => {
         within(card(1)).getByRole('button', { name: 'Use best 4' })
       );
       expect(plans()[0]).toMatchObject({ advance: { top: 2, bestOfNext: 4 } });
-      expect(within(card(1)).getByLabelText('Best of place 3')).toHaveValue('4');
+      expect(within(card(1)).getByLabelText('Best of place 3')).toHaveValue(4);
       expect(
         within(card(1)).getByText(
           '6 groups × top 2 + best 4 of place 3 = 16 teams go to phase 2'
@@ -406,5 +406,125 @@ describe('the Bracket card settings (Task 140)', () => {
   it('a round-robin card shows no bracket settings', () => {
     render(<Harness teamCount={8} />);
     expect(within(card(1)).queryByRole('switch', { name: 'Plays AET' })).toBeNull();
+  });
+});
+
+describe('PhasesStep: the Zones section (Task 189, US-12.5)', () => {
+  const zones = (phase: number): HTMLElement =>
+    within(card(phase)).getByRole('region', { name: 'Zones' });
+  const zoneRow = (phase: number, name: string): HTMLElement =>
+    within(zones(phase)).getByRole('group', { name: `${name} zone` });
+
+  it('shows a Zones section on a round-robin and a Groups card, and none on a Bracket', () => {
+    render(<Harness initial={groupsThenBracket} />);
+    expect(zones(1)).toBeInTheDocument();
+    expect(within(card(2)).queryByRole('region', { name: 'Zones' })).toBeNull();
+  });
+
+  it('puts the zones of the section in the plan', async () => {
+    render(<Harness />);
+    await userEvent.click(
+      within(zoneRow(1, 'Red')).getByRole('switch', { name: 'Red' })
+    );
+    await userEvent.type(within(zoneRow(1, 'Red')).getByLabelText('From'), '3');
+    await userEvent.type(within(zoneRow(1, 'Red')).getByLabelText('To'), '4');
+    expect(plans()[0]).toMatchObject({
+      zones: [{ colour: 'red', places: { from: 3, to: 4 }, label: '' }],
+    });
+  });
+
+  it('makes yellow automatic when a best M is set, and drops the free yellow zone', async () => {
+    render(<Harness initial={groupsThenBracket} teamCount={8} />);
+    await userEvent.click(
+      within(zoneRow(1, 'Yellow')).getByRole('switch', { name: 'Yellow' })
+    );
+    await userEvent.type(within(zoneRow(1, 'Yellow')).getByLabelText('From'), '3');
+    await userEvent.type(within(zoneRow(1, 'Yellow')).getByLabelText('To'), '3');
+    const best = within(card(1)).getByLabelText('Best of place 3');
+    await userEvent.clear(best);
+    await userEvent.type(best, '2');
+    expect(
+      within(zoneRow(1, 'Yellow')).getByText('Place 3 · from the advancement')
+    ).toBeInTheDocument();
+    expect(plans()[0]).toMatchObject({ zones: [] });
+  });
+
+  it('shows a zone problem once, in the Zones section', async () => {
+    render(<Harness />);
+    await userEvent.click(
+      within(zoneRow(1, 'Blue')).getByRole('switch', { name: 'Blue' })
+    );
+    const text =
+      'The blue zone needs whole places from 1, with "To" not before "From".';
+    expect(screen.getAllByText(text)).toHaveLength(1);
+    expect(within(zones(1)).getByText(text)).toBeInTheDocument();
+  });
+});
+
+describe('PhasesStep: number fields (Task 191)', () => {
+  const rrThenBracket: PhasePlan[] = [
+    { format: 'round-robin', legs: 'two-way', advance: { top: 2 } },
+    { format: 'bracket' },
+  ];
+  /** What the browser does on the Up arrow of a number field. */
+  const pressUp = (field: HTMLElement): void => {
+    (field as HTMLInputElement).stepUp();
+    fireEvent.input(field);
+  };
+
+  it('makes Top a number field from 1 to the team count less 1', () => {
+    render(<Harness initial={rrThenBracket} teamCount={8} />);
+    const top = within(card(1)).getByLabelText('Top');
+    expect(top).toHaveAttribute('type', 'number');
+    expect(top).toHaveAttribute('min', '1');
+    expect(top).toHaveAttribute('max', '7');
+  });
+
+  it('gives Top a lowest value only while the team count is not known', () => {
+    render(<Harness initial={rrThenBracket} />);
+    const top = within(card(1)).getByLabelText('Top');
+    expect(top).toHaveAttribute('min', '1');
+    expect(top).not.toHaveAttribute('max');
+  });
+
+  it('changes the plan on the Up arrow of Top', () => {
+    render(<Harness initial={rrThenBracket} teamCount={8} />);
+    pressUp(within(card(1)).getByLabelText('Top'));
+    expect(plans()[0]).toMatchObject({ advance: { top: 3 } });
+  });
+
+  it('makes the group size and the best M number fields with their ranges', () => {
+    render(
+      <Harness
+        initial={[
+          {
+            format: 'groups',
+            legs: 'two-way',
+            grouping: { by: 'size', size: 4 },
+            advance: { top: 1, bestOfNext: 0 },
+          },
+          { format: 'bracket' },
+        ]}
+        teamCount={10}
+      />
+    );
+    const size = within(card(1)).getByLabelText('Group size');
+    expect(size).toHaveAttribute('type', 'number');
+    expect(size).toHaveAttribute('min', '2');
+    expect(size).toHaveAttribute('max', '10');
+    const best = within(card(1)).getByLabelText('Best of place 2');
+    expect(best).toHaveAttribute('type', 'number');
+    expect(best).toHaveAttribute('min', '0');
+    expect(best).toHaveAttribute('max', '2');
+    pressUp(best);
+    expect(plans()[0]).toMatchObject({ advance: { bestOfNext: 1 } });
+  });
+
+  it('still shows the problem of an empty field', async () => {
+    render(<Harness initial={rrThenBracket} teamCount={8} />);
+    await userEvent.clear(within(card(1)).getByLabelText('Top'));
+    expect(
+      within(card(1)).getByText('Phase 1: Top must be a whole number from 1 to 7.')
+    ).toBeInTheDocument();
   });
 });

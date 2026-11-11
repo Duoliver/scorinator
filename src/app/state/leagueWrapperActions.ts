@@ -3,9 +3,13 @@ import {
   buildPhase,
   checkPhaseChain,
   checkPhaseFit,
+  checkZones,
   pickQualifiers,
   type BuiltPhase,
   type PhasePlan,
+  type PlanZone,
+  PhaseFormat,
+  Legs,
 } from '@/engine/phases';
 import { createSeededRng } from '@/engine/rng';
 import {
@@ -60,13 +64,13 @@ export interface CreateLeagueInput {
 }
 
 const DEFAULT_PLANS: readonly PhasePlan[] = [
-  { format: 'round-robin', legs: 'two-way' },
+  { format: PhaseFormat.ROUND_ROBIN, legs: Legs.TWO_WAY },
 ];
 
 /** A built phase of the engine, as a domain phase with no results yet. A
  * bracket starts with the Task 185 rule on. */
 function startedPhase(built: BuiltPhase<string>): Phase {
-  if (built.format === 'bracket')
+  if (built.format === PhaseFormat.BRACKET)
     return { ...built, results: [], avoidGroupTies: true };
   return { ...built, results: [] };
 }
@@ -156,7 +160,7 @@ export function createLeague(
   const uuids = teams.map((team) => team.blueprintUuid);
   const plans = input.plans ?? DEFAULT_PLANS;
   const [firstPlan] = plans;
-  const groups = firstPlan?.format === 'groups' ? input.groups : undefined;
+  const groups = firstPlan?.format === PhaseFormat.GROUPS ? input.groups : undefined;
   checkPlans(plans, uuids.length, groups);
   if (groups) checkDraw(groups, uuids);
   const phaseOne = startedPhase(buildPhase(firstPlan, 1, uuids, rng, groups));
@@ -234,7 +238,7 @@ function changeCurrentPhase(
 /** The current phase as a round robin or Groups phase. Throws a
  * `RangeError` for a bracket: it has ties, not fixtures (Task 139). */
 function requireScheduled(phase: Phase): ScheduledPhase {
-  if (phase.format === 'bracket') {
+  if (phase.format === PhaseFormat.BRACKET) {
     throw new RangeError('The current phase is a bracket. It has ties, not fixtures.');
   }
   return phase;
@@ -369,7 +373,7 @@ function redrawCurrentGroups(
     const { phases, plans } = wrapper.content;
     const index = phases.length - 1;
     const current = phases[index];
-    if (!canChangeCurrentGroups(wrapper) || current?.format !== 'groups') {
+    if (!canChangeCurrentGroups(wrapper) || current?.format !== PhaseFormat.GROUPS) {
       throw new RangeError(
         'Only a later Groups phase with no result can change its draw.'
       );
@@ -424,7 +428,7 @@ export function swapTeamsInCurrentGroups(
 /** The current phase as a bracket, with its index. Throws a `RangeError`
  * for a round robin or Groups phase. */
 function requireBracket(phase: Phase): BracketPhase {
-  if (phase.format !== 'bracket') {
+  if (phase.format !== PhaseFormat.BRACKET) {
     throw new RangeError(
       'The current phase is not a bracket. It has fixtures, not ties.'
     );
@@ -520,4 +524,65 @@ export function setBracketByes(leagueUuid: string, byeTeams: readonly string[]):
     bracketTreeOf({ ...wrapper, content: { ...wrapper.content, phases } }, index);
     return changed;
   });
+}
+
+/** True when two zone lists hold the same zones, in the same order. */
+function isSameZones(a: readonly PlanZone[], b: readonly PlanZone[]): boolean {
+  return (
+    a.length === b.length &&
+    a.every((zone, i) => {
+      const other = b[i];
+      return (
+        zone.colour === other.colour &&
+        zone.label === other.label &&
+        zone.places?.from === other.places?.from &&
+        zone.places?.to === other.places?.to
+      );
+    })
+  );
+}
+
+/**
+ * Sets the stored zones of one phase plan, from "Edit zones" (US-12.5, Task
+ * 189). It works at any time, also on a locked phase or a phase that has not
+ * started: the zones change only the display. A real change stamps the
+ * league with the local installation, as a change of the league (US-11.1).
+ * The same zones change nothing.
+ *
+ * Throws a `RangeError` for an unknown league, a phase with no plan, a
+ * bracket plan, and zones that `checkZones` rejects. "Save" stays off for
+ * those zones, so a throw here is a fault.
+ */
+export function setPhaseZones(
+  leagueUuid: string,
+  phaseIndex: number,
+  zones: readonly PlanZone[]
+): void {
+  const state = useDatabaseStore.getState();
+  const { installationUuid } = requireOpenDatabase(state);
+  const wrapper = state.leagues[leagueUuid];
+  if (!wrapper) throw new RangeError(`No open league has the UUID ${leagueUuid}.`);
+  const plan = wrapper.content.plans[phaseIndex];
+  if (!plan || plan.format === PhaseFormat.BRACKET) {
+    throw new RangeError(`Phase ${phaseIndex + 1} has no round-robin or Groups plan.`);
+  }
+  const zoned = { ...plan, zones: zones.map((zone) => ({ ...zone })) };
+  const [problem] = checkZones(zoned);
+  if (problem)
+    throw new RangeError(`The zones of phase ${phaseIndex + 1} are not valid.`);
+  if (isSameZones(plan.zones ?? [], zones)) return;
+
+  const changed: LeagueWrapper = {
+    ...wrapper,
+    content: {
+      ...wrapper.content,
+      lastModifiedByInstallation: installationUuid,
+      plans: wrapper.content.plans.map((candidate, i) =>
+        i === phaseIndex ? zoned : candidate
+      ),
+    },
+  };
+  useDatabaseStore.setState((now) => ({
+    leagues: { ...now.leagues, [leagueUuid]: changed },
+  }));
 }

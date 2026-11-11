@@ -6,4 +6,5 @@ export {
   ovrAfterTierChange,
   rollOVR,
 } from './tierOvr';
-export type { Tier, TierOvrRange } from './types';
+export type { TierOvrRange } from './types';
+export { Tier } from './types';

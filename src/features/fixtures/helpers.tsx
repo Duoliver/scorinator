@@ -3,12 +3,13 @@ import { Badge } from '@/design-system';
 import { groupLabel } from '@/engine/round-robin';
 import type { LeagueWrapper, PhaseResult, ScheduledPhase } from '@/domain';
 import styles from './FixturesView.module.css';
+import { Legs, PhaseFormat } from '@/engine/phases';
 
 /** What the view reads for a league with no phase, or a bracket phase:
  * nothing to play. */
 export const EMPTY_PHASE: ScheduledPhase = {
-  format: 'round-robin',
-  legs: 'two-way',
+  format: PhaseFormat.ROUND_ROBIN,
+  legs: Legs.TWO_WAY,
   fixtures: [],
   byes: [],
   results: [],
@@ -23,14 +24,14 @@ export function getShownPhase(
   const { phases } = league.content;
   const phase = phases[phaseIndex ?? phases.length - 1];
   // A bracket has ties, not fixtures: Task 141 shows it in its own tab.
-  return phase && phase.format !== 'bracket' ? phase : EMPTY_PHASE;
+  return phase && phase.format !== PhaseFormat.BRACKET ? phase : EMPTY_PHASE;
 }
 
 /** The group index of each team of a Groups phase, from the draw, so the
  * view never parses a fixture id (Task 77). Empty for a round robin. */
 export function getGroupIndexes(phase: ScheduledPhase): Map<string, number> {
   const indexes = new Map<string, number>();
-  if (phase.format !== 'groups') return indexes;
+  if (phase.format !== PhaseFormat.GROUPS) return indexes;
   phase.groups.forEach((members, index) => {
     for (const team of members) indexes.set(team, index);
   });

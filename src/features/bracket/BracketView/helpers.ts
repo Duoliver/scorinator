@@ -6,8 +6,15 @@ import {
   type BracketTie,
   type BracketTieResult,
   type TieSide,
+  TieSideKind,
 } from '@/engine/bracket';
-import type { TieMatch } from '@/engine/tiebreak';
+import {
+  type TieMatch,
+  TieMatchPart,
+  TieFormat,
+  TieDecision,
+  TiebreakMethod,
+} from '@/engine/tiebreak';
 import type { PhasePlan } from '@/engine/phases';
 import type { TeamDisplay } from '@/features/components';
 import { phaseShortName } from '@/features/leagues/leagueSummary';
@@ -33,7 +40,8 @@ const PART_LABELS: Record<TieMatch<string>['part'], string> = {
 /** The tiebreak text of the header line (Task 141 choice 7): the US-03.2
  * sequence of a level tie. */
 export function describeMethod(rules: BracketRules): string {
-  const steps = rules.method === 'penalties' ? ['Penalties'] : ['Replay', 'Coin toss'];
+  const steps =
+    rules.method === TiebreakMethod.PENALTIES ? ['Penalties'] : ['Replay', 'Coin toss'];
   return (rules.playsAet ? ['AET', ...steps] : steps).join(' → ');
 }
 
@@ -53,7 +61,7 @@ export function describeBracketHeader(
       ? `Seeded by ${phaseShortName(before)} final standing`
       : 'Seeded by random draw',
   ];
-  const twoLegged = rules.format === 'two-legged';
+  const twoLegged = rules.format === TieFormat.TWO_LEGGED;
   if (twoLegged) {
     parts.push(
       `All ties two-legged (aggregate, home & away), away goals ${rules.awayGoals ? 'on' : 'off'}`
@@ -79,30 +87,37 @@ function scoreCell(match: TieMatch<string>, teamId: string): string {
   return match.aet ? `${goals}*` : goals;
 }
 
-// The footer of a played tie: the aggregate of two legs, then the tag of
-// the decision. The penalties put the top row first (Task 141 choice 6).
-function describeFooter(
+// The aggregate of two legs, top row first, or `null` for a single match.
+function getAggregate(
+  result: BracketTieResult<string> | undefined,
+  topId: string,
+  bottomId: string
+): string | null {
+  const legs =
+    result?.matches.filter((match) => match.part !== TieMatchPart.REPLAY) ?? [];
+  if (legs.length !== 2) return null;
+  const total = (id: string): number =>
+    legs.reduce((sum, leg) => sum + goalsIn(leg, id), 0);
+  return `${total(topId)}–${total(bottomId)}`;
+}
+
+// The tag of the decision of a played tie. The penalties put the top row
+// first (Task 141 choice 6).
+function describeDecision(
   result: BracketTieResult<string>,
   topId: string,
   bottomId: string
 ): string {
-  const parts: string[] = [];
-  const legs = result.matches.filter((match) => match.part !== 'replay');
-  if (legs.length === 2) {
-    const total = (id: string): number =>
-      legs.reduce((sum, leg) => sum + goalsIn(leg, id), 0);
-    parts.push(`Agg ${total(topId)}–${total(bottomId)}`);
-  }
   const last = result.matches[result.matches.length - 1];
   const { penalties } = result;
-  if (result.decidedBy === 'penalties' && penalties && last) {
+  if (result.decidedBy === TieDecision.PENALTIES && penalties && last) {
     const pens = (id: string): number =>
       last.homeId === id ? penalties.homeGoals : penalties.awayGoals;
-    parts.push(`Pens ${pens(topId)}-${pens(bottomId)}`);
+    return `Pens ${pens(topId)}-${pens(bottomId)}`;
   }
-  if (result.decidedBy === 'coin-toss') parts.push('Coin toss');
-  if (result.decidedBy === 'away-goals') parts.push('Away goals');
-  return parts.join(' · ');
+  if (result.decidedBy === TieDecision.COIN_TOSS) return 'Coin toss';
+  if (result.decidedBy === TieDecision.AWAY_GOALS) return 'Away goals';
+  return '';
 }
 
 function buildRow(
@@ -112,12 +127,13 @@ function buildRow(
   result: BracketTieResult<string> | undefined,
   columnCount: number
 ): TieCardRow {
-  if (side.kind !== 'team') {
+  if (side.kind !== TieSideKind.TEAM) {
     return {
       key: `${side.kind}-${index}`,
-      name: side.kind === 'bye' ? 'BYE' : 'TBD',
+      name: side.kind === TieSideKind.BYE ? 'BYE' : 'TBD',
+      location: '',
       colour: TBD_COLOUR,
-      isTbd: side.kind === 'tbd',
+      isTbd: side.kind === TieSideKind.TBD,
       isWinner: false,
       scores: Array.from({ length: columnCount }, () => ''),
     };
@@ -126,6 +142,7 @@ function buildRow(
   return {
     key: side.teamId,
     name: team.name,
+    location: team.location,
     colour: team.colour,
     isTbd: false,
     isWinner: result?.winnerId === side.teamId,
@@ -150,12 +167,12 @@ export function buildTieCard(
   lookup: (uuid: string) => TeamDisplay,
   playable: boolean
 ): TieCardModel {
-  const isBye = sides[1].kind === 'bye';
+  const isBye = sides[1].kind === TieSideKind.BYE;
   const parts: TieMatch<string>['part'][] = result
     ? result.matches.map((match) => match.part)
-    : rulesForTie(tie, rules).format === 'two-legged'
-      ? ['leg1', 'leg2']
-      : ['leg1'];
+    : rulesForTie(tie, rules).format === TieFormat.TWO_LEGGED
+      ? [TieMatchPart.LEG1, TieMatchPart.LEG2]
+      : [TieMatchPart.LEG1];
   const rows: [TieCardRow, TieCardRow] = [
     buildRow(sides[0], 0, lookup, result, parts.length),
     buildRow(sides[1], 1, lookup, result, parts.length),
@@ -166,7 +183,8 @@ export function buildTieCard(
     isBye,
     rows,
     columns: parts.length > 1 ? parts.map((part) => PART_LABELS[part]) : [],
-    footer: result ? describeFooter(result, rows[0].key, rows[1].key) : 'Not played',
+    footer: result ? describeDecision(result, rows[0].key, rows[1].key) : 'Not played',
+    aggregate: getAggregate(result, rows[0].key, rows[1].key),
     hasResult: result !== undefined,
     canScorinate: !isBye && (playable || result !== undefined),
   };

@@ -1,4 +1,8 @@
-import { tauriWindow, type WindowCloseAdapter } from '@/adapters/tauri-window';
+import {
+  tauriWindow,
+  type WindowCloseAdapter,
+  UnsavedChoice,
+} from '@/adapters/tauri-window';
 import { getErrorMessage } from '@/app/getErrorMessage';
 import { saveDatabaseChanges } from '@/app/saveActions';
 import {
@@ -50,8 +54,8 @@ export async function allowWindowClose(
   if (names.length === 0) return true;
 
   const choice = await adapter.askUnsavedChoice(describeUnsavedLeagues(names));
-  if (choice === 'cancel') return false;
-  if (choice === 'discard') return true;
+  if (choice === UnsavedChoice.CANCEL) return false;
+  if (choice === UnsavedChoice.DISCARD) return true;
   return save();
 }
 

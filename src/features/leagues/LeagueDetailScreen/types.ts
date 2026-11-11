@@ -1,5 +1,6 @@
-import type { RefObject } from 'preact';
+import type { ComponentChildren, RefObject } from 'preact';
 import type { DropdownMenuItem, FieldHandle, TabItem } from '@/design-system';
+import type { PlanZone, ZonePlan } from '@/engine/phases';
 import type { LeagueWrapper } from '@/domain';
 
 export default interface LeagueDetailScreenProps {
@@ -18,12 +19,25 @@ export interface LeagueDetail {
    * league (Task 131 choice 2). */
   tabs: TabItem[];
   defaultTab: string;
+  /** The end of the top tab row: "Edit zones" of a one-phase league (Task
+   * 189). A league with phase tabs has it in each phase tab instead. */
+  tabsActions: ComponentChildren;
   /** Opens a tab from outside `Tabs`: the new phase after a start. */
   tabsRef: RefObject<FieldHandle<string>>;
   /** The items of the export menu (US-10.1). */
   exportItems: DropdownMenuItem[];
   /** The confirm of a phase start while it is open (US-07.3). */
   startConfirm: PhaseStartConfirm | undefined;
+  /** The "Edit zones" drawer while it is open (Task 189). */
+  zoneDrawer: ZoneDrawerView | undefined;
+}
+
+/** The "Edit zones" drawer of one phase (Task 189 choice 6). */
+export interface ZoneDrawerView {
+  title: string;
+  plan: ZonePlan;
+  onSave: (zones: PlanZone[]) => void;
+  onCancel: () => void;
 }
 
 /** The texts and handlers of the phase start confirm (US-07.3). */

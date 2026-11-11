@@ -1,6 +1,6 @@
 import { useRef } from 'preact/hooks';
 import type { FieldHandle } from '@/design-system';
-import type { ImportChoice } from '@/engine/identity';
+import { ImportChoice } from '@/engine/identity';
 import type ResolveConflictsDialogProps from './types';
 import type { ResolveConflicts } from './types';
 
@@ -25,7 +25,7 @@ export function useResolveConflicts({
         new Map(
           rows.map((row) => [
             row.uuid,
-            fields.current.get(row.uuid)?.getValue() ?? 'skip',
+            fields.current.get(row.uuid)?.getValue() ?? ImportChoice.SKIP,
           ])
         )
       );

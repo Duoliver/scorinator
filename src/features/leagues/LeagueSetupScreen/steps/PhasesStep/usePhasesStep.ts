@@ -1,9 +1,10 @@
 import { useMemo } from 'preact/hooks';
-import { bracketRulesOf } from '@/engine/phases';
+import { bracketRulesOf, PhaseFormat } from '@/engine/phases';
 import {
   bestMSuggestion,
   bracketWarning,
   endsWithGroups,
+  getPhaseFieldRanges,
   phaseChecks,
   phaseCountLines,
   phaseProblemText,
@@ -33,9 +34,13 @@ export function usePhasesStep(
   const { plans } = phaseList;
   return useMemo(() => {
     const { counts, problems } = phaseChecks(plans, teamCount, firstGroupSizes);
+    // The Zones section shows its own problems (Task 189).
     const textsOf = (phase: number): string[] =>
       problems
-        .filter((problem) => 'phase' in problem && problem.phase === phase)
+        .filter(
+          (problem) =>
+            'phase' in problem && problem.phase === phase && problem.code !== 'zone'
+        )
         .map((problem) => phaseProblemText(problem, plans));
     return {
       cards: plans.map((plan, index) => ({
@@ -48,8 +53,9 @@ export function usePhasesStep(
         lines: phaseCountLines(plans, counts, index),
         problems: textsOf(index + 1),
         suggestion: bestMSuggestion(plans, counts, index),
+        ranges: getPhaseFieldRanges(plans, counts, index),
         bracket:
-          plan.format === 'bracket'
+          plan.format === PhaseFormat.BRACKET
             ? {
                 rules: bracketRulesOf(plan),
                 thirdPlaceAllowed: canHaveThirdPlace(counts?.[index]?.teams),

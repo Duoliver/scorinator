@@ -5,6 +5,7 @@ import { openLeague } from '@/app/state/databaseActions';
 import { setFileStatus } from '@/app/state/fileActions';
 import {
   moveTeamInCurrentGroups,
+  setPhaseZones,
   shuffleCurrentGroups,
   startNextPhase,
   swapTeamsInCurrentGroups,
@@ -25,11 +26,13 @@ import {
   getLeagueTabs,
   getPhaseTabs,
   phaseTabId,
+  renderEditZonesButton,
   type GroupsDraw,
   type MatchdayMemory,
   type PhaseStart,
 } from './helpers';
-import type { LeagueDetailState, PhaseStartConfirm } from './types';
+import type { LeagueDetailState, PhaseStartConfirm, ZoneDrawerView } from './types';
+import { PhaseFormat } from '@/engine/phases';
 
 /** The league with this UUID, ready for League Detail (Task 161). A league
  * in the manifest that is not open yet is read from its file once, with
@@ -55,6 +58,8 @@ export function useLeagueDetail(uuid: string): LeagueDetailState {
 
   const tabsRef = useRef<FieldHandle<string>>(null);
   const [confirmingStart, setConfirmingStart] = useState(false);
+  // The phase of the open "Edit zones" drawer, from 0 (Task 189).
+  const [zonePhase, setZonePhase] = useState<number>();
 
   const needsOpen = league === undefined && isKnown;
   useEffect(() => {
@@ -93,6 +98,10 @@ export function useLeagueDetail(uuid: string): LeagueDetailState {
           onCancel: () => setConfirmingStart(false),
         }
       : undefined;
+    const zoneDrawer = findZoneDrawer(league, zonePhase, hasPhaseTabs, () =>
+      setZonePhase(undefined)
+    );
+    const onePlan = plans[0];
     return {
       kind: 'open',
       detail: {
@@ -103,8 +112,12 @@ export function useLeagueDetail(uuid: string): LeagueDetailState {
         // The `Unsaved` badge beside the title (Task 26).
         isUnsaved,
         tabs: hasPhaseTabs
-          ? getPhaseTabs(league, memory, start, findGroupsDraw(league))
+          ? getPhaseTabs(league, memory, start, findGroupsDraw(league), setZonePhase)
           : getLeagueTabs(league, 0, memory),
+        tabsActions:
+          hasPhaseTabs || !onePlan || onePlan.format === PhaseFormat.BRACKET
+            ? undefined
+            : renderEditZonesButton(() => setZonePhase(0)),
         // The current phase is the last started one.
         defaultTab: hasPhaseTabs
           ? phaseTabId(Math.max(0, phases.length - 1))
@@ -112,6 +125,7 @@ export function useLeagueDetail(uuid: string): LeagueDetailState {
         tabsRef,
         exportItems: getExportItems(league),
         startConfirm,
+        zoneDrawer,
       },
     };
   }
@@ -136,6 +150,32 @@ function findPhaseStart(
   };
 }
 
+/** The "Edit zones" drawer of the phase at `phaseIndex`, or `undefined`
+ * when it is closed (Task 189). Save sets the zones and closes it. */
+function findZoneDrawer(
+  league: LeagueWrapper,
+  phaseIndex: number | undefined,
+  hasPhaseTabs: boolean,
+  close: () => void
+): ZoneDrawerView | undefined {
+  if (phaseIndex === undefined) return undefined;
+  const plan = league.content.plans[phaseIndex];
+  if (!plan || plan.format === PhaseFormat.BRACKET) return undefined;
+  return {
+    title: hasPhaseTabs ? `Zones · Phase ${phaseIndex + 1}` : 'Zones',
+    plan,
+    onSave: (zones): void => {
+      close();
+      try {
+        setPhaseZones(league.uuid, phaseIndex, zones);
+      } catch (error) {
+        setFileStatus({ tone: 'error', message: getErrorMessage(error) });
+      }
+    },
+    onCancel: close,
+  };
+}
+
 /** Runs a draw change, and shows its error in the status line. The screen
  * keeps a bad move off, so an error here is a fault. */
 function changeDraw(change: () => void): void {
@@ -151,7 +191,7 @@ function changeDraw(change: () => void): void {
 function findGroupsDraw(league: LeagueWrapper): GroupsDraw | undefined {
   if (!canChangeCurrentGroups(league)) return undefined;
   const current = league.content.phases[league.content.phases.length - 1];
-  if (current?.format !== 'groups') return undefined;
+  if (current?.format !== PhaseFormat.GROUPS) return undefined;
   return {
     groups: current.groups,
     onMove: (team, groupIndex) =>

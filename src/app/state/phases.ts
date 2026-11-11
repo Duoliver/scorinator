@@ -1,5 +1,14 @@
 import { fixedLot } from '@/engine/identity';
-import { canChangeDraw, isPhaseComplete, pickQualifiers } from '@/engine/phases';
+import {
+  canChangeDraw,
+  getPhaseZones,
+  getZoneColours,
+  isPhaseComplete,
+  pickQualifiers,
+  type PhaseZone,
+  type ZoneColour,
+  PhaseFormat,
+} from '@/engine/phases';
 import { calculateStandings, type LotOf, type StandingsRow } from '@/engine/standings';
 import type { LeagueWrapper } from '@/domain';
 
@@ -20,8 +29,9 @@ export function phaseTeamLists(wrapper: LeagueWrapper, phaseIndex: number): stri
   if (!phase) {
     throw new RangeError(`The league has no started phase ${phaseIndex + 1}.`);
   }
-  if (phase.format === 'bracket') return [];
-  if (phase.format === 'groups') return phase.groups.map((group) => [...group]);
+  if (phase.format === PhaseFormat.BRACKET) return [];
+  if (phase.format === PhaseFormat.GROUPS)
+    return phase.groups.map((group) => [...group]);
   if (phaseIndex === 0) return [wrapper.teams.map((team) => team.blueprintUuid)];
   const teams = new Set<string>();
   for (const fixture of phase.fixtures) {
@@ -47,7 +57,7 @@ export function phaseStandings(
   const { phases, points } = wrapper.content;
   const lotOf = leagueLotOf(wrapper);
   const phase = phases[phaseIndex];
-  const results = phase && phase.format !== 'bracket' ? phase.results : [];
+  const results = phase && phase.format !== PhaseFormat.BRACKET ? phase.results : [];
   return phaseTeamLists(wrapper, phaseIndex).map((teams) => {
     const members = new Set(teams);
     const own = results.filter(
@@ -63,7 +73,11 @@ export function canStartNextPhase(wrapper: LeagueWrapper): boolean {
   const { phases, plans } = wrapper.content;
   const current = phases[phases.length - 1];
   // A bracket is always the last phase (US-01.3), so it has no next phase.
-  if (!current || current.format === 'bracket' || phases.length >= plans.length) {
+  if (
+    !current ||
+    current.format === PhaseFormat.BRACKET ||
+    phases.length >= plans.length
+  ) {
     return false;
   }
   return isPhaseComplete(current.fixtures, current.results);
@@ -76,50 +90,51 @@ export function canChangeCurrentGroups(wrapper: LeagueWrapper): boolean {
   const { phases } = wrapper.content;
   const index = phases.length - 1;
   const current = phases[index];
-  return index >= 1 && current?.format === 'groups' && canChangeDraw(current.results);
+  return (
+    index >= 1 &&
+    current?.format === PhaseFormat.GROUPS &&
+    canChangeDraw(current.results)
+  );
 }
 
-/** How a row of a phase table qualifies (US-02.2, US-07.2): a qualifier
- * place, or a place N + 1 that can still send its best M. */
-export type QualifierMark = 'qualifier' | 'best-of-next';
+/** The zones of one phase, and the zone colour of each team by Blueprint
+ * UUID (US-12.5). */
+export interface PhaseZoneView {
+  zones: PhaseZone[];
+  colours: Map<string, ZoneColour>;
+}
 
 /**
- * The qualifier marks of one started phase, by Blueprint UUID (Task 132).
- * The last phase, and a phase with no advancement, mark nothing.
+ * The zones of one started phase, and the colour of each row (Task 155).
+ * The zones replace the qualifier highlight of US-02.2 and US-07.2. A
+ * bracket has no table, so it has no zone.
  *
- * - During the phase, the marks follow the current order: the top N rows of
- *   the table or of each group, and each place N + 1 row of a best M.
- * - A complete phase marks the teams that `startNextPhase` sends on
- *   (`pickQualifiers`), so the best M of place N + 1 become qualifiers and
- *   the other place N + 1 rows lose their mark. A locked phase is complete,
- *   so it keeps these marks.
+ * - During the phase, the rows follow the current order.
+ * - A complete phase gives `getZoneColours` the teams that
+ *   `startNextPhase` sends on (`pickQualifiers`). So the best M of place
+ *   N + 1 turn green, and the other place N + 1 rows lose the yellow. A
+ *   locked phase is complete, so it keeps these colours.
  */
-export function phaseQualifierMarks(
+export function getPhaseZoneView(
   wrapper: LeagueWrapper,
   phaseIndex: number
-): Map<string, QualifierMark> {
-  const marks = new Map<string, QualifierMark>();
+): PhaseZoneView {
   const plan = wrapper.content.plans[phaseIndex];
   const phase = wrapper.content.phases[phaseIndex];
-  if (!plan || !phase || plan.format === 'bracket' || phase.format === 'bracket') {
-    return marks;
+  if (
+    !plan ||
+    !phase ||
+    plan.format === PhaseFormat.BRACKET ||
+    phase.format === PhaseFormat.BRACKET
+  ) {
+    return { zones: [], colours: new Map() };
   }
-  if (!plan.advance) return marks;
-
+  const zones = getPhaseZones(plan);
   const tables = phaseStandings(wrapper, phaseIndex);
-  if (isPhaseComplete(phase.fixtures, phase.results)) {
-    for (const team of pickQualifiers(plan, tables, leagueLotOf(wrapper))) {
-      marks.set(team, 'qualifier');
-    }
-    return marks;
-  }
-
-  const { top } = plan.advance;
-  const bestOfNext = plan.format === 'groups' ? plan.advance.bestOfNext : 0;
-  for (const table of tables) {
-    table.slice(0, top).forEach((row) => marks.set(row.team, 'qualifier'));
-    const next = table[top];
-    if (bestOfNext > 0 && next) marks.set(next.team, 'best-of-next');
-  }
-  return marks;
+  const qualifiers =
+    plan.advance && isPhaseComplete(phase.fixtures, phase.results)
+      ? new Set(pickQualifiers(plan, tables, leagueLotOf(wrapper)))
+      : undefined;
+  const teams = tables.map((table) => table.map((row) => row.team));
+  return { zones, colours: getZoneColours(zones, teams, qualifiers) };
 }

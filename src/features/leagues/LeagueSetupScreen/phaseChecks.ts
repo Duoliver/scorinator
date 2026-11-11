@@ -1,15 +1,19 @@
 import {
   checkPhaseChain,
   checkPhaseFit,
+  checkZones,
   phaseTeamCounts,
   suggestBestM,
   type PhaseChainProblem,
   type PhaseFitProblem,
   type PhasePlan,
   type PhaseTeamCount,
+  type ZoneProblem,
+  PhaseFormat,
 } from '@/engine/phases';
 import { bracketSlotCount } from '@/engine/bracket';
-import { groupLabel } from '@/engine/round-robin';
+import { groupLabel, GroupBy } from '@/engine/round-robin';
+import { getZoneProblemText } from '@/features/leagues/ZoneEditor';
 
 /**
  * The counts, the suggestion, and the problem texts of the wizard Phases
@@ -17,7 +21,27 @@ import { groupLabel } from '@/engine/round-robin';
  * count.
  */
 
-export type PhaseProblem = PhaseChainProblem | PhaseFitProblem;
+/** A zone problem of one phase (Task 189). `phase` counts from 1. */
+export interface PhaseZoneProblem {
+  code: 'zone';
+  phase: number;
+  zone: ZoneProblem;
+}
+
+export type PhaseProblem = PhaseChainProblem | PhaseFitProblem | PhaseZoneProblem;
+
+/** The zone problems of each round-robin and Groups phase (US-12.5). */
+function checkPlanZones(plans: readonly PhasePlan[]): PhaseZoneProblem[] {
+  return plans.flatMap((plan, index) =>
+    plan.format === PhaseFormat.BRACKET
+      ? []
+      : checkZones(plan).map((zone) => ({
+          code: 'zone' as const,
+          phase: index + 1,
+          zone,
+        }))
+  );
+}
 
 /** The US-01.5 warning when the last phase is Groups. It blocks nothing. */
 export const GROUPS_LAST_WARNING =
@@ -39,10 +63,11 @@ export function phaseChecks(
   firstGroupSizes?: readonly number[]
 ): { counts: PhaseTeamCount[] | undefined; problems: PhaseProblem[] } {
   const chain = checkPhaseChain(plans);
-  if (teamCount < 2) return { counts: undefined, problems: chain };
+  const zones = checkPlanZones(plans);
+  if (teamCount < 2) return { counts: undefined, problems: [...chain, ...zones] };
   return {
     counts: phaseTeamCounts(plans, teamCount, firstGroupSizes),
-    problems: [...chain, ...checkPhaseFit(plans, teamCount, firstGroupSizes)],
+    problems: [...chain, ...checkPhaseFit(plans, teamCount, firstGroupSizes), ...zones],
   };
 }
 
@@ -67,7 +92,7 @@ export function phaseProblemText(
     case 'grouping-out-of-range': {
       const plan = plans[problem.phase - 1];
       const field =
-        plan?.format === 'groups' && plan.grouping.by === 'count'
+        plan?.format === PhaseFormat.GROUPS && plan.grouping.by === GroupBy.COUNT
           ? 'group count'
           : 'group size';
       return `Phase ${problem.phase}: the ${field} must be a whole number of 2 or more.`;
@@ -77,7 +102,7 @@ export function phaseProblemText(
     case 'top-out-of-range': {
       if (problem.max < 1) {
         const needs =
-          plans[problem.phase - 1]?.format === 'groups'
+          plans[problem.phase - 1]?.format === PhaseFormat.GROUPS
             ? 'Each group needs more teams.'
             : 'The phase needs more teams.';
         return `No Top fits phase ${problem.phase}. ${needs}`;
@@ -86,7 +111,7 @@ export function phaseProblemText(
     }
     case 'best-m-out-of-range': {
       const plan = plans[problem.phase - 1];
-      const top = plan?.format === 'groups' ? plan.advance?.top : undefined;
+      const top = plan?.format === PhaseFormat.GROUPS ? plan.advance?.top : undefined;
       const place =
         top !== undefined && Number.isInteger(top)
           ? `place ${top + 1}`
@@ -95,6 +120,10 @@ export function phaseProblemText(
     }
     case 'best-m-place-missing':
       return `Phase ${problem.phase}: the smallest group has no place ${problem.place}.`;
+    case 'zone': {
+      const text = getZoneProblemText(problem.zone);
+      return `Phase ${problem.phase}: ${text.charAt(0).toLowerCase()}${text.slice(1)}`;
+    }
   }
 }
 
@@ -116,10 +145,10 @@ export function phaseCountLines(
   const lines: { sizes?: string; qualifiers?: string } = {};
   const sizes = count.groupSizes;
   if (sizes) lines.sizes = `${groupsText(sizes.length)}: ${sizes.join(', ')}`;
-  if (!next || plan.format === 'bracket' || !plan.advance) return lines;
+  if (!next || plan.format === PhaseFormat.BRACKET || !plan.advance) return lines;
 
   const goTo = `= ${next.teams} teams go to phase ${index + 2}`;
-  if (plan.format === 'round-robin') {
+  if (plan.format === PhaseFormat.ROUND_ROBIN) {
     lines.qualifiers = `Top ${plan.advance.top} ${goTo}`;
   } else if (sizes) {
     const { top, bestOfNext } = plan.advance;
@@ -140,10 +169,10 @@ export function bestMSuggestion(
   const plan = plans[index];
   const sizes = counts?.[index]?.groupSizes;
   if (
-    plan?.format !== 'groups' ||
+    plan?.format !== PhaseFormat.GROUPS ||
     !plan.advance ||
     !sizes ||
-    plans[index + 1]?.format !== 'bracket'
+    plans[index + 1]?.format !== PhaseFormat.BRACKET
   ) {
     return undefined;
   }
@@ -159,7 +188,7 @@ export function bestMSuggestion(
 
 /** True when the last phase is Groups (US-01.5). */
 export function endsWithGroups(plans: readonly PhasePlan[]): boolean {
-  return plans[plans.length - 1]?.format === 'groups';
+  return plans[plans.length - 1]?.format === PhaseFormat.GROUPS;
 }
 
 /** The team count of the bracket phase, when the counts are known
@@ -168,7 +197,7 @@ export function bracketQualifiers(
   plans: readonly PhasePlan[],
   counts: readonly PhaseTeamCount[] | undefined
 ): number | undefined {
-  const index = plans.findIndex((plan) => plan.format === 'bracket');
+  const index = plans.findIndex((plan) => plan.format === PhaseFormat.BRACKET);
   return index < 0 ? undefined : counts?.[index]?.teams;
 }
 
@@ -182,4 +211,57 @@ export function bracketWarning(qualifiers: number): string | undefined {
   if (byes === 0) return undefined;
   const teams = byes === 1 ? '1 team gets' : `${byes} teams get`;
   return `${qualifiers} qualifiers: the bracket has ${slots} slots, so ${teams} a bye.`;
+}
+
+/** The lowest value of a number field, and its highest value when the team
+ * count is known (Task 191). */
+export interface FieldRange {
+  min: number;
+  max?: number;
+}
+
+/** The ranges of the number fields of one phase card: the group size or
+ * count, Top, and the best M. A field the card does not show has none. */
+export interface PhaseFieldRanges {
+  group?: FieldRange;
+  top?: FieldRange;
+  best?: FieldRange;
+}
+
+/**
+ * The lowest and highest values of the number fields of one phase card
+ * (Task 191), the same as the fit check uses (`checkPhaseFit`). The
+ * highest values need the team count of the phase, so they show only when
+ * `counts` has it. The arrow keys of a number field stop at these values.
+ */
+export function getPhaseFieldRanges(
+  plans: readonly PhasePlan[],
+  counts: readonly PhaseTeamCount[] | undefined,
+  index: number
+): PhaseFieldRanges {
+  const plan = plans[index];
+  if (!plan || plan.format === PhaseFormat.BRACKET) return {};
+  const count = counts?.[index];
+  const teams = count && count.teams >= 2 ? count.teams : undefined;
+  const ranges: PhaseFieldRanges = {};
+
+  if (plan.format === PhaseFormat.GROUPS) {
+    const max =
+      teams === undefined
+        ? undefined
+        : plan.grouping.by === GroupBy.SIZE
+          ? teams
+          : Math.floor(teams / 2);
+    ranges.group = max === undefined ? { min: 2 } : { min: 2, max };
+  }
+  if (!plan.advance) return ranges;
+
+  if (plan.format === PhaseFormat.ROUND_ROBIN) {
+    ranges.top = teams === undefined ? { min: 1 } : { min: 1, max: teams - 1 };
+    return ranges;
+  }
+  const sizes = count?.groupSizes;
+  ranges.top = sizes ? { min: 1, max: Math.min(...sizes) - 1 } : { min: 1 };
+  ranges.best = sizes ? { min: 0, max: sizes.length - 1 } : { min: 0 };
+  return ranges;
 }

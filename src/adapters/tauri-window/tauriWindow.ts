@@ -3,7 +3,12 @@ import { getCurrentWindow } from '@tauri-apps/api/window';
 import { message } from '@tauri-apps/plugin-dialog';
 
 /** What the user picked in the unsaved-changes dialog. */
-export type UnsavedChoice = 'save' | 'discard' | 'cancel';
+export const UnsavedChoice = {
+  SAVE: 'save',
+  DISCARD: 'discard',
+  CANCEL: 'cancel',
+} as const;
+export type UnsavedChoice = (typeof UnsavedChoice)[keyof typeof UnsavedChoice];
 
 /** The part of Tauri's close event the app uses. Calling `preventDefault`
  * keeps the window open. Without it, Tauri closes the window once the
@@ -32,9 +37,9 @@ const CANCEL_LABEL = 'Cancel';
  * such as a dialog closed with the window button, counts as cancel, so the
  * window stays open. */
 export function choiceFromLabel(label: string): UnsavedChoice {
-  if (label === SAVE_LABEL) return 'save';
-  if (label === DISCARD_LABEL) return 'discard';
-  return 'cancel';
+  if (label === SAVE_LABEL) return UnsavedChoice.SAVE;
+  if (label === DISCARD_LABEL) return UnsavedChoice.DISCARD;
+  return UnsavedChoice.CANCEL;
 }
 
 /** `WindowCloseAdapter` backed by the real Tauri window and `dialog` plugin.

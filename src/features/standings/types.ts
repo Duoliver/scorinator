@@ -1,5 +1,5 @@
-import type { StandingsRow } from '@/engine/standings';
-import type { QualifierMark } from '@/app/state/phases';
+import type { PhaseZone, ZoneColour } from '@/engine/phases';
+import type { MatchOutcome, StandingsRow } from '@/engine/standings';
 import type { LeagueWrapper } from '@/domain';
 
 export default interface StandingsViewProps {
@@ -13,12 +13,33 @@ export default interface StandingsViewProps {
   advanceText?: string;
 }
 
+/** One dot of the Form column (US-12.1): the outcome, and the texts of its
+ * hint. */
+export interface FormDot {
+  outcome: MatchOutcome;
+  /** The opponent trigram, or its name when it has none (choice 3). */
+  opponent: string;
+  isTrigram: boolean;
+  opponentColour: string;
+  venue: 'H' | 'A';
+  /** The goals of the team first, for example "2–1". */
+  score: string;
+  matchday: number;
+}
+
 /** One standings row, with the Instance name and colour of its team. */
 export interface StandingsViewRow extends StandingsRow<string> {
   teamName: string;
   teamColour: string;
-  /** How the row qualifies, for its tint (Task 132), or `undefined`. */
-  mark: QualifierMark | undefined;
+  /** The league trigram, or `''` (Task 157). */
+  teamTrigram: string;
+  /** The Location of the Blueprint, or `''` (US-09.3). */
+  teamLocation: string;
+  /** The zone of the row, for its tint and stripe (Task 155), or
+   * `undefined`. */
+  zone: ZoneColour | undefined;
+  /** The last results of the team, the oldest first. Empty in a group card. */
+  form: FormDot[];
 }
 
 /** One table of a phase: the one table of a round robin, or one group
@@ -33,6 +54,9 @@ export interface Standings {
   /** True for a Groups phase: the tables show as group cards. */
   isGroups: boolean;
   tables: StandingsTable[];
+  /** The zones of the legend (US-12.5), in place order: only the zones
+   * that colour a row. */
+  zones: PhaseZone[];
   hasTeams: boolean;
   hasResults: boolean;
 }

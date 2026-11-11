@@ -2,7 +2,7 @@ import type { BracketPlanRules } from '@/engine/bracket';
 import type { RefObject } from 'preact';
 import type { FieldHandle } from '@/design-system';
 import type { LeagueDraftDetails, LeagueSetupStep } from '@/app/state/leagueDraftStore';
-import type { PhasePlan } from '@/engine/phases';
+import type { PhasePlan, PlanZone } from '@/engine/phases';
 import type { TeamBlueprint, TeamInstance } from '@/domain';
 import type { DetailsStepHandle } from '@/features/leagues/LeagueSetupScreen/steps/DetailsStep';
 import type { TeamInstanceEdit } from '@/features/leagues/LeagueSetupScreen/steps/TeamsStep/EditTeamDrawer';
@@ -44,6 +44,8 @@ export interface PhaseList {
   setBestOfNext: (index: number, bestOfNext: number) => void;
   /** Changes the bracket settings of a Bracket phase (Task 140). */
   setBracketRules: (index: number, change: Partial<BracketPlanRules>) => void;
+  /** Sets the stored zones of a round-robin or Groups phase (Task 189). */
+  setZones: (index: number, zones: PlanZone[]) => void;
 }
 
 /** What `useLeagueSetup` gives `LeagueSetupScreen`. */

@@ -1,2 +1,3 @@
 export { choiceFromLabel, tauriWindow } from './tauriWindow';
-export type { CloseRequest, UnsavedChoice, WindowCloseAdapter } from './tauriWindow';
+export type { CloseRequest, WindowCloseAdapter } from './tauriWindow';
+export { UnsavedChoice } from './tauriWindow';

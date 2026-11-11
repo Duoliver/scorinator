@@ -8,6 +8,7 @@ import type {
 } from '@/domain';
 import { bracketTreeOf } from './bracket';
 import { findCurrentPhase } from './currentPhase';
+import { PhaseFormat } from '@/engine/phases';
 
 /** Where a league stands, in its current phase (`findCurrentPhase`). Between
  * the end of a phase and the next start, the progress stays on the last
@@ -20,7 +21,7 @@ function progressOf(wrapper: LeagueWrapper): LeagueProgress {
   const { phases, plans } = wrapper.content;
   const index = phases.indexOf(current);
   const isLast = phases.length >= plans.length;
-  if (current.format === 'bracket') {
+  if (current.format === PhaseFormat.BRACKET) {
     return bracketProgressOf(wrapper, current, index, isLast);
   }
   if (current.fixtures.length === 0) return { kind: 'completed' };
@@ -48,14 +49,20 @@ function bracketProgressOf(
   const phase = index + 1;
   const tree = bracketTreeOf(wrapper, index);
   if (tree.status !== 'ready') {
-    return { kind: 'bracket', phase, round: bracketSlotCount(current.seeds.length) };
+    return {
+      kind: PhaseFormat.BRACKET,
+      phase,
+      round: bracketSlotCount(current.seeds.length),
+    };
   }
   const round = findCurrentRound(tree.rounds, current.results);
   if (round !== undefined) {
-    return { kind: 'bracket', phase, round: tree.rounds[round - 1].teams };
+    return { kind: PhaseFormat.BRACKET, phase, round: tree.rounds[round - 1].teams };
   }
   const last = tree.rounds[tree.rounds.length - 1];
-  return isLast ? { kind: 'completed' } : { kind: 'bracket', phase, round: last.teams };
+  return isLast
+    ? { kind: 'completed' }
+    : { kind: PhaseFormat.BRACKET, phase, round: last.teams };
 }
 
 /** The manifest row of one league, for its dashboard card (Task 76 d). The
@@ -70,8 +77,8 @@ export function summarizeLeague(wrapper: LeagueWrapper): WrapperSummary {
     homeAdvantage: league.homeAdvantage,
     points: { ...league.points },
     phases: league.plans.map((plan) =>
-      plan.format === 'bracket'
-        ? { format: 'bracket' }
+      plan.format === PhaseFormat.BRACKET
+        ? { format: PhaseFormat.BRACKET }
         : { format: plan.format, legs: plan.legs }
     ),
     progress: progressOf(wrapper),

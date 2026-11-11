@@ -1,19 +1,29 @@
 import type { BracketPlanRules } from '@/engine/bracket';
-import { bracketRulesOf, type PhasePlan } from '@/engine/phases';
+import {
+  bracketRulesOf,
+  fitZones,
+  type PhasePlan,
+  type PlanZone,
+  PhaseFormat,
+  Legs,
+} from '@/engine/phases';
 import { formatPhaseLabel } from '@/features/leagues/leagueSummary';
+import { GroupBy } from '@/engine/round-robin';
+import { TieFormat, TiebreakMethod } from '@/engine/tiebreak';
 
 /**
  * The phase chain of the League Setup wizard (Task 129): pure edits of a
  * plan list. Each edit gives a new list, and keeps the advancement rule:
  * each phase but the last has an advancement, and the last has none
- * (US-01.4). A phase that stops being the last gets Top 2 (choice 5).
+ * (US-01.4). A phase that stops being the last gets Top 2 (choice 5). Each
+ * edit also keeps only the zones that fit each plan (`fitZones`, Task 189).
  */
 
 /** The value of each format option of the format field (US-01.2). */
 export type PhaseFormatKey = 'rr2' | 'rr1' | 'grp2' | 'grp1' | 'bracket';
 
 export const DEFAULT_PHASE_PLANS: readonly PhasePlan[] = [
-  { format: 'round-robin', legs: 'two-way' },
+  { format: PhaseFormat.ROUND_ROBIN, legs: Legs.TWO_WAY },
 ];
 
 const DEFAULT_TOP = 2;
@@ -29,21 +39,21 @@ export const FORMAT_OPTIONS: readonly { value: PhaseFormatKey; label: string }[]
 ];
 
 export function formatKeyOf(plan: PhasePlan): PhaseFormatKey {
-  if (plan.format === 'bracket') return 'bracket';
-  const legs = plan.legs === 'two-way' ? '2' : '1';
-  return plan.format === 'groups' ? `grp${legs}` : `rr${legs}`;
+  if (plan.format === PhaseFormat.BRACKET) return 'bracket';
+  const legs = plan.legs === Legs.TWO_WAY ? '2' : '1';
+  return plan.format === PhaseFormat.GROUPS ? `grp${legs}` : `rr${legs}`;
 }
 
 /** The top N of a plan, or `undefined` for a plan with no advancement. */
 function topOf(plan: PhasePlan): number | undefined {
-  return plan.format === 'bracket' ? undefined : plan.advance?.top;
+  return plan.format === PhaseFormat.BRACKET ? undefined : plan.advance?.top;
 }
 
 /** The plan with an advancement of `top`, or with none. A bracket never
  * has one. A Groups phase keeps its best M. */
 function withTop(plan: PhasePlan, top: number | undefined): PhasePlan {
-  if (plan.format === 'bracket') return plan;
-  if (plan.format === 'round-robin') {
+  if (plan.format === PhaseFormat.BRACKET) return plan;
+  if (plan.format === PhaseFormat.ROUND_ROBIN) {
     const { advance: _dropped, ...rest } = plan;
     return top === undefined ? rest : { ...rest, advance: { top } };
   }
@@ -53,23 +63,32 @@ function withTop(plan: PhasePlan, top: number | undefined): PhasePlan {
     : { ...rest, advance: { top, bestOfNext: advance?.bestOfNext ?? 0 } };
 }
 
+/** The plan with only the zones that fit it (Task 189 choice 4). */
+const withFitZones = (plan: PhasePlan): PhasePlan =>
+  plan.format === PhaseFormat.BRACKET ? plan : fitZones(plan);
+
 /** Each phase but the last keeps or gets an advancement. The last has none. */
 function normalized(plans: readonly PhasePlan[]): PhasePlan[] {
   return plans.map((plan, index) =>
-    index === plans.length - 1
-      ? withTop(plan, undefined)
-      : withTop(plan, topOf(plan) ?? DEFAULT_TOP)
+    withFitZones(
+      index === plans.length - 1
+        ? withTop(plan, undefined)
+        : withTop(plan, topOf(plan) ?? DEFAULT_TOP)
+    )
   );
 }
 
 /** "+ Add phase" is off after a bracket (US-01.3). */
 export function canAddPhase(plans: readonly PhasePlan[]): boolean {
-  return plans[plans.length - 1]?.format !== 'bracket';
+  return plans[plans.length - 1]?.format !== PhaseFormat.BRACKET;
 }
 
 /** Adds a two-way round robin at the end (choice 5). */
 export function addPhase(plans: readonly PhasePlan[]): PhasePlan[] {
-  return normalized([...plans, { format: 'round-robin', legs: 'two-way' }]);
+  return normalized([
+    ...plans,
+    { format: PhaseFormat.ROUND_ROBIN, legs: Legs.TWO_WAY },
+  ]);
 }
 
 export function removePhase(plans: readonly PhasePlan[], index: number): PhasePlan[] {
@@ -86,7 +105,9 @@ export function canMovePhase(
   const other = index + step;
   if (other < 0 || other >= plans.length) return false;
   const moved = movePhase(plans, index, step);
-  return moved.every((plan, i) => plan.format !== 'bracket' || i === moved.length - 1);
+  return moved.every(
+    (plan, i) => plan.format !== PhaseFormat.BRACKET || i === moved.length - 1
+  );
 }
 
 export function movePhase(
@@ -101,7 +122,7 @@ export function movePhase(
 
 /** Changes the format of one phase, in its place (US-01.2). The top N
  * stays. A new Groups phase gets size 4. A legs change of a Groups phase
- * keeps its group setting. */
+ * keeps its group setting. The zones stay, except on a Bracket (Task 189). */
 export function setPhaseFormat(
   plans: readonly PhasePlan[],
   index: number,
@@ -111,19 +132,21 @@ export function setPhaseFormat(
   const top = topOf(old);
   let plan: PhasePlan;
   if (key === 'bracket') {
-    plan = { format: 'bracket' };
+    plan = { format: PhaseFormat.BRACKET };
   } else {
-    const legs = key.endsWith('2') ? 'two-way' : 'single-duels';
+    const legs = key.endsWith('2') ? Legs.TWO_WAY : Legs.SINGLE_DUELS;
     plan = key.startsWith('grp')
       ? {
-          format: 'groups',
+          format: PhaseFormat.GROUPS,
           legs,
           grouping:
-            old.format === 'groups'
+            old.format === PhaseFormat.GROUPS
               ? { ...old.grouping }
-              : { by: 'size', size: DEFAULT_GROUP_SIZE },
+              : { by: GroupBy.SIZE, size: DEFAULT_GROUP_SIZE },
         }
-      : { format: 'round-robin', legs };
+      : { format: PhaseFormat.ROUND_ROBIN, legs };
+    if (old.format !== PhaseFormat.BRACKET && old.zones)
+      plan = { ...plan, zones: old.zones };
   }
   return normalized(plans.map((p, i) => (i === index ? withTop(plan, top) : p)));
 }
@@ -134,7 +157,7 @@ function editGroups(
   edit: (plan: Extract<PhasePlan, { format: 'groups' }>) => PhasePlan
 ): PhasePlan[] {
   return plans.map((plan, i) =>
-    i === index && plan.format === 'groups' ? edit(plan) : plan
+    i === index && plan.format === PhaseFormat.GROUPS ? edit(plan) : plan
   );
 }
 
@@ -148,9 +171,9 @@ export function setGroupBy(
   return editGroups(plans, index, (plan) => ({
     ...plan,
     grouping:
-      by === 'size'
-        ? { by: 'size', size: DEFAULT_GROUP_SIZE }
-        : { by: 'count', count: DEFAULT_GROUP_COUNT },
+      by === GroupBy.SIZE
+        ? { by: GroupBy.SIZE, size: DEFAULT_GROUP_SIZE }
+        : { by: GroupBy.COUNT, count: DEFAULT_GROUP_COUNT },
   }));
 }
 
@@ -163,9 +186,9 @@ export function setGroupNumber(
   return editGroups(plans, index, (plan) => ({
     ...plan,
     grouping:
-      plan.grouping.by === 'size'
-        ? { by: 'size', size: value }
-        : { by: 'count', count: value },
+      plan.grouping.by === GroupBy.SIZE
+        ? { by: GroupBy.SIZE, size: value }
+        : { by: GroupBy.COUNT, count: value },
   }));
 }
 
@@ -185,7 +208,20 @@ export function setBestOfNext(
   bestOfNext: number
 ): PhasePlan[] {
   return editGroups(plans, index, (plan) =>
-    plan.advance ? { ...plan, advance: { ...plan.advance, bestOfNext } } : plan
+    plan.advance
+      ? withFitZones({ ...plan, advance: { ...plan.advance, bestOfNext } })
+      : plan
+  );
+}
+
+/** The zones of one round-robin or Groups phase (US-12.5, Task 189). */
+export function setPhaseZones(
+  plans: readonly PhasePlan[],
+  index: number,
+  zones: PlanZone[]
+): PhasePlan[] {
+  return plans.map((plan, i) =>
+    i === index && plan.format !== PhaseFormat.BRACKET ? { ...plan, zones } : plan
   );
 }
 
@@ -203,12 +239,14 @@ export function parseWholeNumber(text: string): number {
  * bracket team count when known: below 4 there is no third-place tie. */
 export function describePhasePlan(plan: PhasePlan, qualifiers?: number): string {
   const parts = [formatPhaseLabel(plan)];
-  if (plan.format === 'bracket') {
+  if (plan.format === PhaseFormat.BRACKET) {
     parts.push(...describeBracketRules(bracketRulesOf(plan), qualifiers));
-  } else if (plan.format === 'groups') {
+  } else if (plan.format === PhaseFormat.GROUPS) {
     const { grouping } = plan;
     parts.push(
-      grouping.by === 'size' ? `size ${grouping.size}` : `${grouping.count} groups`
+      grouping.by === GroupBy.SIZE
+        ? `size ${grouping.size}`
+        : `${grouping.count} groups`
     );
     if (plan.advance) {
       parts.push(`Top ${plan.advance.top} advance per group`);
@@ -223,11 +261,13 @@ export function describePhasePlan(plan: PhasePlan, qualifiers?: number): string 
 }
 
 function describeBracketRules(rules: BracketPlanRules, qualifiers?: number): string[] {
-  const twoLegged = rules.format === 'two-legged';
+  const twoLegged = rules.format === TieFormat.TWO_LEGGED;
   const parts = [twoLegged ? 'Two-legged' : 'Single match'];
   if (twoLegged) parts.push(`away goals ${rules.awayGoals ? 'on' : 'off'}`);
   parts.push(`AET ${rules.playsAet ? 'on' : 'off'}`);
-  parts.push(rules.method === 'penalties' ? 'Penalties' : 'Replay→Coin toss');
+  parts.push(
+    rules.method === TiebreakMethod.PENALTIES ? 'Penalties' : 'Replay→Coin toss'
+  );
   if (twoLegged && rules.singleMatchFinal) parts.push('Single-match final');
   if (rules.thirdPlace && canHaveThirdPlace(qualifiers)) parts.push('Third place');
   return parts;
@@ -250,8 +290,8 @@ export function setBracketRules(
   change: Partial<BracketPlanRules>
 ): PhasePlan[] {
   return plans.map((plan, i) =>
-    i === index && plan.format === 'bracket'
-      ? { format: 'bracket', rules: { ...bracketRulesOf(plan), ...change } }
+    i === index && plan.format === PhaseFormat.BRACKET
+      ? { format: PhaseFormat.BRACKET, rules: { ...bracketRulesOf(plan), ...change } }
       : plan
   );
 }

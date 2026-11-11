@@ -26,3 +26,4 @@ export type {
   PhaseFixture,
   RoundRobinSchedule,
 } from './types';
+export { GroupBy } from './types';

@@ -13,6 +13,7 @@ import { bracketTreeOf } from '@/app/state/bracket';
 import { leagueLotOf, phaseTeamLists } from '@/app/state/phases';
 import type { FileFilter, FileSystem, SaveFileDialog } from '@/persistence/types';
 import type { LeagueWrapper } from '@/domain';
+import { PhaseFormat } from '@/engine/phases';
 
 /** The thin `app/` → `adapters/` data layer for the results export (Task
  * 18), the same seam `teamsCsv.ts` is for team CSV, so `features/` never
@@ -30,10 +31,10 @@ const TXT_FILTERS: readonly FileFilter[] = [{ name: 'Text file', extensions: ['t
 function toResultsTxtInput(wrapper: LeagueWrapper): ResultsTxtInput {
   const { name, homeAdvantage, points, plans } = wrapper.content;
   const phases = wrapper.content.phases.map((phase, index): ResultsTxtPhase => {
-    if (phase.format === 'bracket') {
+    if (phase.format === PhaseFormat.BRACKET) {
       const tree = bracketTreeOf(wrapper, index);
       return {
-        format: 'bracket',
+        format: PhaseFormat.BRACKET,
         rounds: tree.status === 'ready' ? tree.rounds : null,
         results: phase.results,
       };
@@ -49,8 +50,8 @@ function toResultsTxtInput(wrapper: LeagueWrapper): ResultsTxtInput {
   return {
     league: { name, homeAdvantage, points },
     plans: plans.map((plan) =>
-      plan.format === 'bracket'
-        ? { format: 'bracket' }
+      plan.format === PhaseFormat.BRACKET
+        ? { format: PhaseFormat.BRACKET }
         : { format: plan.format, legs: plan.legs }
     ),
     teams: wrapper.teams.map((team) => ({ id: team.blueprintUuid, name: team.name })),

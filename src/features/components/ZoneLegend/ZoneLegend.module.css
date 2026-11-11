@@ -1,0 +1,37 @@
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--font-size-sm);
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.swatch {
+  width: var(--space-4);
+  height: var(--space-4);
+  border: var(--border-width) solid var(--color-fg);
+}
+
+.swatch[data-zone='green'] {
+  background: var(--color-zone-green);
+}
+
+.swatch[data-zone='blue'] {
+  background: var(--color-zone-blue);
+}
+
+.swatch[data-zone='yellow'] {
+  background: var(--color-zone-yellow);
+}
+
+.swatch[data-zone='red'] {
+  background: var(--color-zone-red);
+}

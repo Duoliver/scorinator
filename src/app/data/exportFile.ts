@@ -6,6 +6,7 @@ import {
   serializeBlueprintFile,
   serializeLeagueFile,
   type DetectedFileKind,
+  SavedFileKind,
 } from '@/adapters/json-io';
 import {
   openTextFileWithDialog,
@@ -56,8 +57,10 @@ function rejectWrongFile(
 ): void {
   if (kind === 'mvp1') throw new Error(MVP1_FILE);
   if (kind === 'manifest' || kind === 'wrapper') throw new Error(DATABASE_FILE);
-  if (kind === 'blueprints' && expected === 'leagues') throw new Error(BLUEPRINT_FILE);
-  if (kind === 'leagues' && expected === 'blueprints') throw new Error(LEAGUE_FILE);
+  if (kind === 'blueprints' && expected === SavedFileKind.LEAGUES)
+    throw new Error(BLUEPRINT_FILE);
+  if (kind === 'leagues' && expected === SavedFileKind.BLUEPRINTS)
+    throw new Error(LEAGUE_FILE);
 }
 
 /**
@@ -74,7 +77,7 @@ export function serializeLeagueExport(
     leagues.flatMap((league) => league.teams.map((team) => team.blueprintUuid))
   );
   return serializeLeagueFile({
-    kind: 'leagues',
+    kind: SavedFileKind.LEAGUES,
     formatVersion: DATABASE_FORMAT_VERSION,
     leagues: leagues.map(leagueToFile),
     blueprints: blueprints.filter((b) => named.has(b.uuid)).map(blueprintToFile),
@@ -84,7 +87,7 @@ export function serializeLeagueExport(
 /** Reads a file for "Import leagues". Throws the wrong-file text, or the
  * `parseLeagueFile` error. */
 export function readLeagueImport(text: string): LeagueImport {
-  rejectWrongFile(detectFileKind(text), 'leagues');
+  rejectWrongFile(detectFileKind(text), SavedFileKind.LEAGUES);
   const file = parseLeagueFile(text);
   return {
     leagues: file.leagues.map(leagueFromFile),
@@ -95,7 +98,7 @@ export function readLeagueImport(text: string): LeagueImport {
 /** A Blueprint file with every given Blueprint (US-10.2). */
 export function serializeBlueprintExport(blueprints: readonly TeamBlueprint[]): string {
   return serializeBlueprintFile({
-    kind: 'blueprints',
+    kind: SavedFileKind.BLUEPRINTS,
     formatVersion: DATABASE_FORMAT_VERSION,
     blueprints: blueprints.map(blueprintToFile),
   });
@@ -104,7 +107,7 @@ export function serializeBlueprintExport(blueprints: readonly TeamBlueprint[]): 
 /** Reads a file for "Import teams". Throws the wrong-file text, or the
  * `parseBlueprintFile` error. */
 export function readBlueprintImport(text: string): TeamBlueprint[] {
-  rejectWrongFile(detectFileKind(text), 'blueprints');
+  rejectWrongFile(detectFileKind(text), SavedFileKind.BLUEPRINTS);
   return parseBlueprintFile(text).blueprints.map(blueprintFromFile);
 }
 

@@ -3,24 +3,83 @@ import type { Bye, GroupSetting, PhaseFixture } from '@/engine/round-robin';
 
 /** One or two meetings of each pair of teams (US-01.2): `two-way` is
  * `generateRoundRobin`, `single-duels` is `generateSingleDuels`. */
-export type Legs = 'two-way' | 'single-duels';
+export const Legs = { TWO_WAY: 'two-way', SINGLE_DUELS: 'single-duels' } as const;
+export type Legs = (typeof Legs)[keyof typeof Legs];
+
+/** The format of a phase (US-01.2). The record types of `domain/` and the
+ * file types of `adapters/` use it too: `domain/` holds types only, so the
+ * value set lives here, beside the plans (Task 184). */
+export const PhaseFormat = {
+  ROUND_ROBIN: 'round-robin',
+  GROUPS: 'groups',
+  BRACKET: 'bracket',
+} as const;
+export type PhaseFormat = (typeof PhaseFormat)[keyof typeof PhaseFormat];
+
+/** The four zone colours (US-12.5), each one used once at most. */
+export const ZoneColour = {
+  GREEN: 'green',
+  BLUE: 'blue',
+  YELLOW: 'yellow',
+  RED: 'red',
+} as const;
+export type ZoneColour = (typeof ZoneColour)[keyof typeof ZoneColour];
+
+/** The first and the last place of a zone, from 1. */
+export interface ZonePlaces {
+  from: number;
+  to: number;
+}
+
+/** One stored zone of a plan (Task 155 choice 3). An automatic green or
+ * yellow has no `places`, because the advancement gives them. An empty
+ * `label` means no label: the legend then shows the places. */
+export interface PlanZone {
+  colour: ZoneColour;
+  places?: ZonePlaces;
+  label: string;
+}
+
+/** A zone of a phase, with its places (`getPhaseZones`). `automatic` is
+ * true for a green or yellow zone that follows the advancement. */
+export interface PhaseZone {
+  colour: ZoneColour;
+  from: number;
+  to: number;
+  label: string;
+  automatic: boolean;
+}
+
+/** A problem of the zones of one plan (US-12.5). `colours` names the two
+ * zones that share a place, in place order. */
+export type ZoneProblem =
+  | { code: 'repeated-colour'; colour: ZoneColour }
+  | { code: 'label-too-long'; colour: ZoneColour }
+  | { code: 'places-on-automatic'; colour: ZoneColour }
+  | { code: 'missing-places'; colour: ZoneColour }
+  | { code: 'bad-places'; colour: ZoneColour }
+  | { code: 'shared-place'; colours: [ZoneColour, ZoneColour] };
 
 /** A round-robin phase plan (US-01.2). `advance` is how many teams of its
- * table go to the next phase (US-01.4). The last phase has none. */
+ * table go to the next phase (US-01.4). The last phase has none. `zones`
+ * holds the stored zones (US-12.5). With no list, the phase has only its
+ * automatic zones. */
 export interface RoundRobinPlan {
   format: 'round-robin';
   legs: Legs;
   advance?: { top: number };
+  zones?: PlanZone[];
 }
 
 /** A Groups phase plan (US-01.2, US-02.1). `advance` is the top N of each
  * group, plus the best M of place N + 1 (US-01.4, US-01.6). The last phase
- * has none. */
+ * has none. `zones` holds the stored zones, as in `RoundRobinPlan`. */
 export interface GroupsPlan {
   format: 'groups';
   legs: Legs;
   grouping: GroupSetting;
   advance?: { top: number; bestOfNext: number };
+  zones?: PlanZone[];
 }
 
 /** A bracket phase plan. Only valid as the last phase (US-01.3). `rules`

@@ -1,4 +1,4 @@
-import type { GroupsPlan, PhasePlan } from '@/engine/phases';
+import { type GroupsPlan, type PhasePlan, PhaseFormat } from '@/engine/phases';
 import type { Rng } from '@/engine/rng';
 import {
   addToSmallestGroup,
@@ -38,7 +38,7 @@ export function groupsForPlan(
   teams: readonly string[],
   rng: Rng
 ): string[][] | null {
-  if (plan?.format !== 'groups') return null;
+  if (plan?.format !== PhaseFormat.GROUPS) return null;
   if (!groups) {
     const count = groupCount(plan, teams.length, Number.NaN);
     return Number.isNaN(count) ? [] : drawGroups(teams, count, rng);

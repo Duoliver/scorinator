@@ -5,6 +5,7 @@ import {
   bracketQualifiers,
   bracketWarning,
   endsWithGroups,
+  getPhaseFieldRanges,
   phaseChecks,
   phaseCountLines,
   phaseProblemText,
@@ -205,5 +206,51 @@ describe('the power-of-2 warning (US-04.9, Task 140)', () => {
         phaseChecks([{ format: 'bracket' }], 5).counts
       )
     ).toBe(5);
+  });
+});
+
+describe('getPhaseFieldRanges (Task 191)', () => {
+  const grp = (
+    by: 'size' | 'count',
+    value: number,
+    top?: number,
+    best = 0
+  ): PhasePlan => ({
+    format: 'groups',
+    legs: 'two-way',
+    grouping: by === 'size' ? { by, size: value } : { by, count: value },
+    ...(top === undefined ? {} : { advance: { top, bestOfNext: best } }),
+  });
+  const ranges = (plans: PhasePlan[], teams: number, index = 0): unknown =>
+    getPhaseFieldRanges(plans, phaseChecks(plans, teams).counts, index);
+
+  it('gives only the lowest values while the team count is not known', () => {
+    expect(ranges([grp('size', 4, 2), rr()], 0)).toEqual({
+      group: { min: 2 },
+      top: { min: 1 },
+      best: { min: 0 },
+    });
+  });
+
+  it('gives Top up to the team count less 1 in a round robin', () => {
+    expect(ranges([rr(2), rr()], 8)).toEqual({ top: { min: 1, max: 7 } });
+  });
+
+  it('gives the group size up to the team count, and the group count up to half of it', () => {
+    expect(ranges([grp('size', 4)], 9)).toEqual({ group: { min: 2, max: 9 } });
+    expect(ranges([grp('count', 2)], 9)).toEqual({ group: { min: 2, max: 4 } });
+  });
+
+  it('gives Top up to the smallest group less 1, and the best M up to the groups less 1', () => {
+    // 10 teams in groups of 4 give 4, 3, 3.
+    expect(ranges([grp('size', 4, 1, 1), rr()], 10)).toEqual({
+      group: { min: 2, max: 10 },
+      top: { min: 1, max: 2 },
+      best: { min: 0, max: 2 },
+    });
+  });
+
+  it('gives nothing for a bracket', () => {
+    expect(ranges([rr(2), { format: 'bracket' }], 8, 1)).toEqual({});
   });
 });

@@ -6,6 +6,7 @@
 
 .scroller {
   overflow-x: auto;
+  container: standings-table / inline-size;
 }
 
 /* 760px in the design reference: below this width the table scrolls
@@ -35,6 +36,7 @@
   display: flex;
   flex-direction: column;
   border: var(--border-width) solid var(--color-fg);
+  container: group-card / inline-size;
 }
 
 /* The card border is the table border. The table overlaps the card
@@ -68,7 +70,9 @@
   min-width: 0;
 }
 
-.teamName {
+/* A long name in a group card cuts with an ellipsis, so it keeps the card
+ * width. */
+.card [data-part='full'] {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -83,7 +87,73 @@
   font-weight: 700;
 }
 
+.form {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.375rem;
+  height: 1.375rem;
+  border-radius: 50%;
+  color: var(--color-form-fg);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+}
+
+.dot[data-outcome='W'] {
+  background: var(--color-form-win);
+}
+
+.dot[data-outcome='D'] {
+  background: var(--color-form-draw);
+}
+
+.dot[data-outcome='L'] {
+  background: var(--color-form-loss);
+}
+
+.formHint {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  white-space: pre;
+}
+
 .note {
   margin: 0;
   color: var(--color-fg-muted);
+}
+
+/* The trigram in place of the name in a narrow box (US-09.6, Task 157
+ * choice 1): a round-robin table under 47.5rem, which then scrolls only
+ * under 30rem, and a group card under 20rem. A WebKit with no container
+ * queries keeps the names. */
+@container standings-table (max-width: 47.4375rem) {
+  .sheet {
+    min-width: 30rem;
+  }
+
+  .sheet [data-part='full'] {
+    display: none;
+  }
+
+  .sheet [data-part='short'] {
+    display: inline;
+  }
+}
+
+@container group-card (max-width: 19.9375rem) {
+  .card [data-part='full'] {
+    display: none;
+  }
+
+  .card [data-part='short'] {
+    display: inline;
+  }
 }

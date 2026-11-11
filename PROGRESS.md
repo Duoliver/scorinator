@@ -29,7 +29,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 |---|------|--------|--------|---------|-----------|-----------|-------|
 | 192 | Archive the MVP2 log: `PROGRESS.md`, the task files, the decisions | `PROGRESS.md`, `docs/` | ✅ Done | 2026-11-11 | 2026-11-11 | [192](/docs/tasks/192-archive-mvp2-log.md) | Task created by User - 2026-11-11. MVP3 preparation, step 1. The user reviewed the new log. |
 | 193 | Workflow: a refactor step before Done, with its own review and commit | `CLAUDE.md`, `PROGRESS.md`, `docs/` | ✅ Done | 2026-11-11 | 2026-11-11 | [193](/docs/tasks/193-refactor-step.md) | Task created by User - 2026-11-11. MVP3 preparation, step 2. The user reviewed the docs. |
-| 194 | Rewrite the code review checklist: today's standards and module map, a link from each entry to its rule, the local docs entry | `docs/` | ⬜ Not started |  |  |  | Task created by User - 2026-11-11. From Task 193, choice 10. The refactor pass reads it first. |
+| 194 | Rewrite the code review checklist: today's standards and module map, a link from each entry to its rule, the local docs entry | `docs/` | ✅ Done | 2026-11-11 | 2026-11-11 | [194](/docs/tasks/194-review-checklist.md) | Task created by User - 2026-11-11. From Task 193, choice 10. 59 entries, 60 links. The user reviewed it. |
 
 **Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input, see Open Questions) · 🟩 Review · 🟦 Refactor (the pass, or its review: the Notes say which) · ✅ Done · ❌ Cancelled (the reason is in the Notes column)
 
@@ -73,6 +73,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 and MVP2 decisions still apply.** They are in [`docs/archive/mvp1/PROGRESS.md`](/docs/archive/mvp1/PROGRESS.md), [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/), and [`docs/archive/mvp2/PROGRESS.md`](/docs/archive/mvp2/PROGRESS.md). An entry here changes an earlier decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-11-11 (Task 194 — the review checklist):** The user agreed eight choices. One short line for each entry, with a link to its rule. The first section: the local docs of each module or feature in the diff. Thirteen sections by what the diff holds. Scope entries point to the `PROGRESS.md` scope line. The refactor pass items in the process section. Detail: [Task 194](/docs/tasks/194-review-checklist.md).
 
 - **2026-11-11 (Task 193 — the refactor step):** The user agreed eleven choices. A 🟦 Refactor status between Review and Done. Commit 1 at the review, commit 2 for the refactor. The pass reads the review checklist first, against the diff of the task. Every change after the implementation happens during Review: at Refactor, only plain refactoring. Gaps outside the diff and bugs go in the task notes. A task with no code skips the step. Task 194 rewrites the checklist. Rule text: `docs/tdd.md`, "The refactor step". Detail: [Task 193](/docs/tasks/193-refactor-step.md).
 

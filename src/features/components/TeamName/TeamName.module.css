@@ -1,9 +1,17 @@
 .teamName {
   display: inline-flex;
   min-width: 0;
+  max-width: 100%;
 }
 
 .full {
+  min-width: 0;
+}
+
+/* The name text: a block, so the screen CSS can cut it with an ellipsis
+ * on `[data-part='name']` (Task 180). */
+.name {
+  display: block;
   min-width: 0;
 }
 

@@ -256,7 +256,8 @@ describe('BracketView: the Location hint (Task 157, US-09.3)', () => {
   it('gives a team with a Location a hint on its name in a tie card', async () => {
     render(<FromStore />);
     const [name] = screen.getAllByText('Team 1');
-    expect(name).toHaveAttribute('tabindex', '0');
+    // The trigger holds the name text (Task 180).
+    expect(name.closest('[tabindex]')).toHaveAttribute('tabindex', '0');
     await userEvent.hover(name);
     expect(await screen.findByRole('tooltip')).toHaveTextContent('Coastal City');
     expect(screen.getByRole('tooltip')).toHaveAttribute('data-not-hoverable');

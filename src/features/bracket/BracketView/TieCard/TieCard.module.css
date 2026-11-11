@@ -50,6 +50,15 @@
 
 .name {
   flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A team name cuts on its text, so `TeamName` sees the cut and gives the
+ * full name in its hint (Task 180). The title cuts on `.name` itself. */
+.name [data-part='name'] {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

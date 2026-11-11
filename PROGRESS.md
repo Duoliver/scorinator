@@ -141,7 +141,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 177 | Phases step counts, best M suggestion, and warnings | `features/leagues`, `engine/phases` | ✅ Done | 2026-11-01 | 2026-11-01 | [177](/docs/tasks/177-phases-step-counts-and-warnings.md) | M3. US-01.2, 01.4 to 01.6. 25 new tests. Task 130 gives the real phase-1 sizes. |
 | 178 | Phases step layout polish | `features/leagues`, `design-system/` | ✅ Done | 2026-11-11 | 2026-11-11 | [178](/docs/tasks/178-phases-step-layout-polish.md) | Task created by User - 2026-11-01. Set by, 22px ⋮, zone rows, format width, label size. The user checked the real app. |
 | 179 | Review step: a blank name turns "Create league" off, with the reason | `features/leagues` | ✅ Done | 2026-11-11 | 2026-11-11 | [179](/docs/tasks/179-review-name-reason.md) | Task created by User - 2026-11-01. Name reason first, button off. The user checked the real app. |
-| 180 | A hint with the full team name on a cut name | `design-system/`, `features/standings` | ⬜ Not started |  |  | [180](/docs/tasks/180-cut-name-hint.md) | Task created by User - 2026-11-02. From the Task 131 review. Criteria wait for the user. |
+| 180 | A hint with the full team name on a cut name | `design-system/`, `features/` | ✅ Done | 2026-11-11 | 2026-11-11 | [180](/docs/tasks/180-cut-name-hint.md) | Task created by User - 2026-11-02. `useIsCut`, cut name hint, ellipsis fix. The user checked the real app. |
 
 **Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input, see Open Questions) · 🟩 Review · ✅ Done · ❌ Cancelled (the reason is in the Notes column)
 
@@ -189,6 +189,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-11-11 (Task 180 — the hint of a cut name):** The user agreed six choices. (1) A `design-system/` hook, `useIsCut`. (2) A cut name gets "Name · Location", or "Name". (3) A cut name is a Tab stop. (4) Both screens cut on `data-part="name"`. (5) The "…" shows inside a hint. (6) Tests with mocked widths and a headless look check. At review: the team name is bold in the hint, and in the trigram hint. Detail: [Task 180](/docs/tasks/180-cut-name-hint.md).
 
 - **2026-11-11 (Task 179 — the name reason on the Review step):** The user agreed four choices. (1) A name with no letter or digit turns "Create league" off, with the reason above it. This changes the MVP1 rule. (2) The name reason comes first. (3) `handleCreate` drops its name check and status line message. (4) The tests change with it. Detail: [Task 179](/docs/tasks/179-review-name-reason.md).
 

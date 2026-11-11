@@ -1,4 +1,5 @@
 export type { FieldHandle } from './field';
+export { useIsCut } from './useIsCut';
 
 export { Button } from './components/Button';
 export type { ButtonProps, ButtonVariant, ButtonSize } from './components/Button';

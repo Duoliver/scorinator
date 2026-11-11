@@ -55,3 +55,15 @@ if (!HTMLDialogElement.prototype.showModal) {
 // a no-op keeps every screen test quiet. A test that checks the scroll spies
 // on this stub with `vi.spyOn(window, 'scrollTo')`.
 window.scrollTo = (): void => {};
+
+// jsdom does not implement `ResizeObserver`. `useIsCut` (Task 180) needs
+// one, so this stand-in observes nothing. jsdom has no layout, so no box
+// ever changes size. `test/textWidth.ts` replaces it with one that a test
+// can fire.
+if (typeof globalThis.ResizeObserver === 'undefined') {
+  globalThis.ResizeObserver = class {
+    observe(): void {}
+    unobserve(): void {}
+    disconnect(): void {}
+  } as unknown as typeof ResizeObserver;
+}

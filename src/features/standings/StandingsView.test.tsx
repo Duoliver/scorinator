@@ -684,8 +684,11 @@ describe('StandingsView: trigrams and the Location hint (Task 157, US-09.3, US-0
     // The pointer goes through the hint to the rows under it (review).
     expect(screen.getByRole('tooltip')).toHaveAttribute('data-not-hoverable');
     // A text trigger of `Tooltip` is a Tab stop, so a keyboard user gets
-    // the same hint on focus.
-    expect(within(full).getByText('FC United')).toHaveAttribute('tabindex', '0');
+    // the same hint on focus. The trigger holds the name text (Task 180).
+    expect(within(full).getByText('FC United').closest('[tabindex]')).toHaveAttribute(
+      'tabindex',
+      '0'
+    );
   });
 
   it('gives a team with no Location no hint and no Tab stop', () => {

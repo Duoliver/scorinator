@@ -127,7 +127,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 163 | Rename the `blueprint*` files to `teamBlueprint*` | `app/state` | ✅ Done | 2026-10-29 | 2026-10-29 | [163](/docs/tasks/163-rename-team-blueprint-actions.md) | Task created by User - 2026-10-29. Files and names inside (option B). |
 | 164 | Rename `fileStore` and `fileActions` to a name for the status line | `app/state` | ✅ Done | 2026-11-11 | 2026-11-11 | [164](/docs/tasks/164-rename-status-line-store.md) | Task created by User - 2026-10-29. `statusLineStore`, `statusLineActions`. 25 files. No behavior change. |
 | 165 | Restyle the picker dialog rows | `design-system/`, `features/leagues` | ✅ Done | 2026-11-11 | 2026-11-11 | [165](/docs/tasks/165-picker-dialog-rows.md) | Task created by User - 2026-10-29. Rows done in Task 120. Placeholder built, 3 new tests. The user checked the real app. |
-| 166 | Tooltip improvement: a hint that follows the pointer | `design-system/` | ⬜ Not started |  |  |  | Task created by User - 2026-10-29. An option for small, close triggers such as the swatches (Task 114). |
+| 166 | Tooltip improvement: a hint that follows the pointer | `design-system/` | ❌ Cancelled | 2026-11-11 | 2026-11-11 | [166](/docs/tasks/166-tooltip-follows-pointer.md) | Task created by User - 2026-10-29. Cancelled for MVP2: parked in future features §25. |
 | 167 | Slug regenerate and Delete in the team edit drawer, each with a confirm | `features/teams`, `app/state` | ✅ Done | 2026-10-30 | 2026-10-30 | [167](/docs/tasks/167-slug-regenerate-and-delete.md) | Split from 119 - 2026-10-30. US-09.4, 09.5. Regenerate and Delete built, each with a confirm. |
 | 168 | The team import confirm with the counts, on the three import buttons | `features/`, `app/` | ✅ Done | 2026-10-30 | 2026-10-30 | [168](/docs/tasks/168-team-import-confirm.md) | Split from 119 - 2026-10-30. Task 75, US-10.2. Confirm on the three buttons, shared `useTeamImport` hook. The user checked the real app. |
 | 169 | Technical debt: an `Input` slot for a side button, in place of the fixed `Input` line height. The Task 172 lint fix | `design-system/`, `features/` | ✅ Done | 2026-10-30 | 2026-10-30 | [169](/docs/tasks/169-input-side-slot.md) | Task created by User - 2026-10-30. `Input` slot as a grid row, `Button` `fill`, lint fix. The user checked the real app. |
@@ -189,6 +189,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-11-11 (Task 166 — the hint that follows the pointer):** The user cancelled the task for MVP2 and parked the idea in [`scorinator-future-features.md`](/docs/scorinator-future-features.md) §25. No code changed. Detail: [Task 166](/docs/tasks/166-tooltip-follows-pointer.md).
 
 - **2026-11-11 (Task 165 — the picker search placeholder):** The user agreed four choices. (1) `PickerDialog` takes an optional `searchPlaceholder`, "Search…" by default. (2) The team dialogs say "Search by name or location…". (3) Three new tests. (4) Only the placeholder changes. Detail: [Task 165](/docs/tasks/165-picker-dialog-rows.md).
 

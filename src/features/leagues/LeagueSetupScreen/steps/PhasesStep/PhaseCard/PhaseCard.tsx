@@ -1,6 +1,14 @@
 import { useRef } from 'preact/hooks';
 import type { JSX } from 'preact';
-import { Button, Card, Input, Select, type FieldHandle } from '@/design-system';
+import {
+  Button,
+  Card,
+  Input,
+  SegmentedControl,
+  Select,
+  type FieldHandle,
+  type SegmentedOption,
+} from '@/design-system';
 import {
   FORMAT_OPTIONS,
   formatKeyOf,
@@ -18,9 +26,9 @@ import { GroupBy } from '@/engine/round-robin';
 
 export type { PhaseCardProps, PhaseCardView };
 
-const SET_BY_OPTIONS = [
-  { value: 'size', label: 'Group size' },
-  { value: 'count', label: 'Group count' },
+const SET_BY_OPTIONS: SegmentedOption<GroupBy>[] = [
+  { value: GroupBy.SIZE, label: 'Group size' },
+  { value: GroupBy.COUNT, label: 'Group count' },
 ];
 
 /** The text of a number field: empty for a `NaN` (choice 4). */
@@ -117,14 +125,12 @@ export function PhaseCard({ view, phaseList }: PhaseCardProps): JSX.Element {
           </div>
 
           {plan.format === PhaseFormat.GROUPS && (
-            <div class={styles.fields}>
-              <Select
+            <div class={`${styles.fields} ${styles.grouping}`}>
+              <SegmentedControl
                 label="Set by"
                 options={SET_BY_OPTIONS}
                 defaultValue={plan.grouping.by}
-                onChange={(value) =>
-                  phaseList.setGroupBy(index, value as 'size' | 'count')
-                }
+                onChange={(by) => phaseList.setGroupBy(index, by)}
               />
               <div class={styles['number-field']}>
                 <Input

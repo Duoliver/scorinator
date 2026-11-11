@@ -145,3 +145,8 @@ In MVP2, a bracket after a Groups phase seeds by place, then stats (Task 78), wi
 In MVP2, only the final and the third-place tie cards show a title (Tasks 187, 188). The ties of the earlier rounds keep a blank first cell in the score header row. A single-match tie has no header row, so a title needs a title row of its own. A title row on each single-match tie of each round adds height to the whole tree. Later, choose the title text, for example "SF 1" or "QF 2", and how a single-match tie shows it, before or after a replay. Decide also what a bye card shows.
 
 *Raised during: MVP2, Task 188, 2026-11-04.*
+
+## 25. A tooltip hint that follows the pointer
+In MVP2, a `Tooltip` hint sits above the centre of its trigger. Small triggers that sit close together use `notHoverable` (Task 114): the pointer goes through the hint, and the hint hides at once on leave. The swatches, the `TeamName` hints, and the Form dots use it. Later, a `followPointer` option places the hint near the pointer and moves it with the pointer, so the hint does not cover the next trigger. A keyboard focus still places the hint from the trigger box. Settle at refinement: the distance from the pointer, the side, and which triggers use it (the swatches, the Form dots). Task 166 has the first proposal.
+
+*Raised during: MVP2, Task 114 review, 2026-10-29. Parked at Task 166, 2026-11-11.*

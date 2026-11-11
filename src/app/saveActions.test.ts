@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { saveDatabaseChanges } from './saveActions';
 import { isLeagueUnsaved, useDatabaseStore } from '@/app/state/databaseStore';
-import { useFileStore } from '@/app/state/fileStore';
+import { useStatusLineStore } from '@/app/state/statusLineStore';
 import { createLeague, scorinateMatchday } from '@/app/state/leagueWrapperActions';
 import { newTeamInstances } from '@/app/state/teamInstances';
 import { updateTeamBlueprint } from '@/app/state/teamBlueprintActions';
@@ -28,7 +28,7 @@ beforeEach(() => {
   ]);
   openTestLeague(roundRobinLeague(TEAMS));
   openTestLeague(roundRobinLeague(TEAMS, { uuid: OTHER_LEAGUE, name: 'Inland Cup' }));
-  useFileStore.setState({ status: null });
+  useStatusLineStore.setState({ status: null });
 });
 
 describe('saveDatabaseChanges (Ctrl+S, Task 161)', () => {
@@ -42,7 +42,10 @@ describe('saveDatabaseChanges (Ctrl+S, Task 161)', () => {
     expect(memory.saves[0]?.wrappers.map((wrapper) => wrapper.uuid)).toEqual([LEAGUE]);
     expect(memory.saves[0]?.manifest).not.toBeNull();
     expect(isLeagueUnsaved(useDatabaseStore.getState(), LEAGUE)).toBe(false);
-    expect(useFileStore.getState().status).toEqual({ tone: 'info', message: 'Saved.' });
+    expect(useStatusLineStore.getState().status).toEqual({
+      tone: 'info',
+      message: 'Saved.',
+    });
   });
 
   it('saves a new league with its manifest row', async () => {
@@ -63,7 +66,7 @@ describe('saveDatabaseChanges (Ctrl+S, Task 161)', () => {
     await expect(saveDatabaseChanges()).resolves.toBe(true);
 
     expect(memory.saves).toEqual([]);
-    expect(useFileStore.getState().status).toEqual({
+    expect(useStatusLineStore.getState().status).toEqual({
       tone: 'info',
       message: 'Nothing to save.',
     });
@@ -77,7 +80,7 @@ describe('saveDatabaseChanges (Ctrl+S, Task 161)', () => {
 
     await expect(saveDatabaseChanges()).resolves.toBe(false);
 
-    expect(useFileStore.getState().status).toEqual({
+    expect(useStatusLineStore.getState().status).toEqual({
       tone: 'error',
       message: 'Disk full.',
     });
@@ -89,7 +92,7 @@ describe('saveDatabaseChanges (Ctrl+S, Task 161)', () => {
 
     await expect(saveDatabaseChanges()).resolves.toBe(false);
 
-    expect(useFileStore.getState().status).toEqual({
+    expect(useStatusLineStore.getState().status).toEqual({
       tone: 'error',
       message: 'The database is not open.',
     });

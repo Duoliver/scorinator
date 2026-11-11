@@ -16,8 +16,8 @@ export default interface ReviewStepProps {
   /** The texts of the phase problems (Task 177): the Review step lists
    * them all. */
   phaseProblems: readonly string[];
-  /** Why the list cannot start a league, or `null`. It disables "Create
-   * league" (US-08.8). */
+  /** Why the league cannot start, or `null`: the name (Task 179), then the
+   * team list (US-08.8), then the phases. It disables "Create league". */
   createProblem: string | null;
   onBack: () => void;
   onCreate: () => void;

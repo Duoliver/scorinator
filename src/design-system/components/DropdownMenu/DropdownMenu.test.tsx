@@ -53,6 +53,18 @@ describe('DropdownMenu', () => {
       expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     });
 
+    it('is a small icon button with compact (Task 178)', () => {
+      const { unmount } = render(
+        <DropdownMenu label="Team options" icon="⋮" items={teamItems().items} />
+      );
+      expect(trigger().className).not.toMatch(/icon-sm/);
+      unmount();
+      render(
+        <DropdownMenu label="Team options" icon="⋮" compact items={teamItems().items} />
+      );
+      expect(trigger().className).toMatch(/icon-sm/);
+    });
+
     it('is a text button with ▾ when it has no icon', () => {
       render(<DropdownMenu label="Export" items={teamItems().items} />);
       expect(screen.getByRole('button', { name: /Export/ })).toHaveTextContent(

@@ -139,6 +139,7 @@ export function GroupCards({
                     <DropdownMenu
                       label={`Options for ${team.name}`}
                       icon="⋮"
+                      compact
                       items={menuItems(uuid, groupIndex)}
                     />
                   </li>

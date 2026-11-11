@@ -6,7 +6,7 @@ import type { TeamInstance } from '@/domain';
 import { TIER_OVR_RANGES } from '@/engine/tier-ovr';
 import * as slugListTxt from '@/app/data/slugListTxt';
 import { useDatabaseStore } from '@/app/state/databaseStore';
-import { useFileStore } from '@/app/state/fileStore';
+import { useStatusLineStore } from '@/app/state/statusLineStore';
 import { instance, openTestDatabase, testUuid } from '@/test/databaseRecords';
 import { useTeamList } from '@/features/leagues/LeagueSetupScreen/useTeamList';
 import { TeamsStep } from './TeamsStep';
@@ -79,7 +79,7 @@ beforeEach(() => {
   vi.restoreAllMocks();
   latest = [];
   openTestDatabase([ASHFIELD, HARBORVIEW, TOWN]);
-  useFileStore.setState({ status: null });
+  useStatusLineStore.setState({ status: null });
 });
 
 describe('TeamsStep, the empty states (US-08.3)', () => {
@@ -183,6 +183,25 @@ describe('TeamsStep, the add dialog (US-08.1)', () => {
     ).not.toBeInTheDocument();
   });
 
+  it('asks for a name or a location in the add and the Switch search (Task 165)', async () => {
+    const placeholder = 'Search by name or location…';
+    render(<Harness />);
+    const add = await openDialog();
+    expect(within(add).getByRole('textbox', { name: 'Search' })).toHaveAttribute(
+      'placeholder',
+      placeholder
+    );
+    await userEvent.click(within(add).getByRole('button', { name: 'Old Town' }));
+    await userEvent.click(within(add).getByRole('button', { name: 'Add 1 team' }));
+
+    await userEvent.click(screen.getByRole('button', { name: 'Switch Old Town' }));
+    const dialog = screen.getByRole('dialog', { name: 'Switch team' });
+    expect(within(dialog).getByRole('textbox', { name: 'Search' })).toHaveAttribute(
+      'placeholder',
+      placeholder
+    );
+  });
+
   it('adds the selected teams in the order of selection, each with a rolled OVR', async () => {
     render(<Harness onTeams={track} />);
     const dialog = await openDialog();
@@ -281,7 +300,7 @@ describe('TeamsStep, Import slug list (US-08.7)', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Import slug list' }));
 
     expect(latest.map((t) => t.slug)).toEqual(['old-town', 'ashfield-rovers']);
-    expect(useFileStore.getState().status).toEqual({
+    expect(useStatusLineStore.getState().status).toEqual({
       tone: 'info',
       message: '2 teams added. 1 already in the list.',
     });
@@ -296,7 +315,7 @@ describe('TeamsStep, Import slug list (US-08.7)', () => {
     vi.spyOn(slugListTxt, 'importSlugListTxt').mockResolvedValue(['old-town']);
     render(<Harness />);
     await userEvent.click(screen.getByRole('button', { name: 'Import slug list' }));
-    expect(useFileStore.getState().status?.message).toBe('1 team added.');
+    expect(useStatusLineStore.getState().status?.message).toBe('1 team added.');
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
@@ -312,7 +331,7 @@ describe('TeamsStep, Import slug list (US-08.7)', () => {
     render(<Harness onTeams={track} />);
     await userEvent.click(screen.getByRole('button', { name: 'Import slug list' }));
     expect(latest).toEqual([]);
-    expect(useFileStore.getState().status).toEqual({
+    expect(useStatusLineStore.getState().status).toEqual({
       tone: 'error',
       message: 'The file has no slugs.',
     });
@@ -324,7 +343,7 @@ describe('TeamsStep, Import slug list (US-08.7)', () => {
     );
     render(<Harness />);
     await userEvent.click(screen.getByRole('button', { name: 'Import slug list' }));
-    expect(useFileStore.getState().status).toEqual({
+    expect(useStatusLineStore.getState().status).toEqual({
       tone: 'error',
       message: 'Slug list line 2, "north fc", is not a slug.',
     });
@@ -335,7 +354,7 @@ describe('TeamsStep, Import slug list (US-08.7)', () => {
     render(<Harness onTeams={track} />);
     await userEvent.click(screen.getByRole('button', { name: 'Import slug list' }));
     expect(latest).toEqual([]);
-    expect(useFileStore.getState().status).toBeNull();
+    expect(useStatusLineStore.getState().status).toBeNull();
   });
 });
 
@@ -610,6 +629,13 @@ describe('TeamsStep with a phase-1 draw (Task 130)', () => {
     renderGroups({ onShuffleGroups });
     await userEvent.click(screen.getByRole('button', { name: '⟲ Shuffle groups' }));
     expect(onShuffleGroups).toHaveBeenCalledOnce();
+  });
+
+  it('has a small ⋮ row menu button, as the handoff (Task 178)', () => {
+    renderGroups({});
+    expect(screen.getByRole('button', { name: 'Options for Alpha' }).className).toMatch(
+      /icon-sm/
+    );
   });
 
   it('has a row menu with Edit, Switch, Move to each other group, and Remove', async () => {

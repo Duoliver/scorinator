@@ -4,10 +4,12 @@
   gap: var(--space-2);
 }
 
+/* The same size as the `Input` label, so two labels in one row match (Task
+ * 178). */
 .label {
   font-family: var(--font-condensed);
   font-weight: 700;
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-sm);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--color-fg);

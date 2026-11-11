@@ -87,20 +87,20 @@ export function useLeagueSetup(): LeagueSetup {
   );
   // The bracket team count and its power-of-2 warning (US-04.9, Task 140).
   const qualifiers = bracketQualifiers(phaseList.plans, checks.counts);
-  // A phase problem shows its first text (Task 177 choice 6).
-  const createProblem = teamListProblem(teamList.teams) ?? phaseProblems[0] ?? null;
+  // The name comes first (Task 179): the step tabs can reach Review past
+  // the disabled Next of the Details step. A phase problem shows its first
+  // text (Task 177 choice 6).
+  const createProblem =
+    leagueNameProblem(details.name) ??
+    teamListProblem(teamList.teams) ??
+    phaseProblems[0] ??
+    null;
 
   const handleCreate = (): void => {
     // `DetailsStep` is unmounted by the time Review is reachable — `details`
     // already holds its final values, synced by `goToStep` on the way out.
-    // The step tabs can reach Review past a disabled Next, so check the
-    // name again here.
-    const nameProblem = leagueNameProblem(details.name);
-    if (nameProblem) {
-      setStatus(nameProblem);
-      return;
-    }
-    // The Review step disables "Create league" for a list that cannot start.
+    // The Review step disables "Create league" while `createProblem` holds a
+    // reason, the name included (Task 179).
     if (createProblem) return;
     let league: LeagueWrapper;
     try {

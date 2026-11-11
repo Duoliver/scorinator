@@ -5,8 +5,9 @@ import type { ComponentChildren, TargetedMouseEvent } from 'preact';
 export type ButtonVariant =
   'primary' | 'secondary' | 'destructive' | 'destructive-outline' | 'ghost' | 'outline';
 /** `icon` is a square button with a glyph and no visible text (Task 111), as
- * the handoff row buttons ✎, ⇄, and ✕. */
-export type ButtonSize = 'sm' | 'md' | 'lg' | 'icon';
+ * the handoff row buttons ✎, ⇄, and ✕. `icon-sm` is a smaller square, as the
+ * handoff ⋮ of a group row (Task 178). */
+export type ButtonSize = 'sm' | 'md' | 'lg' | 'icon' | 'icon-sm';
 
 interface ButtonBaseProps {
   children: ComponentChildren;
@@ -38,14 +39,14 @@ interface ButtonBaseProps {
  * assistive technology, for a symbol such as `«`, so it names the action in
  * full. */
 interface TextButtonProps extends ButtonBaseProps {
-  size?: Exclude<ButtonSize, 'icon'>;
+  size?: Exclude<ButtonSize, 'icon' | 'icon-sm'>;
   'aria-label'?: string;
   fill?: never;
 }
 
 /** An icon button has no visible text, so it must have an `aria-label`. */
 interface IconButtonProps extends ButtonBaseProps {
-  size: 'icon';
+  size: 'icon' | 'icon-sm';
   'aria-label': string;
   /** Makes the button fill its container, for a button in the `trailing`
    * slot of an `Input`, as the slug regenerate (Task 169). */

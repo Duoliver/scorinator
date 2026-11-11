@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { act, render, screen } from '@testing-library/preact';
-import { clearFileStatus, setFileStatus } from '@/app/state/fileActions';
-import { useFileStore } from '@/app/state/fileStore';
+import { clearStatusLine, setStatusLine } from '@/app/state/statusLineActions';
+import { useStatusLineStore } from '@/app/state/statusLineStore';
 import { StatusLine } from './StatusLine';
 
 beforeEach(() => {
-  useFileStore.setState({ status: null });
+  useStatusLineStore.setState({ status: null });
 });
 
 describe('StatusLine', () => {
@@ -17,10 +17,10 @@ describe('StatusLine', () => {
   it('shows the latest status message, and goes away when it clears', () => {
     render(<StatusLine placement="sidebar" />);
 
-    act(() => setFileStatus({ tone: 'error', message: 'Disk is full.' }));
+    act(() => setStatusLine({ tone: 'error', message: 'Disk is full.' }));
     expect(screen.getByRole('status')).toHaveTextContent('Disk is full.');
 
-    act(() => clearFileStatus());
+    act(() => clearStatusLine());
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
 });

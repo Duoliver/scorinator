@@ -106,6 +106,7 @@ function nextEnabled(
 export function DropdownMenu({
   label,
   icon,
+  compact = false,
   items,
   align = 'end',
 }: DropdownMenuProps): JSX.Element {
@@ -214,7 +215,7 @@ export function DropdownMenu({
     <span ref={anchorRef} class={styles.anchor} onKeyDown={handleTriggerKeyDown}>
       {icon ? (
         <Button
-          size="icon"
+          size={compact ? 'icon-sm' : 'icon'}
           variant="secondary"
           aria-label={label}
           aria-haspopup="menu"

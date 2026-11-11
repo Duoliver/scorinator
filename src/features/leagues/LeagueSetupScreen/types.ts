@@ -3,6 +3,7 @@ import type { RefObject } from 'preact';
 import type { FieldHandle } from '@/design-system';
 import type { LeagueDraftDetails, LeagueSetupStep } from '@/app/state/leagueDraftStore';
 import type { PhasePlan, PlanZone } from '@/engine/phases';
+import type { GroupBy } from '@/engine/round-robin';
 import type { TeamBlueprint, TeamInstance } from '@/domain';
 import type { DetailsStepHandle } from '@/features/leagues/LeagueSetupScreen/steps/DetailsStep';
 import type { TeamInstanceEdit } from '@/features/leagues/LeagueSetupScreen/steps/TeamsStep/EditTeamDrawer';
@@ -38,7 +39,7 @@ export interface PhaseList {
   removePhase: (index: number) => void;
   movePhase: (index: number, step: -1 | 1) => void;
   setFormat: (index: number, key: PhaseFormatKey) => void;
-  setGroupBy: (index: number, by: 'size' | 'count') => void;
+  setGroupBy: (index: number, by: GroupBy) => void;
   setGroupNumber: (index: number, value: number) => void;
   setTop: (index: number, top: number) => void;
   setBestOfNext: (index: number, bestOfNext: number) => void;
@@ -52,7 +53,8 @@ export interface PhaseList {
 export interface LeagueSetup extends TeamList {
   step: LeagueSetupStep;
   details: LeagueDraftDetails;
-  /** Why the list cannot start a league, or `null` (US-08.8). */
+  /** Why the league cannot start, or `null`: the name (Task 179), the team
+   * list (US-08.8), or a phase problem. */
   createProblem: string | null;
   /** The texts of the phase chain and fit problems (Task 177). */
   phaseProblems: string[];

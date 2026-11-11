@@ -7,8 +7,8 @@ export const LEAGUE_NAME_INVALID =
  * give a slug, because the export file names come from it (US-10.1), and
  * `slug()` throws for a blank or symbols-only name. Two leagues can share a
  * name: routes use the league UUID (Task 160). The Details step shows the
- * result next to Next, and `useLeagueSetup`'s `handleCreate` checks it again,
- * since the step tabs can reach Review past a disabled Next. */
+ * result next to Next. `useLeagueSetup` checks it again for "Create league",
+ * since the step tabs can reach Review past a disabled Next (Task 179). */
 export function leagueNameProblem(name: string): string | null {
   try {
     slug(name.trim());

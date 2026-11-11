@@ -6,7 +6,7 @@ import type TeamsStepProps from './types';
 import type { TeamsStepState } from './types';
 import { EditTeamDrawer } from './EditTeamDrawer';
 import { GroupCards } from '@/features/leagues/GroupCards';
-import { describeNotFound, getRowKey } from './helpers';
+import { describeNotFound, getRowKey, TEAM_SEARCH_PLACEHOLDER } from './helpers';
 import { useTeamsStep } from './useTeamsStep';
 import styles from './TeamsStep.module.css';
 
@@ -151,6 +151,7 @@ export function TeamsStep({ onBack, onNext, ...props }: TeamsStepProps): JSX.Ele
             title="Add teams"
             description="Pick teams from your saved blueprints."
             items={step.pickerItems}
+            searchPlaceholder={TEAM_SEARCH_PLACEHOLDER}
             selected={step.pickerSelected}
             onSelectedChange={step.setPickerSelected}
             availableAction={{
@@ -168,6 +169,7 @@ export function TeamsStep({ onBack, onNext, ...props }: TeamsStepProps): JSX.Ele
             mode="single"
             title="Switch team"
             items={step.pickerItems}
+            searchPlaceholder={TEAM_SEARCH_PLACEHOLDER}
             current={step.switchCurrent}
             onPick={step.pickSwitch}
             availableAction={{

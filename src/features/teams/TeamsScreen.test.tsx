@@ -3,7 +3,7 @@ import { render, screen, within } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { TeamsScreen } from './TeamsScreen';
 import * as teamsFile from '@/app/data/teamsFile';
-import { useFileStore } from '@/app/state/fileStore';
+import { useStatusLineStore } from '@/app/state/statusLineStore';
 import { openTestDatabase } from '@/test/databaseRecords';
 import { useDatabaseStore } from '@/app/state/databaseStore';
 import * as teamBlueprintActions from '@/app/state/teamBlueprintActions';
@@ -11,7 +11,7 @@ import * as teamBlueprintActions from '@/app/state/teamBlueprintActions';
 beforeEach(() => {
   vi.restoreAllMocks();
   openTestDatabase([]);
-  useFileStore.setState({ status: null });
+  useStatusLineStore.setState({ status: null });
 });
 
 describe('TeamsScreen', () => {
@@ -267,7 +267,7 @@ describe('TeamsScreen', () => {
       );
       await openDelete();
       expect(screen.queryByRole('dialog', { name: /Delete/ })).not.toBeInTheDocument();
-      expect(useFileStore.getState().status).toEqual({
+      expect(useStatusLineStore.getState().status).toEqual({
         tone: 'error',
         message: 'A league file is missing.',
       });
@@ -323,7 +323,7 @@ describe('TeamsScreen', () => {
         within(dialog).getByRole('button', { name: 'Import' })
       ).toBeInTheDocument();
       expect(screen.getByText('1 team')).toBeInTheDocument();
-      expect(useFileStore.getState().status).toBeNull();
+      expect(useStatusLineStore.getState().status).toBeNull();
     });
 
     it('imports the teams on Import and lists them', async () => {
@@ -343,7 +343,7 @@ describe('TeamsScreen', () => {
       expect(screen.getByText('FC United')).toBeInTheDocument();
       expect(screen.getByText('Harborview SC')).toBeInTheDocument();
       expect(screen.getByText('2 teams')).toBeInTheDocument();
-      expect(useFileStore.getState().status).toEqual({
+      expect(useStatusLineStore.getState().status).toEqual({
         tone: 'info',
         message: 'Imported 2 teams: 2 new, 0 updated.',
       });
@@ -364,7 +364,7 @@ describe('TeamsScreen', () => {
       ).not.toBeInTheDocument();
       expect(screen.getByText('0 teams')).toBeInTheDocument();
       expect(useDatabaseStore.getState().blueprints).toEqual([]);
-      expect(useFileStore.getState().status).toBeNull();
+      expect(useStatusLineStore.getState().status).toBeNull();
     });
 
     it('changes nothing when the file dialog is canceled', async () => {
@@ -375,7 +375,7 @@ describe('TeamsScreen', () => {
 
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
       expect(screen.getByText('0 teams')).toBeInTheDocument();
-      expect(useFileStore.getState().status).toBeNull();
+      expect(useStatusLineStore.getState().status).toBeNull();
     });
 
     it('reports a read error in the status line, with no confirm', async () => {
@@ -386,7 +386,7 @@ describe('TeamsScreen', () => {
 
       await userEvent.click(screen.getByRole('button', { name: 'Import teams...' }));
 
-      expect(useFileStore.getState().status).toEqual({
+      expect(useStatusLineStore.getState().status).toEqual({
         tone: 'error',
         message: 'Row 2: Tier is required.',
       });
@@ -412,7 +412,7 @@ describe('TeamsScreen', () => {
 
       await userEvent.click(screen.getByRole('button', { name: 'Import teams...' }));
 
-      expect(useFileStore.getState().status).toEqual({
+      expect(useStatusLineStore.getState().status).toEqual({
         tone: 'error',
         message:
           'Team CSV row 2 has an invalid Slug "north fc". Use only letters, digits, and hyphens.',
@@ -427,7 +427,7 @@ describe('TeamsScreen', () => {
 
       await userEvent.click(screen.getByRole('button', { name: 'Import teams...' }));
 
-      expect(useFileStore.getState().status).toEqual({
+      expect(useStatusLineStore.getState().status).toEqual({
         tone: 'info',
         message: 'The file has no teams.',
       });

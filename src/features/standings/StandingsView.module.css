@@ -71,8 +71,8 @@
 }
 
 /* A long name in a group card cuts with an ellipsis, so it keeps the card
- * width. */
-.card [data-part='full'] {
+ * width. `TeamName` then gives the full name in its hint (Task 180). */
+.card [data-part='name'] {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

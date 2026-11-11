@@ -112,7 +112,7 @@ A function or object that a render makes again costs microseconds. It causes ext
 
 `preact-router` fully unmounts a screen on nav-away, and fully remounts it on nav-back. Any plain `useState` inside that screen resets on remount. A wizard, a multi-field form, or any screen holding real in-progress work needs a place to keep its draft between those two events. Without one, the user loses it.
 
-Reach for a small Zustand slice under `app/state/`, next to `databaseStore.ts` and `fileStore.ts` — see `leagueDraftStore.ts` and `leagueDraftActions.ts` for a worked example. Keep that store to exactly this shape, with its two actions in a sibling `xDraftActions.ts` (see the store actions rule below):
+Reach for a small Zustand slice under `app/state/`, next to `databaseStore.ts` and `statusLineStore.ts` — see `leagueDraftStore.ts` and `leagueDraftActions.ts` for a worked example. Keep that store to exactly this shape, with its two actions in a sibling `xDraftActions.ts` (see the store actions rule below):
 
 ```ts
 // app/state/xDraftStore.ts
@@ -140,18 +140,18 @@ The point of the three-point rule: a screen with `N` fields and `M` keystrokes s
 This rule applies to every Zustand store under `app/state/`. The store file (`xStore.ts`) holds the state interface, the `create()` call with the initial state, and pure read helpers such as `isLeagueUnsaved`. It holds no action. Each action is a plain exported function in a sibling file, `xActions.ts`. The action changes the store through `useXStore.setState` and reads it through `useXStore.getState`. Zustand calls this the "no store actions" pattern.
 
 ```ts
-// app/state/fileStore.ts
-export interface FileState {
-  status: FileStatus | null;
+// app/state/statusLineStore.ts
+export interface StatusLineState {
+  status: StatusLineMessage | null;
 }
 
-export const useFileStore = create<FileState>()(() => ({
+export const useStatusLineStore = create<StatusLineState>()(() => ({
   status: null,
 }));
 
-// app/state/fileActions.ts
-export function setFileStatus(status: FileStatus): void {
-  useFileStore.setState({ status });
+// app/state/statusLineActions.ts
+export function setStatusLine(status: StatusLineMessage): void {
+  useStatusLineStore.setState({ status });
 }
 ```
 
@@ -168,8 +168,8 @@ const blueprints = useDatabaseStore((state) => state.blueprints);
 
 Rules for the actions file:
 
-- **Name an action for what it does, with the store's subject in the name.** The action is a module-level export, so a name like `setStatus` or `reset` loses its context at the call site. Write `setFileStatus` and `resetLeagueDraft`.
-- **An action may call an action of another store.** Import it from that store's actions file. For example, an action that sets the status line calls `setFileStatus` from `fileActions.ts`. Do not call another store's `setState` directly.
+- **Name an action for what it does, with the store's subject in the name.** The action is a module-level export, so a name like `setStatus` or `reset` loses its context at the call site. Write `setStatusLine` and `resetLeagueDraft`.
+- **An action may call an action of another store.** Import it from that store's actions file. For example, an action that sets the status line calls `setStatusLine` from `statusLineActions.ts`. Do not call another store's `setState` directly.
 - **Keep helpers private.** A helper that only actions use, such as `playFixture` in `leagueWrapperActions.ts`, stays an unexported function in the actions file.
 - **Tests go in `xActions.test.ts`.** A test resets the store with `useXStore.setState(...)` in `beforeEach`, calls the action, and asserts on `useXStore.getState()`.
 
@@ -281,13 +281,13 @@ A caught value has the type `unknown`, and it is not always an `Error`. A Tauri 
 ```ts
 // Don't
 } catch (error) {
-  setFileStatus({ tone: 'error', message: (error as Error).message });
+  setStatusLine({ tone: 'error', message: (error as Error).message });
 }
 
 // Do
 import { getErrorMessage } from '@/app/getErrorMessage';
 } catch (error) {
-  setFileStatus({ tone: 'error', message: getErrorMessage(error) });
+  setStatusLine({ tone: 'error', message: getErrorMessage(error) });
 }
 ```
 

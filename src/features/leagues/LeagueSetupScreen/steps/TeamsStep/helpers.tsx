@@ -99,6 +99,10 @@ export const getTeamsStepColumns = (
   },
 ];
 
+/** The search placeholder of the add and the Switch dialogs. The search
+ * matches the name or the Location (US-08.1, Task 165). */
+export const TEAM_SEARCH_PLACEHOLDER = 'Search by name or location…';
+
 /** One row of the add dialog: swatch, name over Location, and the Tier at
  * the row end. The search matches the name or the Location (US-08.1). */
 export const toPickerItem = (blueprint: TeamBlueprint): PickerItem => ({

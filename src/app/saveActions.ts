@@ -1,7 +1,7 @@
 import { getErrorMessage } from '@/app/getErrorMessage';
 import { saveDatabase } from '@/app/state/databaseActions';
 import { isDatabaseUnsaved, useDatabaseStore } from '@/app/state/databaseStore';
-import { setFileStatus } from '@/app/state/fileActions';
+import { setStatusLine } from '@/app/state/statusLineActions';
 
 /** Ctrl+S, from any screen, and Save in the close guard (Task 76 b, Task
  * 161). One `saveDatabase` call writes each unsaved league, then the
@@ -13,15 +13,15 @@ export async function saveDatabaseChanges(): Promise<boolean> {
   try {
     const state = useDatabaseStore.getState();
     if (state.status.kind === 'open' && !isDatabaseUnsaved(state)) {
-      setFileStatus({ tone: 'info', message: 'Nothing to save.' });
+      setStatusLine({ tone: 'info', message: 'Nothing to save.' });
       return true;
     }
     // Throws for a closed database, with the message the status shows.
     await saveDatabase();
-    setFileStatus({ tone: 'info', message: 'Saved.' });
+    setStatusLine({ tone: 'info', message: 'Saved.' });
     return true;
   } catch (error) {
-    setFileStatus({ tone: 'error', message: getErrorMessage(error) });
+    setStatusLine({ tone: 'error', message: getErrorMessage(error) });
     return false;
   }
 }

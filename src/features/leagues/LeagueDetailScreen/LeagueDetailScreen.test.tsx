@@ -5,7 +5,7 @@ import { serializeLeagueWrapper } from '@/app/data/databaseFile';
 import * as exportFile from '@/app/data/exportFile';
 import * as resultsTxt from '@/app/data/resultsTxt';
 import * as slugListTxt from '@/app/data/slugListTxt';
-import { useFileStore } from '@/app/state/fileStore';
+import { useStatusLineStore } from '@/app/state/statusLineStore';
 import { saveDatabase } from '@/app/state/databaseActions';
 import { useDatabaseStore } from '@/app/state/databaseStore';
 import {
@@ -706,11 +706,11 @@ describe('LeagueDetailScreen: the export menu (US-10.1, Task 150)', () => {
     await userEvent.click(await screen.findByRole('menuitem', { name }));
   };
   const statusMessage = (): string | undefined =>
-    useFileStore.getState().status?.message;
+    useStatusLineStore.getState().status?.message;
 
   beforeEach(() => {
     vi.restoreAllMocks();
-    useFileStore.setState({ status: null });
+    useStatusLineStore.setState({ status: null });
   });
 
   it('lists the three exports, in order', async () => {
@@ -795,7 +795,7 @@ describe('LeagueDetailScreen: the export menu (US-10.1, Task 150)', () => {
 
     await pickItem('Export league (.json)');
 
-    expect(useFileStore.getState().status).toEqual({
+    expect(useStatusLineStore.getState().status).toEqual({
       tone: 'error',
       message: 'Disk full',
     });

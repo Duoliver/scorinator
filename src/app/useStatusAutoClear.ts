@@ -1,6 +1,6 @@
 import { useEffect } from 'preact/hooks';
-import { clearFileStatus } from '@/app/state/fileActions';
-import { useFileStore } from '@/app/state/fileStore';
+import { clearStatusLine } from '@/app/state/statusLineActions';
+import { useStatusLineStore } from '@/app/state/statusLineStore';
 
 /** How long a save/load result stays in the status line. */
 export const STATUS_VISIBLE_MS = 4000;
@@ -14,12 +14,12 @@ export function useStatusAutoClear(): void {
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | undefined;
     // A status set before the first render gets its timer too.
-    if (useFileStore.getState().status)
-      timer = setTimeout(clearFileStatus, STATUS_VISIBLE_MS);
-    const unsubscribe = useFileStore.subscribe((state, previous) => {
+    if (useStatusLineStore.getState().status)
+      timer = setTimeout(clearStatusLine, STATUS_VISIBLE_MS);
+    const unsubscribe = useStatusLineStore.subscribe((state, previous) => {
       if (state.status === previous.status) return;
       clearTimeout(timer);
-      if (state.status) timer = setTimeout(clearFileStatus, STATUS_VISIBLE_MS);
+      if (state.status) timer = setTimeout(clearStatusLine, STATUS_VISIBLE_MS);
     });
     return (): void => {
       unsubscribe();

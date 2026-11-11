@@ -10,7 +10,7 @@ import {
   unsavedLeagues,
   useDatabaseStore,
 } from '@/app/state/databaseStore';
-import { setFileStatus } from '@/app/state/fileActions';
+import { setStatusLine } from '@/app/state/statusLineActions';
 
 /** The prompt before the window closes with unsaved changes (Task 28,
  * `PERSISTENCE.md` §2b). A league counts as unsaved by `isLeagueUnsaved`
@@ -78,7 +78,7 @@ export function installCloseGuard(
       else unlisten();
     })
     .catch((error: unknown) => {
-      setFileStatus({
+      setStatusLine({
         tone: 'error',
         message: `Could not watch for a window close: ${getErrorMessage(error)}`,
       });

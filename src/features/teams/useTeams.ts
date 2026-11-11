@@ -3,7 +3,7 @@ import type { TeamFields } from '@/domain';
 import { formatTeamCount, useTeamImport } from '@/features/components';
 import { getErrorMessage } from '@/app/getErrorMessage';
 import { readTeamsFromFile } from '@/app/loadActions';
-import { setFileStatus } from '@/app/state/fileActions';
+import { setStatusLine } from '@/app/state/statusLineActions';
 import {
   addTeamBlueprint,
   countLeaguesUsingBlueprint,
@@ -46,7 +46,7 @@ export function useTeams(): Teams {
       const leagueCount = await countLeaguesUsingBlueprint(uuid);
       setDeleteConfirm({ uuid, name, leagueCount });
     } catch (error) {
-      setFileStatus({ tone: 'error', message: getErrorMessage(error) });
+      setStatusLine({ tone: 'error', message: getErrorMessage(error) });
     }
   };
 

@@ -21,7 +21,7 @@ import type {
   UnsavedChoice,
   WindowCloseAdapter,
 } from '@/adapters/tauri-window';
-import { useFileStore } from '@/app/state/fileStore';
+import { useStatusLineStore } from '@/app/state/statusLineStore';
 
 const TEAMS = [
   { name: 'FC United', colour: '#E53935' },
@@ -46,7 +46,7 @@ beforeEach(() => {
   ]);
   openTestLeague(roundRobinLeague(TEAMS));
   openTestLeague(roundRobinLeague(TEAMS, { uuid: OTHER_LEAGUE, name: 'Inland Cup' }));
-  useFileStore.setState({ status: null });
+  useStatusLineStore.setState({ status: null });
 });
 
 describe('describeUnsavedLeagues', () => {
@@ -255,7 +255,7 @@ describe('installCloseGuard', () => {
     installCloseGuard(adapter);
 
     await vi.waitFor(() =>
-      expect(useFileStore.getState().status).toEqual({
+      expect(useStatusLineStore.getState().status).toEqual({
         tone: 'error',
         message: 'Could not watch for a window close: No window.',
       })

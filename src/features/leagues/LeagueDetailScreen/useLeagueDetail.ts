@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 import type { FieldHandle } from '@/design-system';
 import { getErrorMessage } from '@/app/getErrorMessage';
 import { openLeague } from '@/app/state/databaseActions';
-import { setFileStatus } from '@/app/state/fileActions';
+import { setStatusLine } from '@/app/state/statusLineActions';
 import {
   moveTeamInCurrentGroups,
   setPhaseZones,
@@ -92,7 +92,7 @@ export function useLeagueDetail(uuid: string): LeagueDetailState {
               // The new phase tab opens (Task 132 choice 3).
               tabsRef.current?.setValue(phaseTabId(next - 1));
             } catch (error) {
-              setFileStatus({ tone: 'error', message: getErrorMessage(error) });
+              setStatusLine({ tone: 'error', message: getErrorMessage(error) });
             }
           },
           onCancel: () => setConfirmingStart(false),
@@ -169,7 +169,7 @@ function findZoneDrawer(
       try {
         setPhaseZones(league.uuid, phaseIndex, zones);
       } catch (error) {
-        setFileStatus({ tone: 'error', message: getErrorMessage(error) });
+        setStatusLine({ tone: 'error', message: getErrorMessage(error) });
       }
     },
     onCancel: close,
@@ -182,7 +182,7 @@ function changeDraw(change: () => void): void {
   try {
     change();
   } catch (error) {
-    setFileStatus({ tone: 'error', message: getErrorMessage(error) });
+    setStatusLine({ tone: 'error', message: getErrorMessage(error) });
   }
 }
 

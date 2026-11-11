@@ -4,7 +4,7 @@ import type { TeamInstanceEdit } from './EditTeamDrawer';
 import { getErrorMessage } from '@/app/getErrorMessage';
 import { importSlugListTxt } from '@/app/data/slugListTxt';
 import { useDatabaseStore } from '@/app/state/databaseStore';
-import { setFileStatus } from '@/app/state/fileActions';
+import { setStatusLine } from '@/app/state/statusLineActions';
 import { addTeamBlueprint } from '@/app/state/teamBlueprintActions';
 import {
   pickTeamTrigrams,
@@ -146,18 +146,18 @@ export function useTeamsStep({
       const slugs = await importSlugListTxt();
       if (slugs === null) return;
       if (slugs.length === 0) {
-        setFileStatus({ tone: 'error', message: NO_SLUGS });
+        setStatusLine({ tone: 'error', message: NO_SLUGS });
         return;
       }
       const plan = planSlugListImport(slugs, blueprints, teams);
       onAddTeams(plan.add);
-      setFileStatus({
+      setStatusLine({
         tone: 'info',
         message: describeSlugListImport(plan.add.length, plan.alreadyInList),
       });
       setNotFound(plan.notFound.length > 0 ? plan.notFound : null);
     } catch (error) {
-      setFileStatus({ tone: 'error', message: getErrorMessage(error) });
+      setStatusLine({ tone: 'error', message: getErrorMessage(error) });
     }
   };
 

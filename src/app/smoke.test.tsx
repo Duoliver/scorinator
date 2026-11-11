@@ -3,7 +3,7 @@ import { act, render, screen, waitFor, within } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { open, save } from '@tauri-apps/plugin-dialog';
 import { AppShell } from './AppShell';
-import { useFileStore } from '@/app/state/fileStore';
+import { useStatusLineStore } from '@/app/state/statusLineStore';
 import { useLeagueDraftStore } from '@/app/state/leagueDraftStore';
 import { DEFAULT_POINTS_CONFIG } from '@/engine/standings';
 import { useDatabaseStore } from '@/app/state/databaseStore';
@@ -79,7 +79,7 @@ vi.mock('@tauri-apps/plugin-dialog', () => ({
  * opens it from the disk again. */
 function resetSession(): void {
   useDatabaseStore.setState(useDatabaseStore.getInitialState(), true);
-  useFileStore.setState({ status: null });
+  useStatusLineStore.setState({ status: null });
   useLeagueDraftStore.setState({
     details: { name: '', points: DEFAULT_POINTS_CONFIG, homeAdvantage: false },
     teams: [],
@@ -575,7 +575,9 @@ describe('smoke: M5 files, imports, and conflicts (Task 151)', () => {
   ].join('\n');
 
   const statusIs = async (message: string): Promise<void> => {
-    await waitFor(() => expect(useFileStore.getState().status?.message).toBe(message));
+    await waitFor(() =>
+      expect(useStatusLineStore.getState().status?.message).toBe(message)
+    );
   };
 
   it('exports, imports into an empty database, and resolves a conflict', async () => {

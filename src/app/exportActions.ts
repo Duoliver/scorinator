@@ -10,12 +10,12 @@ import { exportTeamsCsv } from '@/app/data/teamsCsv';
 import { getErrorMessage } from '@/app/getErrorMessage';
 import { useDatabaseStore } from '@/app/state/databaseStore';
 import { exportDatabaseZip, readAllLeagues } from '@/app/state/databaseZipActions';
-import { setFileStatus } from '@/app/state/fileActions';
+import { setStatusLine } from '@/app/state/statusLineActions';
 import type { LeagueWrapper } from '@/domain';
 
 /** The export actions of the File screen, the same shape as
  * `saveActions.ts` and `loadActions.ts`. Each one reports through
- * `fileStore`'s status line and never throws. An export is not a save, so
+ * `statusLineStore`'s status line and never throws. An export is not a save, so
  * it changes no unsaved marker. */
 
 /** Runs one export with a save dialog, and reports the path, the cancel,
@@ -23,12 +23,12 @@ import type { LeagueWrapper } from '@/domain';
 async function reportExport(write: () => Promise<string | null>): Promise<void> {
   try {
     const path = await write();
-    setFileStatus({
+    setStatusLine({
       tone: 'info',
       message: path === null ? 'Export canceled.' : `Saved to ${path}`,
     });
   } catch (error) {
-    setFileStatus({ tone: 'error', message: getErrorMessage(error) });
+    setStatusLine({ tone: 'error', message: getErrorMessage(error) });
   }
 }
 

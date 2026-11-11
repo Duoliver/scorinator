@@ -6,7 +6,7 @@ import type { TeamInstance } from '@/domain';
 import { TIER_OVR_RANGES } from '@/engine/tier-ovr';
 import * as slugListTxt from '@/app/data/slugListTxt';
 import { useDatabaseStore } from '@/app/state/databaseStore';
-import { useFileStore } from '@/app/state/fileStore';
+import { useStatusLineStore } from '@/app/state/statusLineStore';
 import { instance, openTestDatabase, testUuid } from '@/test/databaseRecords';
 import { useTeamList } from '@/features/leagues/LeagueSetupScreen/useTeamList';
 import { TeamsStep } from './TeamsStep';
@@ -79,7 +79,7 @@ beforeEach(() => {
   vi.restoreAllMocks();
   latest = [];
   openTestDatabase([ASHFIELD, HARBORVIEW, TOWN]);
-  useFileStore.setState({ status: null });
+  useStatusLineStore.setState({ status: null });
 });
 
 describe('TeamsStep, the empty states (US-08.3)', () => {
@@ -281,7 +281,7 @@ describe('TeamsStep, Import slug list (US-08.7)', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Import slug list' }));
 
     expect(latest.map((t) => t.slug)).toEqual(['old-town', 'ashfield-rovers']);
-    expect(useFileStore.getState().status).toEqual({
+    expect(useStatusLineStore.getState().status).toEqual({
       tone: 'info',
       message: '2 teams added. 1 already in the list.',
     });
@@ -296,7 +296,7 @@ describe('TeamsStep, Import slug list (US-08.7)', () => {
     vi.spyOn(slugListTxt, 'importSlugListTxt').mockResolvedValue(['old-town']);
     render(<Harness />);
     await userEvent.click(screen.getByRole('button', { name: 'Import slug list' }));
-    expect(useFileStore.getState().status?.message).toBe('1 team added.');
+    expect(useStatusLineStore.getState().status?.message).toBe('1 team added.');
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
@@ -312,7 +312,7 @@ describe('TeamsStep, Import slug list (US-08.7)', () => {
     render(<Harness onTeams={track} />);
     await userEvent.click(screen.getByRole('button', { name: 'Import slug list' }));
     expect(latest).toEqual([]);
-    expect(useFileStore.getState().status).toEqual({
+    expect(useStatusLineStore.getState().status).toEqual({
       tone: 'error',
       message: 'The file has no slugs.',
     });
@@ -324,7 +324,7 @@ describe('TeamsStep, Import slug list (US-08.7)', () => {
     );
     render(<Harness />);
     await userEvent.click(screen.getByRole('button', { name: 'Import slug list' }));
-    expect(useFileStore.getState().status).toEqual({
+    expect(useStatusLineStore.getState().status).toEqual({
       tone: 'error',
       message: 'Slug list line 2, "north fc", is not a slug.',
     });
@@ -335,7 +335,7 @@ describe('TeamsStep, Import slug list (US-08.7)', () => {
     render(<Harness onTeams={track} />);
     await userEvent.click(screen.getByRole('button', { name: 'Import slug list' }));
     expect(latest).toEqual([]);
-    expect(useFileStore.getState().status).toBeNull();
+    expect(useStatusLineStore.getState().status).toBeNull();
   });
 });
 

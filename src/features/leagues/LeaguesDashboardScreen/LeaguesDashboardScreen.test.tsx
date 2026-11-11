@@ -6,7 +6,7 @@ import * as exportFile from '@/app/data/exportFile';
 import * as teamsFile from '@/app/data/teamsFile';
 import { saveDatabase } from '@/app/state/databaseActions';
 import { useDatabaseStore } from '@/app/state/databaseStore';
-import { useFileStore } from '@/app/state/fileStore';
+import { useStatusLineStore } from '@/app/state/statusLineStore';
 import { scorinateMatchday } from '@/app/state/leagueWrapperActions';
 import { summarizeLeague } from '@/app/state/summarizeLeague';
 import { ROUTES, leagueDetailPath } from '@/app/routes';
@@ -42,7 +42,7 @@ function storeRows(...wrappers: LeagueWrapper[]): void {
 beforeEach(() => {
   vi.restoreAllMocks();
   openTestDatabase([]);
-  useFileStore.setState({ status: null });
+  useStatusLineStore.setState({ status: null });
 });
 
 describe('LeaguesDashboardScreen', () => {
@@ -98,7 +98,7 @@ describe('LeaguesDashboardScreen', () => {
       expect(useDatabaseStore.getState().blueprints.map((team) => team.slug)).toEqual([
         'fc-united',
       ]);
-      expect(useFileStore.getState().status).toEqual({
+      expect(useStatusLineStore.getState().status).toEqual({
         tone: 'info',
         message: 'Imported 1 team: 1 new, 0 updated.',
       });
@@ -118,7 +118,7 @@ describe('LeaguesDashboardScreen', () => {
         screen.queryByRole('dialog', { name: 'Import teams?' })
       ).not.toBeInTheDocument();
       expect(useDatabaseStore.getState().blueprints).toEqual([]);
-      expect(useFileStore.getState().status).toBeNull();
+      expect(useStatusLineStore.getState().status).toBeNull();
     });
 
     it('has no Load league button: leagues live in the database (Task 161)', () => {
@@ -247,7 +247,7 @@ describe('LeaguesDashboardScreen: Import league (US-10.3, Task 149)', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Import league...' }));
 
     expect(await screen.findByText('2 leagues running')).toBeInTheDocument();
-    expect(useFileStore.getState().status?.message).toBe('1 league imported.');
+    expect(useStatusLineStore.getState().status?.message).toBe('1 league imported.');
   });
 
   it('opens the picker for a file with many leagues', async () => {

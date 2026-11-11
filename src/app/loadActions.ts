@@ -1,7 +1,7 @@
 import { importTeamsCsv } from '@/app/data/teamsCsv';
 import { importTeamsFile } from '@/app/data/teamsFile';
 import { getErrorMessage } from '@/app/getErrorMessage';
-import { setFileStatus } from '@/app/state/fileActions';
+import { setStatusLine } from '@/app/state/statusLineActions';
 import {
   importTeamBlueprints,
   previewTeamImport,
@@ -12,7 +12,7 @@ import type { TeamListRecord } from '@/persistence/types';
  * same way. An import has two steps, so the screen can ask first (Task 75,
  * Task 168): a `readTeamsFrom*` action reads the file and gives the counts,
  * then `applyTeamImport` changes the Blueprints. Each one reports through
- * `fileStore`'s status line and never throws. */
+ * `statusLineStore`'s status line and never throws. */
 
 /** A team file that is read but not applied yet, with the counts of
  * `previewTeamImport` for the confirm. */
@@ -37,9 +37,9 @@ export function readTeamsFromCsv(): Promise<TeamImportPreview | null> {
 export function applyTeamImport(records: readonly TeamListRecord[]): void {
   try {
     const { added, updated } = importTeamBlueprints(records);
-    setFileStatus({ tone: 'info', message: describeTeamImport(added, updated) });
+    setStatusLine({ tone: 'info', message: describeTeamImport(added, updated) });
   } catch (error) {
-    setFileStatus({ tone: 'error', message: getErrorMessage(error) });
+    setStatusLine({ tone: 'error', message: getErrorMessage(error) });
   }
 }
 
@@ -62,12 +62,12 @@ async function readTeams(
     const records = await importer();
     if (records === null) return null;
     if (records.length === 0) {
-      setFileStatus({ tone: 'info', message: 'The file has no teams.' });
+      setStatusLine({ tone: 'info', message: 'The file has no teams.' });
       return null;
     }
     return { records, ...previewTeamImport(records) };
   } catch (error) {
-    setFileStatus({ tone: 'error', message: getErrorMessage(error) });
+    setStatusLine({ tone: 'error', message: getErrorMessage(error) });
     return null;
   }
 }

@@ -6,7 +6,7 @@ import * as csvIO from '@/app/data/teamsCsv';
 import * as databaseZip from '@/app/data/databaseZip';
 import * as exportFile from '@/app/data/exportFile';
 import { useDatabaseStore } from '@/app/state/databaseStore';
-import { useFileStore } from '@/app/state/fileStore';
+import { useStatusLineStore } from '@/app/state/statusLineStore';
 import { summarizeLeague } from '@/app/state/summarizeLeague';
 import type { LeagueWrapper, TeamBlueprint } from '@/domain';
 import {
@@ -31,7 +31,8 @@ const harborview = blueprint({
 
 const state = (): ReturnType<typeof useDatabaseStore.getState> =>
   useDatabaseStore.getState();
-const statusMessage = (): string | undefined => useFileStore.getState().status?.message;
+const statusMessage = (): string | undefined =>
+  useStatusLineStore.getState().status?.message;
 
 function named(wrapper: LeagueWrapper, name: string): LeagueWrapper {
   return { ...wrapper, content: { ...wrapper.content, name } };
@@ -58,7 +59,7 @@ const card = (title: string): HTMLElement => screen.getByRole('group', { name: t
 beforeEach(() => {
   vi.restoreAllMocks();
   openTestDatabase([]);
-  useFileStore.setState({ status: null });
+  useStatusLineStore.setState({ status: null });
 });
 
 describe('FileScreen: the layout (US-10.2, US-10.4)', () => {
@@ -259,7 +260,7 @@ describe('FileScreen: Import leagues (US-10.3)', () => {
     render(<FileScreen />);
     await importLeagues();
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-    expect(useFileStore.getState().status).toBeNull();
+    expect(useStatusLineStore.getState().status).toBeNull();
   });
 
   it('skips the picker for a file with one league', async () => {
@@ -339,7 +340,7 @@ describe('FileScreen: Import leagues (US-10.3)', () => {
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(state().leagues).toEqual({});
-    expect(useFileStore.getState().status).toBeNull();
+    expect(useStatusLineStore.getState().status).toBeNull();
   });
 
   it('tags a real conflict only, not a row with the same content (choice 2)', async () => {
@@ -486,7 +487,7 @@ describe('FileScreen: Resolve conflicts (US-11.2)', () => {
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(Object.keys(state().leagues)).toEqual([LEAGUE]);
-    expect(useFileStore.getState().status).toBeNull();
+    expect(useStatusLineStore.getState().status).toBeNull();
   });
 });
 

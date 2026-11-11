@@ -1,11 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { clearFileStatus, setFileStatus } from '@/app/state/fileActions';
+import { clearStatusLine, setStatusLine } from '@/app/state/statusLineActions';
 import { act, render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { route } from 'preact-router';
 import { AppShell } from './AppShell';
 import { useLeagueDraftStore } from '@/app/state/leagueDraftStore';
-import { useFileStore } from '@/app/state/fileStore';
+import { useStatusLineStore } from '@/app/state/statusLineStore';
 import * as saveActions from '@/app/saveActions';
 import * as closeGuard from '@/app/closeGuard';
 import * as databaseStart from '@/app/databaseStart';
@@ -25,7 +25,7 @@ beforeEach(() => {
   // The real start opens the Tauri app data folder. These tests seed an
   // open database instead (Task 109).
   vi.spyOn(databaseStart, 'openAppDatabase').mockResolvedValue();
-  useFileStore.setState({ status: null });
+  useStatusLineStore.setState({ status: null });
   openTestDatabase([]);
   useLeagueDraftStore.setState({
     details: { name: '', points: DEFAULT_POINTS_CONFIG, homeAdvantage: false },
@@ -272,7 +272,7 @@ describe('AppShell', () => {
     it('shows the latest save or load result in the sidebar', () => {
       render(<AppShell />);
 
-      act(() => setFileStatus({ tone: 'info', message: 'Saved it.' }));
+      act(() => setStatusLine({ tone: 'info', message: 'Saved it.' }));
 
       expect(screen.getByRole('status')).toHaveTextContent('Saved it.');
     });
@@ -281,7 +281,7 @@ describe('AppShell', () => {
       vi.useFakeTimers();
       render(<AppShell />);
 
-      act(() => setFileStatus({ tone: 'info', message: 'Saved it.' }));
+      act(() => setStatusLine({ tone: 'info', message: 'Saved it.' }));
       expect(screen.getByRole('status')).toBeInTheDocument();
 
       act(() => {
@@ -289,18 +289,18 @@ describe('AppShell', () => {
       });
 
       expect(screen.queryByRole('status')).not.toBeInTheDocument();
-      expect(useFileStore.getState().status).toBeNull();
+      expect(useStatusLineStore.getState().status).toBeNull();
     });
 
     it('restarts the clear timer when a new status comes', () => {
       vi.useFakeTimers();
       render(<AppShell />);
 
-      act(() => setFileStatus({ tone: 'info', message: 'Saved it.' }));
+      act(() => setStatusLine({ tone: 'info', message: 'Saved it.' }));
       act(() => {
         vi.advanceTimersByTime(3000);
       });
-      act(() => setFileStatus({ tone: 'info', message: 'Saved again.' }));
+      act(() => setStatusLine({ tone: 'info', message: 'Saved again.' }));
       act(() => {
         vi.advanceTimersByTime(3000);
       });
@@ -318,8 +318,8 @@ describe('AppShell', () => {
       await userEvent.click(screen.getByRole('link', { name: 'Leagues' }));
       const rendersBefore = dashboard.mock.calls.length;
 
-      act(() => setFileStatus({ tone: 'info', message: 'Saved it.' }));
-      act(() => clearFileStatus());
+      act(() => setStatusLine({ tone: 'info', message: 'Saved it.' }));
+      act(() => clearStatusLine());
 
       expect(screen.queryByRole('status')).not.toBeInTheDocument();
       expect(dashboard.mock.calls.length).toBe(rendersBefore);
@@ -329,7 +329,7 @@ describe('AppShell', () => {
       render(<AppShell />);
       await userEvent.click(screen.getByRole('link', { name: 'File' }));
 
-      act(() => setFileStatus({ tone: 'info', message: 'Saved it.' }));
+      act(() => setStatusLine({ tone: 'info', message: 'Saved it.' }));
 
       expect(screen.getAllByRole('status')).toHaveLength(1);
     });

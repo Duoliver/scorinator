@@ -125,7 +125,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 161 | The leagues on the v2 store: the wizard create, League Detail, the dashboard rows, the File screen, Ctrl+S, the close guard, the routes by UUID | `features/`, `app/` | ✅ Done | 2026-10-29 | 2026-10-29 | [161](/docs/tasks/161-leagues-on-v2-store.md) | Task created by User - 2026-10-29, split from 109. M1. Leagues on the database. Ten choices agreed. |
 | 162 | Remove the MVP1 code: domain types, stores, save files, triple lookups | all | ✅ Done | 2026-10-29 | 2026-10-29 | [162](/docs/tasks/162-remove-mvp1-code.md) | Task created by User - 2026-10-29, split from 109. M1. MVP1 code removed. 718 tests pass. |
 | 163 | Rename the `blueprint*` files to `teamBlueprint*` | `app/state` | ✅ Done | 2026-10-29 | 2026-10-29 | [163](/docs/tasks/163-rename-team-blueprint-actions.md) | Task created by User - 2026-10-29. Files and names inside (option B). |
-| 164 | Rename `fileStore` and `fileActions` to a name for the status line | `app/state` | ⬜ Not started |  |  |  | Task created by User - 2026-10-29. After 158: the store holds the status line only (Task 162). |
+| 164 | Rename `fileStore` and `fileActions` to a name for the status line | `app/state` | ✅ Done | 2026-11-11 | 2026-11-11 | [164](/docs/tasks/164-rename-status-line-store.md) | Task created by User - 2026-10-29. `statusLineStore`, `statusLineActions`. 25 files. No behavior change. |
 | 165 | Restyle the picker dialog rows | `design-system/`, `features/leagues` | ⬜ Not started |  |  |  | Task created by User - 2026-10-29. Part done in Task 120: name over Location, Tier at the row end, ✕ centered. Left: the search placeholder. |
 | 166 | Tooltip improvement: a hint that follows the pointer | `design-system/` | ⬜ Not started |  |  |  | Task created by User - 2026-10-29. An option for small, close triggers such as the swatches (Task 114). |
 | 167 | Slug regenerate and Delete in the team edit drawer, each with a confirm | `features/teams`, `app/state` | ✅ Done | 2026-10-30 | 2026-10-30 | [167](/docs/tasks/167-slug-regenerate-and-delete.md) | Split from 119 - 2026-10-30. US-09.4, 09.5. Regenerate and Delete built, each with a confirm. |
@@ -189,6 +189,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-11-11 (Task 164 — the status line store):** The user agreed seven choices. (1) `statusLineStore.ts` and `statusLineActions.ts`. (2) `useStatusLineStore`, `StatusLineState`. (3) `StatusLineMessage`. (4) `setStatusLine`, `clearStatusLine`. (5) The coding standards use the new names. (6) History keeps the old names. (7) The `tone` union stays a string union. Detail: [Task 164](/docs/tasks/164-rename-status-line-store.md).
 
 - **2026-11-10 (Task 158 — the M6 smoke check):** The user agreed three choices. (1) The M6 end-to-end test uses one round-robin league through six steps. (2) The manual check uses the 9 rows of the task file. (3) The scope line stays MVP1 and MVP2 until the user approves MVP3. An MVP2 log archive is a separate task. Detail: [Task 158](/docs/tasks/158-m6-smoke-check.md).
 

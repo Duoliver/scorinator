@@ -2,14 +2,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { applyTeamImport, readTeamsFromCsv, readTeamsFromFile } from './loadActions';
 import * as teamsCsv from '@/app/data/teamsCsv';
 import * as teamsFile from '@/app/data/teamsFile';
-import { useFileStore } from '@/app/state/fileStore';
+import { useStatusLineStore } from '@/app/state/statusLineStore';
 import { openTestDatabase, teamFields } from '@/test/databaseRecords';
 import { useDatabaseStore } from '@/app/state/databaseStore';
 
 beforeEach(() => {
   vi.restoreAllMocks();
   openTestDatabase([]);
-  useFileStore.setState({ status: null });
+  useStatusLineStore.setState({ status: null });
 });
 
 const fcUnited = {
@@ -36,19 +36,19 @@ describe('team import reads', () => {
 
     expect(preview).toEqual({ records: [fcUnited, renamed], added: 1, updated: 1 });
     expect(teamFields(useDatabaseStore.getState().blueprints)).toEqual([oldTown]);
-    expect(useFileStore.getState().status).toBeNull();
+    expect(useStatusLineStore.getState().status).toBeNull();
   });
 
   it('gives null and no message when the dialog is canceled', async () => {
     vi.spyOn(teamsCsv, 'importTeamsCsv').mockResolvedValue(null);
     expect(await readTeamsFromCsv()).toBeNull();
-    expect(useFileStore.getState().status).toBeNull();
+    expect(useStatusLineStore.getState().status).toBeNull();
   });
 
   it('gives null and reports the error when the read fails', async () => {
     vi.spyOn(teamsCsv, 'importTeamsCsv').mockRejectedValue(new Error('Bad CSV.'));
     expect(await readTeamsFromCsv()).toBeNull();
-    expect(useFileStore.getState().status).toEqual({
+    expect(useStatusLineStore.getState().status).toEqual({
       tone: 'error',
       message: 'Bad CSV.',
     });
@@ -57,7 +57,7 @@ describe('team import reads', () => {
   it('gives null and says so when the file has no teams (choice 10)', async () => {
     vi.spyOn(teamsCsv, 'importTeamsCsv').mockResolvedValue([]);
     expect(await readTeamsFromCsv()).toBeNull();
-    expect(useFileStore.getState().status).toEqual({
+    expect(useStatusLineStore.getState().status).toEqual({
       tone: 'info',
       message: 'The file has no teams.',
     });
@@ -86,7 +86,7 @@ describe('applyTeamImport', () => {
       'old-town',
       'fc-united',
     ]);
-    expect(useFileStore.getState().status).toEqual({
+    expect(useStatusLineStore.getState().status).toEqual({
       tone: 'info',
       message: 'Imported 1 team: 1 new, 0 updated.',
     });
@@ -96,6 +96,6 @@ describe('applyTeamImport', () => {
     useDatabaseStore.setState({ status: { kind: 'closed' } });
 
     expect(() => applyTeamImport([fcUnited])).not.toThrow();
-    expect(useFileStore.getState().status?.tone).toBe('error');
+    expect(useStatusLineStore.getState().status?.tone).toBe('error');
   });
 });

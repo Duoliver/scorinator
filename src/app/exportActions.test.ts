@@ -13,7 +13,7 @@ import * as databaseZip from '@/app/data/databaseZip';
 import * as resultsTxt from '@/app/data/resultsTxt';
 import * as slugListTxt from '@/app/data/slugListTxt';
 import * as teamsCsv from '@/app/data/teamsCsv';
-import { useFileStore } from '@/app/state/fileStore';
+import { useStatusLineStore } from '@/app/state/statusLineStore';
 import type { TeamFields } from '@/domain';
 import { serializeLeagueWrapper } from '@/app/data/databaseFile';
 import { summarizeLeague } from '@/app/state/summarizeLeague';
@@ -39,7 +39,7 @@ const team: TeamFields = {
 beforeEach(() => {
   vi.restoreAllMocks();
   openTestDatabase([team]);
-  useFileStore.setState({ status: null });
+  useStatusLineStore.setState({ status: null });
 });
 
 describe('exportTeams', () => {
@@ -51,7 +51,7 @@ describe('exportTeams', () => {
     expect(teamFields(write.mock.calls[0][0])).toEqual([
       { slug: 'fc-united', name: 'FC United', colour: '#E53935', tier: 'B' },
     ]);
-    expect(useFileStore.getState().status).toEqual({
+    expect(useStatusLineStore.getState().status).toEqual({
       tone: 'info',
       message: 'Saved to /teams.csv',
     });
@@ -62,7 +62,7 @@ describe('exportTeams', () => {
 
     await exportTeams();
 
-    expect(useFileStore.getState().status).toEqual({
+    expect(useStatusLineStore.getState().status).toEqual({
       tone: 'info',
       message: 'Export canceled.',
     });
@@ -73,7 +73,7 @@ describe('exportTeams', () => {
 
     await exportTeams();
 
-    expect(useFileStore.getState().status).toEqual({
+    expect(useStatusLineStore.getState().status).toEqual({
       tone: 'error',
       message: 'Disk is full.',
     });
@@ -84,7 +84,7 @@ describe('exportTeams', () => {
 
     await exportTeams();
 
-    expect(useFileStore.getState().status).toEqual({
+    expect(useStatusLineStore.getState().status).toEqual({
       tone: 'error',
       message: 'Permission denied.',
     });
@@ -103,7 +103,7 @@ describe('the exports of one league (Task 150)', () => {
 
     expect(save.mock.calls[0][0]).toBe(league);
     expect(save.mock.calls[0][1]).toBe(useDatabaseStore.getState().blueprints);
-    expect(useFileStore.getState().status).toEqual({
+    expect(useStatusLineStore.getState().status).toEqual({
       tone: 'info',
       message: 'Saved to /c.json',
     });
@@ -116,7 +116,7 @@ describe('the exports of one league (Task 150)', () => {
     await exportResults(league);
 
     expect(write.mock.calls[0][0]).toBe(league);
-    expect(useFileStore.getState().status?.message).toBe('Saved to /r.txt');
+    expect(useStatusLineStore.getState().status?.message).toBe('Saved to /r.txt');
   });
 
   it('exports the slug list', async () => {
@@ -128,13 +128,13 @@ describe('the exports of one league (Task 150)', () => {
     await exportSlugList(league);
 
     expect(write.mock.calls[0][0]).toBe(league);
-    expect(useFileStore.getState().status?.message).toBe('Saved to /s.txt');
+    expect(useStatusLineStore.getState().status?.message).toBe('Saved to /s.txt');
   });
 
   it('reports a canceled dialog', async () => {
     vi.spyOn(resultsTxt, 'exportResultsTxt').mockResolvedValue(null);
     await exportResults(coastal());
-    expect(useFileStore.getState().status?.message).toBe('Export canceled.');
+    expect(useStatusLineStore.getState().status?.message).toBe('Export canceled.');
   });
 
   it('reports an error, and does not throw', async () => {
@@ -142,7 +142,7 @@ describe('the exports of one league (Task 150)', () => {
       new Error('Disk full')
     );
     await exportSlugList(coastal());
-    expect(useFileStore.getState().status).toEqual({
+    expect(useStatusLineStore.getState().status).toEqual({
       tone: 'error',
       message: 'Disk full',
     });
@@ -173,7 +173,7 @@ describe('the bulk exports (Task 149)', () => {
       OTHER_LEAGUE,
     ]);
     expect(useDatabaseStore.getState().leagues[OTHER_LEAGUE]).toBeUndefined();
-    expect(useFileStore.getState().status).toEqual({
+    expect(useStatusLineStore.getState().status).toEqual({
       tone: 'info',
       message: 'Saved to /l.json',
     });
@@ -185,7 +185,7 @@ describe('the bulk exports (Task 149)', () => {
       .mockResolvedValue('/b.json');
     await exportAllBlueprints();
     expect(teamFields(save.mock.calls[0][0])).toHaveLength(1);
-    expect(useFileStore.getState().status?.message).toBe('Saved to /b.json');
+    expect(useStatusLineStore.getState().status?.message).toBe('Saved to /b.json');
   });
 
   it('exports the database as a zip', async () => {
@@ -195,13 +195,13 @@ describe('the bulk exports (Task 149)', () => {
       .mockResolvedValue('/d.zip');
     await exportDatabase();
     expect(save.mock.calls[0][0]).toBeInstanceOf(Uint8Array);
-    expect(useFileStore.getState().status?.message).toBe('Saved to /d.zip');
+    expect(useStatusLineStore.getState().status?.message).toBe('Saved to /d.zip');
   });
 
   it('reports a canceled dialog', async () => {
     vi.spyOn(exportFile, 'saveBlueprintsFile').mockResolvedValue(null);
     await exportAllBlueprints();
-    expect(useFileStore.getState().status?.message).toBe('Export canceled.');
+    expect(useStatusLineStore.getState().status?.message).toBe('Export canceled.');
   });
 
   it('reports an error, and does not throw', async () => {
@@ -209,7 +209,7 @@ describe('the bulk exports (Task 149)', () => {
       new Error('Disk full')
     );
     await exportDatabase();
-    expect(useFileStore.getState().status).toEqual({
+    expect(useStatusLineStore.getState().status).toEqual({
       tone: 'error',
       message: 'Disk full',
     });

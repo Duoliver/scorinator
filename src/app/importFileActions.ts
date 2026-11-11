@@ -6,7 +6,7 @@ import {
   planDatabaseImport,
   type DatabaseImportPlan,
 } from '@/app/state/databaseZipActions';
-import { setFileStatus } from '@/app/state/fileActions';
+import { setStatusLine } from '@/app/state/statusLineActions';
 import {
   importBlueprints,
   importLeagues,
@@ -48,7 +48,7 @@ async function runPlan(
   try {
     return await plan();
   } catch (error) {
-    setFileStatus({ tone: 'error', message: getErrorMessage(error) });
+    setStatusLine({ tone: 'error', message: getErrorMessage(error) });
     return null;
   }
 }
@@ -189,8 +189,8 @@ export function applyFileImport(
   choices: ReadonlyMap<string, ImportChoice>
 ): void {
   try {
-    setFileStatus({ tone: 'info', message: runImport(pending, selected, choices) });
+    setStatusLine({ tone: 'info', message: runImport(pending, selected, choices) });
   } catch (error) {
-    setFileStatus({ tone: 'error', message: getErrorMessage(error) });
+    setStatusLine({ tone: 'error', message: getErrorMessage(error) });
   }
 }

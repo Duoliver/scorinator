@@ -10,7 +10,7 @@ import * as exportFile from '@/app/data/exportFile';
 import * as databaseZip from '@/app/data/databaseZip';
 import { packDatabase } from '@/app/data/databaseZip';
 import { useDatabaseStore } from '@/app/state/databaseStore';
-import { useFileStore } from '@/app/state/fileStore';
+import { useStatusLineStore } from '@/app/state/statusLineStore';
 import { summarizeLeague } from '@/app/state/summarizeLeague';
 import type { ImportChoice } from '@/engine/identity';
 import type { LeagueWrapper, TeamBlueprint } from '@/domain';
@@ -27,7 +27,7 @@ import {
 } from '@/test/databaseRecords';
 
 const NO_CHOICES: ReadonlyMap<string, ImportChoice> = new Map();
-const message = (): string | undefined => useFileStore.getState().status?.message;
+const message = (): string | undefined => useStatusLineStore.getState().status?.message;
 const state = (): ReturnType<typeof useDatabaseStore.getState> =>
   useDatabaseStore.getState();
 
@@ -48,14 +48,14 @@ const selectAll = (uuids: string[]): ReadonlySet<string> => new Set(uuids);
 beforeEach(() => {
   vi.restoreAllMocks();
   openTestDatabase([]);
-  useFileStore.setState({ status: null });
+  useStatusLineStore.setState({ status: null });
 });
 
 describe('planLeagueFileImport', () => {
   it('gives null with no message when the dialog is canceled', async () => {
     vi.spyOn(exportFile, 'openLeagueImportFile').mockResolvedValue(null);
     expect(await planLeagueFileImport()).toBeNull();
-    expect(useFileStore.getState().status).toBeNull();
+    expect(useStatusLineStore.getState().status).toBeNull();
   });
 
   it('shows the error of a bad file, and imports nothing', async () => {
@@ -63,7 +63,7 @@ describe('planLeagueFileImport', () => {
       new Error('Not valid')
     );
     expect(await planLeagueFileImport()).toBeNull();
-    expect(useFileStore.getState().status).toEqual({
+    expect(useStatusLineStore.getState().status).toEqual({
       tone: 'error',
       message: 'Not valid',
     });
@@ -245,13 +245,13 @@ describe('the database import', () => {
       new Uint8Array([1, 2])
     );
     expect(await planDatabaseFileImport()).toBeNull();
-    expect(useFileStore.getState().status?.tone).toBe('error');
+    expect(useStatusLineStore.getState().status?.tone).toBe('error');
     expect(message()).toContain('not a Scorinator database');
   });
 
   it('gives null with no message when the dialog is canceled', async () => {
     vi.spyOn(databaseZip, 'openDatabaseZipFile').mockResolvedValue(null);
     expect(await planDatabaseFileImport()).toBeNull();
-    expect(useFileStore.getState().status).toBeNull();
+    expect(useStatusLineStore.getState().status).toBeNull();
   });
 });

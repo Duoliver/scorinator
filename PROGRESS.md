@@ -140,7 +140,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 176 | Phases in the domain and the database files: plans, legs, the Groups phase, format version 3 | `domain/`, `adapters/json-io`, `app/data` | ✅ Done | 2026-11-01 | 2026-11-01 | [176](/docs/tasks/176-phase-domain-and-files.md) | M3. Split from 128. 13 new tests. Format version 3, reads version 2. |
 | 177 | Phases step counts, best M suggestion, and warnings | `features/leagues`, `engine/phases` | ✅ Done | 2026-11-01 | 2026-11-01 | [177](/docs/tasks/177-phases-step-counts-and-warnings.md) | M3. US-01.2, 01.4 to 01.6. 25 new tests. Task 130 gives the real phase-1 sizes. |
 | 178 | Phases step layout polish | `features/leagues`, `design-system/` | ✅ Done | 2026-11-11 | 2026-11-11 | [178](/docs/tasks/178-phases-step-layout-polish.md) | Task created by User - 2026-11-01. Set by, 22px ⋮, zone rows, format width, label size. The user checked the real app. |
-| 179 | Review step: a blank name turns "Create league" off, with the reason | `features/leagues` | ⬜ Not started |  |  | [179](/docs/tasks/179-review-name-reason.md) | Task created by User - 2026-11-01. From the Task 130 review. Criteria wait for the user. |
+| 179 | Review step: a blank name turns "Create league" off, with the reason | `features/leagues` | ✅ Done | 2026-11-11 | 2026-11-11 | [179](/docs/tasks/179-review-name-reason.md) | Task created by User - 2026-11-01. Name reason first, button off. The user checked the real app. |
 | 180 | A hint with the full team name on a cut name | `design-system/`, `features/standings` | ⬜ Not started |  |  | [180](/docs/tasks/180-cut-name-hint.md) | Task created by User - 2026-11-02. From the Task 131 review. Criteria wait for the user. |
 
 **Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input, see Open Questions) · 🟩 Review · ✅ Done · ❌ Cancelled (the reason is in the Notes column)
@@ -189,6 +189,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 decisions still apply.** They are in the archived log and in [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/). An entry here changes an MVP1 decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-11-11 (Task 179 — the name reason on the Review step):** The user agreed four choices. (1) A name with no letter or digit turns "Create league" off, with the reason above it. This changes the MVP1 rule. (2) The name reason comes first. (3) `handleCreate` drops its name check and status line message. (4) The tests change with it. Detail: [Task 179](/docs/tasks/179-review-name-reason.md).
 
 - **2026-11-11 (Task 178 — the Phases step polish):** The user agreed eight rows. (1) "Set by" is a `SegmentedControl`. (5) The group row ⋮ is 22 px. (6) `setGroupBy` takes `GroupBy`. (7) A zone row keeps the swatch and the switch in one box, aligned to the top. (8) Below 39rem, each zone row stacks, with a larger gap between rows. (9) The same in "Edit zones". (10) The format field fills the card. (11) The first points 2 to 4 drop out. At review: the "Set by" row aligns to the top, and a bold uppercase field label is `--font-size-sm` (rule in `DESIGN_SYSTEM.md`). Detail: [Task 178](/docs/tasks/178-phases-step-layout-polish.md).
 

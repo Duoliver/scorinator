@@ -72,23 +72,6 @@ describe('ReviewStep', () => {
     ).toBeInTheDocument();
   });
 
-  it('does not disable Create league for a blank name: the Details step blocks it, and the screen reports a tab jump', () => {
-    render(
-      <ReviewStep
-        name=""
-        homeAdvantage={false}
-        points={{ win: 3, draw: 1, loss: 0 }}
-        teams={teams}
-        plans={ONE_PHASE}
-        phaseProblems={[]}
-        createProblem={null}
-        onBack={vi.fn()}
-        onCreate={vi.fn()}
-      />
-    );
-    expect(screen.getByText('Create league')).toBeEnabled();
-  });
-
   it('shows a placeholder title for a blank name', () => {
     render(
       <ReviewStep

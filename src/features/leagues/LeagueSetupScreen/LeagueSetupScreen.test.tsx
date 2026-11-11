@@ -85,7 +85,7 @@ describe('LeagueSetupScreen', () => {
     expect(route).toHaveBeenCalledWith(`/leagues/${league.uuid}`);
   });
 
-  it('does not create a league or navigate when the name is symbols-only', async () => {
+  it('turns Create league off for a symbols-only name, with the reason (Task 179)', async () => {
     render(<LeagueSetupScreen />);
 
     await userEvent.type(screen.getByLabelText('League name'), '!!!');
@@ -94,13 +94,14 @@ describe('LeagueSetupScreen', () => {
     await userEvent.click(screen.getByRole('tab', { name: '3 · Teams' }));
     await addTwoTeams();
     await userEvent.click(screen.getByText('Next: Review →'));
-    await userEvent.click(screen.getByText('Create league'));
 
-    expect(route).not.toHaveBeenCalled();
-    expect(useDatabaseStore.getState().leagues).toEqual({});
+    expect(screen.getByText('Create league')).toBeDisabled();
     expect(
       screen.getByText('Enter a league name with at least one letter or number.')
     ).toBeInTheDocument();
+    await userEvent.click(screen.getByText('Create league'));
+    expect(route).not.toHaveBeenCalled();
+    expect(useDatabaseStore.getState().leagues).toEqual({});
   });
 
   it('resets the persisted draft store after creating a league', async () => {
@@ -176,19 +177,34 @@ describe('LeagueSetupScreen', () => {
     expect(screen.getByRole('tab', { name: '1 · Details' })).toHaveFocus();
   });
 
-  it('does not create a league from a blank name reached through the Review tab', async () => {
+  it('turns Create league off for a blank name reached through the Review tab (Task 179)', async () => {
     render(<LeagueSetupScreen />);
 
     await userEvent.click(screen.getByRole('tab', { name: '3 · Teams' }));
     await addTwoTeams();
     await userEvent.click(screen.getByRole('tab', { name: '4 · Review' }));
-    await userEvent.click(screen.getByText('Create league'));
 
-    expect(route).not.toHaveBeenCalled();
-    expect(useDatabaseStore.getState().leagues).toEqual({});
+    expect(screen.getByText('Create league')).toBeDisabled();
     expect(
       screen.getByText('Enter a league name with at least one letter or number.')
     ).toBeInTheDocument();
+    await userEvent.click(screen.getByText('Create league'));
+    expect(route).not.toHaveBeenCalled();
+    expect(useDatabaseStore.getState().leagues).toEqual({});
+  });
+
+  it('gives the name reason before the team list reason (Task 179)', async () => {
+    render(<LeagueSetupScreen />);
+
+    await userEvent.click(screen.getByRole('tab', { name: '4 · Review' }));
+
+    expect(screen.getByText('Create league')).toBeDisabled();
+    expect(
+      screen.getByText('Enter a league name with at least one letter or number.')
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText('The league needs at least 2 teams to start.')
+    ).not.toBeInTheDocument();
   });
 
   it('creates a second league with a name that another league uses (Task 160)', async () => {

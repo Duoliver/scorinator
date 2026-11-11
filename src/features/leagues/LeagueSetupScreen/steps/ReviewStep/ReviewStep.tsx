@@ -87,9 +87,9 @@ export function ReviewStep({
           <Button variant="secondary" onClick={onBack}>
             Back
           </Button>
-          {/* No name check here: the Details step turns off Next for an
-              invalid name. A jump through the step tabs still reaches
-              this button, and `useLeagueSetup`'s `handleCreate` reports it. */}
+          {/* `createProblem` covers the name too (Task 179): a jump
+              through the step tabs reaches this button past the Details
+              step. */}
           <div class={styles.create}>
             {createProblem && <p class={styles.problem}>{createProblem}</p>}
             <Button onClick={onCreate} disabled={createProblem !== null}>

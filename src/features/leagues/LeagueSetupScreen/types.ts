@@ -53,7 +53,8 @@ export interface PhaseList {
 export interface LeagueSetup extends TeamList {
   step: LeagueSetupStep;
   details: LeagueDraftDetails;
-  /** Why the list cannot start a league, or `null` (US-08.8). */
+  /** Why the league cannot start, or `null`: the name (Task 179), the team
+   * list (US-08.8), or a phase problem. */
   createProblem: string | null;
   /** The texts of the phase chain and fit problems (Task 177). */
   phaseProblems: string[];

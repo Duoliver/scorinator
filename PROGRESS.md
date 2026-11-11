@@ -23,13 +23,15 @@ One row for each task. Keep this table current. A new session reads this table f
 
 **Keep the Notes column short:** one line, about 20 words at most. Use it for where the task stands, what it waits for, or what it depends on. Write the detail in the task file (see Task files below), and link the file in the Task file column.
 
-Do not mark a task as Done until the user gives feedback and agrees with what was delivered. The user can ask for adjustments. After the implementation, mark the task as "Review". Mark it "Done" when the user agrees, and set the Completed date. Then commit the task, as the Git commits section of `CLAUDE.md` says.
+Do not mark a task as Done until the user gives feedback and agrees with what was delivered. The user can ask for adjustments during Review. After the implementation, mark the task as "Review". When the user agrees, commit the work, and mark it "Refactor". After the refactor pass and its review, mark it "Done", set the Completed date, and commit the refactor. A task with no code goes from Review to Done. See "The refactor step" in [`docs/tdd.md`](/docs/tdd.md) and the Git commits section of `CLAUDE.md`.
 
 | # | Task | Module | Status | Started | Completed | Task file | Notes |
 |---|------|--------|--------|---------|-----------|-----------|-------|
 | 192 | Archive the MVP2 log: `PROGRESS.md`, the task files, the decisions | `PROGRESS.md`, `docs/` | ✅ Done | 2026-11-11 | 2026-11-11 | [192](/docs/tasks/192-archive-mvp2-log.md) | Task created by User - 2026-11-11. MVP3 preparation, step 1. The user reviewed the new log. |
+| 193 | Workflow: a refactor step before Done, with its own review and commit | `CLAUDE.md`, `PROGRESS.md`, `docs/` | ✅ Done | 2026-11-11 | 2026-11-11 | [193](/docs/tasks/193-refactor-step.md) | Task created by User - 2026-11-11. MVP3 preparation, step 2. The user reviewed the docs. |
+| 194 | Rewrite the code review checklist: today's standards and module map, a link from each entry to its rule, the local docs entry | `docs/` | ⬜ Not started |  |  |  | Task created by User - 2026-11-11. From Task 193, choice 10. The refactor pass reads it first. |
 
-**Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input, see Open Questions) · 🟩 Review · ✅ Done · ❌ Cancelled (the reason is in the Notes column)
+**Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input, see Open Questions) · 🟩 Review · 🟦 Refactor (the pass, or its review: the Notes say which) · ✅ Done · ❌ Cancelled (the reason is in the Notes column)
 
 **Note on numbering:** task numbers continue across all logs: MVP1 ends at Task 73, and MVP2 at Task 191. Code comments and docs name tasks by number, for example "(Task 30)", so each number must stay unique. A task number below 192 is in an archive.
 
@@ -71,5 +73,7 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 and MVP2 decisions still apply.** They are in [`docs/archive/mvp1/PROGRESS.md`](/docs/archive/mvp1/PROGRESS.md), [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/), and [`docs/archive/mvp2/PROGRESS.md`](/docs/archive/mvp2/PROGRESS.md). An entry here changes an earlier decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-11-11 (Task 193 — the refactor step):** The user agreed eleven choices. A 🟦 Refactor status between Review and Done. Commit 1 at the review, commit 2 for the refactor. The pass reads the review checklist first, against the diff of the task. Every change after the implementation happens during Review: at Refactor, only plain refactoring. Gaps outside the diff and bugs go in the task notes. A task with no code skips the step. Task 194 rewrites the checklist. Rule text: `docs/tdd.md`, "The refactor step". Detail: [Task 193](/docs/tasks/193-refactor-step.md).
 
 - **2026-11-11 (Task 192 — the MVP2 archive):** The user agreed nine choices. (1) The log moves to `docs/archive/mvp2/PROGRESS.md`. (2) The task files 074 to 191 move to `docs/archive/mvp2/tasks/`. (3) The links follow them. (4) The MVP1-to-MVP2 impact review moves to `docs/archive/mvp2/`. (5) The MVP2 user stories stay. (6) A new log with the same rules, and the scope line unchanged. (7) The open questions carry over. (8) A new, empty decisions log. (9) Numbers go on from 193. Detail: [Task 192](/docs/tasks/192-archive-mvp2-log.md).

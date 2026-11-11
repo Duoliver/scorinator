@@ -17,7 +17,7 @@ Each task on the `PROGRESS.md` status board has one file here. The file holds th
 ```markdown
 # Task NNN: short title
 
-**Status:** Not started | In progress | Blocked | Review | Done
+**Status:** Not started | In progress | Blocked | Review | Refactor | Done
 
 ## Goal
 
@@ -42,6 +42,7 @@ Write this before the task goes to Review.
 - **Test approach:** what the tests cover, what kind of tests (unit, integration, statistical), and anything left untested on purpose, with the reason.
 - **Decisions made:** each one is also in the `PROGRESS.md` Decisions log.
 - **What is left, what is next:** anything nearby that you saw but left out of scope.
+- **Refactor:** what the refactor pass changed, or "no change". Write it before the refactor review. A task with no code writes "No code, no refactor step".
 ```
 
 If a task stops before it finishes, say so plainly in the report. State what is done, what is broken or missing, and what decision or input the work needs to continue.

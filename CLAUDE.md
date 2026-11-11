@@ -102,24 +102,25 @@ Settled, not open: the OVR-difference vs. absolute-OVR weighting in match simula
 - Reading it first (per the top of this file).
 - Treating every activity as a task. When the user asks for work that no task covers, add a status board row and a task file in `docs/tasks/` first, and agree its criteria before the work starts.
 - Marking a task **in progress** (with a start timestamp) when picked up.
-- Marking it **done** (with a completion timestamp) and writing the session report before ending. Do not defer this to "next session" — there may not be context left later to write an accurate one.
+- Moving it to **Review** after the implementation, then to **Refactor**, then to **done** (with a completion timestamp), as `docs/tdd.md` "The refactor step" says. A task with no code skips Refactor. Write the session report before ending. Do not defer this to "next session" — there may not be context left later to write an accurate one.
 - If a task stops partway — blocked, out of scope, or needing a decision from the user — record that honestly. Use an **in-progress / blocked** entry. State what is done, what is not, and what the next session needs to know. Do not leave it silently incomplete, and do not mark it done when it is not.
 - If a task surfaces one of the §6 open items, or anything needing a user decision, log it in the open-questions section of `PROGRESS.md`. Do not just mention it in chat — the next session will not see it there.
 
-A session should never end with unrecorded state — code without a matching `PROGRESS.md` entry is effectively invisible to the next session. Work in Review stays uncommitted until the user agrees that it is Done. See Git commits below.
+A session should never end with unrecorded state — code without a matching `PROGRESS.md` entry is effectively invisible to the next session. Work in Review stays uncommitted until the user agrees with the review. See Git commits below.
 
 ---
 
 ## Git commits
 
-Claude commits the work of a task when the user agrees that the task is Done. Push and branches stay with the user. *(Added on 2026-10-29, Task 159.)*
+Claude commits the work of a task when the user agrees with its review, and its refactor when the user agrees with the refactor review. Push and branches stay with the user. *(Added on 2026-10-29, Task 159. Two commits for each task since 2026-11-11, Task 193.)*
 
-1. When the user agrees that a task is Done, set its status to Done and its Completed date in `PROGRESS.md`. Then commit.
-2. Put only the changes of that task in the commit. This includes its `PROGRESS.md` lines and its task file. Leave the changes of other tasks out of the commit.
-3. When the user agrees more than one task at the same time, make one commit for all of them, or one for each task, as the user asks.
-4. Commit on the current branch. Do not create, switch, merge, rebase, or delete a branch.
-5. Do not push. Do not open a pull request.
-6. Do not commit a task that is In progress, Blocked, or in Review.
+1. When the user agrees with the review, set the status to Refactor in `PROGRESS.md`. Then commit the work of the task (commit 1).
+2. When the user agrees with the refactor review, set the status to Done and the Completed date. Then commit the refactor (commit 2). A task with no code has no Refactor status: set Done at the review, and make one commit.
+3. Put only the changes of that task in a commit. This includes its `PROGRESS.md` lines and its task file. Leave the changes of other tasks out of the commit.
+4. When the user agrees more than one task at the same time, make one commit for all of them, or one for each task, as the user asks.
+5. Commit on the current branch. Do not create, switch, merge, rebase, or delete a branch.
+6. Do not push. Do not open a pull request.
+7. Do not commit a task that is In progress, Blocked, or in Review, or a refactor that waits for its review.
 
 ### The commit message
 
@@ -132,6 +133,8 @@ The subject line is lower case, at most 72 characters, and uses one of these for
 | More than two consecutive tasks | `tasks 103-105: add identity, record types, and fixture ids` |
 
 The message part starts with a verb, in the imperative: add, fix, refine, move.
+
+The subject of commit 2 starts with "refactor": `task 165: refactor the placeholder comment`. A pass with no change gives `task 165: refactor pass, no change`, and the commit holds only the Done lines.
 
 After the subject, write one empty line and a body. The body says what changed and why, in short lines of 72 characters at most. A list with `-` is good. Name the stories and the decisions that the work delivers, for example US-11.1 or Task 75. Do not copy the task report. The body ends with the `Co-Authored-By` line that Claude Code gives, after one empty line.
 

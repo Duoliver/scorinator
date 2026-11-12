@@ -171,3 +171,33 @@ In MVP3, the Season view lists its leagues in the same way as the leagues dashbo
 In MVP3, a team condition is for one team in one league (epic 14). Later, a Season can set a default condition for a team, which each new Season league takes.
 
 *Raised during: MVP3, Task 197 (Team condition refinement), 2026-11-12. The user named it for another day.*
+
+## 34. Descriptions for entities
+A free-text description on almost every kind of entity: a collection, a Blueprint, a league, a Season. The user wants them in one future update for all entities, not one by one.
+
+*Raised during: MVP3, Task 198 (Teams module refinement), 2026-11-12.*
+
+## 35. A filter and a sort on the Teams screen
+In MVP3, the Teams screen gets a search (C44). Later, it can filter the Blueprints, for example by Tier or by collection, and sort them.
+
+*Raised during: MVP3, Task 198 (Teams module refinement), 2026-11-12. The user parked it.*
+
+## 36. A collection column in the team CSV
+In MVP3, collections go into the Blueprint JSON and the database zip (US-15.5). Later, the team CSV can get a collection column. The CSV has no UUIDs, so the column can match a collection by its name only. A collection name can hold a space, so the column needs a separator other than the space.
+
+*Raised during: MVP3, Task 198 (Teams module refinement), 2026-11-12. The user parked it.*
+
+## 37. Pages for the collections list
+In MVP3, the teams list on the Teams screen gets pages (US-15.8). Later, the "Collections" tab can get pages too.
+
+*Raised during: MVP3, Task 198 (Teams module refinement), 2026-11-12.*
+
+## 38. More fields in the team searches
+In MVP3, every team search matches the name and the Location (US-15.6). Later, a search can also match the slug, the trigrams, or the collection names.
+
+*Raised during: MVP3, Task 198 (Teams module refinement), 2026-11-12. The user parked it.*
+
+## 39. A new collection from the Collections modal
+In MVP3, the "Collections" modal of the Blueprint drawer picks existing collections (US-15.2). Later, it can also create a new collection.
+
+*Raised during: MVP3, Task 198 (Teams module refinement), 2026-11-12. The user parked it.*

@@ -32,7 +32,7 @@ The epic numbers go on from MVP2, which ends at epic 12, so the story IDs stay u
 - A team can belong to more than one league at the same time, for example a league and a cup (C3).
 - One database can hold more than one Season, each with its own Team Instances (C4).
 - **Season playoffs** (C5): single matches that belong to the Season, not to a league. A playoff can have a name. A link from a playoff to a league can come later.
-- A standalone league can move into a Season (C6, Should). Open: does its team state carry over? See `scorinator-future-features.md` §3.
+- A standalone league can move into a Season (C6, Should). A team that is not in the Season keeps its league OVR. A team in the Season takes the Season OVR (US-13.10).
 - **League UUID scope:** a league UUID is unique in its container: the standalone leagues, or one Season. Two containers can hold one league UUID. The two leagues are related: one is a copy of the other (US-13.10). *(Added on 2026-11-12, Task 196, with the user's approval. It extends the MVP2 rule "one UUID, one entity" for leagues.)*
 
 ### Team condition
@@ -44,7 +44,7 @@ The epic numbers go on from MVP2, which ends at epic 12, so the story IDs stay u
 
 - **Blueprint collections** (C36): see `scorinator-future-features.md` §21 for the first notes.
 - A **search** on the Teams screen (C44).
-- **A custom team colour** (C7, Should): a hex field, RGB sliders, and a live preview, kept in sync. The palette stays next to it. This needs a `Slider` primitive in `design-system/`.
+- **A custom team colour** (C7, Should): a "Colour" modal, opened from the colour field of a drawer. Row 1: the current colour and the selected colour. Row 2: the palette swatches. Row 3: a hex field and RGB sliders, kept in sync. "Cancel" and "OK". This needs a `Slider` primitive in `design-system/`. *(Changed on 2026-11-12, Task 198, with the user's approval.)*
 - Could: copy the Instances of a league to the database, as a new Blueprint or over an existing one (C11). Restore a deleted Blueprint from a league (C12, future features §11).
 
 ### League and Season lists
@@ -77,7 +77,4 @@ The epic numbers go on from MVP2, which ends at epic 12, so the story IDs stay u
 
 ## 2. Open items
 
-The refinement of each epic settles its details with the user. Known open items:
-
-- The custom colour picker design and its `Slider` primitive (C7).
-- The team state of a standalone league that moves into a Season (C6).
+The refinement of each epic settles its details with the user. Known open items: none at this time. *(The C6 team state item closed on 2026-11-12, Task 198: US-13.10 settles it.)*

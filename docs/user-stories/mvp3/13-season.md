@@ -153,14 +153,14 @@ As a user, I want to play named one-off playoffs between two Season teams, so th
 - [ ] The "Playoffs" tab lists the playoffs of the Season, by name.
 - [ ] The user creates a playoff: a name, two teams from the Season roster, the home team, and the format.
 - [ ] A playoff name is unique in its Season.
-- [ ] A playoff team plays as its Season team: the Season base OVR and Tier.
+- [ ] A playoff team plays as its Season team: the Season base OVR and Tier, plus its condition for that playoff (US-14.3).
 - [ ] The format has the options of a bracket tie: one match or two legs, away goals, AET, and the tiebreak method (US-03.1, US-03.2, US-04.1).
 - [ ] A playoff belongs to the Season, not to a league.
 - [ ] The user plays the playoff, and the tab shows its result.
 
 **Out of scope:** a link from a playoff to a league (later).
 
-**Notes:** answers of rounds 1 and 2, and the review (a unique name, the Season team).
+**Notes:** answers of rounds 1 and 2, and the review (a unique name, the Season team). The condition came from Task 197 (US-14.3), with the user's agreement on 2026-11-12.
 
 ---
 

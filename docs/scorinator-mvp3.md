@@ -37,7 +37,7 @@ The epic numbers go on from MVP2, which ends at epic 12, so the story IDs stay u
 
 ### Team condition
 
-- An input sets the **condition** of a team: a buff or a nerf for the Season, with no direct change to its Tier (C10).
+- An input sets the **condition** of a team: a buff or a nerf, with no direct change to its Tier (C10). The condition is for one team in one league, in a Season or standalone, and for a team in a Season playoff. *(Changed on 2026-11-12, Task 197, with the user's approval. It said "for the Season".)*
 - The ranked slug list export (US-10.5) carries the condition, so a later league can import the team with its condition.
 
 ### Teams module

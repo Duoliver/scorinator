@@ -166,3 +166,8 @@ In MVP3, the Season import of a standalone league skips a league that is in the 
 In MVP3, the Season view lists its leagues in the same way as the leagues dashboard: one card for each league (US-13.3). Later, the Season view can show its leagues in a new and better layout.
 
 *Raised during: MVP3, Task 196 (Season refinement), 2026-11-12. The user named it for later.*
+
+## 33. A default condition for a Season
+In MVP3, a team condition is for one team in one league (epic 14). Later, a Season can set a default condition for a team, which each new Season league takes.
+
+*Raised during: MVP3, Task 197 (Team condition refinement), 2026-11-12. The user named it for another day.*

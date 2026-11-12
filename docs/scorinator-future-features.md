@@ -146,3 +146,23 @@ A "Statistics" tab in the Season view, and one for a single league. The user nam
 In MVP3, a Season has one Instance for each Blueprint, and every league of the Season uses it: one base OVR and one Tier (`scorinator-mvp3.md` §1, `PERSISTENCE.md` §2a). Later, each league can keep its own OVR for a team. The Season team is then a middle layer between the Blueprint and the league team: a change to the Season team does not change a running league, and a league keeps the logic of a single league. A standalone league that a Season imports can also keep its own OVR, or offer the choice.
 
 *Raised during: MVP3, Task 196 (Season refinement), 2026-11-11. The user parked it at review for a later release.*
+
+## 29. Export a Season league as a league file
+In MVP3, a Season league exports only its results `.txt` and its slug list `.txt`. Later, the League Detail of a Season league can also export the league as a league `.json` file, as a standalone league does (US-10.1). The open point is identity: the file carries the UUID of the Season league, so an import of it can bring a second league with that UUID.
+
+*Raised during: MVP3, Task 196 (Season refinement), 2026-11-12. The user named it for MVP4.*
+
+## 30. Rename a Season at import
+In MVP3, an imported Season with the name and year of a local Season gets a number after the name, for example "Liga (2)" (US-13.11). Later, the import can ask for a new name in place of the number.
+
+*Raised during: MVP3, Task 196 (Season refinement), 2026-11-12. The user parked it.*
+
+## 31. A conflict for a league imported twice into a Season
+In MVP3, the Season import of a standalone league skips a league that is in the Season already (US-13.10). Later, the import can show the conflict dialog of US-11.2, with "Skip" or "Import as new". The user called it a corner case with no priority.
+
+*Raised during: MVP3, Task 196 (Season refinement), 2026-11-12. The user parked it.*
+
+## 32. A new view for the leagues of a Season
+In MVP3, the Season view lists its leagues in the same way as the leagues dashboard: one card for each league (US-13.3). Later, the Season view can show its leagues in a new and better layout.
+
+*Raised during: MVP3, Task 196 (Season refinement), 2026-11-12. The user named it for later.*

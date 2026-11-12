@@ -33,6 +33,7 @@ The epic numbers go on from MVP2, which ends at epic 12, so the story IDs stay u
 - One database can hold more than one Season, each with its own Team Instances (C4).
 - **Season playoffs** (C5): single matches that belong to the Season, not to a league. A playoff can have a name. A link from a playoff to a league can come later.
 - A standalone league can move into a Season (C6, Should). Open: does its team state carry over? See `scorinator-future-features.md` §3.
+- **League UUID scope:** a league UUID is unique in its container: the standalone leagues, or one Season. Two containers can hold one league UUID. The two leagues are related: one is a copy of the other (US-13.10). *(Added on 2026-11-12, Task 196, with the user's approval. It extends the MVP2 rule "one UUID, one entity" for leagues.)*
 
 ### Team condition
 

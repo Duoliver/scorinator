@@ -201,3 +201,8 @@ In MVP3, every team search matches the name and the Location (US-15.6). Later, a
 In MVP3, the "Collections" modal of the Blueprint drawer picks existing collections (US-15.2). Later, it can also create a new collection.
 
 *Raised during: MVP3, Task 198 (Teams module refinement), 2026-11-12. The user parked it.*
+
+## 40. Pages for the leagues dashboard and the Season list
+In MVP3, the teams list gets pages of 20 (US-15.8). Later, the leagues dashboard and the Season list can get pages too.
+
+*Raised during: MVP3, Task 199 (League and Season lists refinement), 2026-11-12. The user named it for later.*

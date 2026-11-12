@@ -34,7 +34,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 196 | Refine epic 13, Season: refined stories in `docs/user-stories/mvp3/13-season.md` | `docs/user-stories` | ✅ Done | 2026-11-11 | 2026-11-12 | [196](/docs/tasks/196-refine-season.md) | From Task 195. US-13.1 to 13.11 Agreed. The user reviewed the task. |
 | 197 | Refine epic 14, Team condition: refined stories in `docs/user-stories/mvp3/14-team-condition.md` | `docs/user-stories` | ✅ Done | 2026-11-12 | 2026-11-12 | [197](/docs/tasks/197-refine-team-condition.md) | From Task 195. US-14.1 to 14.4 Agreed. The user reviewed the task. The display place stays open. |
 | 198 | Refine epic 15, Teams module: refined stories in `docs/user-stories/mvp3/15-teams-module.md` | `docs/user-stories` | ✅ Done | 2026-11-12 | 2026-11-12 | [198](/docs/tasks/198-refine-teams-module.md) | From Task 195. US-15.1 to 15.8 Agreed. The user reviewed the task. |
-| 199 | Refine epic 16, League and Season lists: refined stories in `docs/user-stories/mvp3/16-league-season-lists.md` | `docs/user-stories` | ⬜ Not started |  |  |  | From Task 195. C21, C45, C46 (Must), C23 (Should). C46 needs epic 13. The user answers questions, Claude does not propose. |
+| 199 | Refine epic 16, League and Season lists: refined stories in `docs/user-stories/mvp3/16-league-season-lists.md` | `docs/user-stories` | ✅ Done | 2026-11-12 | 2026-11-12 | [199](/docs/tasks/199-refine-league-season-lists.md) | From Task 195. US-16.1 to 16.5 Agreed. C23 waits. The user reviewed the task. |
 | 200 | Refine epic 17, Brackets and phases: refined stories in `docs/user-stories/mvp3/17-brackets-phases.md` | `docs/user-stories` | ⬜ Not started |  |  |  | From Task 195. C25, C27, C29 (Should). The user answers questions, Claude does not propose. |
 | 201 | Refine epic 18, Debug mode: refined stories in `docs/user-stories/mvp3/18-debug-mode.md` | `docs/user-stories` | ⬜ Not started |  |  |  | From Task 195. C16 (Should). The user answers questions, Claude does not propose. |
 | 202 | Refine epic 19, Fixes and polish: refined stories in `docs/user-stories/mvp3/19-fixes-polish.md` | `docs/user-stories` | ⬜ Not started |  |  |  | From Task 195. C19 (Should). The user answers questions, Claude does not propose. |
@@ -81,6 +81,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 and MVP2 decisions still apply.** They are in [`docs/archive/mvp1/PROGRESS.md`](/docs/archive/mvp1/PROGRESS.md), [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/), and [`docs/archive/mvp2/PROGRESS.md`](/docs/archive/mvp2/PROGRESS.md). An entry here changes an earlier decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-11-12 (Task 199 — Must items first):** The user starts the MVP3 development with the Must items only. A Should item keeps its rank, and its refinement can wait. C23 waits. No spec change. Tasks 200 to 202 cover Should items only. Detail: [Task 199](/docs/tasks/199-refine-league-season-lists.md).
 
 - **2026-11-12 (Task 198 — the colour modal):** The user approved a spec edit in `scorinator-mvp3.md` §1 Teams module: the custom colour is a "Colour" modal with three rows, "Cancel", and "OK". The §2 open item on the picker design is closed. Detail: [Task 198](/docs/tasks/198-refine-teams-module.md).
 

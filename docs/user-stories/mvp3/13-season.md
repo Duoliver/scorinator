@@ -1,6 +1,6 @@
 # Epic 13: Season
 
-Source: [`docs/scorinator-mvp3.md`](/docs/scorinator-mvp3.md) §0 Scope, §1 Season. Refined in [Task 196](/docs/tasks/196-refine-season.md), from the user's answers in eight rounds (2026-11-11 and 2026-11-12). The user agreed all stories on 2026-11-12.
+Source: [`docs/scorinator-mvp3.md`](/docs/scorinator-mvp3.md) §0 Scope, §1 Season. Refined in [Task 196](/docs/tasks/196-refine-season.md), from the user's answers in eight rounds (2026-11-11 and 2026-11-12). The user agreed all stories on 2026-11-12. [Task 203](/docs/tasks/203-revise-team-condition.md) added the running league to US-13.8, agreed on 2026-11-13.
 
 Items: C1 to C5 (Must), C6 (Should), from [Task 195](/docs/tasks/195-mvp3-scope.md).
 
@@ -176,8 +176,9 @@ As a user, I want a short resume of the Season, so that I can see its results at
 - [ ] The "Resume" tab lists the winner of each league of the Season.
 - [ ] For each league, the tab also lists the teams of the other zones (US-12.5).
 - [ ] The winner of each league has a highlight.
+- [ ] For a running league, the tab shows the same content from the current standings: the team in first place, and the teams in the zones.
 
-**Notes:** round 8 settled the content. The layout is for the build task of this story.
+**Notes:** round 8 settled the content. The layout is for the build task of this story. Task 203 (2026-11-13) added the running league. The user asked if the tab shows while the leagues run, and gave the content.
 
 ---
 

@@ -38,6 +38,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 200 | Refine epic 17, Brackets and phases: refined stories in `docs/user-stories/mvp3/17-brackets-phases.md` | `docs/user-stories` | ⬜ Not started |  |  |  | From Task 195. C25, C27, C29 (Should). The user answers questions, Claude does not propose. |
 | 201 | Refine epic 18, Debug mode: refined stories in `docs/user-stories/mvp3/18-debug-mode.md` | `docs/user-stories` | ⬜ Not started |  |  |  | From Task 195. C16 (Should). The user answers questions, Claude does not propose. |
 | 202 | Refine epic 19, Fixes and polish: refined stories in `docs/user-stories/mvp3/19-fixes-polish.md` | `docs/user-stories` | ⬜ Not started |  |  |  | From Task 195. C19 (Should). The user answers questions, Claude does not propose. |
+| 203 | Revise epic 14, Team condition, with the user's notes of 2026-11-13 | `docs/user-stories` | ✅ Done | 2026-11-13 | 2026-11-13 | [203](/docs/tasks/203-revise-team-condition.md) | Task created by User - 2026-11-13. US-14.1 to 14.4 and US-13.8 Agreed. The user reviewed the task. |
 
 **Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input, see Open Questions) · 🟩 Review · 🟦 Refactor (the pass, or its review: the Notes say which) · ✅ Done · ❌ Cancelled (the reason is in the Notes column)
 
@@ -67,8 +68,6 @@ A running list of items flagged under the `CLAUDE.md` open items section. Each i
 
 These items come from the MVP2 log, because they are still open (Task 192). Task 195 moved the short team name to `scorinator-future-features.md` §26, and closed the Location label question (the label stays, MVP3 adds no City).
 
-- **2026-11-12 (Task 197, MVP3 Team condition — the display):** Where does League Detail show and change the condition: a new "Teams" tab, or a modal from a click on a team name in the standings, the fixtures, or a tie card? Not in the standings or the bracket directly. It depends on how useful a "Teams" tab is for MVP3. The user left it open for the build task of US-14.2.
-
 - **2026-10-29 (user idea, after MVP2 — the OVR form and the MVP4 scope):** Not a task yet. Refine it after the MVP2 features are done. (1) A new feature between MVP2 and MVP3: an optional form for each team in a league, later in a season. A buff or debuff, a peak or a crisis, raises or lowers the team OVR in that league only. The post-league slug list export (US-10.5) can carry it. (2) The user thinks about a drop of MVP4 (Story Mode), for simpler alternatives with fewer fixed rules. The slug list export is a manual season link. No spec change until the user decides. (3) Lower priority than (1): a "push" action that copies the Instances of a league to the database. It creates a Blueprint for a new team, or overwrites the Blueprint of a known one.
 - **2026-10-19 (MVP1 Task 72 — the plural in `Imported 1 team.`):** `app/loadActions.ts` writes its own team plural. `formatTeamCount` lives in `features/components/`. Only `AppShell` in `app/` imports `features/` today, for the routes. Options: an app action imports `formatTeamCount` from `features/`, or the function moves to a lower layer, or the copy stays. Not a blocker. The copy stays until the user decides. Carried over from the MVP1 log.
 
@@ -81,6 +80,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 and MVP2 decisions still apply.** They are in [`docs/archive/mvp1/PROGRESS.md`](/docs/archive/mvp1/PROGRESS.md), [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/), and [`docs/archive/mvp2/PROGRESS.md`](/docs/archive/mvp2/PROGRESS.md). An entry here changes an earlier decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-11-13 (Task 203 — the condition amount and place):** The user changed US-14.1: each level is a fixed percentage of the base OVR, not a random range. +1 and +2 are +10% and +20%, rounded up. -1 and -2 are -10% and -20%, rounded down. A base OVR change changes the amount. League Detail gets both a "Teams" tab and a modal for the condition. This closes the open question of Task 197. For a running league, the Season "Resume" tab shows the team in first place and the teams in the zones (US-13.8). Detail: [Task 203](/docs/tasks/203-revise-team-condition.md).
 
 - **2026-11-12 (Task 199 — Must items first):** The user starts the MVP3 development with the Must items only. A Should item keeps its rank, and its refinement can wait. C23 waits. No spec change. Tasks 200 to 202 cover Should items only. Detail: [Task 199](/docs/tasks/199-refine-league-season-lists.md).
 

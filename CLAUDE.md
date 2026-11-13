@@ -74,13 +74,13 @@ Module-specific documentation lives at the root of that module.
 
 ---
 
-## Implementation scope — MVP1 and MVP2 only, for now
+## Implementation scope — MVP1, MVP2, and the MVP3 Must items
 
-All four MVP docs exist and are written. **Only MVP1 and MVP2 are approved for implementation at this time.** `scorinator-mvp3.md` and `scorinator-mvp4.md` are read-only references for context. They explain *why* certain MVP1/2 things take the shape they do — for example, why Team splits into Blueprint/Instance in MVP2, even though Season does not exist yet. They are not a queue of upcoming tasks.
+All four MVP docs exist. **MVP1, MVP2, and the Must items of MVP3 are approved for implementation.** The scope line of `PROGRESS.md` names the Must stories. The MVP3 Should and Could items, and `scorinator-mvp4.md`, are read-only references for context. They explain *why* the approved work takes the shape it does. They are not a queue of upcoming tasks. *(Changed on 2026-11-13, Task 204. It said MVP1 and MVP2 only.)*
 
-- Do not implement any MVP3 or MVP4 feature, even partially, even if a task seems to lead there naturally. For example: do not add a `City` field to Team Blueprint — that is MVP3 scope. Do not build Season grouping — also MVP3. Do not build the event system for Story Mode — that is MVP4 scope.
-- It is fine, and expected, for MVP1/2 code to take a shape that avoids a breaking rework once MVP3/4 land. For example, the Instance Wrapper design in MVP2 already anticipates Season. Shaping code for extensibility is different from building the extension itself. If you are unsure which side of that line a piece of work falls on, ask rather than proceed.
-- This restriction lifts only when explicitly told MVP3 (or MVP4) is approved for implementation. Check `PROGRESS.md` for the current approved scope before starting any task. It states the scope plainly at the top.
+- Do not implement an MVP3 Should or Could item, or an MVP4 feature, even partially, even if a task seems to lead there naturally. For example: do not build the custom team colour (US-15.7, a Should item). Do not add a `City` field to Team Blueprint: Task 195 moved City out of MVP3. Do not build the event system for Story Mode: that is MVP4 scope.
+- Approved code can take a shape that avoids a breaking rework later. For example, the Instance Wrapper design of MVP2 anticipates Season. A shape for a later extension is not the extension itself. If you are not sure which side of that line a piece of work is on, ask before you continue.
+- A Should or Could item, or MVP4, is approved only when the user says so explicitly. The refinement of a Should item stays allowed. Check `PROGRESS.md` for the current approved scope before you start a task. It states the scope plainly at the top.
 
 ---
 
@@ -90,7 +90,6 @@ These are known-unresolved in the specs. If work touches them, stop and propose 
 - Team event trigger frequency/probability curve shape (MVP4 says "configurable," but the underlying distribution is not specified).
 - Autosave during the automatic end-of-season pipeline in Story Mode (explicitly deferred in `scorinator-technical-caveats.md` §5 — do not implement unless separately scoped).
 - Anything listed in `scorinator-future-features.md` — out of scope, do not implement even if it looks like a natural extension of a current task.
-- MVP3 uses different wording for Instance-scoping than the corrected wording in MVP/technical-caveats. MVP3 says "scoped to one Season." The caveats doc corrects this to "scoped to one Instance Wrapper." Treat the Instance Wrapper version as authoritative, per the caveats doc — the MVP3 doc text has not been updated yet.
 
 Settled, not open: the OVR-difference vs. absolute-OVR weighting in match simulation. The user chose the weight in MVP1 Task 5 (see `docs/archive/mvp1/PROGRESS.md`, Task 5). A change to that weight still needs a proposal and a user decision first. *(Changed on 2026-11-01, Task 174.)*
 

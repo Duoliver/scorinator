@@ -8,7 +8,7 @@ Use this list for every review in this repo, and first in the refactor pass of e
 
 ## 2. Scope
 
-- [ ] The change stays inside the scope line of `PROGRESS.md`. It adds no feature of a later MVP, not even a part of one. ([`CLAUDE.md`](/CLAUDE.md#implementation-scope--mvp1-and-mvp2-only-for-now))
+- [ ] The change stays inside the scope line of `PROGRESS.md`. It adds no feature of a later MVP, not even a part of one. ([`CLAUDE.md`](/CLAUDE.md#implementation-scope--mvp1-mvp2-and-the-mvp3-must-items))
 - [ ] The change does not build an item of `scorinator-future-features.md`. If it touches one, stop and flag it. ([`CLAUDE.md`](/CLAUDE.md#open-items-to-flag-not-silently-resolve))
 - [ ] A change that touches an open item of `CLAUDE.md` names the chosen approach in the task notes. No value is picked silently. ([`CLAUDE.md`](/CLAUDE.md#open-items-to-flag-not-silently-resolve))
 - [ ] A new balancing number (a threshold, a band, a weight) has a user decision in the task notes. ([`tdd.md`](/docs/tdd.md#workflow))

@@ -11,7 +11,14 @@ Earlier logs are archived and read only. Read them when a task needs history: a 
 
 ## Current approved scope
 
-**MVP1 and MVP2 only.** MVP1 and MVP2 are complete, and their logs are archived. The current work prepares MVP3: the workflow changes, then the MVP3 scope and its refinement. MVP3 and MVP4 specs exist for context. They are not approved for implementation. Do not build anything from them. This line is the single source of truth for scope. If it still says MVP1/2 only, treat that as current, even when a task description elsewhere seems to imply more.
+**MVP1, MVP2, and the Must items of MVP3.** MVP1 and MVP2 are complete, and their logs are archived. The user approved the MVP3 Must items for the build on 2026-11-13 (Task 204). These Agreed stories are in scope:
+
+- Season (C1 to C5): US-13.1 to US-13.9, and US-13.11.
+- Team condition (C10): US-14.1 to US-14.4.
+- Teams module (C36, C44): US-15.1 to US-15.6, and US-15.8.
+- League and Season lists (C21, C45, C46): US-16.1 to US-16.5.
+
+Not approved for the build: the MVP3 Should items (US-13.10, US-15.7, C23, and epics 17 to 19), the MVP3 Could items, and MVP4. Their refinement stays allowed. Do not build anything from them. This line is the single source of truth for scope. If it does not name an item, treat the item as not approved, even when a task description elsewhere seems to imply more.
 
 ---
 
@@ -39,6 +46,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 201 | Refine epic 18, Debug mode: refined stories in `docs/user-stories/mvp3/18-debug-mode.md` | `docs/user-stories` | ⬜ Not started |  |  |  | From Task 195. C16 (Should). The user answers questions, Claude does not propose. |
 | 202 | Refine epic 19, Fixes and polish: refined stories in `docs/user-stories/mvp3/19-fixes-polish.md` | `docs/user-stories` | ⬜ Not started |  |  |  | From Task 195. C19 (Should). The user answers questions, Claude does not propose. |
 | 203 | Revise epic 14, Team condition, with the user's notes of 2026-11-13 | `docs/user-stories` | ✅ Done | 2026-11-13 | 2026-11-13 | [203](/docs/tasks/203-revise-team-condition.md) | Task created by User - 2026-11-13. US-14.1 to 14.4 and US-13.8 Agreed. The user reviewed the task. |
+| 204 | Approve MVP3 for the build, Must items only: the scope line, `CLAUDE.md` | `PROGRESS.md`, `CLAUDE.md` | ✅ Done | 2026-11-13 | 2026-11-13 | [204](/docs/tasks/204-approve-mvp3-must.md) | Task created by User - 2026-11-13. Scope line, `CLAUDE.md`, and two stale notes changed. The user reviewed the task. |
 
 **Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input, see Open Questions) · 🟩 Review · 🟦 Refactor (the pass, or its review: the Notes say which) · ✅ Done · ❌ Cancelled (the reason is in the Notes column)
 
@@ -80,6 +88,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 and MVP2 decisions still apply.** They are in [`docs/archive/mvp1/PROGRESS.md`](/docs/archive/mvp1/PROGRESS.md), [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/), and [`docs/archive/mvp2/PROGRESS.md`](/docs/archive/mvp2/PROGRESS.md). An entry here changes an earlier decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-11-13 (Task 204 — MVP3 approved, Must items only):** The user approved the MVP3 Must items for the build: US-13.1 to 13.9, US-13.11, US-14.1 to 14.4, US-15.1 to 15.6, US-15.8, and US-16.1 to 16.5. US-15.8 has no C item, and the user put it in. The Should items, the Could items, and MVP4 stay out. The scope line and `CLAUDE.md` changed. The open item on the MVP3 Instance-scoping wording is closed, in `CLAUDE.md` and `PERSISTENCE.md` §2a: the Task 195 rewrite uses "Instance Wrapper". Detail: [Task 204](/docs/tasks/204-approve-mvp3-must.md).
 
 - **2026-11-13 (Task 203 — the condition amount and place):** The user changed US-14.1: each level is a fixed percentage of the base OVR, not a random range. +1 and +2 are +10% and +20%, rounded up. -1 and -2 are -10% and -20%, rounded down. A base OVR change changes the amount. League Detail gets both a "Teams" tab and a modal for the condition. This closes the open question of Task 197. For a running league, the Season "Resume" tab shows the team in first place and the teams in the zones (US-13.8). Detail: [Task 203](/docs/tasks/203-revise-team-condition.md).
 

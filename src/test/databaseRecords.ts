@@ -141,13 +141,21 @@ export function memoryFolder(
 ): {
   folder: DatabaseFolder;
   files: { manifest: string | null; wrappers: Record<string, string> };
-  saves: { wrappers: readonly WrapperText[]; manifest: string | null }[];
+  saves: {
+    wrappers: readonly WrapperText[];
+    manifest: string | null;
+    removed: readonly string[];
+  }[];
 } {
   const files = {
     manifest: initial.manifest ?? null,
     wrappers: { ...initial.wrappers },
   };
-  const saves: { wrappers: readonly WrapperText[]; manifest: string | null }[] = [];
+  const saves: {
+    wrappers: readonly WrapperText[];
+    manifest: string | null;
+    removed: readonly string[];
+  }[] = [];
   const folder: DatabaseFolder = {
     readManifest: async (): Promise<string | null> => files.manifest,
     readWrapper: async (uuid): Promise<string> => {
@@ -156,10 +164,11 @@ export function memoryFolder(
         throw new Error(`The database has no file for the league ${uuid}.`);
       return text;
     },
-    save: async (wrappers, manifest): Promise<void> => {
-      saves.push({ wrappers, manifest });
+    save: async (wrappers, manifest, removed = []): Promise<void> => {
+      saves.push({ wrappers, manifest, removed });
       for (const wrapper of wrappers) files.wrappers[wrapper.uuid] = wrapper.contents;
       if (manifest !== null) files.manifest = manifest;
+      for (const uuid of removed) delete files.wrappers[uuid];
     },
   };
   return { folder, files, saves };

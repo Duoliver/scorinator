@@ -45,7 +45,7 @@ As a user, I want to rename a league, so that I can fix its name.
 - [ ] The new name follows US-16.1.
 - [ ] A standalone league and a Season league both have the rename.
 - [ ] A rename keeps the league UUID (US-11.1).
-- [ ] A league of a finished Season cannot be renamed, because the Season is read only (US-13.9).
+- [ ] A league of a finished Season can be renamed too. A rename does not change a result (US-13.9). *(Changed on 2026-11-13, Task 210, by the user. It said: cannot be renamed.)*
 
 **Notes:** answer of round 1. The user puts the league card first, if one place must go.
 

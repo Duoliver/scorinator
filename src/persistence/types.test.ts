@@ -21,9 +21,19 @@ describe('DatabaseFolder (Task 76)', () => {
 
   it('saves wrapper texts and a manifest text, or null for an unchanged manifest', () => {
     expectTypeOf<DatabaseFolder['save']>().parameters.toEqualTypeOf<
-      [wrappers: readonly WrapperText[], manifest: string | null]
+      [
+        wrappers: readonly WrapperText[],
+        manifest: string | null,
+        removed?: readonly string[],
+      ]
     >();
     expectTypeOf<DatabaseFolder['save']>().returns.resolves.toEqualTypeOf<void>();
+  });
+
+  it('takes the UUIDs of the deleted wrappers, whose files it removes (Task 210)', () => {
+    expectTypeOf<Parameters<DatabaseFolder['save']>[2]>().toEqualTypeOf<
+      readonly string[] | undefined
+    >();
   });
 
   it('names each wrapper text by its uuid', () => {

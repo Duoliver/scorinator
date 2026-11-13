@@ -6,14 +6,18 @@ import {
   parseManifestRecord,
   serializeLeagueWrapper,
   serializeManifestRecord,
+  serializeSeasonWrapper,
 } from '@/app/data/databaseFile';
 import { getErrorMessage } from '@/app/getErrorMessage';
 import { cryptoRandomBytes } from '@/app/random';
 import {
   currentRows,
+  currentSeasonRows,
+  findDeletedSeasonUuids,
   isManifestUnsaved,
   requireOpenDatabase,
   unsavedLeagues,
+  unsavedSeasons,
   useDatabaseStore,
 } from './databaseStore';
 
@@ -50,10 +54,12 @@ export async function openDatabase(
       rows: manifest.wrappers,
       seasonRows: manifest.seasons,
       leagues: {},
+      seasons: {},
       savedBlueprints: manifest.blueprints,
       savedRows: manifest.wrappers,
       savedSeasonRows: manifest.seasons,
       savedLeagues: {},
+      savedSeasons: {},
     });
   } catch (error) {
     useDatabaseStore.setState({
@@ -88,8 +94,9 @@ export async function openLeague(uuid: string): Promise<LeagueWrapper> {
 }
 
 /**
- * Save and Ctrl+S (Task 76 b): writes each unsaved league, then the
- * manifest when it is unsaved, in one `folder.save` call, manifest last.
+ * Save and Ctrl+S (Task 76 b): writes each unsaved league and Season, then
+ * the manifest when it is unsaved, in one `folder.save` call, manifest
+ * last. The same call removes the file of each deleted Season (Task 210).
  * With nothing unsaved it writes nothing. After the write, the snapshots
  * point at the objects it wrote, so a change made during the write stays
  * unsaved. A failed write rejects and changes no snapshot.
@@ -99,24 +106,33 @@ export async function saveDatabase(): Promise<void> {
   const { folder, installationUuid } = requireOpenDatabase(state);
 
   const leagues = unsavedLeagues(state);
+  const seasons = unsavedSeasons(state);
   const manifestUnsaved = isManifestUnsaved(state);
-  if (leagues.length === 0 && !manifestUnsaved) return;
+  if (leagues.length === 0 && seasons.length === 0 && !manifestUnsaved) return;
 
   const rows = currentRows(state);
+  const seasonRows = currentSeasonRows(state);
   const manifest = !manifestUnsaved
     ? null
     : serializeManifestRecord({
         installationUuid,
         blueprints: state.blueprints,
         wrappers: rows,
-        seasons: state.seasonRows,
+        seasons: seasonRows,
       });
   await folder.save(
-    leagues.map((wrapper) => ({
-      uuid: wrapper.uuid,
-      contents: serializeLeagueWrapper(wrapper),
-    })),
-    manifest
+    [
+      ...leagues.map((wrapper) => ({
+        uuid: wrapper.uuid,
+        contents: serializeLeagueWrapper(wrapper),
+      })),
+      ...seasons.map((wrapper) => ({
+        uuid: wrapper.uuid,
+        contents: serializeSeasonWrapper(wrapper),
+      })),
+    ],
+    manifest,
+    manifest === null ? [] : findDeletedSeasonUuids(state)
   );
 
   useDatabaseStore.setState((now) => ({
@@ -124,13 +140,18 @@ export async function saveDatabase(): Promise<void> {
       ...now.savedLeagues,
       ...Object.fromEntries(leagues.map((wrapper) => [wrapper.uuid, wrapper])),
     },
+    savedSeasons: {
+      ...now.savedSeasons,
+      ...Object.fromEntries(seasons.map((wrapper) => [wrapper.uuid, wrapper])),
+    },
     ...(manifest === null
       ? {}
       : {
           rows,
           savedRows: rows,
           savedBlueprints: state.blueprints,
-          savedSeasonRows: state.seasonRows,
+          seasonRows,
+          savedSeasonRows: seasonRows,
         }),
   }));
 }

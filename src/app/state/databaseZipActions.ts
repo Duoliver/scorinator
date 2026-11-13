@@ -15,7 +15,12 @@ import {
   planLeagueImport,
   type LeagueImportCounts,
 } from './importActions';
-import { currentRows, requireOpenDatabase, useDatabaseStore } from './databaseStore';
+import {
+  currentRows,
+  currentSeasonRows,
+  requireOpenDatabase,
+  useDatabaseStore,
+} from './databaseStore';
 
 /**
  * "Export entire database" and "Import entire database" (US-10.4,
@@ -50,7 +55,7 @@ export async function exportDatabaseZip(): Promise<Uint8Array> {
       installationUuid,
       blueprints: state.blueprints,
       wrappers: currentRows(state),
-      seasons: state.seasonRows,
+      seasons: currentSeasonRows(state),
     },
     await readAllLeagues(),
     await readAllSeasons()
@@ -71,14 +76,16 @@ export async function readAllLeagues(): Promise<LeagueWrapper[]> {
   );
 }
 
-/** Each Season wrapper of the database, from its file. No Season is open
- * in memory before Task 210, so the folder holds the latest version. */
+/** Each Season of the database: an open Season from memory, with its
+ * unsaved changes, and the others from their files (Task 210 choice 8). */
 export async function readAllSeasons(): Promise<SeasonWrapper[]> {
   const state = useDatabaseStore.getState();
   const { folder } = requireOpenDatabase(state);
   return Promise.all(
-    state.seasonRows.map(async (row) =>
-      parseSeasonWrapper(await folder.readWrapper(row.uuid))
+    currentSeasonRows(state).map(
+      async (row) =>
+        state.seasons[row.uuid] ??
+        parseSeasonWrapper(await folder.readWrapper(row.uuid))
     )
   );
 }

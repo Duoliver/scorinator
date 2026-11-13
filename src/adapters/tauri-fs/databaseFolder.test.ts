@@ -208,6 +208,52 @@ describe('createDatabaseFolder', () => {
       ]);
     });
 
+    it('removes the files of deleted wrappers after the manifest write (Task 210)', async () => {
+      const database = createDatabaseFolder(nodeFileSystem(), folder);
+      await database.save(
+        [
+          { uuid: LEAGUE_A, contents: 'a' },
+          { uuid: LEAGUE_B, contents: 'b' },
+        ],
+        'manifest 1'
+      );
+      const log: string[] = [];
+      const recording = createDatabaseFolder(
+        {
+          ...recordingFileSystem(log),
+          remove: async (path): Promise<void> => {
+            await rm(path);
+            log.push(`removed ${path}`);
+          },
+        },
+        folder
+      );
+      await recording.save([], 'manifest 2', [LEAGUE_B]);
+
+      expect(log).toEqual([
+        join(folder, 'manifest.json'),
+        `removed ${join(folder, `wrapper-${LEAGUE_B}.json`)}`,
+      ]);
+      expect((await readdir(folder)).sort()).toEqual([
+        'manifest.json',
+        `wrapper-${LEAGUE_A}.json`,
+      ]);
+    });
+
+    it('skips a removed wrapper that has no file (Task 210)', async () => {
+      const database = createDatabaseFolder(nodeFileSystem(), folder);
+      await database.save([], 'manifest', [LEAGUE_B]);
+      expect(await readdir(folder)).toEqual(['manifest.json']);
+    });
+
+    it('rejects a removed UUID that is not a UUID v4, before it writes any file (Task 210)', async () => {
+      const database = createDatabaseFolder(nodeFileSystem(), folder);
+      await expect(database.save([], 'manifest', ['../evil'])).rejects.toThrow(
+        'A league file name needs a UUID v4. It got "../evil".'
+      );
+      await expect(access(folder)).rejects.toThrow();
+    });
+
     it('rejects a wrapper UUID that is not a UUID v4, before it writes any file', async () => {
       const database = createDatabaseFolder(nodeFileSystem(), folder);
       await expect(

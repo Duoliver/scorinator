@@ -50,14 +50,16 @@ export function createDatabaseFolder(
 
     async save(
       wrappers: readonly WrapperText[],
-      manifest: string | null
+      manifest: string | null,
+      removed: readonly string[] = []
     ): Promise<void> {
       // Check every name before the first write, so a bad UUID writes nothing.
       const files = wrappers.map((wrapper) => ({
         path: pathOf(wrapperFile(wrapper.uuid)),
         contents: wrapper.contents,
       }));
-      if (files.length === 0 && manifest === null) return;
+      const removedPaths = removed.map((uuid) => pathOf(wrapperFile(uuid)));
+      if (files.length === 0 && manifest === null && removedPaths.length === 0) return;
 
       await fs.mkdir(folderPath);
       for (const file of files) {
@@ -65,6 +67,9 @@ export function createDatabaseFolder(
       }
       if (manifest !== null) {
         await writeTextFileAtomic(fs, pathOf(MANIFEST_FILE), manifest);
+      }
+      for (const path of removedPaths) {
+        if (await fs.exists(path)) await fs.remove(path);
       }
     },
   };

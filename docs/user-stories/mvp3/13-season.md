@@ -194,6 +194,7 @@ As a user, I want to finish a Season and read it later, so that a past Season st
 
 - [ ] The user finishes a Season with a manual action.
 - [ ] A finished Season is read only: the user can read all its leagues, teams, matches, and playoffs, but cannot change them.
+- [ ] The user can still rename a finished Season and its leagues, and delete a finished Season. *(Added on 2026-11-13, Task 210, by the user.)*
 - [ ] The user can reopen a finished Season with a manual action.
 
 **Notes:** answers of rounds 1 and 2.

@@ -8,6 +8,7 @@ import {
   LeagueDetailRoute,
   LeagueSetupRoute,
   LeaguesDashboardRoute,
+  SeasonsRoute,
   TeamsRoute,
 } from './routeAdapters';
 import { useAppShell } from './useAppShell';
@@ -51,6 +52,7 @@ export function AppShell(): JSX.Element {
             <LeagueSetupRoute path={ROUTES.leaguesNew} />
             <LeaguesDashboardRoute path={ROUTES.leaguesDashboard} default />
             <LeagueDetailRoute path={ROUTES.leagueDetail} />
+            <SeasonsRoute path={ROUTES.seasons} />
           </Router>
         )}
       </div>

@@ -7,6 +7,7 @@ import {
   LeaguesDashboardScreen,
 } from '@/features/leagues';
 import { FileScreen } from '@/features/file';
+import { SeasonsListScreen } from '@/features/seasons';
 
 /** `TeamsScreen`/`LeagueSetupScreen` take no props and stay routing-agnostic,
  * per `module-boundaries.md` — `features/` never needs to know it is routed.
@@ -25,6 +26,10 @@ export function LeaguesDashboardRoute(_props: RoutableProps): JSX.Element {
 
 export function FileRoute(_props: RoutableProps): JSX.Element {
   return <FileScreen />;
+}
+
+export function SeasonsRoute(_props: RoutableProps): JSX.Element {
+  return <SeasonsListScreen />;
 }
 
 /** Unlike the adapters above, this one does carry a real prop across:

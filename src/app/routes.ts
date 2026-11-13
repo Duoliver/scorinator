@@ -8,6 +8,8 @@ export const ROUTES = {
   leaguesNew: '/leagues/new',
   leagueDetail: '/leagues/:uuid',
   leaguesDashboard: '/leagues',
+  seasons: '/seasons',
+  seasonDetail: '/seasons/:uuid',
 } as const;
 
 export type RoutePath = (typeof ROUTES)[keyof typeof ROUTES];
@@ -17,4 +19,10 @@ export type RoutePath = (typeof ROUTES)[keyof typeof ROUTES];
  * against, not a path anything should navigate to directly. */
 export function leagueDetailPath(uuid: string): string {
   return `/leagues/${uuid}`;
+}
+
+/** Builds a real, navigable Season view URL from a Season's UUID (Task
+ * 212), as `leagueDetailPath` does for a league. */
+export function seasonDetailPath(uuid: string): string {
+  return `/seasons/${uuid}`;
 }

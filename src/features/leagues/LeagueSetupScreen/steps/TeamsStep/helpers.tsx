@@ -8,8 +8,7 @@ import {
 } from '@/design-system';
 import type { TeamBlueprint, TeamInstance } from '@/domain';
 import type { TrigramPick } from '@/engine/identity';
-import { TeamSwatch } from '@/features/components';
-import { TeamLabel } from '@/features/leagues/TeamLabel';
+import { TeamLabel, TeamSwatch } from '@/features/components';
 import styles from './TeamsStep.module.css';
 
 export const getRowKey = (team: TeamInstance): string => team.blueprintUuid;

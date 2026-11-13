@@ -9,12 +9,8 @@ import {
 } from '@/app/state/databaseStore';
 import { createSeason, deleteSeason, renameSeason } from '@/app/state/seasonActions';
 import { setStatusLine } from '@/app/state/statusLineActions';
-import {
-  formatDeleteMessage,
-  formatSeasonLabel,
-  formatSeasonSubtitle,
-  isSeasonMatch,
-} from './helpers';
+import { formatSeasonLabel } from '@/features/seasons/seasonText';
+import { formatDeleteMessage, formatSeasonSubtitle, isSeasonMatch } from './helpers';
 import type { OpenSeasonDialog, SeasonsList } from './types';
 
 /** The Seasons list (Task 212): the cards, the search, the create and

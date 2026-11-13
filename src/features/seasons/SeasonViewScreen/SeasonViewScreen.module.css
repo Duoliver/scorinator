@@ -1,0 +1,70 @@
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  padding: var(--space-10) var(--space-12);
+  max-width: 71rem;
+}
+
+.backLink {
+  font-size: var(--font-size-md);
+  text-decoration: none;
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.headerEnd {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.titleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+  margin: var(--space-2) 0 var(--space-1);
+}
+
+.title {
+  margin: 0;
+}
+
+.meta,
+.note {
+  margin: 0;
+  font-size: var(--font-size-md);
+  color: var(--color-fg-muted);
+}
+
+/* A finished Season is read only (US-13.9). The yellow zone colours give the
+   notice its look, as in the M1 demo. */
+.notice {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border: var(--border-width) solid var(--color-fg);
+  background: var(--color-zone-yellow-tint);
+  box-shadow: inset var(--border-width-heavy) 0 0 var(--color-zone-yellow);
+  font-size: var(--font-size-lg);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.pickRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+}

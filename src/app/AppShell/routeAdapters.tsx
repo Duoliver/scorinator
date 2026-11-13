@@ -7,7 +7,7 @@ import {
   LeaguesDashboardScreen,
 } from '@/features/leagues';
 import { FileScreen } from '@/features/file';
-import { SeasonsListScreen } from '@/features/seasons';
+import { SeasonsListScreen, SeasonViewScreen } from '@/features/seasons';
 
 /** `TeamsScreen`/`LeagueSetupScreen` take no props and stay routing-agnostic,
  * per `module-boundaries.md` — `features/` never needs to know it is routed.
@@ -30,6 +30,12 @@ export function FileRoute(_props: RoutableProps): JSX.Element {
 
 export function SeasonsRoute(_props: RoutableProps): JSX.Element {
   return <SeasonsListScreen />;
+}
+
+/** Carries the `uuid` of `ROUTES.seasonDetail` (`/seasons/:uuid`) to the
+ * Season view, as `LeagueDetailRoute` does for a league (Task 213). */
+export function SeasonViewRoute(props: RoutableProps & { uuid?: string }): JSX.Element {
+  return <SeasonViewScreen uuid={props.uuid ?? ''} />;
 }
 
 /** Unlike the adapters above, this one does carry a real prop across:

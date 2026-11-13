@@ -107,9 +107,11 @@ export function leagueWrapper(
  * no playoffs (Task 209). */
 export function seasonWrapper(uuid: string = SEASON): SeasonWrapper {
   const league = leagueWrapper();
+  // A Season roster has one trigram for each team (US-13.4).
+  const trigrams = ['SMU', 'HAR'];
   return {
     uuid,
-    teams: league.teams,
+    teams: league.teams.map((team, index) => ({ ...team, trigram: trigrams[index] })),
     content: {
       uuid,
       name: 'Liga Norte',

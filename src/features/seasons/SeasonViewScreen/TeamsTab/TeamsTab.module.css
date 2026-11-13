@@ -1,0 +1,48 @@
+.tab {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.teamCell {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-md);
+}
+
+.muted {
+  margin: 0;
+  font-size: var(--font-size-md);
+  color: var(--color-fg-muted);
+}
+
+/* The Tier and the OVR in one outlined box, the Tier on black (Task 249). */
+.tierOvr {
+  display: inline-flex;
+  border: var(--border-width) solid var(--color-fg);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-md);
+  font-weight: 700;
+}
+
+.tier,
+.ovr {
+  padding: var(--space-1) var(--space-2);
+}
+
+.tier {
+  background: var(--color-fg);
+  color: var(--color-surface);
+}
+
+.ovr {
+  min-width: 2.25rem;
+  text-align: center;
+  background: var(--color-surface);
+  color: var(--color-fg);
+}

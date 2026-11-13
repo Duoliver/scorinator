@@ -19,6 +19,8 @@ export { formatTeamCount } from './formatTeamCount';
 export { StatusLine } from './StatusLine';
 export type { StatusLineProps, StatusLinePlacement } from './StatusLine';
 export { TeamSwatch } from './TeamSwatch';
+export { TeamLabel } from './TeamLabel';
+export type { TeamLabelProps } from './TeamLabel';
 export { TeamName } from './TeamName';
 export type { TeamNameProps } from './TeamName';
 export { ZoneLegend } from './ZoneLegend';

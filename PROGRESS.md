@@ -55,7 +55,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 210 | Season store: open and save a Season wrapper. Create, rename, delete. Finish and reopen. The unique name and year. The read-only guard | `app/state` | ✅ Done | 2026-11-13 | 2026-11-13 | [210](/docs/tasks/210-season-store.md) | M1. US-13.1, US-13.2, US-13.9. A finished Season can be renamed. Refactor: one comment. |
 | 211 | Roster actions: add Blueprints (OVR roll, names, trigrams). Edit the OVR, the Tier, and the trigram of a Season team | `app/state` | ✅ Done | 2026-11-13 | 2026-11-13 | [211](/docs/tasks/211-roster-actions.md) | M1. US-13.4. Refactor: no mutation in the edit. |
 | 212 | The Seasons menu and list: create, rename, delete, and search | `features/seasons`, `app/` routes | ✅ Done | 2026-11-13 | 2026-11-13 | [212](/docs/tasks/212-seasons-list.md) | M1. US-13.1, US-13.2, US-16.5. Refactor: delete text helper, a type name. Comma bug: Task 250. |
-| 213 | The Season view and its Teams tab: the tabs, the roster, add and edit a team, finish and reopen | `features/seasons` | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M1. US-13.3 (the view), US-13.4, US-13.9. Depends on 211, 212. |
+| 213 | The Season view and its Teams tab: the tabs, the roster, add and edit a team, finish and reopen | `features/seasons` | 🟦 Refactor | 2026-11-13 |  | [213](/docs/tasks/213-season-view.md) | M1. US-13.3 (the view), US-13.4, US-13.9. Review agreed, work committed. The refactor pass runs. |
 | 214 | Smoke check M1 | — | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M1. Depends on 213. |
 | 215 | Demo: the Season league cards, the wizard Teams step in a Season, the Playoffs tab, the playoff dialog, and the Resume tab | `docs/design-reference/MVP3/` | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M2. US-13.3, US-13.5, US-13.7, US-13.8. Depends on 214. |
 | 216 | Season leagues in the store: create a league in a Season, the shared Season teams, parallel play, the read-only guard. The routes and the breadcrumbs | `app/state`, `app/` routes | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M2. US-13.5, US-13.6, US-13.9. Depends on 214. |
@@ -136,6 +136,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 and MVP2 decisions still apply.** They are in [`docs/archive/mvp1/PROGRESS.md`](/docs/archive/mvp1/PROGRESS.md), [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/), and [`docs/archive/mvp2/PROGRESS.md`](/docs/archive/mvp2/PROGRESS.md). An entry here changes an earlier decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-11-13 (Task 213 — the Season view):** The user agreed eight choices. Only the Teams tab for now. The Leagues section shows "No leagues yet." until M2. The add dialog hints the new name of a team that clashes with the roster. A new `SeasonTeamDrawer`, with a required trigram. `TeamLabel` moved to `features/components/`. Detail: [Task 213](/docs/tasks/213-season-view.md).
 
 - **2026-11-13 (Task 212 — the Seasons list):** The user agreed seven choices. The screen lives in `features/seasons/SeasonsListScreen/`. The routes are `/seasons` and `/seasons/:uuid`. The dialog button stays off for a blank field, and a taken pair shows its error after the click. The search also matches "name year" together. The cards keep the manifest order. Detail: [Task 212](/docs/tasks/212-seasons-list.md).
 

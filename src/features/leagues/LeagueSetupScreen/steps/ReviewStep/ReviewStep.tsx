@@ -4,6 +4,7 @@ import {
   TeamSwatch,
   formatTeamCount,
   useBlueprintLocation,
+  TeamLabel,
 } from '@/features/components';
 import {
   SetupChips,
@@ -19,7 +20,6 @@ import {
   endsWithGroups,
   GROUPS_LAST_WARNING,
 } from '@/features/leagues/LeagueSetupScreen/phaseChecks';
-import { TeamLabel } from '@/features/leagues/TeamLabel';
 import type ReviewStepProps from './types';
 import styles from './ReviewStep.module.css';
 import { PhaseFormat } from '@/engine/phases';

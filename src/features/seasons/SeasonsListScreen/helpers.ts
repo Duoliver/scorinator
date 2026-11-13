@@ -1,30 +1,11 @@
 import type { SeasonSummary } from '@/domain';
-
-/** "No teams", "1 team", "8 teams": a count in words, for the card text. */
-export function formatCount(count: number, noun: string): string {
-  if (count === 0) return `No ${noun}s`;
-  return `${count} ${noun}${count === 1 ? '' : 's'}`;
-}
-
-/** The meta line of a Season card: "3 leagues · 8 teams · 2 playoffs". */
-export function formatSeasonMeta(row: SeasonSummary): string {
-  return [
-    formatCount(row.leagueCount, 'league'),
-    formatCount(row.teamCount, 'team'),
-    formatCount(row.playoffCount, 'playoff'),
-  ].join(' · ');
-}
+import { formatCount, formatSeasonLabel } from '@/features/seasons/seasonText';
 
 /** The subtitle of the list: "4 Seasons · 1 finished", or "No Seasons". */
 export function formatSeasonSubtitle(rows: readonly SeasonSummary[]): string {
   if (rows.length === 0) return 'No Seasons';
   const finished = rows.filter((row) => row.finished).length;
   return `${rows.length} Season${rows.length === 1 ? '' : 's'} · ${finished} finished`;
-}
-
-/** The name and the year of a Season, as one label: "Liga Norte 2026". */
-export function formatSeasonLabel(row: Pick<SeasonSummary, 'name' | 'year'>): string {
-  return `${row.name} ${row.year}`;
 }
 
 /** True when the search text is a part of the name, of the year, or of the

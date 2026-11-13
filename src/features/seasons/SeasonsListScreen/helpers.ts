@@ -38,6 +38,12 @@ export function isSeasonMatch(row: SeasonSummary, search: string): boolean {
   );
 }
 
+/** "a" or "a, b, and c": a list in words. */
+function joinWithAnd(parts: readonly string[]): string {
+  if (parts.length <= 1) return parts.join('');
+  return `${parts.slice(0, -1).join(', ')}, and ${parts[parts.length - 1]}`;
+}
+
 /** The text of the delete confirm: what goes with the Season, and what
  * stays (US-13.2). A part with a count of 0 does not show. */
 export function formatDeleteMessage(row: SeasonSummary): string {
@@ -46,11 +52,8 @@ export function formatDeleteMessage(row: SeasonSummary): string {
     row.teamCount > 0 ? `its roster of ${formatCount(row.teamCount, 'team')}` : null,
     row.playoffCount > 0 ? `its ${formatCount(row.playoffCount, 'playoff')}` : null,
   ].filter((part): part is string => part !== null);
-  const goes =
-    parts.length === 0
-      ? 'This deletes the Season.'
-      : `This deletes ${parts.length === 1 ? parts[0] : `${parts.slice(0, -1).join(', ')}, and ${parts[parts.length - 1]}`}.`;
-  return `${goes} The team Blueprints stay in the Teams module.`;
+  const goes = parts.length === 0 ? 'the Season' : joinWithAnd(parts);
+  return `This deletes ${goes}. The team Blueprints stay in the Teams module.`;
 }
 
 export const SEASON_TAKEN =

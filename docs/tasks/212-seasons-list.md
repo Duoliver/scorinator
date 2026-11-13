@@ -1,6 +1,6 @@
 # Task 212: the Seasons menu and list
 
-**Status:** Refactor
+**Status:** Done
 
 ## Goal
 
@@ -25,6 +25,8 @@ Add the Seasons screen of the M1 demo (Task 206): a Seasons menu item, a list of
 - **2026-11-13:** Tests first: 14 screen cases and 2 nav cases failed, then passed. One test helper matched the meta line too. It now reads the card label.
 - **2026-11-13:** Claude choices in the code, for the review. (a) Each card is an `article` with the label "Liga Norte 2026", so a screen reader names it. (b) The ⋮ menu is the `DropdownMenu` primitive, with the label "More actions for Liga Norte 2026". (c) The dialog is a form, so Enter submits it. (d) A rename that cannot open the Season file closes the dialog, and shows the file error in the status line. (e) The delete confirm leaves out a part with a count of 0. With no part, it says "This deletes the Season." (f) The nav check for Leagues and Seasons now shares one list of parent paths.
 - **2026-11-13:** The user checked the screen in the real app, and agreed the review and the Claude choices. Commit 1. Status Refactor.
+- **2026-11-13:** Refactor pass: the delete text helper, and the dialog state type. A bug found, not fixed in the pass (`tdd.md`): with two parts, the delete confirm reads "its 3 leagues, and its 2 playoffs". The comma is wrong for two parts. A fix changes the text, so it waits for the user. Waits for the refactor review.
+- **2026-11-13:** The user agreed the refactor review. Done. The comma fix is Task 250.
 
 ## Report
 
@@ -32,4 +34,4 @@ Add the Seasons screen of the M1 demo (Task 206): a Seasons menu item, a list of
 - **Test approach:** Testing Library through the screen, 14 cases: the empty state, the cards, the counts, create, a taken pair, Cancel, rename, delete, its Cancel, and the search. 2 nav cases in `AppShell/helpers.test.ts`. The full suite passes: 2198 tests. The type check, the lint, the format check, and the build pass.
 - **Decisions made:** the seven choices (Decisions log). The Claude choices (a) to (f) are in the notes.
 - **What is left:** the user checks the screen in the real app. "Open Season" lands on the leagues dashboard until Task 213 adds the Season view.
-- **Refactor:** waits for the review.
+- **Refactor:** two changes, no change in behavior. (1) `formatDeleteMessage` built its list in one nested template. A private `joinWithAnd` now builds it, with the same text. (2) The hook state type `DialogState` moved to `types.ts`, as `OpenSeasonDialog`. The name `SeasonDialogState` stays with the dialog hook, so one name means one thing. The rest of the diff passed the checklist. The checks pass again: 2198 tests.

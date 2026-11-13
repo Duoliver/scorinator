@@ -15,9 +15,7 @@ import {
   formatSeasonSubtitle,
   isSeasonMatch,
 } from './helpers';
-import type { SeasonsList } from './types';
-
-type DialogState = { mode: 'create' } | { mode: 'rename'; row: SeasonSummary } | null;
+import type { OpenSeasonDialog, SeasonsList } from './types';
 
 /** The Seasons list (Task 212): the cards, the search, the create and
  * rename dialog, and the delete confirm. */
@@ -26,7 +24,7 @@ export function useSeasonsList(): SeasonsList {
   const seasons = useDatabaseStore((state) => state.seasons);
   const savedSeasons = useDatabaseStore((state) => state.savedSeasons);
   const [search, setSearch] = useState('');
-  const [dialog, setDialog] = useState<DialogState>(null);
+  const [dialog, setDialog] = useState<OpenSeasonDialog>(null);
   const [deleting, setDeleting] = useState<SeasonSummary | null>(null);
 
   const rows = useMemo(

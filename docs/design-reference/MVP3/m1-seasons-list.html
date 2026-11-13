@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Seasons list demo</title>
+<link rel="stylesheet" href="demo.css">
+</head>
+<body>
+<!-- Demo for Task 206 (M1). Stories: US-13.1, US-13.2, US-16.5.
+     Static HTML with fake data. Not app code. -->
+<div class="shell">
+  <nav class="nav">
+    <div class="brand">Scorinator</div>
+    <a class="nav-item" href="#">Leagues</a>
+    <a class="nav-item" href="m1-seasons-list.html" aria-current="page">Seasons <span class="nav-new">NEW</span></a>
+    <a class="nav-item" href="#">Teams</a>
+    <a class="nav-item" href="#">File</a>
+    <p class="status-line" id="status" role="status"></p>
+  </nav>
+
+  <main class="content">
+    <div class="screen">
+      <div class="header">
+        <div>
+          <h1>Seasons</h1>
+          <p class="subtitle" id="subtitle">4 Seasons · 1 finished</p>
+        </div>
+        <div class="actions" id="header-actions">
+          <button class="button primary" type="button" data-open="create">+ New Season</button>
+        </div>
+      </div>
+
+      <div class="field search" id="search-field">
+        <label class="label" for="search">Search</label>
+        <input class="input" id="search" type="search" placeholder="Name or year">
+      </div>
+
+      <div class="grid" id="list">
+        <div class="card" data-name="Liga Norte" data-year="2026">
+          <div class="card-body">
+            <div class="card-title-row">
+              <div class="card-name">
+                <h3>Liga Norte</h3>
+                <span class="badge dark">2026</span>
+                <span class="badge warning">Unsaved</span>
+              </div>
+              <span class="badge">Running</span>
+            </div>
+            <div class="card-fill">
+              <span class="card-meta">3 leagues · 8 teams · 2 playoffs</span>
+            </div>
+            <div class="card-foot">
+              <a class="button outline sm" href="m1-season-view.html">Open Season</a>
+              <div class="menu">
+                <button class="button icon" type="button" aria-label="More actions for Liga Norte 2026" data-menu>⋮</button>
+                <ul class="menu-list" hidden>
+                  <li><button type="button" data-open="rename">Rename...</button></li>
+                  <li><button type="button" class="danger" data-open="delete">Delete...</button></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" data-name="Copa Atlântica" data-year="2026">
+          <div class="card-body">
+            <div class="card-title-row">
+              <div class="card-name">
+                <h3>Copa Atlântica</h3>
+                <span class="badge dark">2026</span>
+              </div>
+              <span class="badge">Running</span>
+            </div>
+            <div class="card-fill">
+              <span class="card-meta">1 league · 8 teams · No playoffs</span>
+            </div>
+            <div class="card-foot">
+              <a class="button outline sm" href="m1-season-view.html">Open Season</a>
+              <div class="menu">
+                <button class="button icon" type="button" aria-label="More actions for Copa Atlântica 2026" data-menu>⋮</button>
+                <ul class="menu-list" hidden>
+                  <li><button type="button" data-open="rename">Rename...</button></li>
+                  <li><button type="button" class="danger" data-open="delete">Delete...</button></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" data-name="Liga Sul" data-year="2026">
+          <div class="card-body">
+            <div class="card-title-row">
+              <div class="card-name">
+                <h3>Liga Sul</h3>
+                <span class="badge dark">2026</span>
+              </div>
+              <span class="badge">Running</span>
+            </div>
+            <div class="card-fill">
+              <span class="card-meta">No leagues · No teams</span>
+            </div>
+            <div class="card-foot">
+              <a class="button outline sm" href="m1-season-view.html?empty">Open Season</a>
+              <div class="menu">
+                <button class="button icon" type="button" aria-label="More actions for Liga Sul 2026" data-menu>⋮</button>
+                <ul class="menu-list" hidden>
+                  <li><button type="button" data-open="rename">Rename...</button></li>
+                  <li><button type="button" class="danger" data-open="delete">Delete...</button></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" data-name="Liga Norte" data-year="2025">
+          <div class="card-body">
+            <div class="card-title-row">
+              <div class="card-name">
+                <h3>Liga Norte</h3>
+                <span class="badge dark">2025</span>
+              </div>
+              <span class="badge accent">Finished</span>
+            </div>
+            <div class="card-fill">
+              <span class="card-meta">2 leagues · 20 teams · 1 playoff</span>
+            </div>
+            <div class="card-foot">
+              <a class="button outline sm" href="m1-season-view.html?finished">Open Season</a>
+              <div class="menu">
+                <button class="button icon" type="button" aria-label="More actions for Liga Norte 2025" data-menu>⋮</button>
+                <ul class="menu-list" hidden>
+                  <li><button type="button" data-open="rename">Rename...</button></li>
+                  <li><button type="button" class="danger" data-open="delete">Delete...</button></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p class="hint" id="no-match" hidden></p>
+
+      <div class="empty" id="empty" hidden>
+        <h2>No Seasons yet</h2>
+        <p class="hint">A Season groups leagues that share their teams.</p>
+        <button class="button primary" type="button" data-open="create">+ New Season</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Create and rename: one dialog, two titles. -->
+<dialog class="modal" id="season-dialog" aria-labelledby="season-dialog-title">
+  <form class="modal-panel sm" method="dialog">
+    <div class="modal-head">
+      <div>
+        <h2 class="modal-title" id="season-dialog-title">New Season</h2>
+        <p class="modal-desc" id="season-dialog-desc">A Season starts with no leagues and no teams.</p>
+      </div>
+      <button class="close" type="button" aria-label="Close" data-close>✕</button>
+    </div>
+    <div class="field">
+      <label class="label" for="season-name">Name</label>
+      <input class="input" id="season-name" required>
+    </div>
+    <div class="field">
+      <label class="label" for="season-year">Year</label>
+      <input class="input" id="season-year" inputmode="numeric" required>
+    </div>
+    <p class="error-text" id="season-error" hidden>A Season with this name and year exists. Change the name or the year.</p>
+    <div class="modal-actions">
+      <button class="button sm" type="button" data-close>Cancel</button>
+      <button class="button primary sm" type="button" id="season-submit">Create Season</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog class="modal" id="delete-dialog" aria-labelledby="delete-title">
+  <div class="modal-panel sm">
+    <div class="modal-head">
+      <div>
+        <h2 class="modal-title" id="delete-title">Delete Liga Norte 2026?</h2>
+        <p class="modal-desc">This deletes its 3 leagues, its roster of 8 teams, and its 2 playoffs. The team Blueprints stay in the Teams module.</p>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="button sm" type="button" data-close>Cancel</button>
+      <button class="button destructive sm" type="button" data-close data-status="Deleted Liga Norte 2026.">Delete</button>
+    </div>
+  </div>
+</dialog>
+
+<aside class="demo-panel" aria-label="Demo controls">
+  <strong>Demo controls (not in the app)</strong>
+  <label><input type="checkbox" id="toggle-empty"> No Seasons yet</label>
+  <button class="button sm" type="button" id="show-error">Create: name and year taken</button>
+  <span>Type "liga" or "2025" in the search. Type "xyz" for no result.</span>
+</aside>
+
+<script>
+  const $ = (s) => document.querySelector(s);
+  const dialog = $('#season-dialog');
+  const nameInput = $('#season-name');
+  const yearInput = $('#season-year');
+  const error = $('#season-error');
+
+  function openSeasonDialog(mode) {
+    const rename = mode === 'rename';
+    $('#season-dialog-title').textContent = rename ? 'Rename Season' : 'New Season';
+    $('#season-dialog-desc').textContent = rename
+      ? 'The name and the year together must stay unique.'
+      : 'A Season starts with no leagues and no teams.';
+    $('#season-submit').textContent = rename ? 'Save' : 'Create Season';
+    nameInput.value = rename ? 'Liga Norte' : '';
+    yearInput.value = rename ? '2026' : '';
+    error.hidden = true;
+    nameInput.classList.remove('invalid');
+    yearInput.classList.remove('invalid');
+    dialog.showModal();
+  }
+
+  document.addEventListener('click', (event) => {
+    const target = event.target.closest('button, a');
+    document.querySelectorAll('.menu-list').forEach((m) => {
+      if (!target || !m.parentElement.contains(target)) m.hidden = true;
+    });
+    if (!target) return;
+    if (target.hasAttribute('data-menu')) {
+      target.nextElementSibling.hidden = !target.nextElementSibling.hidden;
+    }
+    const open = target.dataset.open;
+    if (open === 'create' || open === 'rename') openSeasonDialog(open);
+    if (open === 'delete') $('#delete-dialog').showModal();
+    if (target.hasAttribute('data-close')) {
+      target.closest('dialog').close();
+      if (target.dataset.status) $('#status').textContent = target.dataset.status;
+    }
+  });
+
+  $('#season-submit').addEventListener('click', () => {
+    if (nameInput.value.trim() === '' || yearInput.value.trim() === '') return;
+    const taken = nameInput.value.trim().toLowerCase() === 'liga norte' && yearInput.value.trim() === '2026'
+      && $('#season-submit').textContent !== 'Save';
+    if (taken) {
+      error.hidden = false;
+      nameInput.classList.add('invalid');
+      yearInput.classList.add('invalid');
+      return;
+    }
+    dialog.close();
+    $('#status').textContent = `Created ${nameInput.value.trim()} ${yearInput.value.trim()}.`;
+  });
+
+  $('#show-error').addEventListener('click', () => {
+    openSeasonDialog('create');
+    nameInput.value = 'Liga Norte';
+    yearInput.value = '2026';
+    $('#season-submit').click();
+  });
+
+  $('#search').addEventListener('input', (event) => {
+    const query = event.target.value.trim().toLowerCase();
+    let shown = 0;
+    document.querySelectorAll('#list .card').forEach((card) => {
+      const text = `${card.dataset.name} ${card.dataset.year}`.toLowerCase();
+      const match = query === '' || text.includes(query);
+      card.hidden = !match;
+      if (match) shown += 1;
+    });
+    const noMatch = $('#no-match');
+    noMatch.hidden = shown > 0;
+    noMatch.textContent = `No Season matches "${event.target.value.trim()}".`;
+  });
+
+  // Open a dialog from the address: #create, #rename, #taken, or #delete.
+  window.addEventListener('load', () => {
+    if (location.hash === '#create') openSeasonDialog('create');
+    if (location.hash === '#rename') openSeasonDialog('rename');
+    if (location.hash === '#taken') $('#show-error').click();
+    if (location.hash === '#delete') $('#delete-dialog').showModal();
+  });
+
+  $('#toggle-empty').addEventListener('change', (event) => {
+    const empty = event.target.checked;
+    $('#list').hidden = empty;
+    $('#search-field').hidden = empty;
+    $('#header-actions').hidden = empty;
+    $('#empty').hidden = !empty;
+    $('#no-match').hidden = true;
+    $('#subtitle').textContent = empty ? 'No Seasons' : '4 Seasons · 1 finished';
+  });
+</script>
+</body>
+</html>

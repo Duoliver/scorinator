@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MVP3 demos</title>
+<link rel="stylesheet" href="demo.css">
+<style>
+  .page { max-width: 60rem; margin: 0 auto; padding: var(--space-10) var(--space-6); display: flex; flex-direction: column; gap: var(--space-6); }
+  .page p, .page li { font-size: var(--font-size-lg); line-height: 1.5; }
+  .page ol { margin: 0; padding-left: var(--space-6); display: flex; flex-direction: column; gap: var(--space-2); }
+  .links { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+</style>
+</head>
+<body>
+<div class="page">
+  <div>
+    <h1>MVP3 demos</h1>
+    <p class="subtitle">Static HTML with fake data, for a review before the screen tasks start (Task 205). They are not app code.</p>
+  </div>
+
+  <section class="section" aria-labelledby="m1">
+    <h2 id="m1">M1: Season core (Task 206)</h2>
+    <p>Stories: US-13.1 to 13.4, US-13.9, US-16.5. The screens: Tasks 212 and 213.</p>
+    <div class="links">
+      <a class="button sm" href="m1-seasons-list.html">Seasons list</a>
+      <a class="button sm" href="m1-season-view.html">Season view</a>
+      <a class="button sm" href="m1-season-view.html?finished">Season view, finished</a>
+      <a class="button sm" href="m1-season-view.html?empty">Season view, new</a>
+    </div>
+    <p>Each page has a "Demo controls" box at the bottom right. It is not part of the app. A link with <span class="mono">#create</span>, <span class="mono">#taken</span>, <span class="mono">#delete</span> (list), or <span class="mono">#add</span>, <span class="mono">#edit</span>, <span class="mono">#finish</span> (view) opens that dialog.</p>
+
+    <h3>Points to review</h3>
+    <ol>
+      <li><strong>The menu.</strong> "Seasons" sits between "Leagues" and "Teams".</li>
+      <li><strong>The Season card.</strong> The year is a dark badge next to the name. A "Running" or "Finished" badge, the counts, "Open Season", and a ⋮ menu with "Rename..." and "Delete...".</li>
+      <li><strong>The year field.</strong> A four-digit year, such as 2026. A split year, such as 2025/26, is not possible in the demo.</li>
+      <li><strong>Rename and delete.</strong> Only in the ⋮ menu of the card, not in the Season view.</li>
+      <li><strong>The Season view.</strong> A "Leagues" section with the league cards above the tabs. "+ New league" is in that section.</li>
+      <li><strong>Finish and reopen.</strong> A button in the header. "Finish Season" asks for a confirm. "Reopen Season" does not. A finished Season shows a notice, and its buttons are disabled.</li>
+      <li><strong>The roster.</strong> Columns: colour, team and Location, trigram, Tier, OVR, leagues. A team in no league shows "Rests: in no league".</li>
+      <li><strong>A name clash.</strong> "Ashfield Rovers (Northtown)" shows its Location in the name, and again next to it.</li>
+      <li><strong>The add dialog.</strong> The "Add teams" style. It lists only the teams that are not in the Season. A hint shows the new name of a clashing team.</li>
+      <li><strong>The edit drawer.</strong> "Edit Season team", with a note that names the leagues of the team. The fields of the wizard Edit drawer: name, slug, Tier, OVR, trigram, colour.</li>
+    </ol>
+  </section>
+</div>
+</body>
+</html>

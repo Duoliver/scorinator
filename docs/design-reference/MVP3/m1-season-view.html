@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Season view demo</title>
+<link rel="stylesheet" href="demo.css">
+<style>
+  .roster .thead, .roster .tr { grid-template-columns: 1.375rem minmax(12rem, 2fr) 5rem 4rem 4rem minmax(9rem, 1.5fr) 2rem; }
+  .leagues-cell { font-size: var(--font-size-md); }
+  .swatches { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+  .swatches .swatch { width: 1.75rem; height: 1.75rem; cursor: pointer; }
+  .swatches .swatch[aria-pressed='true'] { outline: var(--border-width-heavy) solid var(--color-fg); outline-offset: 0.125rem; }
+  .drawer-note { margin: 0; font-size: var(--font-size-md); color: var(--color-fg-muted); }
+  .drawer-actions { display: flex; justify-content: flex-end; gap: var(--space-3); margin-top: auto; }
+  .picker-row .tier { margin-left: auto; }
+  body.finished [data-edit] { pointer-events: none; opacity: 0.5; }
+</style>
+</head>
+<body>
+<!-- Demo for Task 206 (M1). Stories: US-13.3, US-13.4, US-13.9.
+     Static HTML with fake data. Not app code. -->
+<div class="shell">
+  <nav class="nav">
+    <div class="brand">Scorinator</div>
+    <a class="nav-item" href="#">Leagues</a>
+    <a class="nav-item" href="m1-seasons-list.html" aria-current="page">Seasons <span class="nav-new">NEW</span></a>
+    <a class="nav-item" href="#">Teams</a>
+    <a class="nav-item" href="#">File</a>
+    <p class="status-line" id="status" role="status"></p>
+  </nav>
+
+  <main class="content">
+    <div class="screen">
+      <div>
+        <a class="back-link" href="m1-seasons-list.html">← Seasons</a>
+        <div class="header">
+          <div>
+            <div class="title-row">
+              <h1>Liga Norte</h1>
+              <span class="badge dark">2026</span>
+              <span class="badge warning" id="unsaved">Unsaved</span>
+            </div>
+            <span class="meta" id="meta">3 leagues · 8 teams · 2 playoffs</span>
+          </div>
+          <div class="header-end">
+            <span class="badge" id="state-badge">Running</span>
+            <button class="button sm" type="button" id="finish-button">Finish Season</button>
+          </div>
+        </div>
+      </div>
+
+      <p class="notice" id="finished-notice" hidden>This Season is finished. It is read only. Reopen it to change it.</p>
+
+      <section class="section" aria-labelledby="leagues-title">
+        <div class="section-head">
+          <h2 id="leagues-title">Leagues</h2>
+          <button class="button primary sm" type="button" data-edit>+ New league</button>
+        </div>
+        <div class="grid" id="league-cards">
+          <div class="card">
+            <div class="card-body">
+              <div class="card-title-row">
+                <div class="card-name"><h3>Primeira Divisão</h3></div>
+                <span class="badge dark">MD 12/30</span>
+              </div>
+              <div class="card-fill">
+                <span class="card-meta">Round robin (two-way) · 16 teams · Home adv. on</span>
+                <span class="pill">3/1/0 pts</span>
+              </div>
+              <a class="button outline sm" href="#">Open standings</a>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-body">
+              <div class="card-title-row">
+                <div class="card-name"><h3>Taça Norte</h3></div>
+                <span class="badge dark">Quarter-finals</span>
+              </div>
+              <div class="card-fill">
+                <span class="card-meta">Bracket · 8 teams · Home adv. on</span>
+                <span class="pill">3/1/0 pts</span>
+              </div>
+              <a class="button outline sm" href="#">Open standings</a>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-body">
+              <div class="card-title-row">
+                <div class="card-name"><h3>Segunda Divisão</h3></div>
+                <span class="badge accent">Complete</span>
+              </div>
+              <div class="card-fill">
+                <span class="card-meta">Round robin → Bracket · 12 teams · Home adv. off</span>
+                <span class="pill">3/1/0 pts</span>
+              </div>
+              <a class="button outline sm" href="#">Open standings</a>
+            </div>
+          </div>
+        </div>
+        <p class="hint" id="no-leagues" hidden>No leagues yet. A league in a Season uses the Season teams.</p>
+      </section>
+
+      <div class="section">
+        <div class="tabs-row">
+          <div class="tabs" role="tablist" aria-label="Season">
+            <button class="tab" role="tab" type="button" aria-selected="true" data-tab="teams">Teams</button>
+            <button class="tab" role="tab" type="button" aria-selected="false" data-tab="playoffs">Playoffs</button>
+            <button class="tab" role="tab" type="button" aria-selected="false" data-tab="resume">Resume</button>
+          </div>
+          <div class="actions" id="tab-actions">
+            <button class="button sm" type="button" data-edit data-open="add">+ Add teams</button>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="panel-teams" role="tabpanel">
+          <div class="table roster" id="roster">
+            <div class="thead">
+              <span></span><span>Team</span><span>Trigram</span><span>Tier</span><span>OVR</span><span>Leagues</span><span></span>
+            </div>
+            <div class="tr">
+              <span class="swatch" style="background:#1565C0"></span>
+              <span><span>Ashfield Rovers</span> <span class="team-location">Ashfield</span></span>
+              <span class="mono">ASH</span><span><span class="badge dark">A</span></span><span class="mono">86</span>
+              <span class="leagues-cell">Primeira Divisão, Taça Norte</span>
+              <button class="button icon" type="button" aria-label="Edit Ashfield Rovers" data-edit data-open="edit">✎</button>
+            </div>
+            <div class="tr">
+              <span class="swatch" style="background:#E53935"></span>
+              <span><span>Ashfield Rovers (Northtown)</span> <span class="team-location">Northtown</span></span>
+              <span class="mono">ASN</span><span><span class="badge dark">B</span></span><span class="mono">74</span>
+              <span class="leagues-cell">Segunda Divisão</span>
+              <button class="button icon" type="button" aria-label="Edit Ashfield Rovers (Northtown)" data-edit data-open="edit">✎</button>
+            </div>
+            <div class="tr">
+              <span class="swatch" style="background:#2E7D32"></span>
+              <span><span>Riverside FC</span></span>
+              <span class="mono">RIV</span><span><span class="badge dark">A</span></span><span class="mono">81</span>
+              <span class="leagues-cell">Primeira Divisão, Taça Norte</span>
+              <button class="button icon" type="button" aria-label="Edit Riverside FC" data-edit data-open="edit">✎</button>
+            </div>
+            <div class="tr">
+              <span class="swatch" style="background:#FFB300"></span>
+              <span><span>Riverside FC (2)</span></span>
+              <span class="mono">RVS</span><span><span class="badge dark">C</span></span><span class="mono">63</span>
+              <span class="leagues-cell">Segunda Divisão</span>
+              <button class="button icon" type="button" aria-label="Edit Riverside FC (2)" data-edit data-open="edit">✎</button>
+            </div>
+            <div class="tr">
+              <span class="swatch" style="background:#1A237E"></span>
+              <span><span>Porto Velho SC</span> <span class="team-location">Porto Velho</span></span>
+              <span class="mono">POR</span><span><span class="badge dark">S</span></span><span class="mono">93</span>
+              <span class="leagues-cell">Primeira Divisão, Taça Norte</span>
+              <button class="button icon" type="button" aria-label="Edit Porto Velho SC" data-edit data-open="edit">✎</button>
+            </div>
+            <div class="tr">
+              <span class="swatch" style="background:#6A1B9A"></span>
+              <span><span>Union Leste</span> <span class="team-location">Vila Leste</span></span>
+              <span class="mono">UNI</span><span><span class="badge dark">B</span></span><span class="mono">77</span>
+              <span class="leagues-cell">Primeira Divisão</span>
+              <button class="button icon" type="button" aria-label="Edit Union Leste" data-edit data-open="edit">✎</button>
+            </div>
+            <div class="tr">
+              <span class="swatch" style="background:#00897B"></span>
+              <span><span>Atlético Serra</span> <span class="team-location">Serra Alta</span></span>
+              <span class="mono">ATL</span><span><span class="badge dark">C</span></span><span class="mono">66</span>
+              <span class="leagues-cell">Segunda Divisão</span>
+              <button class="button icon" type="button" aria-label="Edit Atlético Serra" data-edit data-open="edit">✎</button>
+            </div>
+            <div class="tr">
+              <span class="swatch" style="background:#F57C00"></span>
+              <span><span>Mariners FC</span> <span class="team-location">Cais Novo</span></span>
+              <span class="mono">MAR</span><span><span class="badge dark">D</span></span><span class="mono">55</span>
+              <span class="leagues-cell muted">Rests: in no league</span>
+              <button class="button icon" type="button" aria-label="Edit Mariners FC" data-edit data-open="edit">✎</button>
+            </div>
+          </div>
+          <span class="count" id="roster-count">8 teams in the roster. A team cannot leave the Season.</span>
+          <p class="hint" id="no-teams" hidden>No teams yet. Add teams from the Teams module. Each team gets its OVR rolled once, for the whole Season.</p>
+        </div>
+
+        <div class="tab-panel" id="panel-playoffs" role="tabpanel" hidden>
+          <div class="placeholder">The Playoffs tab is in the M2 demo (Task 215).</div>
+        </div>
+        <div class="tab-panel" id="panel-resume" role="tabpanel" hidden>
+          <div class="placeholder">The Resume tab is in the M2 demo (Task 215).</div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Add teams to the Season roster: the "Add teams" dialog style. -->
+<dialog class="modal" id="add-dialog" aria-labelledby="add-title">
+  <div class="modal-panel lg">
+    <div class="modal-head">
+      <div>
+        <h2 class="modal-title" id="add-title">Add teams to the Season</h2>
+        <p class="modal-desc">Each team gets its OVR rolled once, for the whole Season. A team cannot leave the Season.</p>
+      </div>
+      <button class="close" type="button" aria-label="Close" data-close>✕</button>
+    </div>
+    <div class="field">
+      <label class="label" for="add-search">Search</label>
+      <input class="input" id="add-search" type="search" placeholder="Name or Location">
+    </div>
+    <div class="picker">
+      <div class="picker-panel">
+        <h3 class="picker-title">Teams module · 5 not in the Season</h3>
+        <ul class="picker-list" id="available">
+          <li class="picker-row" data-team="Ashfield Rovers|Westbury|#D81B60|B"><span class="swatch" style="background:#D81B60"></span><span>Ashfield Rovers <span class="team-location">Westbury</span></span><span class="badge dark tier">B</span></li>
+          <li class="picker-row" data-team="Clube Ferroviário|Estação|#827717|C"><span class="swatch" style="background:#827717"></span><span>Clube Ferroviário <span class="team-location">Estação</span></span><span class="badge dark tier">C</span></li>
+          <li class="picker-row" data-team="Dragões do Sul|Baía|#E53935|A"><span class="swatch" style="background:#E53935"></span><span>Dragões do Sul <span class="team-location">Baía</span></span><span class="badge dark tier">A</span></li>
+          <li class="picker-row" data-team="Estrela Azul||#64B5F6|D"><span class="swatch" style="background:#64B5F6"></span><span>Estrela Azul</span><span class="badge dark tier">D</span></li>
+          <li class="picker-row" data-team="Rio Claro United|Rio Claro|#1B4D2E|E"><span class="swatch" style="background:#1B4D2E"></span><span>Rio Claro United <span class="team-location">Rio Claro</span></span><span class="badge dark tier">E</span></li>
+        </ul>
+        <button class="picker-action" type="button" id="add-all">Add all ›</button>
+      </div>
+      <div class="picker-panel">
+        <h3 class="picker-title" id="picked-title">To add · 0</h3>
+        <ul class="picker-list" id="picked"></ul>
+      </div>
+    </div>
+    <p class="hint" id="clash-hint">"Ashfield Rovers" from Westbury joins as "Ashfield Rovers (Westbury)", because the Season has an Ashfield Rovers already.</p>
+    <div class="modal-actions">
+      <button class="button sm" type="button" data-close>Cancel</button>
+      <button class="button primary sm" type="button" id="add-submit" data-close disabled>Add 0 teams</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- Edit a Season team: the wizard Edit drawer, for the Season team. -->
+<dialog class="drawer" id="edit-drawer" aria-labelledby="edit-title">
+  <div class="drawer-panel">
+    <div class="modal-head">
+      <h2 class="drawer-title" id="edit-title">Edit Season team</h2>
+      <button class="close" type="button" aria-label="Close" data-close>✕</button>
+    </div>
+    <p class="drawer-note">The change reaches every league of this Season: Primeira Divisão, Taça Norte. A match played before the change keeps its score.</p>
+    <div class="field">
+      <label class="label" for="edit-name">Name</label>
+      <input class="input" id="edit-name" value="Ashfield Rovers">
+    </div>
+    <div class="field">
+      <label class="label" for="edit-slug">Slug</label>
+      <input class="input mono" id="edit-slug" value="ashfield-rovers" readonly>
+    </div>
+    <div class="fields-row">
+      <div class="field">
+        <label class="label" for="edit-tier">Tier</label>
+        <select class="input" id="edit-tier">
+          <option>S</option><option selected>A</option><option>B</option><option>C</option><option>D</option><option>E</option><option>F</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="label" for="edit-ovr" id="ovr-label">OVR (80 to 89)</label>
+        <input class="input mono" id="edit-ovr" value="86" inputmode="numeric">
+      </div>
+    </div>
+    <p class="hint">A Tier change rolls a new OVR in the new range.</p>
+    <div class="field">
+      <label class="label" for="edit-trigram">Trigram</label>
+      <input class="input mono" id="edit-trigram" value="ASH">
+    </div>
+    <div class="field">
+      <span class="label">Colour</span>
+      <div class="swatches">
+        <button class="swatch" type="button" style="background:#E53935" aria-label="Red" aria-pressed="false"></button>
+        <button class="swatch" type="button" style="background:#F57C00" aria-label="Orange" aria-pressed="false"></button>
+        <button class="swatch" type="button" style="background:#FFB300" aria-label="Gold" aria-pressed="false"></button>
+        <button class="swatch" type="button" style="background:#2E7D32" aria-label="Green" aria-pressed="false"></button>
+        <button class="swatch" type="button" style="background:#00897B" aria-label="Teal" aria-pressed="false"></button>
+        <button class="swatch" type="button" style="background:#1565C0" aria-label="Blue" aria-pressed="true"></button>
+        <button class="swatch" type="button" style="background:#1A237E" aria-label="Navy" aria-pressed="false"></button>
+        <button class="swatch" type="button" style="background:#6A1B9A" aria-label="Purple" aria-pressed="false"></button>
+        <button class="swatch" type="button" style="background:#D81B60" aria-label="Pink" aria-pressed="false"></button>
+        <button class="swatch" type="button" style="background:#FAFAFA" aria-label="White" aria-pressed="false"></button>
+      </div>
+    </div>
+    <div class="drawer-actions">
+      <button class="button sm" type="button" data-close>Cancel</button>
+      <button class="button primary sm" type="button" data-close data-status="Saved Ashfield Rovers in Liga Norte 2026.">Save</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog class="modal" id="finish-dialog" aria-labelledby="finish-title">
+  <div class="modal-panel sm">
+    <div class="modal-head">
+      <div>
+        <h2 class="modal-title" id="finish-title">Finish Liga Norte 2026?</h2>
+        <p class="modal-desc">A finished Season is read only. You can read its leagues, teams, matches, and playoffs. You can reopen it later.</p>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="button sm" type="button" data-close>Cancel</button>
+      <button class="button primary sm" type="button" id="finish-confirm">Finish Season</button>
+    </div>
+  </div>
+</dialog>
+
+<aside class="demo-panel" aria-label="Demo controls">
+  <strong>Demo controls (not in the app)</strong>
+  <label><input type="checkbox" id="toggle-finished"> Finished Season</label>
+  <label><input type="checkbox" id="toggle-empty"> New Season: no leagues, no teams</label>
+  <span>Click ✎ for the edit drawer, "+ Add teams" for the add dialog.</span>
+</aside>
+
+<script>
+  const $ = (s) => document.querySelector(s);
+  const params = new URLSearchParams(location.search);
+
+  function setFinished(finished) {
+    document.body.classList.toggle('finished', finished);
+    $('#finished-notice').hidden = !finished;
+    $('#state-badge').textContent = finished ? 'Finished' : 'Running';
+    $('#state-badge').classList.toggle('accent', finished);
+    $('#finish-button').textContent = finished ? 'Reopen Season' : 'Finish Season';
+    $('#toggle-finished').checked = finished;
+    document.querySelectorAll('[data-edit]').forEach((el) => {
+      if (el.tagName === 'BUTTON') el.disabled = finished;
+    });
+  }
+
+  function setEmpty(empty) {
+    $('#league-cards').hidden = empty;
+    $('#no-leagues').hidden = !empty;
+    $('#roster').hidden = empty;
+    $('#roster-count').hidden = empty;
+    $('#no-teams').hidden = !empty;
+    $('#unsaved').hidden = empty;
+    $('#meta').textContent = empty ? 'No leagues · No teams · No playoffs' : '3 leagues · 8 teams · 2 playoffs';
+    $('#toggle-empty').checked = empty;
+  }
+
+  document.addEventListener('click', (event) => {
+    const target = event.target.closest('button, li');
+    if (!target) return;
+    if (target.dataset.tab) {
+      document.querySelectorAll('[data-tab]').forEach((tab) => {
+        const on = tab === target;
+        tab.setAttribute('aria-selected', String(on));
+        $(`#panel-${tab.dataset.tab}`).hidden = !on;
+      });
+      $('#tab-actions').hidden = target.dataset.tab !== 'teams';
+    }
+    if (target.dataset.open === 'add') $('#add-dialog').showModal();
+    if (target.dataset.open === 'edit') $('#edit-drawer').showModal();
+    if (target.hasAttribute('data-close')) {
+      target.closest('dialog').close();
+      if (target.dataset.status) $('#status').textContent = target.dataset.status;
+    }
+    if (target.classList.contains('swatch') && target.closest('.swatches')) {
+      target.closest('.swatches').querySelectorAll('.swatch').forEach((s) => s.setAttribute('aria-pressed', String(s === target)));
+    }
+    if (target.classList.contains('picker-row')) movePick(target);
+  });
+
+  function updatePicked() {
+    const count = $('#picked').children.length;
+    $('#picked-title').textContent = `To add · ${count}`;
+    $('#add-submit').textContent = `Add ${count} ${count === 1 ? 'team' : 'teams'}`;
+    $('#add-submit').disabled = count === 0;
+    $('#add-submit').dataset.status = `Added ${count} ${count === 1 ? 'team' : 'teams'} to Liga Norte 2026.`;
+  }
+  function movePick(row) {
+    const into = row.parentElement.id === 'available' ? $('#picked') : $('#available');
+    into.appendChild(row);
+    updatePicked();
+  }
+  $('#add-all').addEventListener('click', () => {
+    [...$('#available').children].forEach((row) => $('#picked').appendChild(row));
+    updatePicked();
+  });
+  $('#add-search').addEventListener('input', (event) => {
+    const query = event.target.value.trim().toLowerCase();
+    [...$('#available').children].forEach((row) => {
+      const [name, place] = row.dataset.team.split('|');
+      row.hidden = query !== '' && !`${name} ${place}`.toLowerCase().includes(query);
+    });
+  });
+
+  const ranges = { S: '90 to 99', A: '80 to 89', B: '70 to 79', C: '60 to 69', D: '50 to 59', E: '40 to 49', F: '30 to 39' };
+  const rolls = { S: 94, A: 86, B: 73, C: 61, D: 57, E: 44, F: 35 };
+  $('#edit-tier').addEventListener('change', (event) => {
+    $('#ovr-label').textContent = `OVR (${ranges[event.target.value]})`;
+    $('#edit-ovr').value = rolls[event.target.value];
+  });
+
+  $('#finish-button').addEventListener('click', () => {
+    if (document.body.classList.contains('finished')) {
+      setFinished(false);
+      $('#status').textContent = 'Reopened Liga Norte 2026.';
+    } else {
+      $('#finish-dialog').showModal();
+    }
+  });
+  $('#finish-confirm').addEventListener('click', () => {
+    $('#finish-dialog').close();
+    setFinished(true);
+    $('#status').textContent = 'Finished Liga Norte 2026.';
+  });
+  $('#toggle-finished').addEventListener('change', (event) => setFinished(event.target.checked));
+  $('#toggle-empty').addEventListener('change', (event) => setEmpty(event.target.checked));
+
+  // Open a dialog from the address: #add, #edit, or #finish.
+  const opener = { '#add': '#add-dialog', '#edit': '#edit-drawer', '#finish': '#finish-dialog' }[location.hash];
+  if (opener) $(opener).showModal();
+  setFinished(params.has('finished'));
+  setEmpty(params.has('empty'));
+</script>
+</body>
+</html>

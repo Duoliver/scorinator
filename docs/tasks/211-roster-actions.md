@@ -1,6 +1,6 @@
 # Task 211: the Season roster actions
 
-**Status:** Refactor
+**Status:** Done
 
 ## Goal
 
@@ -24,6 +24,8 @@ Let the store add Blueprints to a Season roster, and edit a Season team. A join 
 - **2026-11-13:** Tests first: 19 new cases failed, then passed.
 - **2026-11-13:** Claude choices in the code, for the review. (a) A Blueprint UUID twice in one call joins once. (b) `addSeasonTeams` takes an injected `Rng`, as `newTeamInstances` does, so a test can fix the roll. (c) The edit trims the name, and writes the trigram in capitals: "atw" becomes "ATW". (d) A roster team goes into the trigram pick with an empty trigram list, because its trigram is fixed.
 - **2026-11-13:** The user agreed the review and the Claude choices. Commit 1. Status Refactor.
+- **2026-11-13:** Refactor pass: the edit builds the team once. Waits for the refactor review.
+- **2026-11-13:** The user agreed the refactor review. Done.
 
 ## Report
 
@@ -31,4 +33,4 @@ Let the store add Blueprints to a Season roster, and edit a Season team. A join 
 - **Test approach:** store tests in `seasonActions.test.ts`, 19 new cases. The join: the order, the OVR in the Tier range, the first batch trigrams, a later join, the Location suffix, the number, the OVR precedence, the slug, the skip, an empty list, an unknown Blueprint, a finished Season. The edit: each field, the fields left out, the shared team, a case change, a blank or taken name, an OVR out of range, a bad or taken trigram, an unknown team, a finished Season. The full suite passes: 2182 tests. The type check, the lint, and the format check pass.
 - **Decisions made:** the six choices (Decisions log). The Claude choices (a) to (d) are in the notes.
 - **What is left:** Task 213 builds the Teams tab, the add dialog, and the edit drawer on these actions. The drawer rolls the OVR on a Tier change with `ovrAfterTierChange`.
-- **Refactor:** waits for the review.
+- **Refactor:** one change, no change in behavior. `updateSeasonTeam` built the edited team, then changed its name and trigram in place. It now checks the values first, and builds the team once, with no mutation. The rest of the diff passed the checklist. The checks pass again: 2182 tests.

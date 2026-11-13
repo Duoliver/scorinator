@@ -258,29 +258,26 @@ export function updateSeasonTeam(
     );
   }
   const others = season.teams.filter((candidate) => candidate !== team);
-  const changed: TeamInstance = { ...team, ...changes };
+  const { tier, ovr, colour } = { ...team, ...changes };
+  const name = (changes.name ?? team.name).trim();
+  const typedTrigram = changes.trigram ?? team.trigram;
 
-  changed.name = changed.name.trim();
-  if (changed.name === '') throw new RangeError('A Season team needs a name.');
-  if (others.some((other) => getNameKey(other.name) === getNameKey(changed.name))) {
-    throw new RangeError(`Another Season team has the name "${changed.name}".`);
+  if (name === '') throw new RangeError('A Season team needs a name.');
+  if (others.some((other) => getNameKey(other.name) === getNameKey(name))) {
+    throw new RangeError(`Another Season team has the name "${name}".`);
   }
-  if (!isOvrInTier(changed.ovr, changed.tier)) {
-    throw new RangeError(
-      `The OVR ${changed.ovr} is not in the range of Tier ${changed.tier}.`
-    );
+  if (!isOvrInTier(ovr, tier)) {
+    throw new RangeError(`The OVR ${ovr} is not in the range of Tier ${tier}.`);
   }
-  const trigram = normalizeTrigram(changed.trigram);
+  const trigram = normalizeTrigram(typedTrigram);
   if (trigram === null) {
-    throw new RangeError(
-      `The trigram "${changed.trigram}" is not 3 letters or digits.`
-    );
+    throw new RangeError(`The trigram "${typedTrigram}" is not 3 letters or digits.`);
   }
   if (others.some((other) => other.trigram === trigram)) {
     throw new RangeError(`Another Season team has the trigram "${trigram}".`);
   }
-  changed.trigram = trigram;
 
+  const changed: TeamInstance = { ...team, name, colour, tier, ovr, trigram };
   storeChangedSeason(
     season,
     {},

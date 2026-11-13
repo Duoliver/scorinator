@@ -1,10 +1,10 @@
 import type { JSX } from 'preact';
 import { Button, Card } from '@/design-system';
 import {
+  TeamLabel,
   TeamSwatch,
   formatTeamCount,
   useBlueprintLocation,
-  TeamLabel,
 } from '@/features/components';
 import {
   SetupChips,

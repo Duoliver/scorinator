@@ -1,6 +1,6 @@
 # Task 213: the Season view and its Teams tab
 
-**Status:** Refactor
+**Status:** Done
 
 ## Goal
 
@@ -25,6 +25,8 @@ Add the Season view of the M1 demo (Task 206, Task 249): the header, the finish 
 - **2026-11-13:** Claude choices in the code, for the review. (a) `formatCount`, `formatSeasonMeta`, and `formatSeasonLabel` moved to `features/seasons/seasonText.ts`, because both Season screens use them. (b) The roster count line reads "2 teams in the roster. A team cannot leave the Season.", as in the demo. (c) The drawer note for a team in no league reads "The team is in no league of this Season yet." (d) "+ Add teams" sits on the tab row, as the actions of League Detail do.
 - **2026-11-13:** A gap outside the diff, for the user: the Season file parser of Task 209 does not check that each roster trigram is unique. A file with two equal trigrams opens, and the next join throws. A small task can add the check.
 - **2026-11-13:** The user agreed the review and the Claude choices. The trigram check becomes Task 251. Commit 1. Status Refactor.
+- **2026-11-13:** Refactor pass: two hooks out of `useSeasonView`, a named type, an import order. Waits for the refactor review.
+- **2026-11-13:** The user agreed the refactor review. Done.
 
 ## Report
 
@@ -32,4 +34,4 @@ Add the Season view of the M1 demo (Task 206, Task 249): the header, the finish 
 - **Test approach:** Testing Library through the screen, 16 cases: the open states, the header, the empty Leagues section, the one tab, the roster with the Tier and OVR box, a resting team, the add dialog, its hint, the edit drawer, a Tier change roll, the field problems, finish, and reopen. The full suite passes: 2216 tests. The type check, the lint, the format check, and the build pass.
 - **Decisions made:** the eight choices (Decisions log). The Claude choices (a) to (d) are in the notes.
 - **What is left:** the user checks the screen in the real app. A gap outside the diff is in the notes: the unique roster trigram check of the Season file.
-- **Refactor:** waits for the review.
+- **Refactor:** three changes, no change in behavior. (1) `useSeasonView` held four concerns in 159 lines. The add dialog moved to `useAddTeams`, and the edit drawer to `useTeamEdit`, one hook for each concern (`coding-standards.md`). `useSeasonView` now has 98 lines. (2) The drawer save takes the type `SeasonTeamChanges` by name, not through `Parameters<...>`. (3) `ReviewStep.tsx` lists `TeamLabel` first in its component import, after the move. The rest of the diff passed the checklist. The checks pass again: 2216 tests.

@@ -1,4 +1,4 @@
-import type { ConfirmDialogProps, PickerDialogProps } from '@/design-system';
+import type { ConfirmDialogProps, MultiPickerProps } from '@/design-system';
 import type { RosterRow } from './TeamsTab';
 import type { SeasonTeamDrawerProps } from './SeasonTeamDrawer';
 
@@ -18,7 +18,7 @@ export interface OpenSeasonView {
   toggleFinished: () => void;
   finishConfirm: ConfirmDialogProps | null;
   openPicker: () => void;
-  picker: PickerDialogProps | null;
+  picker: MultiPickerProps | null;
   openDrawer: (blueprintUuid: string) => void;
   drawer: SeasonTeamDrawerProps | null;
 }

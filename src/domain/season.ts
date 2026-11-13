@@ -29,7 +29,9 @@ export interface Playoff {
 
 /**
  * A group of leagues that share their teams (US-13.1). `name` and `year`
- * together are unique in the database. A finished Season is read only, and
+ * together are unique in the database. The year is free text, so it can be
+ * "2026", a Season number such as "3", "2026-27", or a fictional era such as
+ * "4E 201" (Task 209). A finished Season is read only, and
  * the user can reopen it (US-13.9). The Season has no roster of its own: the
  * Instances of its wrapper are the Season teams, in join order (US-13.4,
  * Task 207 choice 2).
@@ -37,7 +39,7 @@ export interface Playoff {
 export interface Season extends Provenance {
   uuid: string;
   name: string;
-  year: number;
+  year: string;
   finished: boolean;
   leagues: SeasonLeague[];
   playoffs: Playoff[];

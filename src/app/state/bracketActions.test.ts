@@ -42,6 +42,7 @@ async function open(): Promise<void> {
     installationUuid: INSTALLATION,
     blueprints: [blueprint()],
     wrappers: [],
+    seasons: [],
   });
   await openDatabase(memoryFolder({ manifest }).folder);
 }

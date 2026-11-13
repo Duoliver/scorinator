@@ -26,6 +26,7 @@ As a user, I want to create a Season with a name and a year, so that I can group
 
 - [ ] The app has a Seasons menu of its own, with a list of the Seasons.
 - [ ] The user creates a Season with a name and a year. Both are required.
+- [ ] The year is free text: "2026", a Season number such as "3", "2026-27", or a fictional era such as "4E 201". *(Added on 2026-11-13, Task 209, by the user.)*
 - [ ] Two Seasons cannot have the same name and year together.
 - [ ] The database holds more than one Season (C4). Each Season has its own Season roster and its own leagues.
 - [ ] A new Season has no leagues and no teams.

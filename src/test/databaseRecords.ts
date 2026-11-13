@@ -6,6 +6,8 @@ import type {
   Phase,
   PhaseResult,
   ScheduledPhase,
+  SeasonSummary,
+  SeasonWrapper,
   TeamBlueprint,
   TeamInstance,
 } from '@/domain';
@@ -21,6 +23,7 @@ export const SALT_MARSH = '00000000-0000-4000-8000-0000000000a1';
 export const HARBORVIEW = '00000000-0000-4000-8000-0000000000a2';
 export const LEAGUE = '00000000-0000-4000-8000-0000000000b1';
 export const OTHER_LEAGUE = '00000000-0000-4000-8000-0000000000b2';
+export const SEASON = '00000000-0000-4000-8000-0000000000c1';
 
 const provenance = {
   createdByInstallation: INSTALLATION,
@@ -97,6 +100,38 @@ export function leagueWrapper(
         },
       ],
     },
+  };
+}
+
+/** A Season with the two teams of `leagueWrapper`, one league of both, and
+ * no playoffs (Task 209). */
+export function seasonWrapper(uuid: string = SEASON): SeasonWrapper {
+  const league = leagueWrapper();
+  return {
+    uuid,
+    teams: league.teams,
+    content: {
+      uuid,
+      name: 'Liga Norte',
+      year: '2026-27',
+      finished: false,
+      ...provenance,
+      leagues: [{ ...league.content, teamUuids: [SALT_MARSH, HARBORVIEW] }],
+      playoffs: [],
+    },
+  };
+}
+
+/** The manifest row of `seasonWrapper` (Task 209). */
+export function seasonRow(uuid: string = SEASON): SeasonSummary {
+  return {
+    uuid,
+    name: 'Liga Norte',
+    year: '2026-27',
+    finished: false,
+    leagueCount: 1,
+    teamCount: 2,
+    playoffCount: 0,
   };
 }
 

@@ -14,13 +14,17 @@ import {
   leagueWrapper,
   result,
   SALT_MARSH,
+  seasonRow,
+  seasonWrapper,
   testUuid,
 } from '@/test/databaseRecords';
 import {
   parseLeagueWrapper,
   parseManifestRecord,
+  parseSeasonWrapper,
   serializeLeagueWrapper,
   serializeManifestRecord,
+  serializeSeasonWrapper,
 } from './databaseFile';
 
 const manifest = (): Manifest => ({
@@ -41,6 +45,7 @@ const manifest = (): Manifest => ({
       progress: { kind: 'phase', phase: 1, matchday: 2, matchdays: 2 },
     },
   ],
+  seasons: [seasonRow()],
 });
 
 describe('the manifest map (Task 108)', () => {
@@ -53,7 +58,7 @@ describe('the manifest map (Task 108)', () => {
   it('writes the MVP2 file format, with its kind and version', () => {
     const file = JSON.parse(serializeManifestRecord(manifest()));
     expect(file.kind).toBe('manifest');
-    expect(file.formatVersion).toBe(4);
+    expect(file.formatVersion).toBe(5);
   });
 
   it('gives the parser error for a bad file', () => {
@@ -70,7 +75,7 @@ describe('the wrapper map (Task 108)', () => {
   it('writes the MVP2 file format, with its kind and version', () => {
     const file = JSON.parse(serializeLeagueWrapper(leagueWrapper()));
     expect(file.kind).toBe('wrapper');
-    expect(file.formatVersion).toBe(4);
+    expect(file.formatVersion).toBe(5);
   });
 
   it('gives the parser error for a bad file', () => {
@@ -293,6 +298,26 @@ describe('the bracket files (Task 139)', () => {
     raw.wrappers[0].progress = { kind: 'bracket', phase: 1, round };
     expect(() => parseManifestRecord(JSON.stringify(raw))).toThrow(
       'has no valid progress.'
+    );
+  });
+});
+
+describe('the Season wrapper map (Task 209)', () => {
+  it('gives the same Season wrapper after a round trip', () => {
+    expect(parseSeasonWrapper(serializeSeasonWrapper(seasonWrapper()))).toEqual(
+      seasonWrapper()
+    );
+  });
+
+  it('writes a Season file, with its kind and version', () => {
+    const file = JSON.parse(serializeSeasonWrapper(seasonWrapper()));
+    expect(file.kind).toBe('season');
+    expect(file.formatVersion).toBe(5);
+  });
+
+  it('gives the parser error for a league file', () => {
+    expect(() => parseSeasonWrapper(serializeLeagueWrapper(leagueWrapper()))).toThrow(
+      'A Season file is not valid:'
     );
   });
 });

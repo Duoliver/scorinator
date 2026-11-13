@@ -7,6 +7,7 @@ import {
   serializeWrapper,
   type SavedInstance,
   type SavedManifest,
+  type SavedSeasonSummary,
   type SavedWrapper,
 } from './index';
 
@@ -70,6 +71,7 @@ function buildManifest(): SavedManifest {
         progress: { kind: 'completed' },
       },
     ],
+    seasons: [],
   };
 }
 
@@ -146,8 +148,8 @@ function wrapperText(change: (raw: RawFile) => void = () => {}): string {
 }
 
 describe('the format version', () => {
-  it('is 4 for each MVP2 database file (Task 139)', () => {
-    expect(DATABASE_FORMAT_VERSION).toBe(4);
+  it('is 5 for each database file, with the Seasons (Task 209)', () => {
+    expect(DATABASE_FORMAT_VERSION).toBe(5);
   });
 });
 
@@ -196,14 +198,14 @@ describe('parseManifest', () => {
   });
 
   it('rejects a newer format version, and says that a newer Scorinator made it', () => {
-    expect(() => parseManifest(manifestText((raw) => (raw.formatVersion = 5)))).toThrow(
-      'manifest.json is not valid: a newer version of Scorinator made this file (format version 5). This version reads format versions 2 to 4.'
+    expect(() => parseManifest(manifestText((raw) => (raw.formatVersion = 6)))).toThrow(
+      'manifest.json is not valid: a newer version of Scorinator made this file (format version 6). This version reads format versions 2 to 5.'
     );
   });
 
   it('rejects an older or missing format version', () => {
     expect(() => parseManifest(manifestText((raw) => (raw.formatVersion = 1)))).toThrow(
-      'manifest.json is not valid: the format version is "1". This version reads format versions 2 to 4.'
+      'manifest.json is not valid: the format version is "1". This version reads format versions 2 to 5.'
     );
     expect(() =>
       parseManifest(manifestText((raw) => delete raw.formatVersion))
@@ -774,5 +776,78 @@ describe('phases, plans, and legs (Task 176)', () => {
     const [phase] = wrapper.content.phases;
     if (phase.format !== 'groups') throw new Error('expected a Groups phase');
     expect(phase.byes).toEqual([{ matchday: 2, team: NORTH, group: 2 }]);
+  });
+});
+
+describe('the Season rows of the manifest (Task 209)', () => {
+  const SEASON = '00000000-0000-4000-8000-0000000000c1';
+  const OTHER_SEASON = '00000000-0000-4000-8000-0000000000c2';
+  const row = (uuid: string, name: string, year: string): SavedSeasonSummary => ({
+    uuid,
+    name,
+    year,
+    finished: false,
+    leagueCount: 2,
+    teamCount: 16,
+    playoffCount: 1,
+  });
+
+  it('round-trips the Season rows', () => {
+    const manifest = {
+      ...buildManifest(),
+      seasons: [
+        row(SEASON, 'Liga Norte', '2026-27'),
+        row(OTHER_SEASON, 'Liga Norte', '2025'),
+      ],
+    };
+    expect(parseManifest(serializeManifest(manifest))).toEqual(manifest);
+  });
+
+  it('reads a manifest of version 2 to 4 with no Seasons', () => {
+    const text = manifestText((raw) => {
+      raw.formatVersion = 4;
+      delete raw.seasons;
+    });
+    expect(parseManifest(text).seasons).toEqual([]);
+  });
+
+  it('wants the Season list in a manifest of version 5', () => {
+    expect(() => parseManifest(manifestText((raw) => delete raw.seasons))).toThrow(
+      'manifest.json is not valid: "seasons" is missing or not a list.'
+    );
+  });
+
+  const fails = (rows: unknown[], message: string): void => {
+    expect(() => parseManifest(manifestText((raw) => (raw.seasons = rows)))).toThrow(
+      `manifest.json is not valid: ${message}`
+    );
+  };
+
+  it('checks each field of a Season row', () => {
+    fails(
+      [{ ...row(SEASON, 'Liga', '1'), uuid: 'abc' }],
+      'Season row 1 has no valid UUID.'
+    );
+    fails([row(SEASON, ' ', '1')], 'Season row 1 has no name.');
+    fails([row(SEASON, 'Liga', '')], 'Season row 1 has no year.');
+    fails(
+      [{ ...row(SEASON, 'Liga', '1'), finished: 'no' }],
+      'Season row 1 has no valid "finished" flag.'
+    );
+    fails(
+      [{ ...row(SEASON, 'Liga', '1'), playoffCount: -1 }],
+      'Season row 1 has no valid playoff count.'
+    );
+  });
+
+  it('wants a Season UUID that no league row has (choice 5)', () => {
+    fails([row(LEAGUE, 'Liga', '1')], 'Season row 1 has the UUID of league row 1.');
+  });
+
+  it('wants each name and year once, in any case (US-13.1)', () => {
+    fails(
+      [row(SEASON, 'Liga Norte', '2026'), row(OTHER_SEASON, ' liga norte', '2026 ')],
+      'Season row 2 has the same name and year as Season row 1.'
+    );
   });
 });

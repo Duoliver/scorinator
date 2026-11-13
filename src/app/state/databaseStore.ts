@@ -1,5 +1,10 @@
 import { create } from 'zustand';
-import type { LeagueWrapper, TeamBlueprint, WrapperSummary } from '@/domain';
+import type {
+  LeagueWrapper,
+  SeasonSummary,
+  TeamBlueprint,
+  WrapperSummary,
+} from '@/domain';
 import type { DatabaseFolder } from '@/persistence/types';
 import { summarizeLeague } from './summarizeLeague';
 
@@ -18,7 +23,9 @@ export type DatabaseStatus =
  * change builds a new object.
  *
  * `rows` are the rows as the manifest file holds them. The row of an opened
- * league comes from the league itself (`currentRows`).
+ * league comes from the league itself (`currentRows`). `seasonRows` are the
+ * Season rows of the manifest. The store keeps them as it read them, so a
+ * save never drops a Season (Task 209 choice 6).
  *
  * State only. The actions that change it live in `databaseActions.ts`.
  */
@@ -28,14 +35,17 @@ export interface DatabaseState {
   installationUuid: string | null;
   blueprints: TeamBlueprint[];
   rows: WrapperSummary[];
+  seasonRows: SeasonSummary[];
   leagues: Record<string, LeagueWrapper>;
   savedBlueprints: TeamBlueprint[];
   savedRows: WrapperSummary[];
+  savedSeasonRows: SeasonSummary[];
   savedLeagues: Record<string, LeagueWrapper>;
 }
 
 const NO_BLUEPRINTS: TeamBlueprint[] = [];
 const NO_ROWS: WrapperSummary[] = [];
+const NO_SEASON_ROWS: SeasonSummary[] = [];
 
 export const useDatabaseStore = create<DatabaseState>()(() => ({
   status: { kind: 'closed' },
@@ -43,9 +53,11 @@ export const useDatabaseStore = create<DatabaseState>()(() => ({
   installationUuid: null,
   blueprints: NO_BLUEPRINTS,
   rows: NO_ROWS,
+  seasonRows: NO_SEASON_ROWS,
   leagues: {},
   savedBlueprints: NO_BLUEPRINTS,
   savedRows: NO_ROWS,
+  savedSeasonRows: NO_SEASON_ROWS,
   savedLeagues: {},
 }));
 
@@ -106,7 +118,11 @@ export function areBlueprintsUnsaved(state: DatabaseState): boolean {
 
 /** True for a Blueprint change, a new league, or a changed row. */
 export function isManifestUnsaved(state: DatabaseState): boolean {
-  return areBlueprintsUnsaved(state) || !sameRows(currentRows(state), state.savedRows);
+  return (
+    areBlueprintsUnsaved(state) ||
+    !sameRows(currentRows(state), state.savedRows) ||
+    state.seasonRows !== state.savedSeasonRows
+  );
 }
 
 /** The opened leagues with unsaved changes, in the order they were opened. */

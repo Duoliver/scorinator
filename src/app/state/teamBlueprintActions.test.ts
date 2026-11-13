@@ -42,6 +42,7 @@ async function openWithBlueprint(): Promise<void> {
     installationUuid: INSTALLATION,
     blueprints: [made],
     wrappers: [],
+    seasons: [],
   });
   await openDatabase(memoryFolder({ manifest }).folder);
 }
@@ -243,6 +244,7 @@ describe('countLeaguesUsingBlueprint (US-09.4, Task 119 choice 7)', () => {
       installationUuid: INSTALLATION,
       blueprints: [blueprint()],
       wrappers: [summarizeLeague(withSaltMarsh), summarizeLeague(without)],
+      seasons: [],
     });
     await openDatabase(
       memoryFolder({

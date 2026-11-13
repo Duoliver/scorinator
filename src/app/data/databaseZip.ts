@@ -1,12 +1,14 @@
 import { packDatabaseZip, unpackDatabaseZip } from '@/adapters/json-io';
 import { tauriDialog, tauriFileSystem } from '@/adapters/tauri-fs';
-import type { LeagueWrapper, Manifest, TeamBlueprint } from '@/domain';
+import type { LeagueWrapper, Manifest, SeasonWrapper, TeamBlueprint } from '@/domain';
 import type { FileFilter, FileSystem, SaveFileDialog } from '@/persistence/types';
 import {
   parseLeagueWrapper,
   parseManifestRecord,
+  parseSeasonWrapper,
   serializeLeagueWrapper,
   serializeManifestRecord,
+  serializeSeasonWrapper,
 } from './databaseFile';
 import { getLocalDate } from './localDate';
 
@@ -20,21 +22,28 @@ const ZIP_FILTERS: readonly FileFilter[] = [
   { name: 'Database file', extensions: ['zip'] },
 ];
 
-/** The Blueprints and the leagues of a database `.zip`. */
+/** The Blueprints, the leagues, and the Seasons of a database `.zip`. The
+ * database import takes the Seasons from Task 247 on (Task 209 choice 7). */
 export interface DatabaseZipContents {
   blueprints: TeamBlueprint[];
   leagues: LeagueWrapper[];
+  seasons: SeasonWrapper[];
 }
 
 export function packDatabase(
   manifest: Manifest,
-  leagues: readonly LeagueWrapper[]
+  leagues: readonly LeagueWrapper[],
+  seasons: readonly SeasonWrapper[]
 ): Uint8Array {
   return packDatabaseZip({
     manifest: serializeManifestRecord(manifest),
     wrappers: leagues.map((league) => ({
       uuid: league.uuid,
       contents: serializeLeagueWrapper(league),
+    })),
+    seasons: seasons.map((season) => ({
+      uuid: season.uuid,
+      contents: serializeSeasonWrapper(season),
     })),
   });
 }
@@ -48,6 +57,7 @@ export function readDatabaseZip(bytes: Uint8Array): DatabaseZipContents {
     return {
       blueprints: parseManifestRecord(bundle.manifest).blueprints,
       leagues: bundle.wrappers.map((wrapper) => parseLeagueWrapper(wrapper.contents)),
+      seasons: bundle.seasons.map((season) => parseSeasonWrapper(season.contents)),
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);

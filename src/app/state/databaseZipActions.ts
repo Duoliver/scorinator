@@ -4,9 +4,9 @@ import type {
   ImportStep,
   RandomBytes,
 } from '@/engine/identity';
-import type { LeagueWrapper, TeamBlueprint } from '@/domain';
+import type { LeagueWrapper, SeasonWrapper, TeamBlueprint } from '@/domain';
 import { cryptoRandomBytes } from '@/app/random';
-import { parseLeagueWrapper } from '@/app/data/databaseFile';
+import { parseLeagueWrapper, parseSeasonWrapper } from '@/app/data/databaseFile';
 import { packDatabase, readDatabaseZip } from '@/app/data/databaseZip';
 import {
   importBlueprints,
@@ -46,8 +46,14 @@ export async function exportDatabaseZip(): Promise<Uint8Array> {
   const state = useDatabaseStore.getState();
   const { installationUuid } = requireOpenDatabase(state);
   return packDatabase(
-    { installationUuid, blueprints: state.blueprints, wrappers: currentRows(state) },
-    await readAllLeagues()
+    {
+      installationUuid,
+      blueprints: state.blueprints,
+      wrappers: currentRows(state),
+      seasons: state.seasonRows,
+    },
+    await readAllLeagues(),
+    await readAllSeasons()
   );
 }
 
@@ -61,6 +67,18 @@ export async function readAllLeagues(): Promise<LeagueWrapper[]> {
       async (row) =>
         state.leagues[row.uuid] ??
         parseLeagueWrapper(await folder.readWrapper(row.uuid))
+    )
+  );
+}
+
+/** Each Season wrapper of the database, from its file. No Season is open
+ * in memory before Task 210, so the folder holds the latest version. */
+export async function readAllSeasons(): Promise<SeasonWrapper[]> {
+  const state = useDatabaseStore.getState();
+  const { folder } = requireOpenDatabase(state);
+  return Promise.all(
+    state.seasonRows.map(async (row) =>
+      parseSeasonWrapper(await folder.readWrapper(row.uuid))
     )
   );
 }

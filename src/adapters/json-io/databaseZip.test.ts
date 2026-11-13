@@ -13,7 +13,7 @@ const LEAGUE = '00000000-0000-4000-8000-0000000000b1';
 const OTHER_LEAGUE = '00000000-0000-4000-8000-0000000000b2';
 const PREFIX = 'This .zip file is not a Scorinator database: ';
 
-function manifestText(rows: string[]): string {
+function manifestText(rows: string[], seasons: string[] = []): string {
   const manifest: SavedManifest = {
     kind: 'manifest',
     formatVersion: DATABASE_FORMAT_VERSION,
@@ -29,6 +29,15 @@ function manifestText(rows: string[]): string {
       phases: [{ format: 'round-robin', legs: 'two-way' }],
       progress: { kind: 'completed' },
     })),
+    seasons: seasons.map((uuid) => ({
+      uuid,
+      name: `Season ${uuid.slice(-2)}`,
+      year: '1',
+      finished: false,
+      leagueCount: 0,
+      teamCount: 0,
+      playoffCount: 0,
+    })),
   };
   return serializeManifest(manifest);
 }
@@ -39,6 +48,7 @@ const bundle = {
     { uuid: LEAGUE, contents: '{"league":"b1"}' },
     { uuid: OTHER_LEAGUE, contents: '{"league":"b2"}' },
   ],
+  seasons: [],
 };
 
 /** A zip with the given files, as another tool makes it. */
@@ -61,7 +71,7 @@ describe('the database .zip (US-10.4, Task 146)', () => {
   });
 
   it('reads a database with no league', () => {
-    const empty = { manifest: manifestText([]), wrappers: [] };
+    const empty = { manifest: manifestText([]), wrappers: [], seasons: [] };
     expect(unpackDatabaseZip(packDatabaseZip(empty))).toEqual(empty);
   });
 
@@ -107,6 +117,38 @@ describe('the database .zip (US-10.4, Task 146)', () => {
     });
     expect(() => unpackDatabaseZip(zipped)).toThrow(
       `${PREFIX}it has a file that a database does not have: "notes.txt".`
+    );
+  });
+});
+
+describe('the Seasons in the database .zip (US-13.11, Task 209)', () => {
+  const SEASON = '00000000-0000-4000-8000-0000000000c1';
+  const withSeason = {
+    manifest: manifestText([LEAGUE], [SEASON]),
+    wrappers: [{ uuid: LEAGUE, contents: '{"league":"b1"}' }],
+    seasons: [{ uuid: SEASON, contents: '{"season":"c1"}' }],
+  };
+
+  it('reads back each Season wrapper text, apart from the leagues', () => {
+    expect(unpackDatabaseZip(packDatabaseZip(withSeason))).toEqual(withSeason);
+  });
+
+  it('names a Season file as the database folder does', () => {
+    const zipped = zipOf({
+      'manifest.json': withSeason.manifest,
+      [`wrapper-${LEAGUE}.json`]: '{"league":"b1"}',
+      [`wrapper-${SEASON}.json`]: '{"season":"c1"}',
+    });
+    expect(unpackDatabaseZip(zipped)).toEqual(withSeason);
+  });
+
+  it('rejects a zip with no file for a Season row', () => {
+    const zipped = zipOf({
+      'manifest.json': withSeason.manifest,
+      [`wrapper-${LEAGUE}.json`]: '{"league":"b1"}',
+    });
+    expect(() => unpackDatabaseZip(zipped)).toThrow(
+      `${PREFIX}it has no file for the Season "Season c1".`
     );
   });
 });

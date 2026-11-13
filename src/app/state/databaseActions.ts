@@ -36,6 +36,7 @@ export async function openDatabase(
         installationUuid: uuidV4(randomBytes),
         blueprints: [],
         wrappers: [],
+        seasons: [],
       };
       await folder.save([], serializeManifestRecord(manifest));
     } else {
@@ -47,9 +48,11 @@ export async function openDatabase(
       installationUuid: manifest.installationUuid,
       blueprints: manifest.blueprints,
       rows: manifest.wrappers,
+      seasonRows: manifest.seasons,
       leagues: {},
       savedBlueprints: manifest.blueprints,
       savedRows: manifest.wrappers,
+      savedSeasonRows: manifest.seasons,
       savedLeagues: {},
     });
   } catch (error) {
@@ -106,6 +109,7 @@ export async function saveDatabase(): Promise<void> {
         installationUuid,
         blueprints: state.blueprints,
         wrappers: rows,
+        seasons: state.seasonRows,
       });
   await folder.save(
     leagues.map((wrapper) => ({
@@ -122,6 +126,11 @@ export async function saveDatabase(): Promise<void> {
     },
     ...(manifest === null
       ? {}
-      : { rows, savedRows: rows, savedBlueprints: state.blueprints }),
+      : {
+          rows,
+          savedRows: rows,
+          savedBlueprints: state.blueprints,
+          savedSeasonRows: state.seasonRows,
+        }),
   }));
 }

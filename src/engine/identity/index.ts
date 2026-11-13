@@ -2,7 +2,7 @@ export { isSameContent, planImport, resolveImport } from './importPlan';
 export type { ImportCounts, ImportOutcome, ImportStep } from './importPlan';
 export { fixedLot } from './lot';
 export { MAX_LOCATION_LENGTH } from './location';
-export { getNumberedName, pickJoinNames } from './name';
+export { getNameKey, getNumberedName, pickJoinNames } from './name';
 export type { JoinNameTeam } from './name';
 export { isSlug, slug, uniqueSlug } from './slug';
 export {

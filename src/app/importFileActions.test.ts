@@ -208,8 +208,10 @@ describe('the database import', () => {
         installationUuid: INSTALLATION,
         blueprints,
         wrappers: leagues.map(summarizeLeague),
+        seasons: [],
       },
-      leagues
+      leagues,
+      []
     );
 
   it('gives teams and leagues in one list, Blueprints first', async () => {

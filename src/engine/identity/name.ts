@@ -2,8 +2,9 @@
 const NUMBER_SUFFIX = /^(.*\S) \((\d+)\)$/;
 
 /** Two names match when they are the same after a trim, in any case, as
- * the MVP2 name checks do. An accent still counts. */
-function getNameKey(name: string): string {
+ * the MVP2 name checks do. An accent still counts. A file check uses the
+ * same key, so the app and its files agree on a clash (Task 209). */
+export function getNameKey(name: string): string {
   return name.trim().toLowerCase();
 }
 

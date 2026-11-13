@@ -59,13 +59,11 @@ export interface WrapperSummary {
 
 /** The manifest row of one Season: the fields of its card on the Seasons
  * list, so the list does not load every Season wrapper. The Season leagues
- * have no rows of their own (Task 207 choice 5). Task 209 adds the list
- * `Manifest.seasons` with the Season file, so the compiler then shows each
- * place that builds a manifest. */
+ * have no rows of their own (Task 207 choice 5). */
 export interface SeasonSummary {
   uuid: string;
   name: string;
-  year: number;
+  year: string;
   finished: boolean;
   leagueCount: number;
   teamCount: number;
@@ -73,11 +71,12 @@ export interface SeasonSummary {
 }
 
 /** The part of the database that the app always loads (Task 76,
- * `PERSISTENCE.md` §2): the installation UUID, every Blueprint, and one
- * summary row for each wrapper. The installation UUID is made at the first
+ * `PERSISTENCE.md` §2): the installation UUID, every Blueprint, one summary
+ * row for each standalone league, and one for each Season (Task 209). The installation UUID is made at the first
  * start and never changes (US-11.1). */
 export interface Manifest {
   installationUuid: string;
   blueprints: TeamBlueprint[];
   wrappers: WrapperSummary[];
+  seasons: SeasonSummary[];
 }

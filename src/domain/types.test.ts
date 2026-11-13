@@ -124,6 +124,10 @@ describe('Manifest (Task 76)', () => {
     expectTypeOf<Manifest['wrappers']>().toEqualTypeOf<WrapperSummary[]>();
   });
 
+  it('holds one summary row for each Season, apart from the league rows (Task 209)', () => {
+    expectTypeOf<Manifest['seasons']>().toEqualTypeOf<SeasonSummary[]>();
+  });
+
   it('gives each summary row the card fields and the progress (Task 76 d)', () => {
     expectTypeOf<WrapperSummary['contentType']>().toEqualTypeOf<'league'>();
     expectTypeOf<WrapperSummary['teamCount']>().toEqualTypeOf<number>();
@@ -150,9 +154,9 @@ describe('Season (US-13.1, US-13.9, US-11.1, Task 207)', () => {
     expectTypeOf<Season>().toExtend<Provenance>();
   });
 
-  it('has a name and a year, which together are unique', () => {
+  it('has a name and a free-text year, which together are unique (Task 209)', () => {
     expectTypeOf<Season['name']>().toEqualTypeOf<string>();
-    expectTypeOf<Season['year']>().toEqualTypeOf<number>();
+    expectTypeOf<Season['year']>().toEqualTypeOf<string>();
   });
 
   it('is finished or not, by a manual action (US-13.9)', () => {
@@ -211,7 +215,7 @@ describe('SeasonSummary (Task 207 choice 5)', () => {
   it('gives the fields of a Season card', () => {
     expectTypeOf<SeasonSummary['uuid']>().toEqualTypeOf<string>();
     expectTypeOf<SeasonSummary['name']>().toEqualTypeOf<string>();
-    expectTypeOf<SeasonSummary['year']>().toEqualTypeOf<number>();
+    expectTypeOf<SeasonSummary['year']>().toEqualTypeOf<string>();
     expectTypeOf<SeasonSummary['finished']>().toEqualTypeOf<boolean>();
     expectTypeOf<SeasonSummary['leagueCount']>().toEqualTypeOf<number>();
     expectTypeOf<SeasonSummary['teamCount']>().toEqualTypeOf<number>();

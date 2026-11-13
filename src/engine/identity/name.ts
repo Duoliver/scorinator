@@ -3,7 +3,7 @@ const NUMBER_SUFFIX = /^(.*\S) \((\d+)\)$/;
 
 /** Two names match when they are the same after a trim, in any case, as
  * the MVP2 name checks do. An accent still counts. */
-function toNameKey(name: string): string {
+function getNameKey(name: string): string {
   return name.trim().toLowerCase();
 }
 
@@ -15,13 +15,13 @@ function toNameKey(name: string): string {
  * "Liga (3)", not "Liga (2) (2)" (Task 208 choice 3).
  */
 export function getNumberedName(name: string, taken: Iterable<string>): string {
-  const keys = new Set([...taken].map(toNameKey));
-  if (!keys.has(toNameKey(name))) return name;
+  const keys = new Set([...taken].map(getNameKey));
+  if (!keys.has(getNameKey(name))) return name;
 
   const match = NUMBER_SUFFIX.exec(name.trim());
   const base = match ? match[1] : name.trim();
   let number = match ? Number(match[2]) + 1 : 2;
-  while (keys.has(toNameKey(`${base} (${number})`))) number++;
+  while (keys.has(getNameKey(`${base} (${number})`))) number++;
   return `${base} (${number})`;
 }
 
@@ -47,21 +47,21 @@ export function pickJoinNames<TeamId>(
   teams: readonly JoinNameTeam<TeamId>[]
 ): Map<TeamId, string> {
   const takenNames = [...taken];
-  const keys = new Set(takenNames.map(toNameKey));
+  const keys = new Set(takenNames.map(getNameKey));
   const order = [...teams].sort((a, b) => b.ovr - a.ovr || a.lot - b.lot);
   const names = new Map<TeamId, string>();
 
   for (const team of order) {
     let name = team.name;
-    if (keys.has(toNameKey(name))) {
+    if (keys.has(getNameKey(name))) {
       const location = team.location.trim();
       const withLocation = `${team.name} (${location})`;
       name =
-        location !== '' && !keys.has(toNameKey(withLocation))
+        location !== '' && !keys.has(getNameKey(withLocation))
           ? withLocation
           : getNumberedName(team.name, takenNames);
     }
-    keys.add(toNameKey(name));
+    keys.add(getNameKey(name));
     takenNames.push(name);
     names.set(team.id, name);
   }

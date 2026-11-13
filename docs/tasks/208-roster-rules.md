@@ -1,6 +1,6 @@
 # Task 208: the roster rules of a Season
 
-**Status:** Refactor
+**Status:** Done
 
 ## Goal
 
@@ -23,6 +23,8 @@ Give `engine/identity` the pure rules that a team join to a Season needs: the na
 - **2026-11-13:** A Claude detail of choice 3, for the review: the count starts one above the number in the name, so "Liga (2025)" gives "Liga (2026)", not "Liga (2)". A name with no number starts at 2.
 - **2026-11-13:** Tests first. The 16 new cases of `name.test.ts` failed (no module), then passed. The 2 Season cases of `pickTrigrams` passed at once, as choice 6 said.
 - **2026-11-13:** The user agreed the review, and the count from the number in the name ("Liga (2025)" gives "Liga (2026)"). Commit 1. Status Refactor.
+- **2026-11-13:** Refactor pass: the rename of `toNameKey`, and the shared test helpers. Waits for the refactor review.
+- **2026-11-13:** The user agreed the refactor review. Done.
 
 ## Report
 
@@ -33,4 +35,4 @@ Give `engine/identity` the pure rules that a team join to a Season needs: the na
 - **Season trigrams:** two new cases in `trigram.test.ts` show the first batch and a later join of a Season. The full suite passes: 2101 tests. The type check, the lint, and the format check pass.
 - **Decisions made:** the six choices, with choice 3 as the user changed it (Decisions log).
 - **What is left:** Task 211 calls these rules when teams join the roster, with `fixedLot(seasonUuid, blueprintUuid)`. Tasks 234, 243, and 247 call `getNumberedName` for their imports.
-- **Refactor:** waits for the review.
+- **Refactor:** two changes, no change in behavior. (1) The private helper `toNameKey` is now `getNameKey`: a function name starts with a verb (`coding-standards.md`). A search finds no old name. (2) `trigram.test.ts` had the `team` and `picked` helpers twice. They now sit once at the top of the file, for both `pickTrigrams` blocks. The checks pass again: 2101 tests.

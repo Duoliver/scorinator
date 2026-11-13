@@ -93,25 +93,23 @@ describe('parseTrigramList', () => {
   });
 });
 
+const team = (
+  id: string,
+  overrides: Partial<TrigramPickTeam<string>> = {}
+): TrigramPickTeam<string> => ({
+  id,
+  name: 'Ashfield',
+  tier: 'C' as Tier,
+  ovr: 60,
+  trigrams: ['ASH'],
+  lot: 0,
+  ...overrides,
+});
+
+const picked = (teams: TrigramPickTeam<string>[]): Record<string, string> =>
+  Object.fromEntries([...pickTrigrams(teams)].map(([id, pick]) => [id, pick.trigram]));
+
 describe('pickTrigrams', () => {
-  const team = (
-    id: string,
-    overrides: Partial<TrigramPickTeam<string>> = {}
-  ): TrigramPickTeam<string> => ({
-    id,
-    name: 'Ashfield',
-    tier: 'C' as Tier,
-    ovr: 60,
-    trigrams: ['ASH'],
-    lot: 0,
-    ...overrides,
-  });
-
-  const picked = (teams: TrigramPickTeam<string>[]): Record<string, string> =>
-    Object.fromEntries(
-      [...pickTrigrams(teams)].map(([id, pick]) => [id, pick.trigram])
-    );
-
   it('gives each team the first trigram of its list when nothing clashes', () => {
     expect(
       picked([
@@ -237,24 +235,6 @@ describe('pickTrigrams', () => {
 });
 
 describe('pickTrigrams in a Season (US-13.4, Task 208 choice 6)', () => {
-  const team = (
-    id: string,
-    overrides: Partial<TrigramPickTeam<string>> = {}
-  ): TrigramPickTeam<string> => ({
-    id,
-    name: 'Ashfield',
-    tier: 'C' as Tier,
-    ovr: 60,
-    trigrams: ['ASH'],
-    lot: 0,
-    ...overrides,
-  });
-
-  const picked = (teams: TrigramPickTeam<string>[]): Record<string, string> =>
-    Object.fromEntries(
-      [...pickTrigrams(teams)].map(([id, pick]) => [id, pick.trigram])
-    );
-
   it('gives the first batch its trigrams by the higher OVR, then the lot', () => {
     expect(
       picked([

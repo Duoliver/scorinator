@@ -15,11 +15,13 @@ import {
   type SavedSeasonFile,
   type SavedSeasonSummary,
   type SavedWrapper,
+  type SavedWrapperLeague,
   type SavedWrapperSummary,
   SavedFileKind,
 } from '@/adapters/json-io';
 import { type PhasePlan, type PlanZone, PhaseFormat } from '@/engine/phases';
 import type {
+  League,
   LeagueWrapper,
   Manifest,
   Phase,
@@ -171,7 +173,7 @@ export function serializeManifestRecord(manifest: Manifest): string {
     installationUuid: manifest.installationUuid,
     blueprints: manifest.blueprints.map(blueprintToFile),
     wrappers: manifest.wrappers.map(summaryToFile),
-    seasons: manifest.seasons.map(seasonSummaryCopy),
+    seasons: manifest.seasons.map(copySeasonSummary),
   };
   return serializeManifest(file);
 }
@@ -183,46 +185,54 @@ export function parseManifestRecord(text: string): Manifest {
     installationUuid: file.installationUuid,
     blueprints: file.blueprints.map(blueprintFromFile),
     wrappers: file.wrappers.map(summaryFromFile),
-    seasons: file.seasons.map(seasonSummaryCopy),
+    seasons: file.seasons.map(copySeasonSummary),
   };
 }
 
 /** The league and its Instances in the file shape: the body of a wrapper
  * file, and one item of a league file (Task 145). */
+/** The league fields of a file, for a standalone league and for a league
+ * of a Season (Task 209). */
+function mapLeagueToFile(league: League): SavedWrapperLeague {
+  return {
+    uuid: league.uuid,
+    name: league.name,
+    homeAdvantage: league.homeAdvantage,
+    points: { ...league.points },
+    createdByInstallation: league.createdByInstallation,
+    lastModifiedByInstallation: league.lastModifiedByInstallation,
+    plans: league.plans.map(planCopy),
+    phases: league.phases.map(phaseToFile),
+  };
+}
+
+function mapLeagueFromFile(league: SavedWrapperLeague): League {
+  return {
+    uuid: league.uuid,
+    name: league.name,
+    homeAdvantage: league.homeAdvantage,
+    points: { ...league.points },
+    createdByInstallation: league.createdByInstallation,
+    lastModifiedByInstallation: league.lastModifiedByInstallation,
+    plans: league.plans.map(planCopy),
+    phases: league.phases.map(phaseFromFile),
+  };
+}
+
 export function leagueToFile(wrapper: LeagueWrapper): SavedLeagueEntry {
-  const { content: league } = wrapper;
   return {
     uuid: wrapper.uuid,
     teams: wrapper.teams.map(instanceToFile),
-    content: {
-      uuid: league.uuid,
-      name: league.name,
-      homeAdvantage: league.homeAdvantage,
-      points: { ...league.points },
-      createdByInstallation: league.createdByInstallation,
-      lastModifiedByInstallation: league.lastModifiedByInstallation,
-      plans: league.plans.map(planCopy),
-      phases: league.phases.map(phaseToFile),
-    },
+    content: mapLeagueToFile(wrapper.content),
   };
 }
 
 /** The domain league of a wrapper file body or a league file item. */
 export function leagueFromFile(file: SavedLeagueEntry): LeagueWrapper {
-  const { content: league } = file;
   return {
     uuid: file.uuid,
     teams: file.teams.map(instanceFromFile),
-    content: {
-      uuid: league.uuid,
-      name: league.name,
-      homeAdvantage: league.homeAdvantage,
-      points: { ...league.points },
-      createdByInstallation: league.createdByInstallation,
-      lastModifiedByInstallation: league.lastModifiedByInstallation,
-      plans: league.plans.map(planCopy),
-      phases: league.phases.map(phaseFromFile),
-    },
+    content: mapLeagueFromFile(file.content),
   };
 }
 
@@ -241,12 +251,12 @@ export function parseLeagueWrapper(text: string): LeagueWrapper {
 }
 
 /** A Season row has the same fields in memory and in the file. */
-function seasonSummaryCopy(row: SeasonSummary | SavedSeasonSummary): SeasonSummary {
+function copySeasonSummary(row: SeasonSummary | SavedSeasonSummary): SeasonSummary {
   return { ...row };
 }
 
 /** A playoff has the same fields in memory and in the file. */
-function playoffCopy(playoff: Playoff | SavedPlayoff): Playoff {
+function copyPlayoff(playoff: Playoff | SavedPlayoff): Playoff {
   return {
     uuid: playoff.uuid,
     name: playoff.name,
@@ -259,7 +269,7 @@ function playoffCopy(playoff: Playoff | SavedPlayoff): Playoff {
 
 /** The Season file of a Season wrapper (Task 209). A Season league is a
  * league file body with its team list. */
-export function seasonToFile(wrapper: SeasonWrapper): SavedSeasonFile {
+export function mapSeasonToFile(wrapper: SeasonWrapper): SavedSeasonFile {
   const { content: season } = wrapper;
   return {
     kind: SavedFileKind.SEASON,
@@ -274,15 +284,15 @@ export function seasonToFile(wrapper: SeasonWrapper): SavedSeasonFile {
       createdByInstallation: season.createdByInstallation,
       lastModifiedByInstallation: season.lastModifiedByInstallation,
       leagues: season.leagues.map((league) => ({
-        ...leagueToFile({ uuid: league.uuid, teams: [], content: league }).content,
+        ...mapLeagueToFile(league),
         teamUuids: [...league.teamUuids],
       })),
-      playoffs: season.playoffs.map(playoffCopy),
+      playoffs: season.playoffs.map(copyPlayoff),
     },
   };
 }
 
-export function seasonFromFile(file: SavedSeasonFile): SeasonWrapper {
+export function mapSeasonFromFile(file: SavedSeasonFile): SeasonWrapper {
   const { content: season } = file;
   return {
     uuid: file.uuid,
@@ -295,18 +305,18 @@ export function seasonFromFile(file: SavedSeasonFile): SeasonWrapper {
       createdByInstallation: season.createdByInstallation,
       lastModifiedByInstallation: season.lastModifiedByInstallation,
       leagues: season.leagues.map((league) => ({
-        ...leagueFromFile({ uuid: league.uuid, teams: [], content: league }).content,
+        ...mapLeagueFromFile(league),
         teamUuids: [...league.teamUuids],
       })),
-      playoffs: season.playoffs.map(playoffCopy),
+      playoffs: season.playoffs.map(copyPlayoff),
     },
   };
 }
 
 export function serializeSeasonWrapper(wrapper: SeasonWrapper): string {
-  return serializeSeasonFile(seasonToFile(wrapper));
+  return serializeSeasonFile(mapSeasonToFile(wrapper));
 }
 
 export function parseSeasonWrapper(text: string): SeasonWrapper {
-  return seasonFromFile(parseSeasonFile(text));
+  return mapSeasonFromFile(parseSeasonFile(text));
 }

@@ -22,6 +22,7 @@ import {
   type SavedSeason,
   type SavedSeasonFile,
   type SavedSeasonLeague,
+  type SavedWrapperLeague,
 } from './types';
 
 /**
@@ -63,7 +64,7 @@ function readSeasonLeague(
     failSeason
   );
 
-  let league;
+  let league: SavedWrapperLeague;
   try {
     league = readLeague(value, new Set(teamUuids), version);
   } catch (error) {

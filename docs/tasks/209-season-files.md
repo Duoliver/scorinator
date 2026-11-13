@@ -1,6 +1,6 @@
 # Task 209: the Season files
 
-**Status:** Refactor
+**Status:** Done
 
 ## Goal
 
@@ -24,6 +24,8 @@ Read and write a Season: its wrapper file, its manifest row, and its place in th
 - **2026-11-13:** Tests first. The new cases failed (no `parseSeasonFile`, no `Manifest.seasons`), then passed. Four older tests named format version 4 or used "season" as an unknown kind: updated.
 - **2026-11-13:** Claude choices in the code, for the review. (a) The year must not be blank. It has no length limit. (b) A Season league reuses the league reader. Its errors read "A Season file is not valid: league 2: ...". (c) The name match of Task 208 (`getNameKey`) is now exported from `engine/identity`, for the file checks of the playoff names and the Season name and year. (d) `readInstance` and `readScore` take an optional error prefix, so a Season file error never says "A league file". (e) A Season file picked in "Import leagues" or "Import teams" gets the database file message, as a league wrapper file does.
 - **2026-11-13:** The user agreed the review and the Claude choices. The year needs no length limit. Commit 1. Status Refactor.
+- **2026-11-13:** Refactor pass: the shared league map, verb names for the new helpers, one variable type. Waits for the refactor review.
+- **2026-11-13:** The user agreed the refactor review. Done.
 
 ## Report
 
@@ -36,4 +38,4 @@ Read and write a Season: its wrapper file, its manifest row, and its place in th
 - **Test approach:** integration tests on the real parsers and the in-memory folder. A round trip of a Season file and of a manifest with Season rows. 17 failure cases of the Season file, and 7 of the Season rows. The zip with a Season, and with no file for a Season row. The save keeps the Season rows. The export holds a Season wrapper. The import skips it. The full suite passes: 2135 tests. The type check, the lint, and the format check pass.
 - **Decisions made:** the seven choices, with the free-text year (Decisions log). The Claude choices (a) to (e) are in the notes.
 - **What is left:** Task 210 opens, changes, and saves a Season wrapper in the store. Task 247 imports the Seasons of a database zip.
-- **Refactor:** waits for the review.
+- **Refactor:** three changes, no change in behavior. (1) `app/data/databaseFile.ts`: the new `mapLeagueToFile` and `mapLeagueFromFile` hold the league fields once, for a standalone league and for a Season league. The Season map no longer builds a dummy wrapper. (2) The new map helpers start with a verb: `mapSeasonToFile`, `mapSeasonFromFile`, `copySeasonSummary`, `copyPlayoff` (`coding-standards.md`). A search finds no old name. The older names, such as `leagueToFile`, stay: the rule is for new functions. (3) `season.ts`: the `league` variable has its type. The test fixtures `seasonWrapper` and `seasonRow` keep noun names, as `leagueWrapper` and `blueprint` do. The checks pass again: 2135 tests.

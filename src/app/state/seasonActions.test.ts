@@ -1,4 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { createSeededRng } from '@/engine/rng';
+import { isOvrInTier } from '@/engine/tier-ovr';
+import type { TeamBlueprint, TeamInstance } from '@/domain';
 import {
   blueprint,
   INSTALLATION,
@@ -27,12 +30,14 @@ import {
   type DatabaseState,
 } from './databaseStore';
 import {
+  addSeasonTeams,
   createSeason,
   deleteSeason,
   finishSeason,
   openSeason,
   renameSeason,
   reopenSeason,
+  updateSeasonTeam,
 } from './seasonActions';
 
 const state = (): DatabaseState => useDatabaseStore.getState();
@@ -300,6 +305,274 @@ describe('the Season save (Task 210 choices 6 and 8)', () => {
     const bundle = unpackDatabaseZip(await exportDatabaseZip());
     expect(parseSeasonWrapper(bundle.seasons[0].contents).content.name).toBe(
       'Liga do Norte'
+    );
+  });
+});
+
+/** Five Blueprints for the roster tests: two Ashfield Rovers, from two
+ * places, and three teams with their own names. */
+const ASHFIELD = blueprint({
+  uuid: testUuid(1),
+  slug: 'ashfield-rovers',
+  name: 'Ashfield Rovers',
+  tier: 'A',
+  location: 'Ashfield',
+  trigrams: ['ASH'],
+});
+const WESTBURY = blueprint({
+  uuid: testUuid(2),
+  slug: 'ashfield-rovers-2',
+  name: 'Ashfield Rovers',
+  tier: 'B',
+  location: 'Westbury',
+  trigrams: ['ASH', 'ASW'],
+});
+const RIVERSIDE = blueprint({
+  uuid: testUuid(3),
+  slug: 'riverside-fc',
+  name: 'Riverside FC',
+  tier: 'C',
+  location: '',
+  trigrams: [],
+});
+const RIVERSIDE_TOO = blueprint({
+  uuid: testUuid(4),
+  slug: 'riverside-fc-2',
+  name: 'Riverside FC',
+  tier: 'D',
+  location: '',
+  trigrams: [],
+});
+const PORTO = blueprint({
+  uuid: testUuid(5),
+  slug: 'porto-velho',
+  name: 'Porto Velho',
+  tier: 'S',
+  location: 'Porto',
+  trigrams: ['ASH', 'POR'],
+});
+
+/** An open database with the five Blueprints and one new, empty Season. */
+async function openWithEmptySeason(): Promise<string> {
+  const blueprints: TeamBlueprint[] = [
+    ASHFIELD,
+    WESTBURY,
+    RIVERSIDE,
+    RIVERSIDE_TOO,
+    PORTO,
+  ];
+  const memory = memoryFolder({
+    manifest: serializeManifestRecord({
+      installationUuid: INSTALLATION,
+      blueprints,
+      wrappers: [],
+      seasons: [],
+    }),
+  });
+  await openDatabase(memory.folder);
+  return createSeason({ name: 'Liga Norte', year: '2026' }).uuid;
+}
+
+const roster = (uuid: string): TeamInstance[] => state().seasons[uuid].teams;
+const namesOf = (uuid: string): Record<string, string> =>
+  Object.fromEntries(roster(uuid).map((team) => [team.blueprintUuid, team.name]));
+const trigramsOf = (uuid: string): Record<string, string> =>
+  Object.fromEntries(roster(uuid).map((team) => [team.blueprintUuid, team.trigram]));
+
+describe('addSeasonTeams (US-13.4, Task 211)', () => {
+  it('adds a Season team for each Blueprint, in order, with a rolled OVR', async () => {
+    const season = await openWithEmptySeason();
+    const added = addSeasonTeams(
+      season,
+      [RIVERSIDE.uuid, ASHFIELD.uuid],
+      createSeededRng(7)
+    );
+
+    expect(roster(season)).toEqual(added);
+    expect(added.map((team) => team.blueprintUuid)).toEqual([
+      RIVERSIDE.uuid,
+      ASHFIELD.uuid,
+    ]);
+    expect(added[1]).toMatchObject({
+      slug: 'ashfield-rovers',
+      name: 'Ashfield Rovers',
+      colour: ASHFIELD.colour,
+      tier: 'A',
+    });
+    expect(added.every((team) => isOvrInTier(team.ovr, team.tier))).toBe(true);
+    expect(currentSeasonRows(state())[0].teamCount).toBe(2);
+    expect(isSeasonUnsaved(state(), season)).toBe(true);
+  });
+
+  it('gives the first batch its trigrams by the higher OVR', async () => {
+    const season = await openWithEmptySeason();
+    addSeasonTeams(season, [WESTBURY.uuid, ASHFIELD.uuid, PORTO.uuid]);
+    expect(trigramsOf(season)).toEqual({
+      [PORTO.uuid]: 'ASH',
+      [ASHFIELD.uuid]: 'AS2',
+      [WESTBURY.uuid]: 'ASW',
+    });
+  });
+
+  it('gives a later join a free trigram, and keeps each picked trigram', async () => {
+    const season = await openWithEmptySeason();
+    addSeasonTeams(season, [ASHFIELD.uuid]);
+    addSeasonTeams(season, [PORTO.uuid]);
+    expect(trigramsOf(season)).toEqual({ [ASHFIELD.uuid]: 'ASH', [PORTO.uuid]: 'POR' });
+  });
+
+  it('adds the Location to a joining team whose name a roster team has', async () => {
+    const season = await openWithEmptySeason();
+    addSeasonTeams(season, [WESTBURY.uuid]);
+    addSeasonTeams(season, [ASHFIELD.uuid]);
+    expect(namesOf(season)).toEqual({
+      [WESTBURY.uuid]: 'Ashfield Rovers',
+      [ASHFIELD.uuid]: 'Ashfield Rovers (Ashfield)',
+    });
+  });
+
+  it('lets the higher OVR keep the name in one join, and numbers a team with no Location', async () => {
+    const season = await openWithEmptySeason();
+    addSeasonTeams(season, [
+      WESTBURY.uuid,
+      ASHFIELD.uuid,
+      RIVERSIDE_TOO.uuid,
+      RIVERSIDE.uuid,
+    ]);
+    expect(namesOf(season)).toEqual({
+      [ASHFIELD.uuid]: 'Ashfield Rovers',
+      [WESTBURY.uuid]: 'Ashfield Rovers (Westbury)',
+      [RIVERSIDE.uuid]: 'Riverside FC',
+      [RIVERSIDE_TOO.uuid]: 'Riverside FC (2)',
+    });
+  });
+
+  it('keeps the slug of the Blueprint for a team with a new name', async () => {
+    const season = await openWithEmptySeason();
+    addSeasonTeams(season, [ASHFIELD.uuid, WESTBURY.uuid]);
+    expect(roster(season)[1].slug).toBe('ashfield-rovers-2');
+  });
+
+  it('skips a Blueprint that is in the roster, and gives only the new teams (choice 2)', async () => {
+    const season = await openWithEmptySeason();
+    const [first] = addSeasonTeams(season, [ASHFIELD.uuid]);
+    const added = addSeasonTeams(season, [ASHFIELD.uuid, RIVERSIDE.uuid]);
+    expect(added.map((team) => team.blueprintUuid)).toEqual([RIVERSIDE.uuid]);
+    expect(roster(season)[0]).toBe(first);
+  });
+
+  it('changes nothing for an empty list', async () => {
+    const season = await openWithEmptySeason();
+    const before = state().seasons[season];
+    expect(addSeasonTeams(season, [])).toEqual([]);
+    expect(state().seasons[season]).toBe(before);
+  });
+
+  it('throws for an unknown Blueprint, and adds nothing', async () => {
+    const season = await openWithEmptySeason();
+    expect(() => addSeasonTeams(season, [RIVERSIDE.uuid, testUuid(99)])).toThrow(
+      `No Blueprint has the UUID ${testUuid(99)}.`
+    );
+    expect(roster(season)).toEqual([]);
+  });
+
+  it('throws for a finished Season', async () => {
+    const season = await openWithEmptySeason();
+    finishSeason(season);
+    expect(() => addSeasonTeams(season, [RIVERSIDE.uuid])).toThrow('is finished');
+  });
+});
+
+describe('updateSeasonTeam (US-13.4, Task 211)', () => {
+  async function openWithRoster(): Promise<string> {
+    const season = await openWithEmptySeason();
+    addSeasonTeams(season, [ASHFIELD.uuid, RIVERSIDE.uuid]);
+    return season;
+  }
+
+  it('changes the name, the colour, the Tier, the OVR, and the trigram', async () => {
+    const season = await openWithRoster();
+    updateSeasonTeam(season, ASHFIELD.uuid, {
+      name: ' Ashfield Town ',
+      colour: '#000000',
+      tier: 'S',
+      ovr: 95,
+      trigram: 'atw',
+    });
+    expect(roster(season)[0]).toMatchObject({
+      blueprintUuid: ASHFIELD.uuid,
+      slug: 'ashfield-rovers',
+      name: 'Ashfield Town',
+      colour: '#000000',
+      tier: 'S',
+      ovr: 95,
+      trigram: 'ATW',
+    });
+    expect(state().seasons[season].content.lastModifiedByInstallation).toBe(
+      INSTALLATION
+    );
+  });
+
+  it('keeps the fields that the change leaves out', async () => {
+    const season = await openWithRoster();
+    const before = roster(season)[0];
+    updateSeasonTeam(season, ASHFIELD.uuid, { colour: '#000000' });
+    expect(roster(season)[0]).toEqual({ ...before, colour: '#000000' });
+  });
+
+  it('reaches each league of the Season: they share the one Season team', async () => {
+    const season = await openWithRoster();
+    updateSeasonTeam(season, RIVERSIDE.uuid, { ovr: 61 });
+    expect(
+      roster(season).find((team) => team.blueprintUuid === RIVERSIDE.uuid)?.ovr
+    ).toBe(61);
+  });
+
+  it('takes a change of case of its own name', async () => {
+    const season = await openWithRoster();
+    updateSeasonTeam(season, ASHFIELD.uuid, { name: 'ASHFIELD ROVERS' });
+    expect(roster(season)[0].name).toBe('ASHFIELD ROVERS');
+  });
+
+  it('throws for a blank name, or the name of another Season team', async () => {
+    const season = await openWithRoster();
+    expect(() => updateSeasonTeam(season, ASHFIELD.uuid, { name: ' ' })).toThrow(
+      'A Season team needs a name.'
+    );
+    expect(() =>
+      updateSeasonTeam(season, ASHFIELD.uuid, { name: 'riverside fc' })
+    ).toThrow('Another Season team has the name "riverside fc".');
+  });
+
+  it('throws for an OVR out of the Tier range', async () => {
+    const season = await openWithRoster();
+    expect(() =>
+      updateSeasonTeam(season, ASHFIELD.uuid, { tier: 'S', ovr: 50 })
+    ).toThrow('The OVR 50 is not in the range of Tier S.');
+  });
+
+  it('throws for a trigram that is not valid, or that another Season team has', async () => {
+    const season = await openWithRoster();
+    expect(() => updateSeasonTeam(season, ASHFIELD.uuid, { trigram: 'AB' })).toThrow(
+      'The trigram "AB" is not 3 letters or digits.'
+    );
+    expect(() => updateSeasonTeam(season, ASHFIELD.uuid, { trigram: 'riv' })).toThrow(
+      'Another Season team has the trigram "RIV".'
+    );
+  });
+
+  it('throws for a team that is not in the roster', async () => {
+    const season = await openWithRoster();
+    expect(() => updateSeasonTeam(season, PORTO.uuid, { ovr: 95 })).toThrow(
+      `The Season has no team with the Blueprint UUID ${PORTO.uuid}.`
+    );
+  });
+
+  it('throws for a finished Season', async () => {
+    const season = await openWithRoster();
+    finishSeason(season);
+    expect(() => updateSeasonTeam(season, ASHFIELD.uuid, { ovr: 85 })).toThrow(
+      'is finished'
     );
   });
 });

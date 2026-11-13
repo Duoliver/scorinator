@@ -92,6 +92,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 247 | The Season export and import on the File screen: "Skip" or "Import as new", the numbered name. The export menu of a Season league. "Export all leagues" for standalone leagues only | `app/data`, `app/state`, `features/file` | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M5. US-13.11. Depends on 242, 245. |
 | 248 | Smoke check M5, and the end of the MVP3 Must items | — | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M5. Depends on 243, 246, 247. |
 | 249 | Join the Tier and the OVR in one box in the roster demo | `docs/design-reference/MVP3/` | ✅ Done | 2026-11-13 | 2026-11-13 | [249](/docs/tasks/249-roster-tier-ovr.md) | Task created by User - 2026-11-13. After the Task 206 review. The user reviewed the task. |
+| 250 | Fix the comma in the Season delete text, for two parts | `features/seasons` | 🟦 Refactor | 2026-11-13 |  | [250](/docs/tasks/250-delete-text-comma.md) | Task created by User - 2026-11-13. From the Task 212 refactor pass. Review agreed, work committed. The refactor pass runs. |
 
 **Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input, see Open Questions) · 🟩 Review · 🟦 Refactor (the pass, or its review: the Notes say which) · ✅ Done · ❌ Cancelled (the reason is in the Notes column)
 

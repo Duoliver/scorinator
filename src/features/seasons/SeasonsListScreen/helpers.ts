@@ -38,9 +38,11 @@ export function isSeasonMatch(row: SeasonSummary, search: string): boolean {
   );
 }
 
-/** "a" or "a, b, and c": a list in words. */
+/** "a", "a and b", or "a, b, and c": a list in words. Two parts take no
+ * comma (Task 250). */
 function joinWithAnd(parts: readonly string[]): string {
   if (parts.length <= 1) return parts.join('');
+  if (parts.length === 2) return `${parts[0]} and ${parts[1]}`;
   return `${parts.slice(0, -1).join(', ')}, and ${parts[parts.length - 1]}`;
 }
 

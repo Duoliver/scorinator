@@ -185,6 +185,28 @@ describe('SeasonsListScreen: Rename and Delete (US-13.2, demo point 4)', () => {
     expect(statusLine()).toBe('Deleted Liga Norte 2026.');
   });
 
+  it('puts no comma before "and" for two parts (Task 250)', async () => {
+    storeSeasonRows(row(1, { teamCount: 0 }));
+    render(<SeasonsListScreen />);
+    await openMenu('Liga Norte 2026', 'Delete...');
+    expect(
+      screen.getByRole('dialog', { name: 'Delete Liga Norte 2026?' })
+    ).toHaveTextContent(
+      'This deletes its 3 leagues and its 2 playoffs. The team Blueprints stay in the Teams module.'
+    );
+  });
+
+  it('names one part alone (Task 250)', async () => {
+    storeSeasonRows(row(1, { teamCount: 0, playoffCount: 0 }));
+    render(<SeasonsListScreen />);
+    await openMenu('Liga Norte 2026', 'Delete...');
+    expect(
+      screen.getByRole('dialog', { name: 'Delete Liga Norte 2026?' })
+    ).toHaveTextContent(
+      'This deletes its 3 leagues. The team Blueprints stay in the Teams module.'
+    );
+  });
+
   it('keeps the Season on Cancel', async () => {
     storeSeasonRows(row(1));
     render(<SeasonsListScreen />);

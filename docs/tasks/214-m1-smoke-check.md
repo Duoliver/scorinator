@@ -1,6 +1,6 @@
 # Task 214: M1 smoke check
 
-**Status:** Refactor
+**Status:** Done
 
 ## Goal
 
@@ -17,6 +17,7 @@ The user tries the M1 Season core in the real app, before M2 starts (Task 205). 
 - **2026-11-13:** Started. Inputs: Tasks 206 to 213, 249, 250, 251. The MVP2 smoke cases in `src/app/smoke.test.tsx`, and the MVP2 M1 smoke check (`docs/archive/mvp2/tasks/110-m1-smoke-check.md`).
 - **2026-11-13:** The automated case passed at its first run: a smoke test checks code that exists, so it does not fail first. It imports three teams, makes "Liga Norte" 2026-27, adds the teams (one gets "(Westbury)"), edits an OVR, finishes the Season, saves, opens it in a new session, deletes it, saves, and checks that its file and row are gone.
 - **2026-11-13:** The user ran the smoke check in the real app, and agreed the review. Commit 1. Status Refactor. Refactor pass: no change. Waits for the refactor review.
+- **2026-11-13:** The user agreed the refactor review. Done. M1 is complete.
 
 ## Report
 

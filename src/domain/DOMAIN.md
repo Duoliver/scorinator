@@ -25,3 +25,12 @@ Task 104 added the MVP2 record types (2026-10-29):
 Fixtures, byes, and results name a team by its Blueprint UUID. Each later task adds its own fields: for example, Task 126 adds the groups phase to `Phase`.
 
 **The MVP1 types are gone.** Task 162 removed `TeamRecord`, `LeagueRecord`, `LeagueTeam`, `LeagueResult`, and the MVP1 `CreateLeagueInput` (2026-10-29). The v2 create input is `CreateLeagueInput` in `app/state/leagueWrapperActions.ts`.
+
+## The MVP3 types
+
+Task 207 added the Season types (2026-11-13):
+
+| File | Types |
+|---|---|
+| `season.ts` | `Season`: a UUID, the provenance fields, a name and a year, the finished state, its leagues, and its playoffs (US-13.1, US-13.9). `SeasonLeague`: a `League` that names its teams in `teamUuids` (US-13.6). `Playoff`: a tie between two Season teams, with `TieRules` and an optional `TieResult` (US-13.7) |
+| `wrapper.ts` | `SeasonWrapper`: its Instances are the Season roster, in join order (US-13.4). `SeasonSummary`: the manifest row of a Season card. Task 209 adds `Manifest.seasons` |

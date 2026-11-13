@@ -2,6 +2,7 @@ import { describe, expectTypeOf, it } from 'vitest';
 import type { BracketTieResult } from '@/engine/bracket';
 import type { PhaseFixture } from '@/engine/round-robin';
 import type { MatchResult } from '@/engine/standings';
+import type { TieResult, TieRules } from '@/engine/tiebreak';
 import type { Tier } from '@/engine/tier-ovr';
 import type {
   BracketPhase,
@@ -13,7 +14,12 @@ import type {
   PhaseFormat,
   PhaseSummary,
   PhaseResult,
+  Playoff,
   ScheduledPhase,
+  Season,
+  SeasonLeague,
+  SeasonSummary,
+  SeasonWrapper,
   Provenance,
   TeamBlueprint,
   TeamInstance,
@@ -135,5 +141,80 @@ describe('Manifest (Task 76)', () => {
       matchday: number;
       matchdays: number;
     }>();
+  });
+});
+
+describe('Season (US-13.1, US-13.9, US-11.1, Task 207)', () => {
+  it('has a permanent uuid and the provenance fields', () => {
+    expectTypeOf<Season['uuid']>().toEqualTypeOf<string>();
+    expectTypeOf<Season>().toExtend<Provenance>();
+  });
+
+  it('has a name and a year, which together are unique', () => {
+    expectTypeOf<Season['name']>().toEqualTypeOf<string>();
+    expectTypeOf<Season['year']>().toEqualTypeOf<number>();
+  });
+
+  it('is finished or not, by a manual action (US-13.9)', () => {
+    expectTypeOf<Season['finished']>().toEqualTypeOf<boolean>();
+  });
+
+  it('holds its leagues and its playoffs (US-13.5, US-13.7)', () => {
+    expectTypeOf<Season['leagues']>().toEqualTypeOf<SeasonLeague[]>();
+    expectTypeOf<Season['playoffs']>().toEqualTypeOf<Playoff[]>();
+  });
+
+  it('has no roster of its own: the wrapper holds the Season teams', () => {
+    expectTypeOf<Season>().not.toHaveProperty('teams');
+  });
+});
+
+describe('SeasonLeague (US-13.5, US-13.6, Task 207 choice 3)', () => {
+  it('is a full league', () => {
+    expectTypeOf<SeasonLeague>().toExtend<League>();
+  });
+
+  it('names its teams by their Blueprint uuids, so a team can play in two leagues', () => {
+    expectTypeOf<SeasonLeague['teamUuids']>().toEqualTypeOf<string[]>();
+  });
+});
+
+describe('Playoff (US-13.7, Task 207 choice 4)', () => {
+  it('has a uuid and a name', () => {
+    expectTypeOf<Playoff['uuid']>().toEqualTypeOf<string>();
+    expectTypeOf<Playoff['name']>().toEqualTypeOf<string>();
+  });
+
+  it('names the home team and the away team by their Blueprint uuids', () => {
+    expectTypeOf<Playoff['homeUuid']>().toEqualTypeOf<string>();
+    expectTypeOf<Playoff['awayUuid']>().toEqualTypeOf<string>();
+  });
+
+  it('has the format options of a bracket tie', () => {
+    expectTypeOf<Playoff['rules']>().toEqualTypeOf<TieRules>();
+  });
+
+  it('has a result only after the play', () => {
+    expectTypeOf<Playoff['result']>().toEqualTypeOf<TieResult<string> | undefined>();
+  });
+});
+
+describe('SeasonWrapper (PERSISTENCE.md §2a)', () => {
+  it('holds the Season roster as its Instances, and one Season', () => {
+    expectTypeOf<SeasonWrapper['teams']>().toEqualTypeOf<TeamInstance[]>();
+    expectTypeOf<SeasonWrapper['content']>().toEqualTypeOf<Season>();
+    expectTypeOf<SeasonWrapper['uuid']>().toEqualTypeOf<string>();
+  });
+});
+
+describe('SeasonSummary (Task 207 choice 5)', () => {
+  it('gives the fields of a Season card', () => {
+    expectTypeOf<SeasonSummary['uuid']>().toEqualTypeOf<string>();
+    expectTypeOf<SeasonSummary['name']>().toEqualTypeOf<string>();
+    expectTypeOf<SeasonSummary['year']>().toEqualTypeOf<number>();
+    expectTypeOf<SeasonSummary['finished']>().toEqualTypeOf<boolean>();
+    expectTypeOf<SeasonSummary['leagueCount']>().toEqualTypeOf<number>();
+    expectTypeOf<SeasonSummary['teamCount']>().toEqualTypeOf<number>();
+    expectTypeOf<SeasonSummary['playoffCount']>().toEqualTypeOf<number>();
   });
 });

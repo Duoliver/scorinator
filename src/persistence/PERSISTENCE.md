@@ -20,7 +20,7 @@ Split the single database file along the **Instance Wrapper boundary** (see §2a
 
 | File | Contents | Load behavior |
 |---|---|---|
-| `manifest.json` | List of Instance Wrappers (UUID, content type — standalone League or Season, time label if a Season, linked league names, team count), full list of global Team Blueprints, Locations (Country/Region/City + adjacency), installation UUID | Always loaded on app start |
+| `manifest.json` | List of Instance Wrappers (UUID, content type — standalone League or Season, time label if a Season, linked league names, team count), full list of global Team Blueprints, Locations (Country/Region/City + adjacency), installation UUID. *(Task 207: the standalone leagues and the Seasons have two separate lists of rows, `wrappers` and `seasons`. A Season row gives its name, year, finished state, and counts. The leagues of a Season have no rows.)* | Always loaded on app start |
 | `wrapper-{uuid}.json` | That wrapper's Team Instances, plus its `content` — either one standalone League (Phases, fixtures, results) or a full Season (its linked Leagues, Phases, fixtures, results, queued relegations) | Lazy-loaded into the GSM only when the user opens it; kept **suspended** in memory (not evicted) if it has unsaved changes when the user navigates away — see §2b |
 
 The active wrapper is fully hydrated and writable in the in-memory store; any other opened-but-unsaved wrapper stays suspended in memory rather than evicting, per the suspend-on-navigate-away design (§2b). This keeps steady-state memory and per-save I/O bounded by however many wrappers the user has actually opened, not the whole story's history.
@@ -39,7 +39,7 @@ InstanceWrapper<T>: {
 }
 ```
 
-**League and Season each keep their own permanent UUID** (per the existing Identity/Provenance system) — the wrapper does **not** centralize or replace their identity. This matters once a Season contains more than one League: Team Instance "league membership(s)" is a list (MVP2), Promotes-to/Relegates-to targets and Cup feeder leagues (MVP3/4) all reference *individual* Leagues by their own UUID — none of that works if every League inside a Season shared one collapsed wrapper-level identity. A Season is a container of several identity-bearing Leagues, not a 1:1 wrapper-to-content relationship the way a standalone League is.
+**League and Season each keep their own permanent UUID** (per the existing Identity/Provenance system) — the wrapper does **not** centralize or replace their identity. This matters once a Season contains more than one League: Team Instance "league membership(s)" is a list (MVP2) *(Task 207: in a Season, each league holds the Blueprint UUIDs of its own teams, not the Instance)*, Promotes-to/Relegates-to targets and Cup feeder leagues (MVP3/4) all reference *individual* Leagues by their own UUID — none of that works if every League inside a Season shared one collapsed wrapper-level identity. A Season is a container of several identity-bearing Leagues, not a 1:1 wrapper-to-content relationship the way a standalone League is.
 
 Instead, the **wrapper's own UUID mirrors whichever single thing it contains**:
 - Standalone case: wrapper UUID = the League's UUID (1:1, nothing to disambiguate). File: `wrapper-{league-uuid}.json`.

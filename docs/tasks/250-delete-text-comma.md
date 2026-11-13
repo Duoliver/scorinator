@@ -1,6 +1,6 @@
 # Task 250: fix the comma in the Season delete text
 
-**Status:** Refactor
+**Status:** Done
 
 ## Goal
 
@@ -17,6 +17,8 @@ The Season delete confirm puts a comma before "and" when two parts show: "This d
 - **2026-11-13:** Task created by User. The criteria are the words of the request.
 - **2026-11-13:** Tests first. The two-part case failed, then passed. The one-part case passed before and after. The three-part case of Task 212 still passes.
 - **2026-11-13:** The user agreed the review. Commit 1. Status Refactor.
+- **2026-11-13:** Refactor pass: no change. Waits for the refactor review.
+- **2026-11-13:** The user agreed the refactor review. Done.
 
 ## Report
 
@@ -24,4 +26,4 @@ The Season delete confirm puts a comma before "and" when two parts show: "This d
 - **Test approach:** two screen tests for the delete confirm: two parts and one part. The full suite passes: 2200 tests. The type check, the lint, and the format check pass.
 - **Decisions made:** none.
 - **What is left:** nothing.
-- **Refactor:** waits for the review.
+- **Refactor:** no change. The pass read the diff of commit 1 against the checklist: the comment says why, the name starts with a verb, and the tests came first. No gap found.

@@ -6,7 +6,11 @@
 <title>Season view demo</title>
 <link rel="stylesheet" href="demo.css">
 <style>
-  .roster .thead, .roster .tr { grid-template-columns: 1.375rem minmax(12rem, 2fr) 5rem 4rem 4rem minmax(9rem, 1.5fr) 2rem; }
+  .roster .thead, .roster .tr { grid-template-columns: 1.375rem minmax(12rem, 2fr) 5rem 6rem minmax(9rem, 1.5fr) 2rem; }
+  .tier-ovr { justify-self: start; display: inline-flex; border: var(--border-width) solid var(--color-fg); font-family: var(--font-mono); font-size: var(--font-size-md); font-weight: 700; }
+  .tier-ovr > span { padding: var(--space-1) var(--space-2); }
+  .tier-ovr .tier { background: var(--color-fg); color: var(--color-surface); }
+  .tier-ovr .ovr { background: var(--color-surface); color: var(--color-fg); min-width: 2.25rem; text-align: center; }
   .leagues-cell { font-size: var(--font-size-md); }
   .swatches { display: flex; flex-wrap: wrap; gap: var(--space-2); }
   .swatches .swatch { width: 1.75rem; height: 1.75rem; cursor: pointer; }
@@ -116,61 +120,61 @@
         <div class="tab-panel" id="panel-teams" role="tabpanel">
           <div class="table roster" id="roster">
             <div class="thead">
-              <span></span><span>Team</span><span>Trigram</span><span>Tier</span><span>OVR</span><span>Leagues</span><span></span>
+              <span></span><span>Team</span><span>Trigram</span><span>Tier · OVR</span><span>Leagues</span><span></span>
             </div>
             <div class="tr">
               <span class="swatch" style="background:#1565C0"></span>
               <span><span>Ashfield Rovers</span> <span class="team-location">Ashfield</span></span>
-              <span class="mono">ASH</span><span><span class="badge dark">A</span></span><span class="mono">86</span>
+              <span class="mono">ASH</span><span class="tier-ovr" aria-label="Tier A, OVR 86"><span class="tier">A</span><span class="ovr">86</span></span>
               <span class="leagues-cell">Primeira Divisão, Taça Norte</span>
               <button class="button icon" type="button" aria-label="Edit Ashfield Rovers" data-edit data-open="edit">✎</button>
             </div>
             <div class="tr">
               <span class="swatch" style="background:#E53935"></span>
               <span><span>Ashfield Rovers (Northtown)</span> <span class="team-location">Northtown</span></span>
-              <span class="mono">ASN</span><span><span class="badge dark">B</span></span><span class="mono">74</span>
+              <span class="mono">ASN</span><span class="tier-ovr" aria-label="Tier B, OVR 74"><span class="tier">B</span><span class="ovr">74</span></span>
               <span class="leagues-cell">Segunda Divisão</span>
               <button class="button icon" type="button" aria-label="Edit Ashfield Rovers (Northtown)" data-edit data-open="edit">✎</button>
             </div>
             <div class="tr">
               <span class="swatch" style="background:#2E7D32"></span>
               <span><span>Riverside FC</span></span>
-              <span class="mono">RIV</span><span><span class="badge dark">A</span></span><span class="mono">81</span>
+              <span class="mono">RIV</span><span class="tier-ovr" aria-label="Tier A, OVR 81"><span class="tier">A</span><span class="ovr">81</span></span>
               <span class="leagues-cell">Primeira Divisão, Taça Norte</span>
               <button class="button icon" type="button" aria-label="Edit Riverside FC" data-edit data-open="edit">✎</button>
             </div>
             <div class="tr">
               <span class="swatch" style="background:#FFB300"></span>
               <span><span>Riverside FC (2)</span></span>
-              <span class="mono">RVS</span><span><span class="badge dark">C</span></span><span class="mono">63</span>
+              <span class="mono">RVS</span><span class="tier-ovr" aria-label="Tier C, OVR 63"><span class="tier">C</span><span class="ovr">63</span></span>
               <span class="leagues-cell">Segunda Divisão</span>
               <button class="button icon" type="button" aria-label="Edit Riverside FC (2)" data-edit data-open="edit">✎</button>
             </div>
             <div class="tr">
               <span class="swatch" style="background:#1A237E"></span>
               <span><span>Porto Velho SC</span> <span class="team-location">Porto Velho</span></span>
-              <span class="mono">POR</span><span><span class="badge dark">S</span></span><span class="mono">93</span>
+              <span class="mono">POR</span><span class="tier-ovr" aria-label="Tier S, OVR 93"><span class="tier">S</span><span class="ovr">93</span></span>
               <span class="leagues-cell">Primeira Divisão, Taça Norte</span>
               <button class="button icon" type="button" aria-label="Edit Porto Velho SC" data-edit data-open="edit">✎</button>
             </div>
             <div class="tr">
               <span class="swatch" style="background:#6A1B9A"></span>
               <span><span>Union Leste</span> <span class="team-location">Vila Leste</span></span>
-              <span class="mono">UNI</span><span><span class="badge dark">B</span></span><span class="mono">77</span>
+              <span class="mono">UNI</span><span class="tier-ovr" aria-label="Tier B, OVR 77"><span class="tier">B</span><span class="ovr">77</span></span>
               <span class="leagues-cell">Primeira Divisão</span>
               <button class="button icon" type="button" aria-label="Edit Union Leste" data-edit data-open="edit">✎</button>
             </div>
             <div class="tr">
               <span class="swatch" style="background:#00897B"></span>
               <span><span>Atlético Serra</span> <span class="team-location">Serra Alta</span></span>
-              <span class="mono">ATL</span><span><span class="badge dark">C</span></span><span class="mono">66</span>
+              <span class="mono">ATL</span><span class="tier-ovr" aria-label="Tier C, OVR 66"><span class="tier">C</span><span class="ovr">66</span></span>
               <span class="leagues-cell">Segunda Divisão</span>
               <button class="button icon" type="button" aria-label="Edit Atlético Serra" data-edit data-open="edit">✎</button>
             </div>
             <div class="tr">
               <span class="swatch" style="background:#F57C00"></span>
               <span><span>Mariners FC</span> <span class="team-location">Cais Novo</span></span>
-              <span class="mono">MAR</span><span><span class="badge dark">D</span></span><span class="mono">55</span>
+              <span class="mono">MAR</span><span class="tier-ovr" aria-label="Tier D, OVR 55"><span class="tier">D</span><span class="ovr">55</span></span>
               <span class="leagues-cell muted">Rests: in no league</span>
               <button class="button icon" type="button" aria-label="Edit Mariners FC" data-edit data-open="edit">✎</button>
             </div>

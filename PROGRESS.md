@@ -91,6 +91,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 246 | Rename and delete on the league card and in League Detail. The dashboard search | `features/leagues` | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M5. US-16.2, US-16.3, US-16.4. Depends on 242, 244. |
 | 247 | The Season export and import on the File screen: "Skip" or "Import as new", the numbered name. The export menu of a Season league. "Export all leagues" for standalone leagues only | `app/data`, `app/state`, `features/file` | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M5. US-13.11. Depends on 242, 245. |
 | 248 | Smoke check M5, and the end of the MVP3 Must items | — | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M5. Depends on 243, 246, 247. |
+| 249 | Join the Tier and the OVR in one box in the roster demo | `docs/design-reference/MVP3/` | ✅ Done | 2026-11-13 | 2026-11-13 | [249](/docs/tasks/249-roster-tier-ovr.md) | Task created by User - 2026-11-13. After the Task 206 review. The user reviewed the task. |
 
 **Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input, see Open Questions) · 🟩 Review · 🟦 Refactor (the pass, or its review: the Notes say which) · ✅ Done · ❌ Cancelled (the reason is in the Notes column)
 
@@ -135,7 +136,7 @@ A short record of resolved judgment calls. This stops a later session from silen
 
 **START BELOW, LAST ON TOP:**
 
-- **2026-11-13 (Task 206 — the M1 demo):** The user agreed the M1 demo with no change. Tasks 212 and 213 follow it: "Seasons" between "Leagues" and "Teams". A four-digit year. Rename and delete in the ⋮ menu of the Season card. A "Leagues" section above the Teams, Playoffs, and Resume tabs. Finish with a confirm, reopen without one. The roster shows the leagues of each team. Detail: `docs/design-reference/MVP3/index.html`.
+- **2026-11-13 (Task 206 — the M1 demo):** The user agreed the M1 demo with no change. Tasks 212 and 213 follow it: "Seasons" between "Leagues" and "Teams". A four-digit year. Rename and delete in the ⋮ menu of the Season card. A "Leagues" section above the Teams, Playoffs, and Resume tabs. Finish with a confirm, reopen without one. The roster shows the leagues of each team, and the Tier and the OVR in one box, the Tier on black (Task 249). Detail: `docs/design-reference/MVP3/index.html`.
 
 - **2026-11-13 (Task 205 — the MVP3 build map):** The user agreed the map: Tasks 206 to 248 in five milestones. M1 Season core, M2 Season leagues and playoffs, M3 Team condition, M4 Teams module, M5 League lists and the Season file. A demo task starts each milestone, and a smoke check ends it. The real OVR function goes in `engine/tier-ovr`. The Season screens go in `features/seasons/`. The team modal goes in `features/components/`. Detail: [Task 205](/docs/tasks/205-mvp3-build-tasks.md).
 

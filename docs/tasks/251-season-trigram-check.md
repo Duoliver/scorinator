@@ -1,6 +1,6 @@
 # Task 251: check the unique roster trigrams of a Season file
 
-**Status:** Refactor
+**Status:** Done
 
 ## Goal
 
@@ -18,6 +18,7 @@ The Season file parser of Task 209 does not check that each roster trigram is un
 - **2026-11-13:** Started. The board row of this task went into the Task 213 refactor commit (`ebe0d80`) by mistake: the row was added before that commit. The task file and the code come in the commits of this task.
 - **2026-11-13:** Tests first: the new case failed, then passed. Two roster teams with an empty trigram also fail, as the criteria ask.
 - **2026-11-13:** The user agreed the review. Commit 1. Status Refactor. Refactor pass: no change. Waits for the refactor review.
+- **2026-11-13:** The user agreed the refactor review. Done.
 
 ## Report
 

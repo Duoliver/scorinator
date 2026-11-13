@@ -211,6 +211,17 @@ describe('parseSeasonFile checks (Task 209 choices 2 to 4)', () => {
     );
   });
 
+  it('wants each roster trigram once in the Season (Task 251)', () => {
+    fails(
+      (raw) => (raw.teams[1].trigram = 'SMU'),
+      'team 2 has the same trigram as team 1.'
+    );
+    fails((raw) => {
+      raw.teams[0].trigram = '';
+      raw.teams[2].trigram = '';
+    }, 'team 3 has the same trigram as team 1.');
+  });
+
   it('wants each league UUID once in the Season', () => {
     fails(
       (raw) => (raw.content.leagues[1].uuid = LEAGUE),

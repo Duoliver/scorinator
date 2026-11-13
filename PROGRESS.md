@@ -93,7 +93,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 248 | Smoke check M5, and the end of the MVP3 Must items | — | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M5. Depends on 243, 246, 247. |
 | 249 | Join the Tier and the OVR in one box in the roster demo | `docs/design-reference/MVP3/` | ✅ Done | 2026-11-13 | 2026-11-13 | [249](/docs/tasks/249-roster-tier-ovr.md) | Task created by User - 2026-11-13. After the Task 206 review. The user reviewed the task. |
 | 250 | Fix the comma in the Season delete text, for two parts | `features/seasons` | ✅ Done | 2026-11-13 | 2026-11-13 | [250](/docs/tasks/250-delete-text-comma.md) | Task created by User - 2026-11-13. From the Task 212 refactor pass. Refactor: no change. |
-| 251 | Check the unique roster trigrams of a Season file | `adapters/json-io` | ⬜ Not started |  |  | [251](/docs/tasks/251-season-trigram-check.md) | Task created by User - 2026-11-13. From the Task 213 review. |
+| 251 | Check the unique roster trigrams of a Season file | `adapters/json-io` | 🟦 Refactor | 2026-11-13 |  | [251](/docs/tasks/251-season-trigram-check.md) | Task created by User - 2026-11-13. From the Task 213 review. Refactor pass: no change. Waits for the refactor review. |
 
 **Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input, see Open Questions) · 🟩 Review · 🟦 Refactor (the pass, or its review: the Notes say which) · ✅ Done · ❌ Cancelled (the reason is in the Notes column)
 

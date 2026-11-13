@@ -196,6 +196,14 @@ function readSeasonBody(
     (i, first) => `team ${i + 1} has the same Blueprint UUID as team ${first + 1}.`,
     failSeason
   );
+  // A Season team keeps one trigram in every league of the Season (US-13.4).
+  // A roster with two equal trigrams would stop the next join (Task 251).
+  checkUnique(
+    teams,
+    (team) => team.trigram,
+    (i, first) => `team ${i + 1} has the same trigram as team ${first + 1}.`,
+    failSeason
+  );
   const content = readSeason(
     raw.content,
     new Set(teams.map((team) => team.blueprintUuid)),

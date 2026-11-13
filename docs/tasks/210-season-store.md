@@ -1,6 +1,6 @@
 # Task 210: the Season store
 
-**Status:** Refactor
+**Status:** Done
 
 ## Goal
 
@@ -25,6 +25,8 @@ Give `app/state` the Season actions: create, rename, delete, open, finish, and r
 - **2026-11-13:** Tests first. The folder remove tests and the 24 Season action cases failed, then passed. The `persistence/types.test.ts` contract test got the new `removed` parameter.
 - **2026-11-13:** Claude choices in the code, for the review. (a) `removed` is an optional third parameter of `save`, so the earlier callers stay as they are. (b) A save removes files only when it writes the manifest. (c) A Season created and deleted before a save leaves nothing to save. (d) `reopenSeason` on a running Season changes nothing but the stamp. (e) A rename opens the Season from its file, so the screens can call it from the Seasons list.
 - **2026-11-13:** The user agreed the review and the Claude choices. Commit 1. Status Refactor.
+- **2026-11-13:** Refactor pass: one comment. Waits for the refactor review.
+- **2026-11-13:** The user agreed the refactor review. Done.
 
 ## Report
 
@@ -37,4 +39,4 @@ Give `app/state` the Season actions: create, rename, delete, open, finish, and r
 - **Test approach:** store tests on the in-memory folder (`seasonActions.test.ts`, 24 cases): create, the unique pair, open, rename, finish, reopen, delete, the save, the remove, and the export. Integration tests on a real temp folder for the remove (3 cases). The full suite passes: 2163 tests. The type check, the lint, and the format check pass.
 - **Decisions made:** the eight choices, with the rename of a finished Season (Decisions log). The Claude choices (a) to (e) are in the notes.
 - **What is left:** Task 211 adds the roster actions, and calls `requireRunningSeason`. Task 244 (the league delete) uses the same file remove.
-- **Refactor:** waits for the review.
+- **Refactor:** one change, no change in behavior. The comment of `requireRunningSeason` named its callers. It now says why the message names the Season (`coding-standards.md`, comments). The rest of the diff passed the checklist. The checks pass again: 2163 tests.

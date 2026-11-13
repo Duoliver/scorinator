@@ -156,7 +156,7 @@ export function isSeasonNameTaken(
 }
 
 /** Throws for a finished Season: it is read only, until the user reopens it
- * (US-13.9). Each action that changes the content of a Season calls it. */
+ * (US-13.9). The message names the Season, so an error shows which one. */
 export function requireRunningSeason(wrapper: SeasonWrapper): void {
   if (wrapper.content.finished) {
     const { name, year } = wrapper.content;

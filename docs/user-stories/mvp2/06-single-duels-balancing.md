@@ -1,6 +1,6 @@
 # Epic 06: Single Duels Home/Away Balancing
 
-Refined in [Task 91](/docs/tasks/091-refine-single-duels-balancing.md). Source: [`docs/scorinator-mvp2.md`](/docs/scorinator-mvp2.md) §1 Round Robin (Single Duels) — Home/Away Balancing, §2 Epic: Single Duels Home/Away Balancing.
+Refined in [Task 91](/docs/archive/mvp2/tasks/091-refine-single-duels-balancing.md). Source: [`docs/scorinator-mvp2.md`](/docs/scorinator-mvp2.md) §1 Round Robin (Single Duels) — Home/Away Balancing, §2 Epic: Single Duels Home/Away Balancing.
 
 **Terms used in this file:**
 

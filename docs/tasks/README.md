@@ -1,6 +1,6 @@
 # Task files
 
-Each task on the `PROGRESS.md` status board has one file here, from MVP2 on (Task 74 and later). The file holds the task details that are too long for the board: the goal, the acceptance criteria, the notes, and the report. MVP1 used `progress-reports/` instead. Those files are in `docs/archive/mvp1/`.
+Each task on the `PROGRESS.md` status board has one file here. The file holds the task details that are too long for the board: the goal, the acceptance criteria, the notes, and the report. The MVP2 task files (Tasks 74 to 191) are in `docs/archive/mvp2/tasks/`, read only (Task 192). MVP1 used `progress-reports/` instead. Those files are in `docs/archive/mvp1/`.
 
 **Why a file per task:** the status board stays short, so a session can read it at the start for little context. A session reads a task file only when it works on that task.
 
@@ -17,7 +17,7 @@ Each task on the `PROGRESS.md` status board has one file here, from MVP2 on (Tas
 ```markdown
 # Task NNN: short title
 
-**Status:** Not started | In progress | Blocked | Review | Done
+**Status:** Not started | In progress | Blocked | Review | Refactor | Done
 
 ## Goal
 
@@ -42,6 +42,7 @@ Write this before the task goes to Review.
 - **Test approach:** what the tests cover, what kind of tests (unit, integration, statistical), and anything left untested on purpose, with the reason.
 - **Decisions made:** each one is also in the `PROGRESS.md` Decisions log.
 - **What is left, what is next:** anything nearby that you saw but left out of scope.
+- **Refactor:** what the refactor pass changed, or "no change". Write it before the refactor review. A task with no code writes "No code, no refactor step".
 ```
 
 If a task stops before it finishes, say so plainly in the report. State what is done, what is broken or missing, and what decision or input the work needs to continue.

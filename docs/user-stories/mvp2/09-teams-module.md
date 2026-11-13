@@ -2,7 +2,7 @@
 
 Source: [`docs/scorinator-mvp2.md`](/docs/scorinator-mvp2.md) §1 Teams Module (Blueprints), §2 Epic: Teams Module (Blueprints). Layout reference: the MVP2 handoff, `Footballer - Teams` and `Footballer - League Setup Wizard` (Teams step).
 
-US-09.1 and US-09.2 are the two spec stories, refined in [Task 94](/docs/tasks/094-refine-teams-module.md). US-09.3 comes from [Task 99](/docs/tasks/099-team-location-label.md). US-09.4 and US-09.5 are new in Task 94. US-09.6 comes from [Task 100](/docs/tasks/100-team-trigrams.md). US-09.7 comes from [Task 101](/docs/tasks/101-team-palette.md).
+US-09.1 and US-09.2 are the two spec stories, refined in [Task 94](/docs/archive/mvp2/tasks/094-refine-teams-module.md). US-09.3 comes from [Task 99](/docs/archive/mvp2/tasks/099-team-location-label.md). US-09.4 and US-09.5 are new in Task 94. US-09.6 comes from [Task 100](/docs/archive/mvp2/tasks/100-team-trigrams.md). US-09.7 comes from [Task 101](/docs/archive/mvp2/tasks/101-team-palette.md).
 
 **Terms used in this file:**
 
@@ -141,7 +141,7 @@ As a user, I want a team slug to stay the same when I rename the team, unless I 
 ### US-09.6: team trigrams
 
 **Status:** Agreed
-**Spec:** `docs/scorinator-mvp2.md` §1 Teams Module (Blueprints), §2 Teams Module. A new story, from [Task 100](/docs/tasks/100-team-trigrams.md). The spec has it since 2026-10-28, with the user's OK.
+**Spec:** `docs/scorinator-mvp2.md` §1 Teams Module (Blueprints), §2 Teams Module. A new story, from [Task 100](/docs/archive/mvp2/tasks/100-team-trigrams.md). The spec has it since 2026-10-28, with the user's OK.
 
 As a user, I want each team to have a short three-letter code, with alternatives, so that I can tell teams apart where a full name does not fit.
 
@@ -176,7 +176,7 @@ As a user, I want each team to have a short three-letter code, with alternatives
 ### US-09.7: a team palette of 24 colours
 
 **Status:** Agreed
-**Spec:** `docs/scorinator-mvp1.md` §1 Team Colours. A new story, from [Task 101](/docs/tasks/101-team-palette.md). The spec has the 24 colours since 2026-10-28, with the user's OK.
+**Spec:** `docs/scorinator-mvp1.md` §1 Team Colours. A new story, from [Task 101](/docs/archive/mvp2/tasks/101-team-palette.md). The spec has the 24 colours since 2026-10-28, with the user's OK.
 
 As a user, I want more team colours, and colours that are easy to tell apart, so that each team in a league looks different.
 

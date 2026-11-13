@@ -1,6 +1,6 @@
 # Epic 05: Region Adjacency
 
-Refined in [Task 90](/docs/tasks/090-refine-region-adjacency.md). Source: [`docs/scorinator-mvp2.md`](/docs/scorinator-mvp2.md) §1 Groups Assignment (Region adjacency), §2 Epic: Region Adjacency.
+Refined in [Task 90](/docs/archive/mvp2/tasks/090-refine-region-adjacency.md). Source: [`docs/scorinator-mvp2.md`](/docs/scorinator-mvp2.md) §1 Groups Assignment (Region adjacency), §2 Epic: Region Adjacency.
 
 ---
 

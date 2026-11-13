@@ -1,6 +1,6 @@
 # Epic 02: Groups
 
-Refined in [Task 87](/docs/tasks/087-refine-groups.md). Source: [`docs/scorinator-mvp2.md`](/docs/scorinator-mvp2.md) §1 League Formats and Groups Assignment, §2 Epic: Groups. Layout reference: the MVP2 handoff, `Footballer - League Setup Wizard` (Teams step) and `Footballer - League Detail - Mixed` (Group phase). The Task 83 decisions D6 to D8 apply.
+Refined in [Task 87](/docs/archive/mvp2/tasks/087-refine-groups.md). Source: [`docs/scorinator-mvp2.md`](/docs/scorinator-mvp2.md) §1 League Formats and Groups Assignment, §2 Epic: Groups. Layout reference: the MVP2 handoff, `Footballer - League Setup Wizard` (Teams step) and `Footballer - League Detail - Mixed` (Group phase). The Task 83 decisions D6 to D8 apply.
 
 **Terms used in this file:**
 

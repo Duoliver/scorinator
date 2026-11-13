@@ -1,6 +1,6 @@
 # Epic 04: Bracket Phase
 
-Refined in [Task 89](/docs/tasks/089-refine-bracket-phase.md). Source: [`docs/scorinator-mvp2.md`](/docs/scorinator-mvp2.md) §1 Bracket Specifics, Bracket Sizing & Byes, Bracket Scorination Workflow, §2 Epic: Bracket Phase. Layout reference: the MVP2 handoff, `Footballer - League Setup Wizard` (phase step) and `Footballer - League Detail - Mixed` (Bracket phase).
+Refined in [Task 89](/docs/archive/mvp2/tasks/089-refine-bracket-phase.md). Source: [`docs/scorinator-mvp2.md`](/docs/scorinator-mvp2.md) §1 Bracket Specifics, Bracket Sizing & Byes, Bracket Scorination Workflow, §2 Epic: Bracket Phase. Layout reference: the MVP2 handoff, `Footballer - League Setup Wizard` (phase step) and `Footballer - League Detail - Mixed` (Bracket phase).
 
 **Terms used in this file:**
 

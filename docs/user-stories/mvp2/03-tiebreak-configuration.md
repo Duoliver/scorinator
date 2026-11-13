@@ -1,6 +1,6 @@
 # Epic 03: Tiebreak Configuration
 
-Refined in [Task 88](/docs/tasks/088-refine-tiebreak.md). Source: [`docs/scorinator-mvp2.md`](/docs/scorinator-mvp2.md) §1 Tiebreak Resolution, §2 Epic: Tiebreak Configuration. Layout reference: the MVP2 handoff, `Footballer - League Setup Wizard` (phase step) and `Footballer - League Detail - Mixed` (Bracket phase).
+Refined in [Task 88](/docs/archive/mvp2/tasks/088-refine-tiebreak.md). Source: [`docs/scorinator-mvp2.md`](/docs/scorinator-mvp2.md) §1 Tiebreak Resolution, §2 Epic: Tiebreak Configuration. Layout reference: the MVP2 handoff, `Footballer - League Setup Wizard` (phase step) and `Footballer - League Detail - Mixed` (Bracket phase).
 
 **Terms used in this file:**
 

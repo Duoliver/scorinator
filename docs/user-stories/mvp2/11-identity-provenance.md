@@ -1,6 +1,6 @@
 # Epic 11: Identity & Provenance
 
-Refined in [Task 96](/docs/tasks/096-refine-identity-provenance.md). Source: [`docs/scorinator-mvp2.md`](/docs/scorinator-mvp2.md) §1 Identity & Provenance System, §2 Epic: Identity & Provenance. Layout reference: the MVP2 handoff, `Footballer - File Manager` (the "Resolve conflicts" dialog).
+Refined in [Task 96](/docs/archive/mvp2/tasks/096-refine-identity-provenance.md). Source: [`docs/scorinator-mvp2.md`](/docs/scorinator-mvp2.md) §1 Identity & Provenance System, §2 Epic: Identity & Provenance. Layout reference: the MVP2 handoff, `Footballer - File Manager` (the "Resolve conflicts" dialog).
 
 **Terms used in this file:**
 

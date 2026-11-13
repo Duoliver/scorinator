@@ -74,13 +74,13 @@ Module-specific documentation lives at the root of that module.
 
 ---
 
-## Implementation scope — MVP1 and MVP2 only, for now
+## Implementation scope — MVP1, MVP2, and the MVP3 Must items
 
-All four MVP docs exist and are written. **Only MVP1 and MVP2 are approved for implementation at this time.** `scorinator-mvp3.md` and `scorinator-mvp4.md` are read-only references for context. They explain *why* certain MVP1/2 things take the shape they do — for example, why Team splits into Blueprint/Instance in MVP2, even though Season does not exist yet. They are not a queue of upcoming tasks.
+All four MVP docs exist. **MVP1, MVP2, and the Must items of MVP3 are approved for implementation.** The scope line of `PROGRESS.md` names the Must stories. The MVP3 Should and Could items, and `scorinator-mvp4.md`, are read-only references for context. They explain *why* the approved work takes the shape it does. They are not a queue of upcoming tasks. *(Changed on 2026-11-13, Task 204. It said MVP1 and MVP2 only.)*
 
-- Do not implement any MVP3 or MVP4 feature, even partially, even if a task seems to lead there naturally. For example: do not add a `City` field to Team Blueprint — that is MVP3 scope. Do not build Season grouping — also MVP3. Do not build the event system for Story Mode — that is MVP4 scope.
-- It is fine, and expected, for MVP1/2 code to take a shape that avoids a breaking rework once MVP3/4 land. For example, the Instance Wrapper design in MVP2 already anticipates Season. Shaping code for extensibility is different from building the extension itself. If you are unsure which side of that line a piece of work falls on, ask rather than proceed.
-- This restriction lifts only when explicitly told MVP3 (or MVP4) is approved for implementation. Check `PROGRESS.md` for the current approved scope before starting any task. It states the scope plainly at the top.
+- Do not implement an MVP3 Should or Could item, or an MVP4 feature, even partially, even if a task seems to lead there naturally. For example: do not build the custom team colour (US-15.7, a Should item). Do not add a `City` field to Team Blueprint: Task 195 moved City out of MVP3. Do not build the event system for Story Mode: that is MVP4 scope.
+- Approved code can take a shape that avoids a breaking rework later. For example, the Instance Wrapper design of MVP2 anticipates Season. A shape for a later extension is not the extension itself. If you are not sure which side of that line a piece of work is on, ask before you continue.
+- A Should or Could item, or MVP4, is approved only when the user says so explicitly. The refinement of a Should item stays allowed. Check `PROGRESS.md` for the current approved scope before you start a task. It states the scope plainly at the top.
 
 ---
 
@@ -90,7 +90,6 @@ These are known-unresolved in the specs. If work touches them, stop and propose 
 - Team event trigger frequency/probability curve shape (MVP4 says "configurable," but the underlying distribution is not specified).
 - Autosave during the automatic end-of-season pipeline in Story Mode (explicitly deferred in `scorinator-technical-caveats.md` §5 — do not implement unless separately scoped).
 - Anything listed in `scorinator-future-features.md` — out of scope, do not implement even if it looks like a natural extension of a current task.
-- MVP3 uses different wording for Instance-scoping than the corrected wording in MVP/technical-caveats. MVP3 says "scoped to one Season." The caveats doc corrects this to "scoped to one Instance Wrapper." Treat the Instance Wrapper version as authoritative, per the caveats doc — the MVP3 doc text has not been updated yet.
 
 Settled, not open: the OVR-difference vs. absolute-OVR weighting in match simulation. The user chose the weight in MVP1 Task 5 (see `docs/archive/mvp1/PROGRESS.md`, Task 5). A change to that weight still needs a proposal and a user decision first. *(Changed on 2026-11-01, Task 174.)*
 
@@ -102,24 +101,25 @@ Settled, not open: the OVR-difference vs. absolute-OVR weighting in match simula
 - Reading it first (per the top of this file).
 - Treating every activity as a task. When the user asks for work that no task covers, add a status board row and a task file in `docs/tasks/` first, and agree its criteria before the work starts.
 - Marking a task **in progress** (with a start timestamp) when picked up.
-- Marking it **done** (with a completion timestamp) and writing the session report before ending. Do not defer this to "next session" — there may not be context left later to write an accurate one.
+- Moving it to **Review** after the implementation, then to **Refactor**, then to **done** (with a completion timestamp), as `docs/tdd.md` "The refactor step" says. A task with no code skips Refactor. Write the session report before ending. Do not defer this to "next session" — there may not be context left later to write an accurate one.
 - If a task stops partway — blocked, out of scope, or needing a decision from the user — record that honestly. Use an **in-progress / blocked** entry. State what is done, what is not, and what the next session needs to know. Do not leave it silently incomplete, and do not mark it done when it is not.
 - If a task surfaces one of the §6 open items, or anything needing a user decision, log it in the open-questions section of `PROGRESS.md`. Do not just mention it in chat — the next session will not see it there.
 
-A session should never end with unrecorded state — code without a matching `PROGRESS.md` entry is effectively invisible to the next session. Work in Review stays uncommitted until the user agrees that it is Done. See Git commits below.
+A session should never end with unrecorded state — code without a matching `PROGRESS.md` entry is effectively invisible to the next session. Work in Review stays uncommitted until the user agrees with the review. See Git commits below.
 
 ---
 
 ## Git commits
 
-Claude commits the work of a task when the user agrees that the task is Done. Push and branches stay with the user. *(Added on 2026-10-29, Task 159.)*
+Claude commits the work of a task when the user agrees with its review, and its refactor when the user agrees with the refactor review. Push and branches stay with the user. *(Added on 2026-10-29, Task 159. Two commits for each task since 2026-11-11, Task 193.)*
 
-1. When the user agrees that a task is Done, set its status to Done and its Completed date in `PROGRESS.md`. Then commit.
-2. Put only the changes of that task in the commit. This includes its `PROGRESS.md` lines and its task file. Leave the changes of other tasks out of the commit.
-3. When the user agrees more than one task at the same time, make one commit for all of them, or one for each task, as the user asks.
-4. Commit on the current branch. Do not create, switch, merge, rebase, or delete a branch.
-5. Do not push. Do not open a pull request.
-6. Do not commit a task that is In progress, Blocked, or in Review.
+1. When the user agrees with the review, set the status to Refactor in `PROGRESS.md`. Then commit the work of the task (commit 1).
+2. When the user agrees with the refactor review, set the status to Done and the Completed date. Then commit the refactor (commit 2). A task with no code has no Refactor status: set Done at the review, and make one commit.
+3. Put only the changes of that task in a commit. This includes its `PROGRESS.md` lines and its task file. Leave the changes of other tasks out of the commit.
+4. When the user agrees more than one task at the same time, make one commit for all of them, or one for each task, as the user asks.
+5. Commit on the current branch. Do not create, switch, merge, rebase, or delete a branch.
+6. Do not push. Do not open a pull request.
+7. Do not commit a task that is In progress, Blocked, or in Review, or a refactor that waits for its review.
 
 ### The commit message
 
@@ -132,6 +132,8 @@ The subject line is lower case, at most 72 characters, and uses one of these for
 | More than two consecutive tasks | `tasks 103-105: add identity, record types, and fixture ids` |
 
 The message part starts with a verb, in the imperative: add, fix, refine, move.
+
+The subject of commit 2 starts with "refactor": `task 165: refactor the placeholder comment`. A pass with no change gives `task 165: refactor pass, no change`, and the commit holds only the Done lines.
 
 After the subject, write one empty line and a body. The body says what changed and why, in short lines of 72 characters at most. A list with `-` is good. Name the stories and the decisions that the work delivers, for example US-11.1 or Task 75. Do not copy the task report. The body ends with the `Co-Authored-By` line that Claude Code gives, after one empty line.
 

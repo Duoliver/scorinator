@@ -66,7 +66,6 @@ This keeps every League's own identity fully intact for cross-referencing and pe
 - **Atomic writes across multiple files.** A crash mid-save must not leave the manifest and a wrapper file disagreeing about what exists. Use temp-file-then-rename per file, manifest as final source of truth, and consider writing the manifest last (so a crash before it commits just means one orphaned/harmless wrapper file, not a manifest pointing at a missing one).
 - **"Entire database" export/import** (MVP2 File Module scope: "everything... in one file") needs to become a **bundle** (e.g. a zip or a directory) of manifest + all wrapper files, rather than one flat JSON. This is a real format change to that feature, not just an internal refactor — worth flagging to whoever implements the File Module.
 - **Per-League / per-Blueprint export** (already scoped as self-contained JSON snapshots in MVP2) is unaffected — those already embed what they need and don't depend on this file split.
-- **MVP3's Instance-scoping language needs a follow-up correction.** "Scoped to one Season" should be revised to "scoped to one Instance Wrapper" wherever it appears, now that standalone Leagues also scope Instances without a Season present. Not applied to the MVP docs yet — flagged here for whoever does that pass.
 
 ## 4. What This Doesn't Change
 

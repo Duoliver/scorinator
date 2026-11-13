@@ -1,6 +1,6 @@
 # Epic 08: Team Selection in League Setup
 
-Refined in [Task 93](/docs/tasks/093-refine-team-selection.md). Source: [`docs/scorinator-mvp2.md`](/docs/scorinator-mvp2.md) §1 Team Selection in League Setup, §2 Epic: Team Selection in League Setup. Layout reference: the MVP2 handoff, `Footballer - League Setup Wizard` (Teams step, the add dialog, and the Edit drawer).
+Refined in [Task 93](/docs/archive/mvp2/tasks/093-refine-team-selection.md). Source: [`docs/scorinator-mvp2.md`](/docs/scorinator-mvp2.md) §1 Team Selection in League Setup, §2 Epic: Team Selection in League Setup. Layout reference: the MVP2 handoff, `Footballer - League Setup Wizard` (Teams step, the add dialog, and the Edit drawer).
 
 **Terms used in this file:**
 

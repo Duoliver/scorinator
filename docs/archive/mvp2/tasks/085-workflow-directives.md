@@ -31,7 +31,7 @@ Set three workflow rules for MVP2 before the next tasks start:
 - **What was built:**
   - `docs/tasks/README.md`: the rules and the template for a task file.
   - `docs/user-stories/README.md`: the story IDs, the template, the status values, and the parked Given / When / Then idea.
-  - Report 074 moved to `docs/tasks/074-spec-edits.md`, with the task file shape. The empty root `progress-reports/` folder is gone.
+  - Report 074 moved to `docs/archive/mvp2/tasks/074-spec-edits.md`, with the task file shape. The empty root `progress-reports/` folder is gone.
   - `PROGRESS.md`: the new rules, a Task file column, a User stories section, and the refinement Tasks 86 to 96. Each decision row names the refinement tasks that can close it.
   - `CLAUDE.md`: one new line for the rule "every activity is a task".
   - `docs/code-review-checklist.md`: asks for a task file, not a report.

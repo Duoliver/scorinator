@@ -1,6 +1,6 @@
 # Epic 01: League Format Configuration
 
-Refined in [Task 86](/docs/tasks/086-refine-league-format.md). Source: [`docs/scorinator-mvp2.md`](/docs/scorinator-mvp2.md) §1 League Formats and Phase Chaining, §2 Epic: League Format Configuration.
+Refined in [Task 86](/docs/archive/mvp2/tasks/086-refine-league-format.md). Source: [`docs/scorinator-mvp2.md`](/docs/scorinator-mvp2.md) §1 League Formats and Phase Chaining, §2 Epic: League Format Configuration.
 
 **Terms used in this file:**
 

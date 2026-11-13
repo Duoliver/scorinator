@@ -24,27 +24,6 @@ In MVP2, a replay is always played at a neutral venue, with no home advantage. L
 
 * Raised during: MVP1 → MVP2 impact review.
 
-## 5. Fewer extreme scores in big OVR mismatches
-A big OVR gap gives extreme scores too often. The user judged this not a big problem for MVP1, and parked it here on 2026-10-26. Do not change the engine for it without a decision from the user.
-
-**Goal (user stance):** make the common extremes (a margin of 4 to 6 goals) less frequent, but keep a real chance of 11-0 or more for an A or S team against an F team.
-
-**Study (2026-09-25):** the real engine, 300,000 matches per case, home advantage on at 5% (the boost before Task 32). Real-football figures are approximate and from memory.
-- **In aggregate, extreme scores are rare.** A same-tier league (OVR 60-69) gives 2-1 13.8%, 6-0 0.14%, draws 28.1%, and a margin of 4+ goals 3.8%. A league of all tiers S to F gives 2-1 10.9%, 6-0 0.82%, draws 23.4%, a margin of 4+ goals 9.6%, and a team with 6+ goals 2.8%. Real football is about 2-3% for a margin of 4+ goals.
-- **In big mismatches, extreme scores are common.** Favorite at home, gap 25 OVR (80 v 55): 2-1 7.95%, 6-0 0.73%, a margin of 4+ goals 9.7%. Gap 55 (95 v 40): 2-1 3.0%, 6-0 3.7%, a margin of 4+ goals 27.7%. Gap 69 (99 v 30): 2-1 2.7%, 6-0 4.9%, a margin of 4+ goals 34.0%. From a gap of about 55, 6-0 is as common as 2-1.
-- **The favorite with 11+ goals:** 1 in 6,700 matches at 85 v 50, 1 in 910 at 95 v 35, 1 in 520 at 99 v 30.
-
-**Cause:** each OVR point adds 1.5% to expected goals, linearly (`DIFF_WEIGHT`). At a gap of 60, the favorite's factor is about 1.9, and the underdog's hits its floor. The shared elasticity roll (uniform 0.4 to 1.6) then scales both. At the top of the roll, the favorite's expected goals reach about 4.3, and the underdog's stay near 0.2. The same elasticity range also gives low-scoring matches, which is probably why draws are 28% instead of about 25%.
-
-**Design note:** a lower `DIFF_WEIGHT`, a saturated difference factor, or a narrower elasticity range would each cut the rare tail together with the common extremes. To keep a rare tail and cut the common extremes, a separate mechanism for the tail is probably necessary. This is untested.
-
-**Constraints:**
-- The OVR-difference vs absolute-OVR weighting was settled in MVP1 Task 5. A change to the difference factor changes that decision, so propose an approach and get a decision first.
-- One OVR point is worth 1.5% of goals today. A change to that scale changes the meaning of the Task 32 home advantage values (+5 OVR and +5%), so retune Task 32 after the change.
-- The study scripts are not in the repo.
-
-*Raised during: MVP1, Task 32 (home advantage tuning).*
-
 ## 6. Second-leg host toggle
 In MVP2, the higher seed always hosts the second leg of a two-legged tie (Task 79). Later, a bracket phase gets a toggle to change this, for example so that the lower seed hosts the second leg.
 
@@ -88,6 +67,8 @@ In MVP2, the palette tests check the count, the hex format, and unique names and
 ## 14. Last 5 matches in the group cards
 In MVP2, only the round-robin table shows the last 5 matches (US-12.1). The group cards are narrow. Later, a Groups phase can show a full table for each group, with the "Form" column.
 
+**User idea (2026-11-11, Task 195):** refine this for MVP4. A new window or a modal can show the full table of each group.
+
 *Raised during: MVP2, Task 102 (Standings display), 2026-10-28.*
 
 ## 15. Points mode for the standings chart
@@ -98,7 +79,7 @@ In MVP2, the standings chart shows each team's place after each matchday (US-12.
 ## 16. App settings: team name length and group size checks
 In MVP2, the app has no settings screen. Later, a settings feature holds:
 
-- **The team name on league screens:** the short name or the full name, by default. It depends on the short team name idea for MVP3 (`PROGRESS.md`, Open questions, 2026-11-02).
+- **The team name on league screens:** the short name or the full name, by default. It depends on the short team name (§26).
 - **A group draw that does not fit:** a group with too few teams, or group sizes that do not match the group size setting. The setting picks a warning or an error. In MVP2, a later Groups phase keeps each group at 2 teams or more (Task 181), and a swap rearranges groups of 2 (Task 183).
 - **The draw of a later Groups phase:** seeded from the order of the phase before it (§18), or random, by default.
 
@@ -150,3 +131,78 @@ In MVP2, only the final and the third-place tie cards show a title (Tasks 187, 1
 In MVP2, a `Tooltip` hint sits above the centre of its trigger. Small triggers that sit close together use `notHoverable` (Task 114): the pointer goes through the hint, and the hint hides at once on leave. The swatches, the `TeamName` hints, and the Form dots use it. Later, a `followPointer` option places the hint near the pointer and moves it with the pointer, so the hint does not cover the next trigger. A keyboard focus still places the hint from the trigger box. Settle at refinement: the distance from the pointer, the side, and which triggers use it (the swatches, the Form dots). Task 166 has the first proposal.
 
 *Raised during: MVP2, Task 114 review, 2026-10-29. Parked at Task 166, 2026-11-11.*
+
+## 26. A short team name
+A new Blueprint field: a short, informal name, for example "Munique" for "CF Barrio de Munique". The full name stays the input that makes the slug. Standings, fixtures, and other league screens show the short name, with a setting to show the full name there in its place (§16). When two teams in one view have the same short name, each one gets its place in parentheses: "Munique (San Leo)" and "Munique (Piraporinha)". The user chose the parentheses because the app is in English, but the worldbuilding is language-agnostic. Settled by the user on 2026-11-02: the short name has no link with the trigrams, and the clash check looks at one league only. Still open: what the place in the parentheses is, now that City is out of MVP3.
+
+*Raised during: MVP2, 2026-11-02, as an open question for MVP3. Parked here at Task 195 (MVP3 scope, 2026-11-11).*
+
+## 27. A Statistics tab
+A "Statistics" tab in the Season view, and one for a single league. The user named it for MVP4 at the Season refinement. No content is defined yet.
+
+*Raised during: MVP3, Task 196 (Season refinement), 2026-11-11.*
+
+## 28. An OVR for each league team in a Season
+In MVP3, a Season has one Instance for each Blueprint, and every league of the Season uses it: one base OVR and one Tier (`scorinator-mvp3.md` §1, `PERSISTENCE.md` §2a). Later, each league can keep its own OVR for a team. The Season team is then a middle layer between the Blueprint and the league team: a change to the Season team does not change a running league, and a league keeps the logic of a single league. A standalone league that a Season imports can also keep its own OVR, or offer the choice.
+
+*Raised during: MVP3, Task 196 (Season refinement), 2026-11-11. The user parked it at review for a later release.*
+
+## 29. Export a Season league as a league file
+In MVP3, a Season league exports only its results `.txt` and its slug list `.txt`. Later, the League Detail of a Season league can also export the league as a league `.json` file, as a standalone league does (US-10.1). The open point is identity: the file carries the UUID of the Season league, so an import of it can bring a second league with that UUID.
+
+*Raised during: MVP3, Task 196 (Season refinement), 2026-11-12. The user named it for MVP4.*
+
+## 30. Rename a Season at import
+In MVP3, an imported Season with the name and year of a local Season gets a number after the name, for example "Liga (2)" (US-13.11). Later, the import can ask for a new name in place of the number.
+
+*Raised during: MVP3, Task 196 (Season refinement), 2026-11-12. The user parked it.*
+
+## 31. A conflict for a league imported twice into a Season
+In MVP3, the Season import of a standalone league skips a league that is in the Season already (US-13.10). Later, the import can show the conflict dialog of US-11.2, with "Skip" or "Import as new". The user called it a corner case with no priority.
+
+*Raised during: MVP3, Task 196 (Season refinement), 2026-11-12. The user parked it.*
+
+## 32. A new view for the leagues of a Season
+In MVP3, the Season view lists its leagues in the same way as the leagues dashboard: one card for each league (US-13.3). Later, the Season view can show its leagues in a new and better layout.
+
+*Raised during: MVP3, Task 196 (Season refinement), 2026-11-12. The user named it for later.*
+
+## 33. A default condition for a Season
+In MVP3, a team condition is for one team in one league (epic 14). Later, a Season can set a default condition for a team, which each new Season league takes.
+
+*Raised during: MVP3, Task 197 (Team condition refinement), 2026-11-12. The user named it for another day.*
+
+## 34. Descriptions for entities
+A free-text description on almost every kind of entity: a collection, a Blueprint, a league, a Season. The user wants them in one future update for all entities, not one by one.
+
+*Raised during: MVP3, Task 198 (Teams module refinement), 2026-11-12.*
+
+## 35. A filter and a sort on the Teams screen
+In MVP3, the Teams screen gets a search (C44). Later, it can filter the Blueprints, for example by Tier or by collection, and sort them.
+
+*Raised during: MVP3, Task 198 (Teams module refinement), 2026-11-12. The user parked it.*
+
+## 36. A collection column in the team CSV
+In MVP3, collections go into the Blueprint JSON and the database zip (US-15.5). Later, the team CSV can get a collection column. The CSV has no UUIDs, so the column can match a collection by its name only. A collection name can hold a space, so the column needs a separator other than the space.
+
+*Raised during: MVP3, Task 198 (Teams module refinement), 2026-11-12. The user parked it.*
+
+## 37. Pages for the collections list
+In MVP3, the teams list on the Teams screen gets pages (US-15.8). Later, the "Collections" tab can get pages too.
+
+*Raised during: MVP3, Task 198 (Teams module refinement), 2026-11-12.*
+
+## 38. More fields in the team searches
+In MVP3, every team search matches the name and the Location (US-15.6). Later, a search can also match the slug, the trigrams, or the collection names.
+
+*Raised during: MVP3, Task 198 (Teams module refinement), 2026-11-12. The user parked it.*
+
+## 39. A new collection from the Collections modal
+In MVP3, the "Collections" modal of the Blueprint drawer picks existing collections (US-15.2). Later, it can also create a new collection.
+
+*Raised during: MVP3, Task 198 (Teams module refinement), 2026-11-12. The user parked it.*
+
+## 40. Pages for the leagues dashboard and the Season list
+In MVP3, the teams list gets pages of 20 (US-15.8). Later, the leagues dashboard and the Season list can get pages too.
+
+*Raised during: MVP3, Task 199 (League and Season lists refinement), 2026-11-12. The user named it for later.*

@@ -1,7 +1,8 @@
 import type { JSX } from 'preact';
 import { Badge, Button, Card, DropdownMenu } from '@/design-system';
 import { seasonDetailPath } from '@/app/routes';
-import { formatSeasonLabel, formatSeasonMeta } from '@/features/seasons/seasonText';
+import { formatSeasonLabel } from '@/features/components';
+import { formatSeasonMeta } from '@/features/seasons/seasonText';
 import type SeasonListProps from './types';
 import styles from './SeasonList.module.css';
 

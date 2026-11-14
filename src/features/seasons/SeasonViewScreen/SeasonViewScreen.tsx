@@ -1,7 +1,7 @@
 import type { JSX } from 'preact';
 import { Badge, Button, ConfirmDialog, PickerDialog, Tabs } from '@/design-system';
 import { ROUTES } from '@/app/routes';
-import { SeasonTeamDrawer } from './SeasonTeamDrawer';
+import { SeasonTeamDrawer } from '@/features/components';
 import { TeamsTab } from './TeamsTab';
 import type SeasonViewScreenProps from './types';
 import { useSeasonView } from './useSeasonView';
@@ -64,7 +64,20 @@ export function SeasonViewScreen({ uuid }: SeasonViewScreenProps): JSX.Element {
       )}
 
       <section class={styles.section} aria-labelledby="season-leagues">
-        <h2 id="season-leagues">Leagues</h2>
+        <div class={styles.sectionHead}>
+          <h2 id="season-leagues">Leagues</h2>
+          {/* A finished Season is read only (US-13.9): a link cannot be
+              disabled, so it is a disabled button. */}
+          {view.isFinished ? (
+            <Button size="sm" disabled>
+              + New league
+            </Button>
+          ) : (
+            <Button href={view.newLeaguePath} size="sm">
+              + New league
+            </Button>
+          )}
+        </div>
         {!view.hasLeagues && <p class={styles.note}>No leagues yet.</p>}
       </section>
 

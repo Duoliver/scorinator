@@ -1,5 +1,5 @@
 import { Badge, type PickerItem } from '@/design-system';
-import type { SeasonWrapper, TeamBlueprint } from '@/domain';
+import type { TeamBlueprint } from '@/domain';
 import { pickJoinNames } from '@/engine/identity';
 import { TeamLabel, TeamSwatch } from '@/features/components';
 import styles from './SeasonViewScreen.module.css';
@@ -21,16 +21,6 @@ export const toPickerItem = (blueprint: TeamBlueprint): PickerItem => ({
     </span>
   ),
 });
-
-/** The names of the leagues of the Season that a team plays in. */
-export function findLeagueNames(
-  season: SeasonWrapper,
-  blueprintUuid: string
-): string[] {
-  return season.content.leagues
-    .filter((league) => league.teamUuids.includes(blueprintUuid))
-    .map((league) => league.name);
-}
 
 /**
  * The hint of the "Add teams" dialog: the new name of each picked team whose

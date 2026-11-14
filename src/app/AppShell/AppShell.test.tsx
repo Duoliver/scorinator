@@ -17,6 +17,8 @@ import {
   LEAGUE,
   openTestDatabase,
   openTestLeague,
+  SEASON,
+  seasonWrapper,
   roundRobinLeague,
 } from '@/test/databaseRecords';
 
@@ -169,6 +171,24 @@ describe('AppShell', () => {
       'aria-current',
       'page'
     );
+  });
+
+  it('routes to the wizard in a Season, with Seasons marked active (Task 218)', async () => {
+    const season = seasonWrapper();
+    useDatabaseStore.setState({
+      seasons: { [SEASON]: season },
+      savedSeasons: { [SEASON]: season },
+    });
+    render(<AppShell />);
+
+    route(`/seasons/${SEASON}/leagues/new`);
+
+    expect(
+      await screen.findByRole('heading', { name: 'New league in Liga Norte' })
+    ).toBeInTheDocument();
+    // The breadcrumbs link to the Seasons list too.
+    const [navLink] = screen.getAllByRole('link', { name: 'Seasons' });
+    expect(navLink).toHaveAttribute('aria-current', 'page');
   });
 
   it('routes to the File screen when File is clicked, with File marked active', async () => {

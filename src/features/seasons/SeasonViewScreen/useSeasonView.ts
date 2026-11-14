@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'preact/hooks';
 import { getErrorMessage } from '@/app/getErrorMessage';
+import { seasonLeagueNewPath } from '@/app/routes';
 import {
   currentSeasonRows,
   isSeasonUnsaved,
@@ -8,10 +9,13 @@ import {
 import { finishSeason, openSeason, reopenSeason } from '@/app/state/seasonActions';
 import { setStatusLine } from '@/app/state/statusLineActions';
 import { summarizeSeason } from '@/app/state/summarizeSeason';
-import { formatSeasonLabel, formatSeasonMeta } from '@/features/seasons/seasonText';
-import { findLeagueNames } from './helpers';
+import {
+  findLeagueNames,
+  formatSeasonLabel,
+  useSeasonTeamEdit,
+} from '@/features/components';
+import { formatSeasonMeta } from '@/features/seasons/seasonText';
 import { useAddTeams } from './useAddTeams';
-import { useTeamEdit } from './useTeamEdit';
 import type { SeasonViewState } from './types';
 
 /** The Season view (Task 213). The screen opens the Season from its file,
@@ -25,7 +29,7 @@ export function useSeasonView(uuid: string): SeasonViewState {
   );
   const blueprints = useDatabaseStore((state) => state.blueprints);
   const { openPicker, picker } = useAddTeams(season);
-  const { openDrawer, drawer } = useTeamEdit(season);
+  const { openDrawer, drawer } = useSeasonTeamEdit(season);
   // Kept with its UUID, so a route to another Season does not show the error
   // of the last one.
   const [openError, setOpenError] = useState<{ uuid: string; message: string }>();
@@ -66,6 +70,7 @@ export function useSeasonView(uuid: string): SeasonViewState {
       isFinished: finished,
       isUnsaved,
       hasLeagues: season.content.leagues.length > 0,
+      newLeaguePath: seasonLeagueNewPath(uuid),
       rosterRows,
       toggleFinished: (): void => {
         if (!finished) {

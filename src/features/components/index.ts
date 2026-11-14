@@ -26,3 +26,6 @@ export type { TeamNameProps } from './TeamName';
 export { ZoneLegend } from './ZoneLegend';
 export type { ZoneLegendProps } from './ZoneLegend';
 export type { TeamSwatchProps, TeamSwatchSize } from './TeamSwatch';
+export { SeasonTeamDrawer, useSeasonTeamEdit } from './SeasonTeamDrawer';
+export { findLeagueNames, formatSeasonLabel } from './seasonText';
+export type { SeasonTeamDrawerProps } from './SeasonTeamDrawer';

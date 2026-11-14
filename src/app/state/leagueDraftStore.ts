@@ -52,6 +52,27 @@ export function emptyLeagueDraft(): LeagueDraft {
  * uncontrolled between those points; see `DetailsStep`'s `getValues()`
  * handle. `resetLeagueDraft()` runs after a successful create. Both actions
  * live in `leagueDraftActions.ts`. */
-export type LeagueDraftState = LeagueDraft;
+export interface LeagueDraftState extends LeagueDraft {
+  /** The draft of a new league in each Season, by Season UUID. The top
+   * level draft is the standalone one. A Season wizard never clears it
+   * (Task 218 choice 3). */
+  seasonDrafts: Record<string, LeagueDraft>;
+}
 
-export const useLeagueDraftStore = create<LeagueDraftState>()(() => emptyLeagueDraft());
+export const useLeagueDraftStore = create<LeagueDraftState>()(() => ({
+  ...emptyLeagueDraft(),
+  seasonDrafts: {},
+}));
+
+/** The draft of the standalone wizard, or of the wizard in one Season. A
+ * Season with no draft gives an empty one. */
+export function getLeagueDraft(
+  state: LeagueDraftState,
+  seasonUuid?: string
+): LeagueDraft {
+  if (seasonUuid === undefined) {
+    const { seasonDrafts: _seasons, ...draft } = state;
+    return draft;
+  }
+  return state.seasonDrafts[seasonUuid] ?? emptyLeagueDraft();
+}

@@ -1,5 +1,6 @@
 import { useState } from 'preact/hooks';
 import type { TeamFields } from '@/domain';
+import type { TrigramPick } from '@/engine/identity';
 import type { TeamInstanceEdit } from './EditTeamDrawer';
 import { getErrorMessage } from '@/app/getErrorMessage';
 import { importSlugListTxt } from '@/app/data/slugListTxt';
@@ -11,7 +12,16 @@ import {
   planSlugListImport,
   teamListProblem,
 } from '@/app/state/teamInstances';
-import { formatTeamCount, useBlueprintLocation } from '@/features/components';
+import {
+  formatSeasonLabel,
+  formatTeamCount,
+  useBlueprintLocation,
+  useSeasonTeamEdit,
+} from '@/features/components';
+import {
+  formatJoinNote,
+  JOINS_SEASON,
+} from '@/features/leagues/LeagueSetupScreen/seasonTeams';
 import { settingsChipLabels } from '@/features/leagues/LeagueSetupScreen/steps/SetupChips';
 import { formatLeagueName } from '@/features/leagues/leagueSummary';
 import type TeamsStepProps from './types';
@@ -19,6 +29,7 @@ import type { TeamsStepOverlay, TeamsStepState } from './types';
 import {
   NO_SLUGS,
   describeSlugListImport,
+  getSeasonPickerItems,
   getTeamsStepColumns,
   pickerConfirmLabel,
   toCurrentItem,
@@ -38,6 +49,7 @@ export function useTeamsStep({
   onRemoveTeam,
   onSwitchTeam,
   onUpdateTeam,
+  season,
 }: Omit<TeamsStepProps, 'onBack' | 'onNext'>): TeamsStepState {
   const blueprints = useDatabaseStore((state) => state.blueprints);
   const locationOf = useBlueprintLocation();
@@ -54,7 +66,21 @@ export function useTeamsStep({
   // The live pick runs again on each render, so after each add, Switch,
   // Remove, or Edit (US-09.6).
   const picks = pickTeamTrigrams(teams, blueprints, fixedTrigrams);
-  const switched = teams.find((team) => team.blueprintUuid === switchUuid);
+  // In a Season, the list shows what the create makes (Task 218 choice 6).
+  const rows = season?.rows ?? [...teams];
+  const rowOf = new Map(rows.map((row) => [row.blueprintUuid, row]));
+  const pickOf = season
+    ? (uuid: string): TrigramPick | undefined => {
+        const row = rowOf.get(uuid);
+        return row && { trigram: row.trigram, fallback: false };
+      }
+    : (uuid: string): TrigramPick | undefined => picks.get(uuid);
+  const isJoining = (uuid: string): boolean => season?.joining.has(uuid) ?? false;
+  const seasonEdit = useSeasonTeamEdit(season?.season);
+  const inRoster = new Set(season?.season.teams.map((team) => team.blueprintUuid));
+  // "Load them all" adds the Season teams only in a Season (choice 9).
+  const loadable = season ? available.filter((b) => inRoster.has(b.uuid)) : available;
+  const switched = rows.find((team) => team.blueprintUuid === switchUuid);
 
   const edited =
     overlay === 'edit' ? teams.find((t) => t.blueprintUuid === editUuid) : undefined;
@@ -67,11 +93,22 @@ export function useTeamsStep({
         team: edited,
         blueprint: blueprints.find((b) => b.uuid === edited.blueprintUuid),
         fixedTrigram: fixedTrigrams[edited.blueprintUuid],
-        pickedTrigram: picks.get(edited.blueprintUuid)?.trigram ?? '',
+        pickedTrigram: pickOf(edited.blueprintUuid)?.trigram ?? '',
         otherNames: teams.filter((t) => t !== edited).map((t) => t.name),
-        otherFixedTrigrams: Object.entries(fixedTrigrams)
-          .filter(([uuid]) => uuid !== edited.blueprintUuid)
-          .map(([, trigram]) => trigram),
+        // In a Season, a joining team cannot fix a trigram of the roster.
+        otherFixedTrigrams: [
+          ...Object.entries(fixedTrigrams)
+            .filter(([uuid]) => uuid !== edited.blueprintUuid)
+            .map(([, trigram]) => trigram),
+          ...(season?.season.teams.map((team) => team.trigram) ?? []),
+        ],
+        ...(season && {
+          title: 'Edit team',
+          note: formatJoinNote(
+            rowOf.get(edited.blueprintUuid)?.name ?? edited.name,
+            formatSeasonLabel(season.season.content)
+          ),
+        }),
         onSave: (edit: TeamInstanceEdit): void => {
           onUpdateTeam(edited.blueprintUuid, edit);
           closeEdit();
@@ -80,7 +117,13 @@ export function useTeamsStep({
       }
     : null;
 
+  // A Season team opens "Edit Season team", and its Save changes the
+  // Season at once (choice 7). A joining team opens the wizard drawer.
   const openEdit = (blueprintUuid: string): void => {
+    if (season && !isJoining(blueprintUuid)) {
+      seasonEdit.openDrawer(blueprintUuid);
+      return;
+    }
     setEditUuid(blueprintUuid);
     setOverlay('edit');
   };
@@ -167,22 +210,28 @@ export function useTeamsStep({
     hasNoBlueprints: blueprints.length === 0,
     columns: getTeamsStepColumns(
       locationOf,
-      (uuid) => picks.get(uuid),
+      pickOf,
       openEdit,
       openSwitch,
-      onRemoveTeam
+      onRemoveTeam,
+      (uuid) => (isJoining(uuid) ? JOINS_SEASON : undefined)
     ),
+    rows,
+    seasonDrawer: seasonEdit.drawer,
+    canCreateTeam: season === undefined,
     locationOf,
     openEdit,
     openSwitch,
     countText: formatTeamCount(teams.length),
-    canLoadAll: available.length > 0,
+    canLoadAll: loadable.length > 0,
     canGoNext: teams.length > 0,
     warning: teams.length > 0 ? teamListProblem(teams) : null,
     notFound,
     closeNotFound: () => setNotFound(null),
     overlay,
-    pickerItems: available.map(toPickerItem),
+    pickerItems: season
+      ? getSeasonPickerItems(season.season, blueprints, inList)
+      : available.map(toPickerItem),
     pickerSelected,
     setPickerSelected,
     pickerConfirmLabel: pickerConfirmLabel(pickerSelected.length),
@@ -207,7 +256,7 @@ export function useTeamsStep({
             : 'none'
       ),
     handleTeamCreated,
-    loadAll: () => onAddTeams(available),
+    loadAll: () => onAddTeams(loadable),
     importSlugList,
   };
 }

@@ -45,6 +45,30 @@
   overflow-y: auto;
 }
 
+/* The "Available" lists scroll as one block, so the group titles scroll
+ * with their items. */
+.scroll {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.scroll .list {
+  flex: none;
+  overflow-y: visible;
+}
+
+/* A group title under "Available" (Task 218 choice 5): a quiet label, not
+ * the inverted band of the panel title. */
+.groupTitle {
+  margin: 0;
+  padding: var(--space-1) var(--space-3);
+  font-family: var(--font-condensed);
+  font-weight: 700;
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
 .pick,
 .row {
   width: 100%;
@@ -65,6 +89,11 @@
 
 .pick {
   cursor: pointer;
+}
+
+/* An item the caller puts first, such as a Season team (Task 215 point 6). */
+.pick[data-highlight] {
+  background: var(--color-zone-green-tint);
 }
 
 .pick:hover,
@@ -137,4 +166,8 @@
   margin: 0;
   font-size: var(--font-size-md);
   color: var(--color-fg-muted);
+}
+
+.pick[data-highlight]:hover {
+  background: var(--color-bg);
 }

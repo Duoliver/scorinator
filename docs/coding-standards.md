@@ -125,6 +125,8 @@ export function resetXDraft(): void { /* ... */ }
 
 No per-field action (`setName`, `toggleTeam`, and so on). Those stay local to the screen, exactly as they would with no store at all. The store holds one snapshot, plus two ways to change it. It is not a live API surface that grows with every field the screen ever gains.
 
+A screen that opens for more than one container keeps one snapshot for each container. The League Setup wizard keeps the standalone draft at the top level, and one draft for each Season in `seasonDrafts`, by Season UUID. The two actions take the key, and the read helper `getLeagueDraft` gives one snapshot. So a Season wizard never clears the standalone draft. *(Added on 2026-11-14, Task 218 choice 3.)*
+
 Read and write that store at exactly three points, never per keystroke or per click:
 
 1. **On mount**, once, through `useLeagueDraftStore.getState()` — not a subscribed selector — to seed local `useState`.

@@ -1,5 +1,6 @@
 import type { SeasonSummary } from '@/domain';
-import { formatCount, formatSeasonLabel } from '@/features/seasons/seasonText';
+import { formatSeasonLabel } from '@/features/components';
+import { formatCount } from '@/features/seasons/seasonText';
 
 /** The subtitle of the list: "4 Seasons · 1 finished", or "No Seasons". */
 export function formatSeasonSubtitle(rows: readonly SeasonSummary[]): string {

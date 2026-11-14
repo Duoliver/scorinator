@@ -54,6 +54,8 @@ export function EditTeamDrawer({
   pickedTrigram,
   otherNames,
   otherFixedTrigrams,
+  title = 'Edit team for this league',
+  note,
   rng,
   onSave,
   onCancel,
@@ -68,8 +70,9 @@ export function EditTeamDrawer({
   });
 
   return (
-    <Drawer title="Edit team for this league" onClose={onCancel}>
+    <Drawer title={title} onClose={onCancel}>
       <div class={styles.form}>
+        {note && <p class={styles.note}>{note}</p>}
         <OriginalState blueprint={blueprint} />
 
         <TeamNameField

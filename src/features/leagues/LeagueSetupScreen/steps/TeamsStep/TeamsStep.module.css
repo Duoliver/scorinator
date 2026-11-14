@@ -40,6 +40,15 @@
   width: 100%;
 }
 
+/* Where a team plays in the Season, at the end side of a dialog row, before
+ * the Tier (Task 215 point 6). */
+.pickStatus {
+  margin-left: auto;
+  font-size: var(--font-size-sm);
+  color: var(--color-fg-muted);
+  text-align: end;
+}
+
 /* The two empty states (US-08.3). */
 .empty {
   display: flex;

@@ -16,7 +16,8 @@ import type { DetailsStepHandle } from '@/features/leagues/LeagueSetupScreen/ste
  * would put those stale values back into the store and undo the reset. */
 export function useLeagueDraftSync(
   draft: LeagueDraft,
-  detailsStepRef: RefObject<DetailsStepHandle>
+  detailsStepRef: RefObject<DetailsStepHandle>,
+  seasonUuid?: string
 ): () => void {
   // Always holds the latest draft, for the unmount effect below. An empty
   // dependency array keeps that effect from registering again on each
@@ -34,12 +35,15 @@ export function useLeagueDraftSync(
       // the Details step, their values exist only in the fields.
       // eslint-disable-next-line react-hooks/exhaustive-deps -- read on purpose at unmount, see above
       const fromFields = detailsStepRef.current?.getValues();
-      setLeagueDraft({
-        ...latestRef.current,
-        details: fromFields ?? latestRef.current.details,
-      });
+      setLeagueDraft(
+        {
+          ...latestRef.current,
+          details: fromFields ?? latestRef.current.details,
+        },
+        seasonUuid
+      );
     };
-  }, [detailsStepRef]);
+  }, [detailsStepRef, seasonUuid]);
 
   return (): void => {
     skipRef.current = true;

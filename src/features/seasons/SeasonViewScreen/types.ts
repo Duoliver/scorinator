@@ -1,6 +1,6 @@
 import type { ConfirmDialogProps, MultiPickerProps } from '@/design-system';
 import type { RosterRow } from './TeamsTab';
-import type { SeasonTeamDrawerProps } from './SeasonTeamDrawer';
+import type { SeasonTeamDrawerProps } from '@/features/components';
 
 export default interface SeasonViewScreenProps {
   uuid: string;
@@ -14,6 +14,8 @@ export interface OpenSeasonView {
   isFinished: boolean;
   isUnsaved: boolean;
   hasLeagues: boolean;
+  /** The wizard of a new league in this Season (Task 218). */
+  newLeaguePath: string;
   rosterRows: readonly RosterRow[];
   toggleFinished: () => void;
   finishConfirm: ConfirmDialogProps | null;

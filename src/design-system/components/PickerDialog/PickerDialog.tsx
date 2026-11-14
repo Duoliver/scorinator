@@ -1,5 +1,5 @@
 import { useRef, useState } from 'preact/hooks';
-import type { JSX } from 'preact';
+import { Fragment, type JSX } from 'preact';
 import type { FieldHandle } from '@/design-system/field';
 import { Button } from '@/design-system/components/Button';
 import { Input } from '@/design-system/components/Input';
@@ -25,6 +25,20 @@ const DEFAULT_SEARCH_PLACEHOLDER = 'Search…';
 
 const SINGLE_HINT =
   'Pick a replacement from Available — this closes the dialog right away.';
+
+/** The items in runs of one group each, in the list order. Items with no
+ * group make one run with no title. */
+function groupItems(
+  items: readonly PickerItem[]
+): { group: string | undefined; members: PickerItem[] }[] {
+  const runs: { group: string | undefined; members: PickerItem[] }[] = [];
+  for (const item of items) {
+    const last = runs[runs.length - 1];
+    if (last && last.group === item.group) last.members.push(item);
+    else runs.push({ group: item.group, members: [item] });
+  }
+  return runs;
+}
 
 /** True when the search text of the item holds the query, with no regard to
  * case. An empty query matches every item. */
@@ -131,20 +145,32 @@ function AvailablePanel({
       <h3 class={styles.panelTitle} aria-hidden="true">
         Available
       </h3>
-      <ul class={styles.list}>
-        {items.map((item) => (
-          <li key={item.id}>
-            <button
-              type="button"
-              class={styles.pick}
-              aria-label={item.label}
-              onClick={() => onPick(item.id)}
-            >
-              {item.content ?? item.label}
-            </button>
-          </li>
+      <div class={styles.scroll}>
+        {groupItems(items).map(({ group, members }) => (
+          <Fragment key={group ?? ''}>
+            {group !== undefined && (
+              <h4 class={styles.groupTitle} aria-hidden="true">
+                {group}
+              </h4>
+            )}
+            <ul class={styles.list} aria-label={group}>
+              {members.map((item) => (
+                <li key={item.id}>
+                  <button
+                    type="button"
+                    class={styles.pick}
+                    aria-label={item.label}
+                    data-highlight={item.highlight ? '' : undefined}
+                    onClick={() => onPick(item.id)}
+                  >
+                    {item.content ?? item.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </Fragment>
         ))}
-      </ul>
+      </div>
       {items.length === 0 && query.trim() !== '' && (
         <p class={styles.empty}>No match.</p>
       )}

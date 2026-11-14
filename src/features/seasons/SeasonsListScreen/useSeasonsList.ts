@@ -9,7 +9,7 @@ import {
 } from '@/app/state/databaseStore';
 import { createSeason, deleteSeason, renameSeason } from '@/app/state/seasonActions';
 import { setStatusLine } from '@/app/state/statusLineActions';
-import { formatSeasonLabel } from '@/features/seasons/seasonText';
+import { formatSeasonLabel } from '@/features/components';
 import { formatDeleteMessage, formatSeasonSubtitle, isSeasonMatch } from './helpers';
 import type { OpenSeasonDialog, SeasonsList } from './types';
 

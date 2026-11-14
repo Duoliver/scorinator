@@ -10,6 +10,12 @@ export interface PickerItem {
    * The label when it has none. */
   searchText?: string;
   content?: ComponentChildren;
+  /** The title of the group of the item under "Available". The items of a
+   * group stay together, in the order of the list (Task 218 choice 5). */
+  group?: string;
+  /** Tints the row, for the items the caller puts first, such as the
+   * Season teams (Task 215 point 6). */
+  highlight?: boolean;
 }
 
 /** A button under the "Available" list, for example "+ Create new team". */

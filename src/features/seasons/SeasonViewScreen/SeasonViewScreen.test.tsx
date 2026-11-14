@@ -305,3 +305,23 @@ describe('SeasonViewScreen: finish and reopen (US-13.9, demo points 5 and 6)', (
     expect(statusLine()).toBe('Reopened Liga Norte 2026-27.');
   });
 });
+
+describe('SeasonViewScreen: "+ New league" (US-13.5, Task 218 choice 2)', () => {
+  it('links to the wizard in the Season', async () => {
+    openWithSeason();
+    render(<SeasonViewScreen uuid={SEASON} />);
+
+    const link = await screen.findByRole('link', { name: '+ New league' });
+    expect(link).toHaveAttribute('href', `/seasons/${SEASON}/leagues/new`);
+  });
+
+  it('is disabled for a finished Season (US-13.9)', async () => {
+    const finished = seasonWrapper();
+    finished.content.finished = true;
+    openWithSeason({ season: finished });
+    render(<SeasonViewScreen uuid={SEASON} />);
+
+    expect(await screen.findByRole('button', { name: '+ New league' })).toBeDisabled();
+    expect(screen.queryByRole('link', { name: '+ New league' })).toBeNull();
+  });
+});

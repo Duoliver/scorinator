@@ -62,6 +62,15 @@
   gap: var(--space-4);
 }
 
+/* The section title at the start, "+ New league" at the end. */
+.sectionHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
 .pickRow {
   display: flex;
   align-items: center;

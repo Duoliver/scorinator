@@ -1,6 +1,8 @@
 import type { PickerItem, TableColumn } from '@/design-system';
 import type { TeamBlueprint, TeamFields, TeamInstance } from '@/domain';
 import type { PointsConfig } from '@/engine/standings';
+import type { SeasonTeamDrawerProps } from '@/features/components';
+import type { SeasonTeamRows } from '@/features/leagues/LeagueSetupScreen/seasonTeams';
 import type { EditTeamDrawerProps, TeamInstanceEdit } from './EditTeamDrawer';
 
 export default interface TeamsStepProps {
@@ -31,6 +33,9 @@ export default interface TeamsStepProps {
   onShuffleGroups?: () => void;
   /** Moves a team to the group at `groupIndex` (US-02.5). */
   onMoveTeam?: (blueprintUuid: string, groupIndex: number) => void;
+  /** The team list as the create in a Season gives it. Absent for a
+   * standalone league (Task 218). */
+  season?: SeasonTeamRows;
   onBack: () => void;
   onNext: () => void;
 }
@@ -81,6 +86,14 @@ export interface TeamsStepState {
   openSwitchTeam: () => void;
   /** The props of the open Edit drawer, or `null`. */
   editDrawer: Omit<EditTeamDrawerProps, 'rng'> | null;
+  /** The props of the open "Edit Season team" drawer, or `null` (Task 218
+   * choice 7). */
+  seasonDrawer: SeasonTeamDrawerProps | null;
+  /** The team list as it shows: the Season values in a Season (choice 6). */
+  rows: TeamInstance[];
+  /** False in a Season: its dialogs have no "+ Create new team" (choice
+   * 11). */
+  canCreateTeam: boolean;
   closeTeamDrawer: () => void;
   handleTeamCreated: (record: TeamFields) => void;
   loadAll: () => void;

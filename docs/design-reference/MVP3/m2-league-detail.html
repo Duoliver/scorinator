@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Season league demo</title>
+<link rel="stylesheet" href="demo.css">
+<style>
+  .standings .thead, .standings .tr { grid-template-columns: 2.5rem minmax(12rem, 1fr) repeat(4, 3rem); }
+  .md-nav { display: flex; align-items: center; gap: var(--space-3); }
+</style>
+</head>
+<body>
+<!-- Demo for Task 215 (M2). Stories: US-13.3, US-13.6, US-13.9. -->
+<div class="shell">
+  <nav class="nav">
+    <div class="brand">Scorinator</div>
+    <a class="nav-item" href="#">Leagues</a>
+    <a class="nav-item" href="m2-season-view.html" aria-current="page">Seasons</a>
+    <a class="nav-item" href="#">Teams</a>
+    <a class="nav-item" href="#">File</a>
+  </nav>
+  <main class="content">
+    <div class="screen">
+      <div>
+        <nav class="crumbs" aria-label="Breadcrumbs">
+          <a href="m1-seasons-list.html">Seasons</a><span>›</span>
+          <a href="m2-season-view.html">Liga Norte 2026-27</a><span>›</span>
+          <span>Primeira Divisão</span>
+        </nav>
+        <div class="header">
+          <div>
+            <div class="title-row"><h1>Primeira Divisão</h1></div>
+            <span class="meta">Round robin (two-way) · 16 teams · Home adv. on · 3/1/0 pts</span>
+          </div>
+          <div class="header-end">
+            <span class="badge dark">Round robin · MD 12/30</span>
+            <button class="button sm" type="button">Export ▾</button>
+          </div>
+        </div>
+      </div>
+
+      <p class="notice" id="finished-notice" hidden>This league is in a finished Season. It is read only. Reopen the Season to change it.</p>
+
+      <div class="tabs-row">
+        <div class="tabs" role="tablist"><button class="tab" type="button" aria-selected="true">Standings</button><button class="tab" type="button" aria-selected="false">Fixtures</button><button class="tab" type="button" aria-selected="false">Chart</button></div>
+        <div class="actions"><button class="button primary sm" type="button" data-edit>Scorinate MD 12</button></div>
+      </div>
+      <div class="table standings">
+        <div class="thead"><span>#</span><span>Team</span><span>P</span><span>GD</span><span>Pts</span><span></span></div>
+        <div class="tr"><span>1</span><span>Porto Velho SC</span><span>11</span><span>+14</span><span>27</span><span></span></div>
+        <div class="tr"><span>2</span><span>Ashfield Rovers</span><span>11</span><span>+9</span><span>23</span><span></span></div>
+        <div class="tr"><span>3</span><span>Riverside FC</span><span>11</span><span>+3</span><span>19</span><span></span></div>
+      </div>
+      <p class="hint">Riverside FC also plays in Taça Norte. A result here never changes a result there (US-13.6).</p>
+    </div>
+  </main>
+</div>
+<aside class="demo-panel" aria-label="Demo controls">
+  <strong>Demo controls (not in the app)</strong>
+  <label><input type="checkbox" id="toggle-finished"> The Season is finished</label>
+</aside>
+<script>
+  const toggle = document.getElementById('toggle-finished');
+  const setFinished = (on) => {
+    document.getElementById('finished-notice').hidden = !on;
+    document.querySelectorAll('[data-edit]').forEach((b) => (b.disabled = on));
+    toggle.checked = on;
+  };
+  toggle.addEventListener('change', () => setFinished(toggle.checked));
+  setFinished(location.search.includes('finished'));
+</script>
+</body>
+</html>

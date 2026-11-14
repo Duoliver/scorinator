@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Season view M2 demo</title>
+<link rel="stylesheet" href="demo.css">
+<style>
+  /* The playoff lines: the fixtures row of a round robin, under a black head. */
+  .playoff-list { container: playoffs / inline-size; display: flex; flex-direction: column; gap: var(--space-4); }
+  .playoff { border: var(--border-width) solid var(--color-fg); background: var(--color-surface); }
+  /* The head: the name in bold upper case at the start, the rules in plain
+     text at the end. An end-side container puts its children and its text
+     at the end, as a centered container centers them. */
+  .playoff-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4);
+    padding: var(--space-2) var(--space-5); background: var(--color-fg); color: var(--color-surface); }
+  .playoff-head h3 { margin: 0; flex: none; font-family: var(--font-condensed); font-weight: 700;
+    font-size: var(--font-size-xs); text-transform: uppercase; letter-spacing: 0.04em; }
+  .head-text { display: contents; }
+  .playoff-rules { font-size: var(--font-size-sm); font-weight: 400; text-align: end; }
+  /* "✓ Played" is a status, not an action: no box and no fill, so it does
+     not look like a button. */
+  .played { font-family: var(--font-condensed); font-weight: 700; font-size: var(--font-size-sm);
+    text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-accent); white-space: nowrap; }
+  /* Narrow only: the check mark alone, with "Played" as its accessible name. */
+  .head-status { display: none; color: var(--color-surface); font-size: var(--font-size-md); }
+  .playoff-match { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) 9rem; align-items: center;
+    column-gap: var(--space-4); row-gap: var(--space-1); padding: var(--space-4) var(--space-5); }
+  .side { display: flex; align-items: center; gap: var(--space-3); font-weight: 600; min-width: 0; }
+  .side.one { justify-content: flex-end; text-align: end; }
+  .side .name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .side.lost { color: var(--color-fg-muted); font-weight: 400; }
+  .goals { display: none; font-family: var(--font-mono); font-weight: 700; }
+  .trigram { font-family: var(--font-mono); font-size: var(--font-size-sm); font-weight: 400; color: var(--color-fg-muted); }
+  /* The middle cell holds the total only, at a fixed width, so the teams
+     line up from playoff to playoff. */
+  .middle { display: flex; justify-content: center; width: 6rem; text-align: center; }
+  .middle .score { font-size: var(--font-size-lg); }
+  /* Each match score and the decision: a row of its own below the teams
+     and the total, centred under the total. */
+  .score-detail { grid-column: 1 / 4; grid-row: 2; text-align: center; font-family: var(--font-mono);
+    font-size: var(--font-size-sm); color: var(--color-fg-muted); }
+  .end { display: flex; justify-content: flex-end; text-align: end; }
+  .legend { font-size: var(--font-size-sm); color: var(--color-fg-muted); }
+
+  /* Narrow: the stacked fixtures row. One line for each team, team 1 first,
+     each "[colour] [name] [trigram] [goals]", then the match scores, then the
+     status at full width. The head stacks too, both parts at the start. */
+  @container playoffs (max-width: 35rem) {
+    /* The head text stacks at the start. A played playoff shows its status
+       at the end side of the head, in place of the status cell. */
+    .playoff-head { align-items: flex-start; }
+    .head-text { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-1); min-width: 0; }
+    .playoff-rules { text-align: start; }
+    .head-status { display: inline; }
+    .end-status { display: none; }
+    .playoff-match { display: flex; flex-direction: column; align-items: stretch; gap: var(--space-2); }
+    .side.one { justify-content: flex-start; text-align: start; }
+    .side.one .swatch { order: -1; }
+    .side .name { flex: 1; }
+    .side.two .trigram { order: 1; }
+    .goals { display: inline; order: 2; min-width: 1.5rem; text-align: end; }
+    .middle { display: none; }
+    .score-detail { order: 3; text-align: start; }
+    .end { order: 4; }
+    .end > * { flex: 1; justify-content: center; }
+  }
+
+  .resume { display: grid; grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr)); gap: var(--space-5); }
+  a.card.resume-card { padding: 0; display: block; color: inherit; text-decoration: none; }
+  a.card.resume-card:hover { box-shadow: var(--shadow-offset); transform: translate(-1px, -1px); }
+  .resume-head { padding: var(--space-4); border-bottom: var(--border-width) solid var(--color-fg); display: flex;
+    justify-content: space-between; align-items: center; gap: var(--space-3); }
+  .resume-head h3 { margin: 0; }
+  .zone-label { font-size: var(--font-size-sm); color: var(--color-fg-muted); }
+  .place { font-family: var(--font-mono); font-size: var(--font-size-md); }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+  .team-pick { display: flex; align-items: center; gap: var(--space-3); width: 100%; text-align: left; cursor: pointer;
+    font: inherit; }
+  .team-pick .name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .team-pick .empty { flex: 1; color: var(--color-fg-muted); }
+  .rules { display: flex; flex-direction: column; gap: var(--space-4); border-top: var(--border-width) solid var(--color-bg); padding-top: var(--space-4); }
+  .picker-hint { margin: 0; font-size: var(--font-size-sm); color: var(--color-fg-muted); }
+  .picker-row.pickable { cursor: pointer; }
+  .zone-row[hidden], .picker-row[hidden] { display: none; }
+  /* The team of the other slot: in the list, but disabled, with its slot. */
+  .picker-row.disabled { opacity: 0.55; cursor: not-allowed; }
+  .picker-row .slot-status { margin-left: auto; font-size: var(--font-size-sm); color: var(--color-fg-muted); }
+</style>
+</head>
+<body>
+<!-- Demo for Task 215 (M2). Stories: US-13.3, US-13.6, US-13.7, US-13.8.
+     Static HTML with fake data. Not app code. Review changes of 2026-11-14:
+     playoff lines, "Team 1" and "Team 2" with the team picker, the Resume
+     cards open League Detail, the bracket places 1 to 4. -->
+<div class="shell">
+  <nav class="nav">
+    <div class="brand">Scorinator</div>
+    <a class="nav-item" href="#">Leagues</a>
+    <a class="nav-item" href="m1-seasons-list.html" aria-current="page">Seasons</a>
+    <a class="nav-item" href="#">Teams</a>
+    <a class="nav-item" href="#">File</a>
+    <p class="status-line" id="status" role="status"></p>
+  </nav>
+
+  <main class="content">
+    <div class="screen">
+      <div>
+        <a class="back-link" href="m1-seasons-list.html">← Seasons</a>
+        <div class="header">
+          <div>
+            <div class="title-row">
+              <h1>Liga Norte</h1>
+              <span class="badge dark">2026-27</span>
+            </div>
+            <span class="meta">4 leagues · 16 teams · 4 playoffs</span>
+          </div>
+          <div class="header-end">
+            <span class="badge">Running</span>
+            <button class="button sm" type="button">Finish Season</button>
+          </div>
+        </div>
+      </div>
+
+      <section class="section" aria-labelledby="leagues-title">
+        <div class="section-head">
+          <h2 id="leagues-title">Leagues</h2>
+          <a class="button primary sm" href="m2-season-wizard.html">+ New league</a>
+        </div>
+        <div class="grid">
+          <div class="card"><div class="card-body">
+            <div class="card-title-row"><div class="card-name"><h3>Primeira Divisão</h3></div><span class="badge dark">MD 12/30</span></div>
+            <div class="card-fill"><span class="card-meta">Round robin (two-way) · 16 teams · Home adv. on</span><span class="pill">3/1/0 pts</span></div>
+            <a class="button outline sm" href="m2-league-detail.html">Open standings</a>
+          </div></div>
+          <div class="card"><div class="card-body">
+            <div class="card-title-row"><div class="card-name"><h3>Taça Norte</h3></div><span class="badge dark">Quarter-finals</span></div>
+            <div class="card-fill"><span class="card-meta">Bracket · 8 teams · Home adv. on</span><span class="pill">3/1/0 pts</span></div>
+            <a class="button outline sm" href="m2-league-detail.html">Open standings</a>
+          </div></div>
+          <div class="card"><div class="card-body">
+            <div class="card-title-row"><div class="card-name"><h3>Segunda Divisão</h3></div><span class="badge accent">Complete</span></div>
+            <div class="card-fill"><span class="card-meta">Round robin (two-way) · 10 teams · Home adv. off</span><span class="pill">3/1/0 pts</span></div>
+            <a class="button outline sm" href="m2-league-detail.html">Open standings</a>
+          </div></div>
+          <div class="card"><div class="card-body">
+            <div class="card-title-row"><div class="card-name"><h3>Taça da Liga</h3></div><span class="badge accent">Complete</span></div>
+            <div class="card-fill"><span class="card-meta">Bracket · 8 teams · Third-place playoff · Home adv. on</span><span class="pill">3/1/0 pts</span></div>
+            <a class="button outline sm" href="m2-league-detail.html">Open standings</a>
+          </div></div>
+        </div>
+      </section>
+
+      <div class="section">
+        <div class="tabs-row">
+          <div class="tabs" role="tablist" aria-label="Season">
+            <button class="tab" role="tab" type="button" aria-selected="false" data-tab="teams">Teams</button>
+            <button class="tab" role="tab" type="button" aria-selected="true" data-tab="playoffs">Playoffs</button>
+            <button class="tab" role="tab" type="button" aria-selected="false" data-tab="resume">Resume</button>
+          </div>
+          <div class="actions">
+            <button class="button sm" type="button" data-for="teams" hidden>+ Add teams</button>
+            <button class="button sm" type="button" data-for="playoffs" data-open="playoff">+ New playoff</button>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="panel-teams" hidden>
+          <div class="placeholder">The Teams tab of M1 (Task 213), as it is.</div>
+        </div>
+
+        <div class="tab-panel" id="panel-playoffs">
+          <div class="playoff-list">
+            <article class="playoff" aria-label="Supertaça">
+              <div class="playoff-head"><div class="head-text"><h3>Supertaça</h3><span class="playoff-rules">Single match · Plays AET · Penalties · Home adv. on</span></div><span class="played head-status" role="img" aria-label="Played">✓</span></div>
+              <div class="playoff-match">
+                <span class="side one"><span class="name">Porto Velho SC</span><span class="trigram">POR</span><span class="swatch" style="background:#1565C0"></span><span class="goals" aria-hidden="true">2</span></span>
+                <span class="middle"><span class="score">2 - 1</span></span>
+                <span class="side two lost"><span class="swatch" style="background:#E53935"></span><span class="trigram">ASH</span><span class="name">Ashfield Rovers (Northtown)</span><span class="goals" aria-hidden="true">1</span></span>
+                <span class="end end-status"><span class="played">✓ Played</span></span>
+              </div>
+            </article>
+
+            <article class="playoff" aria-label="Taça de Honra">
+              <div class="playoff-head"><div class="head-text"><h3>Taça de Honra</h3><span class="playoff-rules">Two-legged · Away goals rule · Plays AET · Penalties · Home adv. on</span></div><span class="played head-status" role="img" aria-label="Played">✓</span></div>
+              <div class="playoff-match">
+                <span class="side one"><span class="name">Mariners FC</span><span class="trigram">MAR</span><span class="swatch" style="background:#00838F"></span><span class="goals" aria-hidden="true">1</span></span>
+                <span class="middle"><span class="score">1 - 1</span></span>
+                <span class="side two lost"><span class="swatch" style="background:#F9A825"></span><span class="trigram">ATL</span><span class="name">Atlético Serra</span><span class="goals" aria-hidden="true">1</span></span>
+                <span class="score-detail">1-0, 0-1* · Pens 4-3</span>
+                <span class="end end-status"><span class="played">✓ Played</span></span>
+              </div>
+            </article>
+
+            <article class="playoff" aria-label="Copa Amizade">
+              <div class="playoff-head"><div class="head-text"><h3>Copa Amizade</h3><span class="playoff-rules">Single match · Replay → Coin toss · Home adv. off</span></div><span class="played head-status" role="img" aria-label="Played">✓</span></div>
+              <div class="playoff-match">
+                <span class="side one lost"><span class="name">Estrela Azul</span><span class="trigram">EST</span><span class="swatch" style="background:#64B5F6"></span><span class="goals" aria-hidden="true">1</span></span>
+                <span class="middle"><span class="score">1 - 1</span></span>
+                <span class="side two"><span class="swatch" style="background:#827717"></span><span class="trigram">CLU</span><span class="name">Clube Ferroviário</span><span class="goals" aria-hidden="true">1</span></span>
+                <span class="score-detail">1-1, 0-2</span>
+                <span class="end end-status"><span class="played">✓ Played</span></span>
+              </div>
+            </article>
+
+            <article class="playoff" aria-label="Troféu do Rio">
+              <div class="playoff-head"><div class="head-text"><h3>Troféu do Rio</h3><span class="playoff-rules">Two-legged · Away goals rule · Plays AET · Replay → Coin toss · Home adv. on</span></div></div>
+              <div class="playoff-match">
+                <span class="side one"><span class="name">Riverside FC</span><span class="trigram">RIV</span><span class="swatch" style="background:#2E7D32"></span><span class="goals" aria-hidden="true"></span></span>
+                <span class="middle"><span class="versus">vs</span></span>
+                <span class="side two"><span class="swatch" style="background:#6A1B9A"></span><span class="trigram">UNI</span><span class="name">Union Leste</span><span class="goals" aria-hidden="true"></span></span>
+                <span class="end"><button class="button primary sm" type="button" data-status="Played Troféu do Rio: Riverside FC wins 3–2 on aggregate.">Play</button></span>
+              </div>
+            </article>
+          </div>
+          <span class="legend">The score line follows the bracket .txt export: the total of the legs, then each match in order. * after extra time. A replay is not part of the total. The losing team is grey.</span>
+        </div>
+
+        <div class="tab-panel" id="panel-resume" hidden>
+          <div class="resume">
+            <a class="card resume-card" href="m2-league-detail.html" aria-label="Segunda Divisão: open League Detail">
+              <div class="resume-head"><h3>Segunda Divisão</h3><span class="badge accent">Complete</span></div>
+              <div class="zone-row winner"><span class="place">1</span><span>Atlético Serra</span><span class="zone-label">Champion</span></div>
+              <div class="zone-row blue"><span class="place">2</span><span>Mariners FC</span><span class="zone-label">Promotion</span></div>
+              <div class="zone-row blue"><span class="place">3</span><span>Riverside FC (2)</span><span class="zone-label">Promotion</span></div>
+              <div class="zone-row red"><span class="place">10</span><span>Clube Ferroviário</span><span class="zone-label">Relegation</span></div>
+            </a>
+            <a class="card resume-card" href="m2-league-detail.html" aria-label="Primeira Divisão: open League Detail">
+              <div class="resume-head"><h3>Primeira Divisão</h3><span class="badge dark">MD 12/30</span></div>
+              <div class="zone-row winner"><span class="place">1</span><span>Porto Velho SC</span><span class="zone-label">First place now</span></div>
+              <div class="zone-row blue"><span class="place">2</span><span>Ashfield Rovers</span><span class="zone-label">Taça qualifiers</span></div>
+              <div class="zone-row red"><span class="place">15</span><span>Estrela Azul</span><span class="zone-label">Relegation</span></div>
+              <div class="zone-row red"><span class="place">16</span><span>Union Leste</span><span class="zone-label">Relegation</span></div>
+            </a>
+            <a class="card resume-card" href="m2-league-detail.html" aria-label="Taça da Liga: open League Detail">
+              <div class="resume-head"><h3>Taça da Liga</h3><span class="badge accent">Complete</span></div>
+              <div class="zone-row winner"><span class="place">1</span><span>Porto Velho SC</span><span class="zone-label">Champion</span></div>
+              <div class="zone-row"><span class="place">2</span><span>Mariners FC</span><span class="zone-label">Runner-up</span></div>
+              <div class="zone-row" data-third><span class="place">3</span><span>Ashfield Rovers</span><span class="zone-label">Third place</span></div>
+              <div class="zone-row" data-third><span class="place">4</span><span>Riverside FC</span><span class="zone-label">Fourth place</span></div>
+            </a>
+            <a class="card resume-card" href="m2-league-detail.html" aria-label="Taça Norte: open League Detail">
+              <div class="resume-head"><h3>Taça Norte</h3><span class="badge dark">Quarter-finals</span></div>
+              <div class="zone-row"><span class="place">–</span><span class="muted">No winner yet. A bracket has no first place before its final.</span><span></span></div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<dialog class="modal" id="playoff-dialog" aria-labelledby="playoff-title">
+  <form class="modal-panel md" method="dialog">
+    <div class="modal-head">
+      <div>
+        <h2 class="modal-title" id="playoff-title">New playoff</h2>
+        <p class="modal-desc">A one-off tie between two Season teams. It belongs to the Season, not to a league.</p>
+      </div>
+      <button class="close" type="button" aria-label="Close" data-close>✕</button>
+    </div>
+    <div class="field">
+      <label class="label" for="playoff-name">Name</label>
+      <input class="input" id="playoff-name" value="Troféu do Rio">
+    </div>
+    <div class="form-grid">
+      <div class="field">
+        <span class="label" id="team1-label">Team 1</span>
+        <button class="input team-pick" type="button" aria-labelledby="team1-label" data-pick="1">
+          <span class="swatch" style="background:#2E7D32"></span><span class="name">Riverside FC</span>
+        </button>
+      </div>
+      <div class="field">
+        <span class="label" id="team2-label">Team 2</span>
+        <button class="input team-pick" type="button" aria-labelledby="team2-label" data-pick="2">
+          <span class="empty">Pick a team…</span>
+        </button>
+      </div>
+    </div>
+    <div class="rules">
+      <div class="seg">
+        <span class="label">Tie format</span>
+        <div class="seg-row" data-seg="format">
+          <button type="button" aria-pressed="false" data-value="single">Single match</button>
+          <button type="button" aria-pressed="true" data-value="two">Two-legged</button>
+        </div>
+      </div>
+      <label class="switch" id="away-goals-row"><span class="label">Away goals rule</span><input type="checkbox" checked></label>
+      <label class="switch"><span class="label">Plays AET</span><input type="checkbox" checked></label>
+      <div class="seg">
+        <span class="label">Tiebreak method</span>
+        <div class="seg-row" data-seg="method">
+          <button type="button" aria-pressed="false">Penalties</button>
+          <button type="button" aria-pressed="true">Replay → Coin toss</button>
+        </div>
+      </div>
+      <label class="switch"><span class="label">Home advantage</span><input type="checkbox" checked></label>
+    </div>
+    <div class="modal-actions">
+      <button class="button sm" type="button" data-close>Cancel</button>
+      <button class="button primary sm" type="button" id="create-playoff" disabled data-close data-status="Created Troféu do Rio.">Create playoff</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog class="modal" id="team-picker" aria-labelledby="team-picker-title">
+  <div class="modal-panel lg">
+    <div class="modal-head">
+      <div>
+        <h2 class="modal-title" id="team-picker-title">Pick team 2</h2>
+        <p class="modal-desc">Only the teams of the Season roster. The team of the other slot is disabled.</p>
+      </div>
+      <button class="close" type="button" aria-label="Close" data-close>✕</button>
+    </div>
+    <div class="field"><label class="label" for="team-search">Search</label><input class="input" id="team-search" placeholder="Search by name or location…"></div>
+    <div class="picker">
+      <div class="picker-panel">
+        <h3 class="picker-title">Available</h3>
+        <ul class="picker-list">
+          <li class="picker-row pickable" data-team="Riverside FC" data-colour="#2E7D32"><span class="swatch" style="background:#2E7D32"></span>Riverside FC <span class="team-location">Ribeira</span><span class="slot-status" hidden></span><span class="badge dark" style="margin-left:auto">B</span></li>
+          <li class="picker-row pickable" data-team="Union Leste" data-colour="#6A1B9A"><span class="swatch" style="background:#6A1B9A"></span>Union Leste <span class="team-location">Vila Leste</span><span class="badge dark" style="margin-left:auto">C</span></li>
+          <li class="picker-row pickable" data-team="Porto Velho SC" data-colour="#1565C0"><span class="swatch" style="background:#1565C0"></span>Porto Velho SC <span class="team-location">Porto Velho</span><span class="badge dark" style="margin-left:auto">A</span></li>
+          <li class="picker-row pickable" data-team="Ashfield Rovers (Northtown)" data-colour="#E53935"><span class="swatch" style="background:#E53935"></span>Ashfield Rovers (Northtown) <span class="team-location">Northtown</span><span class="badge dark" style="margin-left:auto">A</span></li>
+          <li class="picker-row pickable" data-team="Mariners FC" data-colour="#00838F"><span class="swatch" style="background:#00838F"></span>Mariners FC <span class="team-location">Cais</span><span class="badge dark" style="margin-left:auto">B</span></li>
+          <li class="picker-row pickable" data-team="Estrela Azul" data-colour="#64B5F6"><span class="swatch" style="background:#64B5F6"></span>Estrela Azul<span class="badge dark" style="margin-left:auto">C</span></li>
+        </ul>
+      </div>
+      <div class="picker-panel">
+        <h3 class="picker-title">Currently in slot</h3>
+        <ul class="picker-list" id="current-slot">
+          <li class="picker-row muted">No team yet.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="picker-hint">Pick a team from Available. This closes the dialog right away.</p>
+    <div class="modal-actions"><button class="button sm" type="button" data-close>Cancel</button></div>
+  </div>
+</dialog>
+
+<aside class="demo-panel" aria-label="Demo controls">
+  <strong>Demo controls (not in the app)</strong>
+  <span>Switch the tabs. "+ New playoff" opens the dialog. "Team 1" and "Team 2" open the team picker. "Play" plays the open playoff. A Resume card opens League Detail.</span>
+  <button class="button sm" type="button" id="no-third">Taça da Liga: no third-place playoff</button>
+</aside>
+
+<script>
+  const $ = (s) => document.querySelector(s);
+  const slots = { 1: { name: 'Riverside FC', colour: '#2E7D32' }, 2: null };
+  let openSlot = null;
+
+  const renderSlot = (n) => {
+    const team = slots[n];
+    $(`[data-pick="${n}"]`).innerHTML = team
+      ? `<span class="swatch" style="background:${team.colour}"></span><span class="name">${team.name}</span>`
+      : '<span class="empty">Pick a team…</span>';
+    $('#create-playoff').disabled = !(slots[1] && slots[2]);
+  };
+
+  const openPicker = (n) => {
+    openSlot = n;
+    const other = slots[n === 1 ? 2 : 1];
+    $('#team-picker-title').textContent = `Pick team ${n}`;
+    document.querySelectorAll('#team-picker [data-team]').forEach((row) => {
+      const taken = Boolean(other) && row.dataset.team === other.name;
+      row.classList.toggle('disabled', taken);
+      row.setAttribute('aria-disabled', String(taken));
+      const status = row.querySelector('.slot-status');
+      if (status) { status.hidden = !taken; status.textContent = `Team ${n === 1 ? 2 : 1}`; }
+    });
+    const team = slots[n];
+    $('#current-slot').innerHTML = team
+      ? `<li class="picker-row"><span class="swatch" style="background:${team.colour}"></span>${team.name}</li>`
+      : '<li class="picker-row muted">No team yet.</li>';
+    $('#team-picker').showModal();
+  };
+
+  document.addEventListener('click', (event) => {
+    const row = event.target.closest('[data-team]');
+    if (row && openSlot && row.classList.contains('disabled')) return;
+    if (row && openSlot) {
+      slots[openSlot] = { name: row.dataset.team, colour: row.dataset.colour };
+      renderSlot(openSlot);
+      $('#team-picker').close();
+      return;
+    }
+    const target = event.target.closest('button');
+    if (!target) return;
+    if (target.dataset.tab) {
+      document.querySelectorAll('[data-tab]').forEach((tab) => {
+        const on = tab === target;
+        tab.setAttribute('aria-selected', String(on));
+        $(`#panel-${tab.dataset.tab}`).hidden = !on;
+      });
+      document.querySelectorAll('[data-for]').forEach((b) => (b.hidden = b.dataset.for !== target.dataset.tab));
+    }
+    if (target.dataset.open === 'playoff') $('#playoff-dialog').showModal();
+    if (target.dataset.pick) openPicker(Number(target.dataset.pick));
+    if (target.hasAttribute('data-close')) target.closest('dialog').close();
+    if (target.dataset.status) $('#status').textContent = target.dataset.status;
+    const seg = target.closest('.seg-row');
+    if (seg) {
+      seg.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b === target)));
+      if (seg.dataset.seg === 'format') $('#away-goals-row').hidden = target.dataset.value !== 'two';
+    }
+  });
+  $('#no-third').addEventListener('click', () => {
+    document.querySelectorAll('[data-third]').forEach((row) => (row.hidden = !row.hidden));
+  });
+  if (location.hash === '#playoff') $('#playoff-dialog').showModal();
+  if (location.hash === '#picker') { $('#playoff-dialog').showModal(); openPicker(2); }
+  if (location.hash === '#resume') document.querySelector('[data-tab="resume"]').click();
+</script>
+</body>
+</html>

@@ -51,6 +51,7 @@ Use this list for every review in this repo, and first in the refactor pass of e
 - [ ] No `!important`. A specificity conflict uses source order or a stronger selector. ([`coding-standards.md`](/docs/coding-standards.md#no-important-in-css))
 - [ ] No `style` prop, except for a value that comes from data at runtime, such as a team colour. ([`coding-standards.md`](/docs/coding-standards.md#no-inline-styling))
 - [ ] A centered container also centers its own children: `justify-content: center` on a row, `text-align: center` on text. ([`coding-standards.md`](/docs/coding-standards.md#a-centered-container-centers-its-own-children))
+- [ ] An end-side container also puts its own children at the end: `justify-content: flex-end` on a row, `text-align: end` on text. ([`coding-standards.md`](/docs/coding-standards.md#an-end-side-container-puts-its-own-children-at-the-end))
 - [ ] Each size is in `rem`. Padding, gap, and font size use a `tokens.css` step. A handoff value with no token rounds to the nearest step. ([`DESIGN_SYSTEM.md`](/src/design-system/DESIGN_SYSTEM.md#spacing-and-font-sizes-must-come-from-tokens-never-a-raw-literal))
 - [ ] A bold uppercase field label uses `--font-size-sm`. ([`DESIGN_SYSTEM.md`](/src/design-system/DESIGN_SYSTEM.md#spacing-and-font-sizes-must-come-from-tokens-never-a-raw-literal))
 

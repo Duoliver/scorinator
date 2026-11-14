@@ -44,6 +44,37 @@
       <li><strong>The edit drawer.</strong> "Edit Season team", with a note that names the leagues of the team. The fields of the wizard Edit drawer: name, slug, Tier, OVR, trigram, colour.</li>
     </ol>
   </section>
+
+  <section class="section" aria-labelledby="m2">
+    <h2 id="m2">M2: Season leagues and playoffs (Task 215)</h2>
+    <p>Stories: US-13.3, US-13.5 to US-13.9. The screens: Tasks 218 to 221.</p>
+    <div class="links">
+      <a class="button sm" href="m2-season-view.html">Season view: Playoffs tab</a>
+      <a class="button sm" href="m2-season-view.html#playoff">Playoff dialog</a>
+      <a class="button sm" href="m2-season-view.html#picker">Playoff: team picker</a>
+      <a class="button sm" href="m2-season-view.html#resume">Resume tab</a>
+      <a class="button sm" href="m2-season-wizard.html">Wizard in a Season</a>
+      <a class="button sm" href="m2-season-wizard.html#picker">Wizard: Add teams</a>
+      <a class="button sm" href="m2-league-detail.html">League Detail in a Season</a>
+      <a class="button sm" href="m2-league-detail.html?finished">... finished</a>
+    </div>
+
+    <h3>Points to review</h3>
+    <p>The user agreed the 11 points on 2026-11-14, after five review rounds.</p>
+    <ol>
+      <li><strong>The Leagues section.</strong> "+ New league" in the section head. The league cards of the leagues dashboard (US-13.3).</li>
+      <li><strong>The Playoffs tab.</strong> Changed on 2026-11-14: one line for each playoff, in place of a card, so the names do not wrap. The line is the fixtures row of a round robin: team 1, the score, team 2, then the status "✓ Played" (text, not a badge, round 3) or the "Play" button. A black head holds the name in bold upper case, and the rules in plain text at the end side (round 2). On a narrow screen, the line stacks as the fixtures row: one line for each team with its goals, then the match scores, then the status. The head stacks with both parts at the start, and its end side shows only the check mark ✓, with the accessible name "Played" (rounds 3 and 4). "+ New playoff" sits on the tab row.</li>
+      <li><strong>The score of a tie with more than one match.</strong> Changed on 2026-11-14: the format of the bracket .txt export. The total of the legs, in a cell of fixed width so the teams line up from playoff to playoff. Each match in order goes in a row of its own below the teams and the total (round 5), with * after extra time, then the decision: "1 - 1" over "1-0, 0-1* · Pens 4-3". A replay is not in the total: "1 - 1" over "1-1, 0-2". The losing team is grey.</li>
+      <li><strong>The playoff dialog.</strong> "Team 1" and "Team 2", in place of "Home team" and "Away team". Each field opens the team picker of the ⇄ switch ("Available" and "Currently in slot"), with the Season roster only. The team of the other slot shows in the list, disabled, with its slot (2026-11-14). Team 1 plays at home in a single match and in the first leg. Then the tie options of the wizard, and a "Home advantage" switch for each playoff. No "Single-match final" and no "Third-place playoff": those are bracket options.</li>
+      <li><strong>The ⇄ switch.</strong> The wizard Teams step in a Season keeps ✎, ⇄, and ✕ (2026-11-14).</li>
+      <li><strong>The Add teams dialog in a Season.</strong> Two parts: "Season teams" with a green tint, then "Other teams" at full opacity, because the user can add them (2026-11-14). A status shows on each row: "In 1 league", "Rests", or "Not in the Season". A picked team from outside gets the badge "Joins the Season". Its OVR rolls at the add, as in MVP2 (Task 81), and ✎ can change its OVR and Tier before "Create league". It joins the Season at "Create league", with that OVR (2026-11-14).</li>
+      <li><strong>The Edit drawer.</strong> The title is "Edit Season team", and the note names the leagues of the Season that the change reaches (US-13.5).</li>
+      <li><strong>The breadcrumbs.</strong> "Seasons › Liga Norte 2026-27 › Primeira Divisão" in the wizard and in League Detail, in place of "← Leagues".</li>
+      <li><strong>The Resume tab.</strong> One card for each league. Changed on 2026-11-14: a click on a card opens League Detail. The winner row has the green highlight, and each zone row its zone colour and label. A running league shows "First place now".</li>
+      <li><strong>A bracket in the Resume tab.</strong> Changed on 2026-11-14: a complete bracket shows the champion and the runner-up. With a third-place playoff, it also shows the third and the fourth place (the demo control removes them). A running bracket says "No winner yet".</li>
+      <li><strong>A finished Season in League Detail.</strong> A notice, and the scorinate buttons disabled.</li>
+    </ol>
+  </section>
 </div>
 </body>
 </html>

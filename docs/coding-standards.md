@@ -250,6 +250,28 @@ When a parent centers a container, and the content of that container must appear
 }
 ```
 
+## An end-side container puts its own children at the end
+
+The same rule applies to the end side. When a parent puts a container at the end side, the container puts its own children and its text at the end too. *(Added on 2026-11-14, Task 215.)*
+
+- A flex row of children sets `justify-content: flex-end`, also when it wraps.
+- Text in the container sets `text-align: end`.
+- A layout that stacks the container on a narrow screen sets both back to the start, when the stacked parts start at the start side.
+
+**Why:** a long text at the end side wraps on a narrow screen. Without `text-align: end`, its second line starts at the left edge of the container. The rules of a playoff head in the M2 demo are an example: two lines of text at the end side.
+
+```css
+/* The playoff head: the name at the start, the rules at the end. */
+.head {
+  display: flex;
+  justify-content: space-between;
+}
+
+.rules {
+  text-align: end;
+}
+```
+
 ## Start a function name with a verb in the imperative
 
 Name a function, or a method, for the action it does. Start the name with a verb in the imperative: `getErrorMessage`, `findCurrentPhase`, `addTeamBlueprint`, `saveDatabaseChanges`. A noun name such as `errorMessage` reads like a value, not a call.

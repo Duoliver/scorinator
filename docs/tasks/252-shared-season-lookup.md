@@ -1,6 +1,6 @@
 # Task 252: one shared lookup of an open Season
 
-**Status:** Refactor
+**Status:** Done
 
 ## Goal
 
@@ -21,6 +21,8 @@ Three Season action files look up an open Season, and check that it runs, each i
 - **2026-11-14:** The user agreed the criteria. Started.
 - **2026-11-14:** Tests first: 5 guard cases failed, then passed. Claude choices, for the review: (a) the guards take the store state as their first parameter, as `isSeasonNameTaken` does, so a test needs no store. (b) `reopenSeason` and `renameSeason` keep `requireOpenSeason` only: a finished Season can be reopened and renamed (Task 210). (c) The playoff actions call `requireOpenDatabase` for the installation, as the league actions do.
 - **2026-11-14:** The user agreed the review and the Claude choices (a) to (c). Commit 1. Status Refactor.
+- **2026-11-14:** Refactor pass, against the review checklist: no change. The comments say why, the names start with a verb, and no private copy stays in `src/`. No gap outside the diff, no bug. Waits for the refactor review.
+- **2026-11-14:** The user agreed the refactor review. Done.
 
 ## Report
 
@@ -28,4 +30,4 @@ Three Season action files look up an open Season, and check that it runs, each i
 - **Test approach:** unit tests for the two guards (`databaseStore.test.ts`, 5 cases), on plain state objects. The Season, Season league, and playoff tests pass with no change. The full suite passes: 2268 tests. The type check, the lint, and the format check pass.
 - **Decisions made:** the criteria. The Claude choices (a) to (c) are in the notes.
 - **What is left, what is next:** nothing. Tasks 218 to 220 can start.
-- **Refactor:** waits for the review.
+- **Refactor:** no change. The checks pass: 2268 tests.

@@ -1,6 +1,6 @@
 # Task 218: the wizard in a Season
 
-**Status:** Refactor
+**Status:** Done
 
 ## Goal
 
@@ -34,6 +34,8 @@ Let the user create a league in a Season with the MVP2 wizard (US-13.5), as the 
   - (g) `EditTeamDrawer` gets an optional `title` and `note`. The standalone wizard keeps "Edit team for this league".
   - (h) `docs/coding-standards.md` says how a cold-cache store keeps one draft for each container.
 - **2026-11-14:** The user agreed the review and the Claude choices (a) to (h). Commit 1. Status Refactor.
+- **2026-11-14:** Refactor pass, against the review checklist. Four changes, no change in behavior, no change to markup or CSS: (1) the notice text of a Season moves out of the component file to a new `helpers.ts`, as `findSeasonNotice`, with `undefined` in place of `null` (the three-layer rule, and a `find` name). (2) to (4) The comments of `useSeasonTeamEdit`, `seasonText.ts`, and `EditTeamDrawer` say why, and no longer name their users. A search for `useTeamEdit` and the old drawer path finds nothing outside the task files. No gap outside the diff, no bug. Waits for the refactor review.
+- **2026-11-14:** The user agreed the refactor review. Done.
 
 ## Report
 
@@ -47,4 +49,4 @@ Let the user create a league in a Season with the MVP2 wizard (US-13.5), as the 
 - **Test approach:** screen tests with Testing Library (`LeagueSetupScreen.season.test.tsx`, 12 cases): the breadcrumbs, the two groups and statuses, the join preview, the roster values, both drawers, the Switch dialog, "Load them all", the create, the separate draft, and the notices. Unit tests for the primitive, the picker groups, and the drafts. One AppShell route test. The standalone wizard tests pass with no change. The full suite passes: 2293 tests. The type check, the lint, and the format check pass.
 - **Decisions made:** the eleven choices (Decisions log). The Claude choices (a) to (h) are in the notes.
 - **What is left, what is next:** Task 219 adds the league cards, League Detail in a Season, and the route to it after the create. A live check in the app: open a Season, "+ New league", then add teams from both groups.
-- **Refactor:** waits for the review.
+- **Refactor:** one helper moved to `helpers.ts` and renamed `findSeasonNotice`, three comments. No change in behavior. The checks pass again: 2293 tests.

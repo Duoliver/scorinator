@@ -6,9 +6,9 @@ import { findLeagueNames } from '@/features/components/seasonText';
 import type SeasonTeamDrawerProps from './types';
 
 /** The edit drawer of one Season team (US-13.4, Task 213 choice 6). The
- * name and the trigram of the other Season teams are taken. The Season
- * view and the wizard in a Season edit a Season team the same way (Task
- * 218 choice 7). */
+ * name and the trigram of the other Season teams are taken. One hook,
+ * so a Season team edits the same way on every screen (Task 218 choice
+ * 7). */
 export function useSeasonTeamEdit(season: SeasonWrapper | undefined): {
   openDrawer: (blueprintUuid: string) => void;
   drawer: SeasonTeamDrawerProps | null;

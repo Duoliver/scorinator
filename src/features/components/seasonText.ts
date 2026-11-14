@@ -1,7 +1,7 @@
 import type { SeasonSummary, SeasonWrapper } from '@/domain';
 
-/* The texts of a Season that the Season screens and the wizard in a Season
- * share (Task 218). */
+/* The texts of a Season, so each screen shows a Season the same way (Task
+ * 218). */
 
 /** The name and the year of a Season, as one label: "Liga Norte 2026". */
 export function formatSeasonLabel(row: Pick<SeasonSummary, 'name' | 'year'>): string {

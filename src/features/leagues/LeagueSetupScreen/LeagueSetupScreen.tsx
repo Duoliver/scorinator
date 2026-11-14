@@ -6,28 +6,12 @@ import { PhasesStep } from '@/features/leagues/LeagueSetupScreen/steps/PhasesSte
 import { ReviewStep } from '@/features/leagues/LeagueSetupScreen/steps/ReviewStep';
 import { TeamsStep } from '@/features/leagues/LeagueSetupScreen/steps/TeamsStep';
 import type LeagueSetupScreenProps from './types';
-import type { WizardSeasonState } from './types';
+import { findSeasonNotice } from './helpers';
 import { useLeagueSetup } from './useLeagueSetup';
 import { useWizardSeason } from './useWizardSeason';
 import styles from './LeagueSetupScreen.module.css';
 
 export type { LeagueSetupScreenProps };
-
-/** The text of a Season that gets no wizard, or `null` when it gets one. */
-function seasonNotice(state: WizardSeasonState): string | null {
-  switch (state.kind) {
-    case 'opening':
-      return 'Opening the Season…';
-    case 'not-found':
-      return 'Season not found.';
-    case 'error':
-      return `The Season could not open: ${state.message}`;
-    case 'finished':
-      return `${state.label} is finished. Reopen it to add a league.`;
-    default:
-      return null;
-  }
-}
 
 /** The four-step League Setup wizard (US-01.1). `useLeagueSetup` gives the draft,
  * the step changes, and the create. With a `seasonUuid`, the wizard makes a
@@ -37,7 +21,7 @@ export function LeagueSetupScreen({ seasonUuid }: LeagueSetupScreenProps): JSX.E
   const season = seasonState.kind === 'open' ? seasonState.season : undefined;
   const setup = useLeagueSetup(seasonUuid, season);
   const { details } = setup;
-  const notice = seasonNotice(seasonState);
+  const notice = findSeasonNotice(seasonState);
   const crumbs = seasonUuid !== undefined && (
     <Breadcrumbs
       items={[
@@ -50,7 +34,7 @@ export function LeagueSetupScreen({ seasonUuid }: LeagueSetupScreenProps): JSX.E
     />
   );
 
-  if (notice !== null) {
+  if (notice !== undefined) {
     return (
       <div class={styles.screen}>
         {crumbs}

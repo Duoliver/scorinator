@@ -1,15 +1,10 @@
 import { uuidV4, type RandomBytes } from '@/engine/identity';
 import {
   buildPhase,
-  checkPhaseChain,
-  checkPhaseFit,
   checkZones,
   pickQualifiers,
-  type BuiltPhase,
-  type PhasePlan,
   type PlanZone,
   PhaseFormat,
-  Legs,
 } from '@/engine/phases';
 import { createSeededRng } from '@/engine/rng';
 import {
@@ -19,7 +14,6 @@ import {
   type PhaseFixture,
 } from '@/engine/round-robin';
 import { playMatch } from '@/engine/scorination';
-import type { PointsConfig } from '@/engine/standings';
 import {
   findPlayableTies,
   playBracketRound,
@@ -28,6 +22,7 @@ import {
 } from '@/engine/bracket';
 import type {
   BracketPhase,
+  League,
   LeagueWrapper,
   Phase,
   PhaseResult,
@@ -44,74 +39,21 @@ import {
   phaseStandings,
 } from './phases';
 import { pickTeamTrigrams } from './teamInstances';
-import { requireOpenDatabase, useDatabaseStore } from './databaseStore';
+import {
+  buildLeagueContent,
+  checkTeamList,
+  startedPhase,
+  type CreateLeagueInput,
+} from './newLeague';
 
-/** What it takes to create a league (US-08.8). `teams` is the team list of
- * the wizard: each Instance got its OVR when it was added (Task 81). */
-export interface CreateLeagueInput {
-  name: string;
-  homeAdvantage: boolean;
-  points: PointsConfig;
-  teams: readonly TeamInstance[];
-  /** The trigrams fixed in the Edit drawer, by Blueprint UUID (US-09.6). */
-  fixedTrigrams?: Readonly<Record<string, string>>;
-  /** The phase chain of the wizard (Task 128). Without it, one two-way round
-   * robin: an MVP1-style league. */
-  plans?: readonly PhasePlan[];
-  /** The phase-1 draw of a Groups plan, as Blueprint UUIDs (US-02.1). Each
-   * team of `teams` is in one group. Without it, a Groups phase 1 draws. */
-  groups?: readonly (readonly string[])[];
-}
-
-const DEFAULT_PLANS: readonly PhasePlan[] = [
-  { format: PhaseFormat.ROUND_ROBIN, legs: Legs.TWO_WAY },
-];
-
-/** A built phase of the engine, as a domain phase with no results yet. A
- * bracket starts with the Task 185 rule on. */
-function startedPhase(built: BuiltPhase<string>): Phase {
-  if (built.format === PhaseFormat.BRACKET)
-    return { ...built, results: [], avoidGroupTies: true };
-  return { ...built, results: [] };
-}
-
-/** Throws a `RangeError` for a chain or fit problem of the plans (Task 128
- * choice 2). The wizard shows the problems before the create (Task 129), so
- * this is a guard, and the message names the problem codes. */
-function checkPlans(
-  plans: readonly PhasePlan[],
-  teamCount: number,
-  groups: readonly (readonly string[])[] | undefined
-): void {
-  const problems = [
-    ...checkPhaseChain(plans),
-    ...checkPhaseFit(
-      plans,
-      teamCount,
-      groups?.map((group) => group.length)
-    ),
-  ];
-  if (problems.length > 0) {
-    throw new RangeError(
-      `The phases of the league do not fit: ${problems.map((problem) => problem.code).join(', ')}.`
-    );
-  }
-}
-
-/** Throws a `RangeError` unless each team is in exactly one group. */
-function checkDraw(
-  groups: readonly (readonly string[])[],
-  uuids: readonly string[]
-): void {
-  const drawn = groups.flat();
-  const sameTeams =
-    drawn.length === uuids.length &&
-    new Set(drawn).size === drawn.length &&
-    uuids.every((uuid) => drawn.includes(uuid));
-  if (!sameTeams) {
-    throw new RangeError('The phase-1 groups do not hold each team once.');
-  }
-}
+export type { CreateLeagueInput } from './newLeague';
+import {
+  findLeagueWrapper,
+  requireOpenDatabase,
+  requireRunningSeason,
+  useDatabaseStore,
+  type LeagueRef,
+} from './databaseStore';
 
 /**
  * Creates a league and keeps it in the store, unsaved (Task 108). It stores
@@ -136,17 +78,8 @@ export function createLeague(
 ): LeagueWrapper {
   const state = useDatabaseStore.getState();
   const { installationUuid } = requireOpenDatabase(state);
-  const seen = new Set<string>();
-  for (const team of input.teams) {
-    if (seen.has(team.blueprintUuid)) {
-      throw new RangeError(
-        `The team list has the Blueprint UUID ${team.blueprintUuid} twice.`
-      );
-    }
-    seen.add(team.blueprintUuid);
-  }
+  checkTeamList(input.teams);
 
-  const rng = createSeededRng(freshSeed());
   // The same pick as the live one of the Teams step, stored for good.
   const picks = pickTeamTrigrams(
     input.teams,
@@ -157,33 +90,87 @@ export function createLeague(
     ...team,
     trigram: picks.get(team.blueprintUuid)?.trigram ?? '',
   }));
-  const uuids = teams.map((team) => team.blueprintUuid);
-  const plans = input.plans ?? DEFAULT_PLANS;
-  const [firstPlan] = plans;
-  const groups = firstPlan?.format === PhaseFormat.GROUPS ? input.groups : undefined;
-  checkPlans(plans, uuids.length, groups);
-  if (groups) checkDraw(groups, uuids);
-  const phaseOne = startedPhase(buildPhase(firstPlan, 1, uuids, rng, groups));
-
   const uuid = uuidV4(randomBytes);
   const wrapper: LeagueWrapper = {
     uuid,
     teams,
-    content: {
+    content: buildLeagueContent(
+      input,
+      teams.map((team) => team.blueprintUuid),
       uuid,
-      name: input.name,
-      homeAdvantage: input.homeAdvantage,
-      points: input.points,
-      createdByInstallation: installationUuid,
-      lastModifiedByInstallation: installationUuid,
-      plans: structuredClone([...plans]),
-      phases: [phaseOne],
-    },
+      installationUuid
+    ),
   };
   useDatabaseStore.setState((now) => ({
     leagues: { ...now.leagues, [uuid]: wrapper },
   }));
   return wrapper;
+}
+
+/**
+ * The open league at this address, and the installation that changes it
+ * (Task 216 choice 3). Throws a `RangeError` for a league that is not open,
+ * and for a league of a finished Season: it is read only (US-13.9, Task 216
+ * choice 6).
+ */
+function requireLeague(ref: LeagueRef): {
+  wrapper: LeagueWrapper;
+  installationUuid: string;
+} {
+  const state = useDatabaseStore.getState();
+  const { installationUuid } = requireOpenDatabase(state);
+  const wrapper = findLeagueWrapper(state, ref);
+  if (typeof ref === 'string') {
+    if (!wrapper) throw new RangeError(`No open league has the UUID ${ref}.`);
+    return { wrapper, installationUuid };
+  }
+  if (!wrapper) {
+    throw new RangeError(
+      `The open Season ${ref.seasonUuid} has no league with the UUID ${ref.leagueUuid}.`
+    );
+  }
+  requireRunningSeason(state.seasons[ref.seasonUuid]);
+  return { wrapper, installationUuid };
+}
+
+/**
+ * Puts the changed content of a league in the store. A Season league goes
+ * back into its Season, with its own team list, and the Season gets the
+ * stamp too (Task 216 choice 4). The teams of the view never go back: a
+ * Season team changes with `updateSeasonTeam` only.
+ */
+function storeLeague(
+  ref: LeagueRef,
+  wrapper: LeagueWrapper,
+  content: League,
+  installationUuid: string
+): void {
+  if (typeof ref === 'string') {
+    useDatabaseStore.setState((now) => ({
+      leagues: { ...now.leagues, [ref]: { ...wrapper, content } },
+    }));
+    return;
+  }
+  useDatabaseStore.setState((now) => {
+    const season = now.seasons[ref.seasonUuid];
+    return {
+      seasons: {
+        ...now.seasons,
+        [ref.seasonUuid]: {
+          ...season,
+          content: {
+            ...season.content,
+            lastModifiedByInstallation: installationUuid,
+            leagues: season.content.leagues.map((league) =>
+              league.uuid === ref.leagueUuid
+                ? { ...content, teamUuids: league.teamUuids }
+                : league
+            ),
+          },
+        },
+      },
+    };
+  });
 }
 
 /** Plays one fixture with a fresh seed, by the MVP1 rules: the stored OVR
@@ -208,13 +195,10 @@ function playFixture(
  * A real change stamps the league with the local installation (Task 108).
  */
 function changeCurrentPhase(
-  leagueUuid: string,
+  ref: LeagueRef,
   change: (phase: Phase, wrapper: LeagueWrapper) => Phase
 ): void {
-  const state = useDatabaseStore.getState();
-  const { installationUuid } = requireOpenDatabase(state);
-  const wrapper = state.leagues[leagueUuid];
-  if (!wrapper) throw new RangeError(`No open league has the UUID ${leagueUuid}.`);
+  const { wrapper, installationUuid } = requireLeague(ref);
 
   const current = findCurrentPhase(wrapper);
   if (!current) return;
@@ -222,17 +206,16 @@ function changeCurrentPhase(
   if (phase === current) return;
   const { phases } = wrapper.content;
 
-  const changed: LeagueWrapper = {
-    ...wrapper,
-    content: {
+  storeLeague(
+    ref,
+    wrapper,
+    {
       ...wrapper.content,
       lastModifiedByInstallation: installationUuid,
       phases: phases.map((candidate) => (candidate === current ? phase : candidate)),
     },
-  };
-  useDatabaseStore.setState((now) => ({
-    leagues: { ...now.leagues, [leagueUuid]: changed },
-  }));
+    installationUuid
+  );
 }
 
 /** The current phase as a round robin or Groups phase. Throws a
@@ -256,8 +239,8 @@ function findFixture(phase: ScheduledPhase, fixtureId: string): PhaseFixture<str
 
 /** Plays one fixture of the current phase. Skips a fixture that has a result:
  * that is `rescorinateFixture`. */
-export function scorinateFixture(leagueUuid: string, fixtureId: string): void {
-  changeCurrentPhase(leagueUuid, (current, wrapper) => {
+export function scorinateFixture(ref: LeagueRef, fixtureId: string): void {
+  changeCurrentPhase(ref, (current, wrapper) => {
     const phase = requireScheduled(current);
     const fixture = findFixture(phase, fixtureId);
     if (findPhaseResult(phase.results, fixture)) return phase;
@@ -267,8 +250,8 @@ export function scorinateFixture(leagueUuid: string, fixtureId: string): void {
 
 /** Draws a new score for a fixture that has a result, in the same place in
  * the list (MVP1 Task 7). Does nothing for a fixture with no result. */
-export function rescorinateFixture(leagueUuid: string, fixtureId: string): void {
-  changeCurrentPhase(leagueUuid, (current, wrapper) => {
+export function rescorinateFixture(ref: LeagueRef, fixtureId: string): void {
+  changeCurrentPhase(ref, (current, wrapper) => {
     const phase = requireScheduled(current);
     const fixture = findFixture(phase, fixtureId);
     if (!findPhaseResult(phase.results, fixture)) return phase;
@@ -283,8 +266,8 @@ export function rescorinateFixture(leagueUuid: string, fixtureId: string): void 
 }
 
 /** Plays each unplayed fixture of one matchday of the current phase. */
-export function scorinateMatchday(leagueUuid: string, matchday: number): void {
-  changeCurrentPhase(leagueUuid, (current, wrapper) => {
+export function scorinateMatchday(ref: LeagueRef, matchday: number): void {
+  changeCurrentPhase(ref, (current, wrapper) => {
     const phase = requireScheduled(current);
     const unplayed = phase.fixtures.filter(
       (fixture) =>
@@ -306,24 +289,20 @@ export function scorinateMatchday(leagueUuid: string, matchday: number): void {
  * league with the local installation (Task 108).
  */
 function replacePhases(
-  leagueUuid: string,
+  ref: LeagueRef,
   change: (wrapper: LeagueWrapper) => Phase[]
 ): void {
-  const state = useDatabaseStore.getState();
-  const { installationUuid } = requireOpenDatabase(state);
-  const wrapper = state.leagues[leagueUuid];
-  if (!wrapper) throw new RangeError(`No open league has the UUID ${leagueUuid}.`);
-  const changed: LeagueWrapper = {
-    ...wrapper,
-    content: {
+  const { wrapper, installationUuid } = requireLeague(ref);
+  storeLeague(
+    ref,
+    wrapper,
+    {
       ...wrapper.content,
       lastModifiedByInstallation: installationUuid,
       phases: change(wrapper),
     },
-  };
-  useDatabaseStore.setState((now) => ({
-    leagues: { ...now.leagues, [leagueUuid]: changed },
-  }));
+    installationUuid
+  );
 }
 
 /**
@@ -339,8 +318,8 @@ function replacePhases(
  * Throws a `RangeError` when `canStartNextPhase` is false (Task 128 choice
  * 4).
  */
-export function startNextPhase(leagueUuid: string): void {
-  replacePhases(leagueUuid, (wrapper) => {
+export function startNextPhase(ref: LeagueRef): void {
+  replacePhases(ref, (wrapper) => {
     if (!canStartNextPhase(wrapper)) {
       throw new RangeError('The league cannot start its next phase now.');
     }
@@ -366,10 +345,10 @@ export function startNextPhase(leagueUuid: string): void {
  * `RangeError` otherwise.
  */
 function redrawCurrentGroups(
-  leagueUuid: string,
+  ref: LeagueRef,
   newGroups: (groups: readonly (readonly string[])[]) => string[][] | undefined
 ): void {
-  replacePhases(leagueUuid, (wrapper) => {
+  replacePhases(ref, (wrapper) => {
     const { phases, plans } = wrapper.content;
     const index = phases.length - 1;
     const current = phases[index];
@@ -397,8 +376,8 @@ function redrawCurrentGroups(
 
 /** "Shuffle groups" for a later Groups phase (US-02.1): a new draw of its
  * teams, and new fixtures. */
-export function shuffleCurrentGroups(leagueUuid: string): void {
-  redrawCurrentGroups(leagueUuid, () => undefined);
+export function shuffleCurrentGroups(ref: LeagueRef): void {
+  redrawCurrentGroups(ref, () => undefined);
 }
 
 /** "Move to group" for a later Groups phase (US-02.5): `moveToGroup`, and
@@ -406,11 +385,11 @@ export function shuffleCurrentGroups(leagueUuid: string): void {
  * group, and a `RangeError` for a move that leaves a group with fewer than
  * 2 teams: that group has no schedule. */
 export function moveTeamInCurrentGroups(
-  leagueUuid: string,
+  ref: LeagueRef,
   team: string,
   groupIndex: number
 ): void {
-  redrawCurrentGroups(leagueUuid, (groups) => moveToGroup(groups, team, groupIndex));
+  redrawCurrentGroups(ref, (groups) => moveToGroup(groups, team, groupIndex));
 }
 
 /** A swap for a later Groups phase (Task 183): the two teams change places,
@@ -418,11 +397,11 @@ export function moveTeamInCurrentGroups(
  * `swapInGroups` `RangeError` for an unknown team or two teams of one
  * group, and a `RangeError` once the phase has a result. */
 export function swapTeamsInCurrentGroups(
-  leagueUuid: string,
+  ref: LeagueRef,
   first: string,
   second: string
 ): void {
-  redrawCurrentGroups(leagueUuid, (groups) => swapInGroups(groups, first, second));
+  redrawCurrentGroups(ref, (groups) => swapInGroups(groups, first, second));
 }
 
 /** The current phase as a bracket, with its index. Throws a `RangeError`
@@ -458,8 +437,8 @@ function readyRounds(wrapper: LeagueWrapper, index: number): BracketRound<string
  * bracket with missing byes, a bye tie, a tie with a TBD team, or an
  * unknown tie id.
  */
-export function scorinateBracketTie(leagueUuid: string, tieId: string): void {
-  changeCurrentPhase(leagueUuid, (current, wrapper) => {
+export function scorinateBracketTie(ref: LeagueRef, tieId: string): void {
+  changeCurrentPhase(ref, (current, wrapper) => {
     const phase = requireBracket(current);
     const index = wrapper.content.phases.length - 1;
     const results = playBracketTie(
@@ -481,8 +460,8 @@ export function scorinateBracketTie(leagueUuid: string, tieId: string): void {
  * Throws a `RangeError` for a current phase that is not a bracket, or a
  * bracket with missing byes.
  */
-export function scorinateBracket(leagueUuid: string): void {
-  changeCurrentPhase(leagueUuid, (current, wrapper) => {
+export function scorinateBracket(ref: LeagueRef): void {
+  changeCurrentPhase(ref, (current, wrapper) => {
     const phase = requireBracket(current);
     const index = wrapper.content.phases.length - 1;
     const rounds = readyRounds(wrapper, index);
@@ -508,8 +487,8 @@ export function scorinateBracket(leagueUuid: string): void {
  * `buildBracketTree` one for more bye teams than byes, or a bye team that is
  * not a seed.
  */
-export function setBracketByes(leagueUuid: string, byeTeams: readonly string[]): void {
-  changeCurrentPhase(leagueUuid, (current, wrapper) => {
+export function setBracketByes(ref: LeagueRef, byeTeams: readonly string[]): void {
+  changeCurrentPhase(ref, (current, wrapper) => {
     const phase = requireBracket(current);
     const same =
       byeTeams.length === phase.byeTeams.length &&
@@ -554,14 +533,11 @@ function isSameZones(a: readonly PlanZone[], b: readonly PlanZone[]): boolean {
  * those zones, so a throw here is a fault.
  */
 export function setPhaseZones(
-  leagueUuid: string,
+  ref: LeagueRef,
   phaseIndex: number,
   zones: readonly PlanZone[]
 ): void {
-  const state = useDatabaseStore.getState();
-  const { installationUuid } = requireOpenDatabase(state);
-  const wrapper = state.leagues[leagueUuid];
-  if (!wrapper) throw new RangeError(`No open league has the UUID ${leagueUuid}.`);
+  const { wrapper, installationUuid } = requireLeague(ref);
   const plan = wrapper.content.plans[phaseIndex];
   if (!plan || plan.format === PhaseFormat.BRACKET) {
     throw new RangeError(`Phase ${phaseIndex + 1} has no round-robin or Groups plan.`);
@@ -572,17 +548,16 @@ export function setPhaseZones(
     throw new RangeError(`The zones of phase ${phaseIndex + 1} are not valid.`);
   if (isSameZones(plan.zones ?? [], zones)) return;
 
-  const changed: LeagueWrapper = {
-    ...wrapper,
-    content: {
+  storeLeague(
+    ref,
+    wrapper,
+    {
       ...wrapper.content,
       lastModifiedByInstallation: installationUuid,
       plans: wrapper.content.plans.map((candidate, i) =>
         i === phaseIndex ? zoned : candidate
       ),
     },
-  };
-  useDatabaseStore.setState((now) => ({
-    leagues: { ...now.leagues, [leagueUuid]: changed },
-  }));
+    installationUuid
+  );
 }

@@ -10,6 +10,8 @@ export const ROUTES = {
   leaguesDashboard: '/leagues',
   seasons: '/seasons',
   seasonDetail: '/seasons/:uuid',
+  seasonLeagueNew: '/seasons/:uuid/leagues/new',
+  seasonLeagueDetail: '/seasons/:uuid/leagues/:leagueUuid',
 } as const;
 
 export type RoutePath = (typeof ROUTES)[keyof typeof ROUTES];
@@ -25,4 +27,15 @@ export function leagueDetailPath(uuid: string): string {
  * 212), as `leagueDetailPath` does for a league. */
 export function seasonDetailPath(uuid: string): string {
   return `/seasons/${uuid}`;
+}
+
+/** Builds the URL of the wizard for a new league in a Season (Task 216). */
+export function seasonLeagueNewPath(seasonUuid: string): string {
+  return `/seasons/${seasonUuid}/leagues/new`;
+}
+
+/** Builds the URL of a Season league. A league UUID is unique only in its
+ * container (Task 196), so the path holds the Season UUID too (Task 216). */
+export function seasonLeagueDetailPath(seasonUuid: string, leagueUuid: string): string {
+  return `/seasons/${seasonUuid}/leagues/${leagueUuid}`;
 }

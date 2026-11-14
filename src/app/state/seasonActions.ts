@@ -1,9 +1,6 @@
 import {
-  fixedLot,
   getNameKey,
   normalizeTrigram,
-  pickJoinNames,
-  pickTrigrams,
   uuidV4,
   type RandomBytes,
 } from '@/engine/identity';
@@ -13,6 +10,7 @@ import type { SeasonWrapper, TeamInstance } from '@/domain';
 import { parseSeasonWrapper } from '@/app/data/databaseFile';
 import { cryptoRandomBytes, freshRng } from '@/app/random';
 import { newTeamInstances } from './teamInstances';
+import { joinSeasonRoster } from './seasonRoster';
 import {
   isSeasonNameTaken,
   requireOpenDatabase,
@@ -189,42 +187,15 @@ export function addSeasonTeams(
     });
   if (joining.length === 0) return [];
 
-  const rolled = newTeamInstances(joining, rng);
-  const lotOf = (uuid: string): number => fixedLot(seasonUuid, uuid);
-  const names = pickJoinNames(
-    season.teams.map((team) => team.name),
-    rolled.map((team, index) => ({
-      id: team.blueprintUuid,
-      name: team.name,
+  const added = joinSeasonRoster(
+    seasonUuid,
+    season.teams,
+    newTeamInstances(joining, rng).map((team, index) => ({
+      team,
       location: joining[index].location,
-      ovr: team.ovr,
-      lot: lotOf(team.blueprintUuid),
+      trigrams: joining[index].trigrams,
     }))
   );
-  const trigrams = pickTrigrams([
-    ...season.teams.map((team) => ({
-      id: team.blueprintUuid,
-      name: team.name,
-      tier: team.tier,
-      ovr: team.ovr,
-      trigrams: [],
-      lot: lotOf(team.blueprintUuid),
-      fixed: team.trigram,
-    })),
-    ...rolled.map((team, index) => ({
-      id: team.blueprintUuid,
-      name: team.name,
-      tier: team.tier,
-      ovr: team.ovr,
-      trigrams: joining[index].trigrams,
-      lot: lotOf(team.blueprintUuid),
-    })),
-  ]);
-  const added = rolled.map((team) => ({
-    ...team,
-    name: names.get(team.blueprintUuid) ?? team.name,
-    trigram: trigrams.get(team.blueprintUuid)?.trigram ?? '',
-  }));
   storeChangedSeason(season, {}, [...season.teams, ...added]);
   return added;
 }

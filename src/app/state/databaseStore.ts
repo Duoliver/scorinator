@@ -1,7 +1,9 @@
 import { create } from 'zustand';
 import { getNameKey } from '@/engine/identity';
 import type {
+  League,
   LeagueWrapper,
+  SeasonLeague,
   SeasonSummary,
   SeasonWrapper,
   TeamBlueprint,
@@ -164,6 +166,60 @@ export function requireRunningSeason(wrapper: SeasonWrapper): void {
       `The Season "${name}" (${year}) is finished. Reopen it to change it.`
     );
   }
+}
+
+/** The address of a league of a Season: a league UUID is unique only in
+ * its container, so the Season UUID comes with it (Task 196, Task 216). */
+export interface SeasonLeagueRef {
+  seasonUuid: string;
+  leagueUuid: string;
+}
+
+/** The address of a league for the league actions (Task 216 choice 1): the
+ * UUID of a standalone league, as in MVP2, or a Season league. */
+export type LeagueRef = string | SeasonLeagueRef;
+
+/** The last view of each Season league, with the roster it was made from.
+ * A league or a roster change makes a new object, so the cache never goes
+ * stale, and a screen selector gets the same view until a change. */
+const seasonLeagueViews = new WeakMap<
+  SeasonLeague,
+  { roster: SeasonWrapper['teams']; view: LeagueWrapper }
+>();
+
+/** A Season league as a league wrapper: the league, with the Season teams
+ * of its `teamUuids`, in that order (Task 216 choice 3). The view never
+ * holds `teamUuids`, so a league action cannot change the team list. */
+export function toSeasonLeagueView(
+  season: SeasonWrapper,
+  league: SeasonLeague
+): LeagueWrapper {
+  const cached = seasonLeagueViews.get(league);
+  if (cached?.roster === season.teams) return cached.view;
+  const byUuid = new Map(season.teams.map((team) => [team.blueprintUuid, team]));
+  const { teamUuids, ...content }: SeasonLeague = league;
+  const view: LeagueWrapper = {
+    uuid: league.uuid,
+    teams: teamUuids.flatMap((uuid) => byUuid.get(uuid) ?? []),
+    content: content satisfies League,
+  };
+  seasonLeagueViews.set(league, { roster: season.teams, view });
+  return view;
+}
+
+/** The open league at this address: a standalone league, or a Season
+ * league of an open Season as `toSeasonLeagueView` gives it. Undefined for
+ * a league that is not open, or that the Season does not have. */
+export function findLeagueWrapper(
+  state: Pick<DatabaseState, 'leagues' | 'seasons'>,
+  ref: LeagueRef
+): LeagueWrapper | undefined {
+  if (typeof ref === 'string') return state.leagues[ref];
+  const season = state.seasons[ref.seasonUuid];
+  const league = season?.content.leagues.find(
+    (candidate) => candidate.uuid === ref.leagueUuid
+  );
+  return season && league ? toSeasonLeagueView(season, league) : undefined;
 }
 
 /** True when the opened league is not the object last opened or saved. A

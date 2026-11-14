@@ -4,7 +4,7 @@ import { TieFormat, type TiebreakMethod } from '@/engine/tiebreak';
 import type { TeamInstance } from '@/domain';
 import type PlayoffDialogProps from './types';
 import type { PlayoffDialogState, PlayoffSlot } from './types';
-import { NAME_TAKEN, toTeamItem } from './helpers';
+import { NAME_TAKEN, getTeamItem } from './helpers';
 
 /** The "New playoff" dialog (US-13.7, Task 220). It starts with the bracket
  * defaults of the wizard, and "Home advantage" off, as a new league
@@ -46,9 +46,9 @@ export function usePlayoffDialog({
     items: teams.map((team) => {
       const other: PlayoffSlot = picking === 1 ? 2 : 1;
       const isOther = uuids[other] === team.blueprintUuid;
-      return toTeamItem(team, isOther ? `Team ${other}` : undefined);
+      return getTeamItem(team, isOther ? `Team ${other}` : undefined);
     }),
-    current: inSlot && toTeamItem(inSlot),
+    current: inSlot && getTeamItem(inSlot),
     onPick: (uuid: string): void => {
       setUuids((now) => ({ ...now, [picking]: uuid }));
       setPicking(null);

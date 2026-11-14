@@ -1,4 +1,4 @@
-import type { PickerItem, SinglePickerProps } from '@/design-system';
+import type { SinglePickerProps } from '@/design-system';
 import type { TeamInstance } from '@/domain';
 import type { PlayoffInput } from '@/app/state/seasonPlayoffActions';
 import type { TieFormat, TiebreakMethod } from '@/engine/tiebreak';
@@ -39,5 +39,3 @@ export interface PlayoffDialogState {
   canCreate: boolean;
   handleCreate: (event: Event) => void;
 }
-
-export type { PickerItem };

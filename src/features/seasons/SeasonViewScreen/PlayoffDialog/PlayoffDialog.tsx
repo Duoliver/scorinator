@@ -7,28 +7,16 @@ import {
   SegmentedControl,
   Switch,
 } from '@/design-system';
-import { TieFormat, TiebreakMethod } from '@/engine/tiebreak';
+import { TieFormat } from '@/engine/tiebreak';
 import type { TeamInstance } from '@/domain';
 import { TeamSwatch } from '@/features/components';
-import {
-  FORMAT_LABELS,
-  METHOD_LABELS,
-} from '@/features/seasons/SeasonViewScreen/tieLabels';
 import type PlayoffDialogProps from './types';
 import type { PlayoffSlot } from './types';
+import { FORMAT_OPTIONS, METHOD_OPTIONS } from './helpers';
 import { usePlayoffDialog } from './usePlayoffDialog';
 import styles from './PlayoffDialog.module.css';
 
 export type { PlayoffDialogProps };
-
-const FORMAT_OPTIONS = [TieFormat.SINGLE_MATCH, TieFormat.TWO_LEGGED].map((value) => ({
-  value,
-  label: FORMAT_LABELS[value],
-}));
-
-const METHOD_OPTIONS = [TiebreakMethod.PENALTIES, TiebreakMethod.REPLAY_COIN_TOSS].map(
-  (value) => ({ value, label: METHOD_LABELS[value] })
-);
 
 /** "Team 1" or "Team 2": a field that opens the team picker. The label
  * names the button, as a field label names its input (Task 215 point 4). */

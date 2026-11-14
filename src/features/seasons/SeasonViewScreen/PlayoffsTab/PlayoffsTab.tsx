@@ -3,11 +3,10 @@ import { Button } from '@/design-system';
 import { TeamName, TeamSwatch } from '@/features/components';
 import type PlayoffsTabProps from './types';
 import type { PlayoffRow, PlayoffSide } from './types';
+import { PLAYED } from './helpers';
 import styles from './PlayoffsTab.module.css';
 
 export type { PlayoffsTabProps };
-
-const PLAYED = '✓ Played';
 
 /** One team of a row: the stacked row puts the swatch first and the goals
  * last on both lines, as the fixtures row does (Task 215 round 2). The

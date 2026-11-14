@@ -1,6 +1,6 @@
 # Task 220: the Playoffs tab and the playoff dialog
 
-**Status:** Refactor
+**Status:** Done
 
 ## Goal
 
@@ -31,6 +31,8 @@ Give the Season view its "Playoffs" tab and the "New playoff" dialog (US-13.7), 
   - (e) The open tab is kept in the view state, so the tab row action stays right after a play or a create.
 - **2026-11-14:** Review, round 1. The user asked for the Location hint on each team name, and the full name in the hint of a cut name, as on the other league screens. Each row now shows its teams with the shared `TeamName` (Task 180), and cuts the name text with an ellipsis. One more test: the Location shows in the hint.
 - **2026-11-14:** The user agreed the review and the Claude choices (a) to (e). Commit 1. Status Refactor.
+- **2026-11-14:** Refactor pass, against the review checklist. Five changes, no change in behavior, no change to markup or CSS: (1) `toTeamItem` is now `getTeamItem` (a function name starts with a verb). (2) The dead `PickerItem` export of `PlayoffDialog/types.ts` goes. (3) The option lists of the dialog move to its `helpers.tsx`, and (4) the "✓ Played" text to the `PlayoffsTab` helpers (the three-layer rule: constants go in helpers). (5) The `tieLabels.ts` comment no longer names its users. The checks pass again: 2320 tests. A gap outside the diff, for the user: the fixtures row shows a team name as plain text, with no Location hint. The standings and the bracket use `TeamName`. No bug. Waits for the refactor review.
+- **2026-11-14:** The user agreed the refactor review. Done. The user asked for a task for the fixtures hint, after Task 221: Task 253.
 
 ## Report
 
@@ -42,4 +44,4 @@ Give the Season view its "Playoffs" tab and the "New playoff" dialog (US-13.7), 
 - **Test approach:** unit tests for the score line and the rules text (6 cases), one picker test, and screen tests with Testing Library (9 cases): the rows and their status, the Location hint, a play, the tab row action, the empty tab, a create through the team picker, the away goals switch, a taken name, and a finished Season. The full suite passes: 2320 tests. The type check, the lint, and the format check pass. The narrow layout has no test: jsdom has no container queries. It follows the agreed demo.
 - **Decisions made:** the nine choices (Decisions log). The Claude choices (a) to (e) are in the notes.
 - **What is left, what is next:** Task 221, the Resume tab. A live check: create a two-legged playoff with AET, play it, then make the window narrow.
-- **Refactor:** waits for the review.
+- **Refactor:** one rename, one dead export removed, two constants moved to helpers, one comment. No change in behavior.

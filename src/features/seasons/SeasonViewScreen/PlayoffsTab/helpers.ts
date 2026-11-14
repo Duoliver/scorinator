@@ -96,3 +96,7 @@ export function formatPlayoffRules(rules: TieRules): string {
     `Home adv. ${rules.homeAdvantage ? 'on' : 'off'}`,
   ].join(' · ');
 }
+
+/** The status of a played playoff: a status, not an action (Task 215
+ * round 3). */
+export const PLAYED = '✓ Played';

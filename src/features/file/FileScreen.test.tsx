@@ -531,8 +531,10 @@ describe('FileScreen: Import entire database (US-10.4)', () => {
           installationUuid: INSTALLATION,
           blueprints,
           wrappers: leagues.map(summarizeLeague),
+          seasons: [],
         },
-        leagues
+        leagues,
+        []
       )
     );
   }

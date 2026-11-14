@@ -9,11 +9,16 @@ import {
   openTestDatabase,
   result,
   SALT_MARSH,
+  seasonWrapper,
   testUuid,
 } from '@/test/databaseRecords';
 import { importLeagues, planLeagueImport } from '@/app/state/importActions';
 import { useDatabaseStore } from '@/app/state/databaseStore';
-import { serializeLeagueWrapper, serializeManifestRecord } from './databaseFile';
+import {
+  serializeLeagueWrapper,
+  serializeManifestRecord,
+  serializeSeasonWrapper,
+} from './databaseFile';
 import {
   openBlueprintImportFile,
   openLeagueImportFile,
@@ -117,6 +122,7 @@ describe('the wrong-file errors (US-10.3, choices 4 and 5)', () => {
     installationUuid: testUuid(1),
     blueprints: [],
     wrappers: [],
+    seasons: [],
   });
   const mvp1Teams = JSON.stringify([{ slug: 'a', name: 'A', colour: '', tier: 'B' }]);
   const mvp1Save = JSON.stringify({ formatVersion: 1, league: {}, teams: [] });
@@ -129,6 +135,7 @@ describe('the wrong-file errors (US-10.3, choices 4 and 5)', () => {
     ],
     ['a manifest', manifestText, DATABASE_TEXT],
     ['a wrapper file', serializeLeagueWrapper(played), DATABASE_TEXT],
+    ['a Season file', serializeSeasonWrapper(seasonWrapper()), DATABASE_TEXT],
     ['an MVP1 save file', mvp1Save, MVP1_TEXT],
     ['an MVP1 teams JSON', mvp1Teams, MVP1_TEXT],
     [

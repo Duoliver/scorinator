@@ -1,6 +1,7 @@
 import type { PointsConfig } from '@/engine/standings';
 import type { Legs } from '@/engine/phases';
 import type { League, PhaseFormat } from './league';
+import type { Season } from './season';
 import type { TeamBlueprint, TeamInstance } from './team';
 
 /**
@@ -18,6 +19,11 @@ export interface InstanceWrapper<T> {
 /** The wrapper of one standalone league. In MVP2 each league has its own
  * wrapper, so two leagues never share an Instance (Task 74). */
 export type LeagueWrapper = InstanceWrapper<League>;
+
+/** The wrapper of one Season (PERSISTENCE.md §2a). Its `uuid` is the Season
+ * UUID. Its `teams` are the Season roster, one Instance for each Blueprint,
+ * shared by every league of the Season (US-13.4). */
+export type SeasonWrapper = InstanceWrapper<Season>;
 
 /** Where a league stands, for its dashboard card (Task 76 d). `phase` and
  * `matchday` count from 1. In a bracket, `round` is the slot count of the
@@ -51,12 +57,26 @@ export interface WrapperSummary {
   progress: LeagueProgress;
 }
 
+/** The manifest row of one Season: the fields of its card on the Seasons
+ * list, so the list does not load every Season wrapper. The Season leagues
+ * have no rows of their own (Task 207 choice 5). */
+export interface SeasonSummary {
+  uuid: string;
+  name: string;
+  year: string;
+  finished: boolean;
+  leagueCount: number;
+  teamCount: number;
+  playoffCount: number;
+}
+
 /** The part of the database that the app always loads (Task 76,
- * `PERSISTENCE.md` §2): the installation UUID, every Blueprint, and one
- * summary row for each wrapper. The installation UUID is made at the first
+ * `PERSISTENCE.md` §2): the installation UUID, every Blueprint, one summary
+ * row for each standalone league, and one for each Season (Task 209). The installation UUID is made at the first
  * start and never changes (US-11.1). */
 export interface Manifest {
   installationUuid: string;
   blueprints: TeamBlueprint[];
   wrappers: WrapperSummary[];
+  seasons: SeasonSummary[];
 }

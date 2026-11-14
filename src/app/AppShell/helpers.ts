@@ -4,6 +4,7 @@ import type { NavItem } from './types';
 
 export const NAV_ITEMS: NavItem[] = [
   { label: 'Leagues', path: ROUTES.leaguesDashboard },
+  { label: 'Seasons', path: ROUTES.seasons },
   { label: 'Teams', path: ROUTES.teams },
   { label: 'File', path: ROUTES.file },
 ];
@@ -11,14 +12,15 @@ export const NAV_ITEMS: NavItem[] = [
 /** The start screen (Task 29). It also renders for any unmatched path. */
 export const DEFAULT_PATH = ROUTES.leaguesDashboard;
 
-/** A League Detail URL (`/leagues/<uuid>`) never exact-matches
- * `ROUTES.leaguesNew`, so the `Leagues` nav item needs a prefix check
- * instead — otherwise it would go dark while the user is still, in every
- * real sense, inside the Leagues section. */
+/** The nav items with screens below them: League Setup and League Detail
+ * below Leagues, a Season view below Seasons (Task 212). Their URLs never
+ * match the item path exactly, so the item needs a prefix check. Otherwise
+ * it would go dark while the user is still inside its section. */
+const PARENT_PATHS: readonly string[] = [ROUTES.leaguesDashboard, ROUTES.seasons];
+
 export function isNavItemActive(item: NavItem, activePath: string): boolean {
-  return item.path === ROUTES.leaguesDashboard
-    ? activePath === ROUTES.leaguesDashboard || activePath.startsWith('/leagues/')
-    : activePath === item.path;
+  if (activePath === item.path) return true;
+  return PARENT_PATHS.includes(item.path) && activePath.startsWith(`${item.path}/`);
 }
 
 /** `default` on the dashboard route renders it for any unmatched path,

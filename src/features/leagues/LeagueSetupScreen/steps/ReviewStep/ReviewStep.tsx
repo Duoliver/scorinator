@@ -1,6 +1,7 @@
 import type { JSX } from 'preact';
 import { Button, Card } from '@/design-system';
 import {
+  TeamLabel,
   TeamSwatch,
   formatTeamCount,
   useBlueprintLocation,
@@ -19,7 +20,6 @@ import {
   endsWithGroups,
   GROUPS_LAST_WARNING,
 } from '@/features/leagues/LeagueSetupScreen/phaseChecks';
-import { TeamLabel } from '@/features/leagues/TeamLabel';
 import type ReviewStepProps from './types';
 import styles from './ReviewStep.module.css';
 import { PhaseFormat } from '@/engine/phases';

@@ -134,7 +134,7 @@ describe('the league file (US-10.1, US-10.2, Task 145)', () => {
       'leagues',
       'blueprints',
     ]);
-    expect(raw.formatVersion).toBe(4);
+    expect(raw.formatVersion).toBe(5);
   });
 
   it('reads a file with one league and no Blueprint', () => {
@@ -157,9 +157,9 @@ describe('the league file (US-10.1, US-10.2, Task 145)', () => {
 
   it('rejects a newer format version', () => {
     expect(() =>
-      parseLeagueFile(edited(leagueFile(), (raw) => (raw.formatVersion = 5)))
+      parseLeagueFile(edited(leagueFile(), (raw) => (raw.formatVersion = 6)))
     ).toThrow(
-      'A league file is not valid: a newer version of Scorinator made this file (format version 5).'
+      'A league file is not valid: a newer version of Scorinator made this file (format version 6).'
     );
   });
 
@@ -266,7 +266,7 @@ describe('detectFileKind (US-10.3, Task 145)', () => {
       'mvp1',
     ],
     ['a text that is not JSON', '{', 'unknown'],
-    ['an object with another kind', JSON.stringify({ kind: 'season' }), 'unknown'],
+    ['an object with another kind', JSON.stringify({ kind: 'calendar' }), 'unknown'],
     ['an object with no kind', JSON.stringify({ name: 'x' }), 'unknown'],
   ])('finds %s', (_name, text, kind) => {
     expect(detectFileKind(text)).toBe(kind);

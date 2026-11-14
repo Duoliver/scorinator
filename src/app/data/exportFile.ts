@@ -56,7 +56,8 @@ function rejectWrongFile(
   expected: 'leagues' | 'blueprints'
 ): void {
   if (kind === 'mvp1') throw new Error(MVP1_FILE);
-  if (kind === 'manifest' || kind === 'wrapper') throw new Error(DATABASE_FILE);
+  if (kind === 'manifest' || kind === 'wrapper' || kind === 'season')
+    throw new Error(DATABASE_FILE);
   if (kind === 'blueprints' && expected === SavedFileKind.LEAGUES)
     throw new Error(BLUEPRINT_FILE);
   if (kind === 'leagues' && expected === SavedFileKind.BLUEPRINTS)

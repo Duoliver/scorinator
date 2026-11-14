@@ -14,6 +14,7 @@ export {
 } from './exportFiles';
 export type { DetectedFileKind } from './exportFiles';
 export { packDatabaseZip, unpackDatabaseZip } from './databaseZip';
+export { parseSeasonFile, serializeSeasonFile } from './season';
 export type { DatabaseBundle } from './databaseZip';
 export { isMvp1File } from './mvp1';
 export { DATABASE_FORMAT_VERSION } from './types';
@@ -32,7 +33,12 @@ export type {
   SavedPhaseResult,
   SavedPhaseSummary,
   SavedProvenance,
+  SavedPlayoff,
   SavedRoundRobinPhase,
+  SavedSeason,
+  SavedSeasonFile,
+  SavedSeasonLeague,
+  SavedSeasonSummary,
   SavedWrapper,
   SavedWrapperLeague,
   SavedWrapperSummary,

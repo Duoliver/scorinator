@@ -2,6 +2,7 @@ import type { BracketTieResult } from '@/engine/bracket';
 import type { GroupBye, Legs, PhaseFormat, PhasePlan } from '@/engine/phases';
 import type { Bye, PhaseFixture } from '@/engine/round-robin';
 import type { MatchResult, PointsConfig } from '@/engine/standings';
+import type { TieResult, TieRules } from '@/engine/tiebreak';
 import type { Tier } from '@/engine/tier-ovr';
 
 // ---------------------------------------------------------------------------
@@ -17,7 +18,7 @@ import type { Tier } from '@/engine/tier-ovr';
  * adds the bracket phase, the bracket plan rules, and the bracket progress.
  * Task 155 adds an optional zone list to a plan, with no version change.
  * The parsers also read versions 2 and 3, with defaults. */
-export const DATABASE_FORMAT_VERSION = 4;
+export const DATABASE_FORMAT_VERSION = 5;
 
 /** The oldest format version the parsers read. */
 export const OLDEST_DATABASE_FORMAT_VERSION = 2;
@@ -66,12 +67,24 @@ export interface SavedWrapperSummary {
   progress: SavedLeagueProgress;
 }
 
+/** The manifest row of one Season (Task 209). */
+export interface SavedSeasonSummary {
+  uuid: string;
+  name: string;
+  year: string;
+  finished: boolean;
+  leagueCount: number;
+  teamCount: number;
+  playoffCount: number;
+}
+
 export interface SavedManifest {
   kind: 'manifest';
   formatVersion: typeof DATABASE_FORMAT_VERSION;
   installationUuid: string;
   blueprints: SavedBlueprint[];
   wrappers: SavedWrapperSummary[];
+  seasons: SavedSeasonSummary[];
 }
 
 export interface SavedInstance {
@@ -150,6 +163,41 @@ export interface SavedWrapper extends SavedLeagueEntry {
 }
 
 // ---------------------------------------------------------------------------
+// MVP3 Season file (Task 209): `wrapper-{season-uuid}.json`, with the kind
+// `season`, so a league reader never takes it for a league.
+// ---------------------------------------------------------------------------
+
+export interface SavedSeasonLeague extends SavedWrapperLeague {
+  teamUuids: string[];
+}
+
+export interface SavedPlayoff {
+  uuid: string;
+  name: string;
+  homeUuid: string;
+  awayUuid: string;
+  rules: TieRules;
+  result?: TieResult<string>;
+}
+
+export interface SavedSeason extends SavedProvenance {
+  uuid: string;
+  name: string;
+  year: string;
+  finished: boolean;
+  leagues: SavedSeasonLeague[];
+  playoffs: SavedPlayoff[];
+}
+
+export interface SavedSeasonFile {
+  kind: 'season';
+  formatVersion: typeof DATABASE_FORMAT_VERSION;
+  uuid: string;
+  teams: SavedInstance[];
+  content: SavedSeason;
+}
+
+// ---------------------------------------------------------------------------
 // MVP2 export files (Task 145): the league file and the Blueprint file of the
 // File module (US-10.1, US-10.2). They use the format version of the
 // database files (choice 2).
@@ -177,5 +225,6 @@ export const SavedFileKind = {
   WRAPPER: 'wrapper',
   LEAGUES: 'leagues',
   BLUEPRINTS: 'blueprints',
+  SEASON: 'season',
 } as const;
 export type SavedFileKind = (typeof SavedFileKind)[keyof typeof SavedFileKind];

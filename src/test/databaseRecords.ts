@@ -6,6 +6,8 @@ import type {
   Phase,
   PhaseResult,
   ScheduledPhase,
+  SeasonSummary,
+  SeasonWrapper,
   TeamBlueprint,
   TeamInstance,
 } from '@/domain';
@@ -21,6 +23,7 @@ export const SALT_MARSH = '00000000-0000-4000-8000-0000000000a1';
 export const HARBORVIEW = '00000000-0000-4000-8000-0000000000a2';
 export const LEAGUE = '00000000-0000-4000-8000-0000000000b1';
 export const OTHER_LEAGUE = '00000000-0000-4000-8000-0000000000b2';
+export const SEASON = '00000000-0000-4000-8000-0000000000c1';
 
 const provenance = {
   createdByInstallation: INSTALLATION,
@@ -100,19 +103,61 @@ export function leagueWrapper(
   };
 }
 
+/** A Season with the two teams of `leagueWrapper`, one league of both, and
+ * no playoffs (Task 209). */
+export function seasonWrapper(uuid: string = SEASON): SeasonWrapper {
+  const league = leagueWrapper();
+  // A Season roster has one trigram for each team (US-13.4).
+  const trigrams = ['SMU', 'HAR'];
+  return {
+    uuid,
+    teams: league.teams.map((team, index) => ({ ...team, trigram: trigrams[index] })),
+    content: {
+      uuid,
+      name: 'Liga Norte',
+      year: '2026-27',
+      finished: false,
+      ...provenance,
+      leagues: [{ ...league.content, teamUuids: [SALT_MARSH, HARBORVIEW] }],
+      playoffs: [],
+    },
+  };
+}
+
+/** The manifest row of `seasonWrapper` (Task 209). */
+export function seasonRow(uuid: string = SEASON): SeasonSummary {
+  return {
+    uuid,
+    name: 'Liga Norte',
+    year: '2026-27',
+    finished: false,
+    leagueCount: 1,
+    teamCount: 2,
+    playoffCount: 0,
+  };
+}
+
 /** An in-memory `DatabaseFolder`, with a log of each `save` call. */
 export function memoryFolder(
   initial: { manifest?: string; wrappers?: Record<string, string> } = {}
 ): {
   folder: DatabaseFolder;
   files: { manifest: string | null; wrappers: Record<string, string> };
-  saves: { wrappers: readonly WrapperText[]; manifest: string | null }[];
+  saves: {
+    wrappers: readonly WrapperText[];
+    manifest: string | null;
+    removed: readonly string[];
+  }[];
 } {
   const files = {
     manifest: initial.manifest ?? null,
     wrappers: { ...initial.wrappers },
   };
-  const saves: { wrappers: readonly WrapperText[]; manifest: string | null }[] = [];
+  const saves: {
+    wrappers: readonly WrapperText[];
+    manifest: string | null;
+    removed: readonly string[];
+  }[] = [];
   const folder: DatabaseFolder = {
     readManifest: async (): Promise<string | null> => files.manifest,
     readWrapper: async (uuid): Promise<string> => {
@@ -121,10 +166,11 @@ export function memoryFolder(
         throw new Error(`The database has no file for the league ${uuid}.`);
       return text;
     },
-    save: async (wrappers, manifest): Promise<void> => {
-      saves.push({ wrappers, manifest });
+    save: async (wrappers, manifest, removed = []): Promise<void> => {
+      saves.push({ wrappers, manifest, removed });
       for (const wrapper of wrappers) files.wrappers[wrapper.uuid] = wrapper.contents;
       if (manifest !== null) files.manifest = manifest;
+      for (const uuid of removed) delete files.wrappers[uuid];
     },
   };
   return { folder, files, saves };

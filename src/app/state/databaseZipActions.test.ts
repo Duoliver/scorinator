@@ -11,11 +11,16 @@ import {
   OTHER_LEAGUE,
   result,
   SALT_MARSH,
+  SEASON,
+  seasonRow,
+  seasonWrapper,
 } from '@/test/databaseRecords';
 import {
   parseLeagueWrapper,
+  parseSeasonWrapper,
   serializeLeagueWrapper,
   serializeManifestRecord,
+  serializeSeasonWrapper,
 } from '@/app/data/databaseFile';
 import {
   exportDatabaseZip,
@@ -78,6 +83,7 @@ describe('exportDatabaseZip (US-10.4, Task 146)', () => {
         installationUuid: state().installationUuid as string,
         blueprints: state().blueprints,
         wrappers: currentRows(state()),
+        seasons: [],
       })
     );
   });
@@ -87,6 +93,18 @@ describe('exportDatabaseZip (US-10.4, Task 146)', () => {
     await exportDatabaseZip();
     expect(Object.keys(state().leagues)).toEqual([LEAGUE]);
     expect(isDatabaseUnsaved(state())).toBe(false);
+  });
+
+  it('holds each Season wrapper from the folder (Task 209 choice 7)', async () => {
+    const memory = openSource();
+    memory.files.wrappers[SEASON] = serializeSeasonWrapper(seasonWrapper());
+    useDatabaseStore.setState({
+      seasonRows: [seasonRow()],
+      savedSeasonRows: [seasonRow()],
+    });
+    const bundle = unpackDatabaseZip(await exportDatabaseZip());
+    expect(bundle.seasons.map((w) => w.uuid)).toEqual([SEASON]);
+    expect(parseSeasonWrapper(bundle.seasons[0].contents)).toEqual(seasonWrapper());
   });
 
   it('stops with the parser error for a bad league file on disk', async () => {
@@ -114,6 +132,21 @@ describe('the database import (US-10.4, Task 146)', () => {
     expect(state().leagues[OTHER_LEAGUE]).toEqual(leagueWrapper([], OTHER_LEAGUE));
   });
 
+  it('skips the Seasons of a zip until Task 247 (Task 209 choice 7)', async () => {
+    const memory = openSource();
+    memory.files.wrappers[SEASON] = serializeSeasonWrapper(seasonWrapper());
+    useDatabaseStore.setState({
+      seasonRows: [seasonRow()],
+      savedSeasonRows: [seasonRow()],
+    });
+    const bytes = await exportDatabaseZip();
+
+    openTestDatabase();
+    const counts = importDatabase(await planDatabaseImport(bytes), new Map());
+    expect(counts.leagues.imported).toBe(2);
+    expect(state().seasonRows).toEqual([]);
+  });
+
   it('merges: a same entity imports nothing, and a conflict follows its choice', async () => {
     openTestDatabase();
     const changed = blueprint({
@@ -127,8 +160,10 @@ describe('the database import (US-10.4, Task 146)', () => {
         installationUuid: OTHER,
         blueprints,
         wrappers: [summarizeLeague(played)],
+        seasons: [],
       }),
       wrappers: [{ uuid: LEAGUE, contents: serializeLeagueWrapper(played) }],
+      seasons: [],
     });
 
     // The local database: Salt Marsh, Harborview, and the league with no result.
@@ -165,8 +200,10 @@ describe('the database import (US-10.4, Task 146)', () => {
         installationUuid: OTHER,
         blueprints: [],
         wrappers: [summarizeLeague(leagueWrapper())],
+        seasons: [],
       }),
       wrappers: [{ uuid: LEAGUE, contents: '{' }],
+      seasons: [],
     });
     await expect(planDatabaseImport(bytes)).rejects.toThrow(
       'This .zip file is not a Scorinator database: A league file is not valid: the text is not JSON.'

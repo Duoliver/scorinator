@@ -12,6 +12,7 @@ import {
   result,
   SALT_MARSH,
   scheduled,
+  seasonRow,
 } from '@/test/databaseRecords';
 import {
   parseLeagueWrapper,
@@ -37,6 +38,7 @@ function savedManifest(overrides: Partial<Manifest> = {}): string {
     installationUuid: INSTALLATION,
     blueprints: [blueprint()],
     wrappers: [summarizeLeague(leagueWrapper())],
+    seasons: [],
     ...overrides,
   });
 }
@@ -89,6 +91,7 @@ describe('openDatabase (Task 76, US-11.1)', () => {
       installationUuid: '07070707-0707-4707-8707-070707070707',
       blueprints: [],
       wrappers: [],
+      seasons: [],
     });
     expect(isManifestUnsaved(state())).toBe(false);
   });
@@ -280,6 +283,20 @@ describe('saveDatabase (Task 76 b)', () => {
     const rows = parseManifestRecord(memory.files.manifest ?? '').wrappers;
     expect(rows.map((row) => row.uuid)).toEqual([LEAGUE, OTHER_LEAGUE]);
     expect(rows[1]).toEqual(other);
+  });
+
+  it('keeps the Season rows (Task 209 choice 6)', async () => {
+    const memory = memoryFolder({
+      manifest: savedManifest({ seasons: [seasonRow()] }),
+      wrappers: { [LEAGUE]: serializeLeagueWrapper(leagueWrapper()) },
+    });
+    await openDatabase(memory.folder);
+    useDatabaseStore.setState({ blueprints: [blueprint({ name: 'Salt Marsh FC' })] });
+    await saveDatabase();
+
+    expect(parseManifestRecord(memory.files.manifest ?? '').seasons).toEqual([
+      seasonRow(),
+    ]);
   });
 
   it('writes nothing when nothing is unsaved', async () => {

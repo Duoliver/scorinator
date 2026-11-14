@@ -3,12 +3,14 @@ import {
   buildBracketTree,
   type BracketPlanRules,
 } from '@/engine/bracket';
-import { isUuidV4 } from '@/engine/identity';
+import { getNameKey, isUuidV4 } from '@/engine/identity';
 import {
   TieDecision,
   TieFormat,
   TieMatchPart,
   TiebreakMethod,
+  type TieResult,
+  type TieRules,
 } from '@/engine/tiebreak';
 import {
   bracketRulesOf,
@@ -47,6 +49,7 @@ import {
   type SavedPhaseResult,
   type SavedPhaseSummary,
   type SavedProvenance,
+  type SavedSeasonSummary,
   type SavedTieResult,
   type SavedWrapper,
   type SavedWrapperLeague,
@@ -70,9 +73,10 @@ const PHASE_FORMATS: readonly SavedPhaseFormat[] = [
 ];
 const LEGS: readonly Legs[] = Object.values(Legs);
 
-/** The format version of the file being read: 2 or 3 (Task 176). A version-2
- * file gets the defaults of version 3. */
-export type Version = 2 | 3 | 4;
+/** The format version of the file being read (Task 176). A version-2 file
+ * gets the defaults of version 3. A manifest before version 5 has no Seasons
+ * (Task 209). */
+export type Version = 2 | 3 | 4 | 5;
 
 const READ_VERSIONS = `This version reads format versions ${OLDEST_DATABASE_FORMAT_VERSION} to ${DATABASE_FORMAT_VERSION}.`;
 
@@ -89,7 +93,7 @@ export function isRecord(value: unknown): value is Raw {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-function isNonBlankString(value: unknown): value is string {
+export function isNonBlankString(value: unknown): value is string {
   return typeof value === 'string' && value.trim() !== '';
 }
 
@@ -101,7 +105,7 @@ function isPositiveInteger(value: unknown): value is number {
   return typeof value === 'number' && Number.isInteger(value) && value > 0;
 }
 
-function isNonNegativeInteger(value: unknown): value is number {
+export function isNonNegativeInteger(value: unknown): value is number {
   return typeof value === 'number' && Number.isInteger(value) && value >= 0;
 }
 
@@ -139,6 +143,7 @@ const KIND_NAMES: Record<SavedFileKind, string> = {
   [SavedFileKind.WRAPPER]: 'wrapper',
   [SavedFileKind.LEAGUES]: 'league file',
   [SavedFileKind.BLUEPRINTS]: 'team blueprints file',
+  [SavedFileKind.SEASON]: 'Season file',
 };
 
 export function readFileHeader(
@@ -162,13 +167,13 @@ export function readFileHeader(
       `a newer version of Scorinator made this file (format version ${version}). ${READ_VERSIONS}`
     );
   }
-  if (version !== 2 && version !== 3 && version !== 4) {
+  if (version !== 2 && version !== 3 && version !== 4 && version !== 5) {
     fail(`the format version is "${String(version)}". ${READ_VERSIONS}`);
   }
   return { raw, version };
 }
 
-function readProvenance(value: Raw, label: string, fail: Fail): SavedProvenance {
+export function readProvenance(value: Raw, label: string, fail: Fail): SavedProvenance {
   for (const key of ['createdByInstallation', 'lastModifiedByInstallation'] as const) {
     if (!isUuidV4(value[key])) fail(`${label} has no valid "${key}" UUID.`);
   }
@@ -321,6 +326,59 @@ function readSummary(
   };
 }
 
+function readSeasonSummary(value: unknown, index: number): SavedSeasonSummary {
+  const label = `Season row ${index + 1}`;
+  const fail: Fail = failManifest;
+  if (!isRecord(value)) fail(`${label} is not an object.`);
+  if (!isUuidV4(value.uuid)) fail(`${label} has no valid UUID.`);
+  if (!isNonBlankString(value.name)) fail(`${label} has no name.`);
+  if (!isNonBlankString(value.year)) fail(`${label} has no year.`);
+  if (typeof value.finished !== 'boolean') {
+    fail(`${label} has no valid "finished" flag.`);
+  }
+  const counts = { leagueCount: 'league', teamCount: 'team', playoffCount: 'playoff' };
+  for (const [key, noun] of Object.entries(counts)) {
+    if (!isNonNegativeInteger(value[key])) fail(`${label} has no valid ${noun} count.`);
+  }
+  return {
+    uuid: value.uuid,
+    name: value.name,
+    year: value.year,
+    finished: value.finished,
+    leagueCount: value.leagueCount as number,
+    teamCount: value.teamCount as number,
+    playoffCount: value.playoffCount as number,
+  };
+}
+
+/** A Season row has its own wrapper file, so its UUID is not the UUID of a
+ * league row. A name and a year name one Season only (US-13.1). */
+function checkSeasonRows(
+  seasons: readonly SavedSeasonSummary[],
+  wrappers: readonly SavedWrapperSummary[]
+): void {
+  const fail: Fail = failManifest;
+  checkUnique(
+    seasons,
+    (row) => row.uuid,
+    (i, first) => `Season row ${i + 1} has the same UUID as Season row ${first + 1}.`,
+    fail
+  );
+  seasons.forEach((row, index) => {
+    const league = wrappers.findIndex((wrapper) => wrapper.uuid === row.uuid);
+    if (league >= 0) {
+      fail(`Season row ${index + 1} has the UUID of league row ${league + 1}.`);
+    }
+  });
+  checkUnique(
+    seasons,
+    (row) => `${getNameKey(row.name)}\u0000${getNameKey(row.year)}`,
+    (i, first) =>
+      `Season row ${i + 1} has the same name and year as Season row ${first + 1}.`,
+    fail
+  );
+}
+
 export function serializeManifest(manifest: SavedManifest): string {
   return JSON.stringify(manifest, null, 2);
 }
@@ -358,20 +416,32 @@ export function parseManifest(text: string): SavedManifest {
     fail
   );
 
+  const seasons =
+    version < 5
+      ? []
+      : readList(raw.seasons, 'seasons', fail).map((row, index) =>
+          readSeasonSummary(row, index)
+        );
+  checkSeasonRows(seasons, wrappers);
+
   return {
     kind: SavedFileKind.MANIFEST,
     formatVersion: DATABASE_FORMAT_VERSION,
     installationUuid: raw.installationUuid,
     blueprints,
     wrappers,
+    seasons,
   };
 }
 
 // --- Wrapper ------------------------------------------------------------
 
-function readInstance(value: unknown, index: number): SavedInstance {
+export function readInstance(
+  value: unknown,
+  index: number,
+  fail: Fail = failWrapper
+): SavedInstance {
   const label = `team ${index + 1}`;
-  const fail: Fail = failWrapper;
   if (!isRecord(value)) fail(`${label} is not an object.`);
   if (!isUuidV4(value.blueprintUuid)) fail(`${label} has no valid Blueprint UUID.`);
   if (!isNonBlankString(value.slug)) fail(`${label} has no slug.`);
@@ -577,16 +647,90 @@ function readBracketRules(value: unknown, label: string): BracketPlanRules {
 
 function readScore(
   value: unknown,
-  label: string
+  label: string,
+  fail: Fail = failWrapper
 ): { homeGoals: number; awayGoals: number } {
   if (
     !isRecord(value) ||
     !isNonNegativeInteger(value.homeGoals) ||
     !isNonNegativeInteger(value.awayGoals)
   ) {
-    return failWrapper(`${label} has no valid score.`);
+    return fail(`${label} has no valid score.`);
   }
   return { homeGoals: value.homeGoals, awayGoals: value.awayGoals };
+}
+
+/** The rules of one tie with no bracket fields: the rules of a Season
+ * playoff (US-13.7, Task 209). */
+export function readTieRules(value: unknown, label: string, fail: Fail): TieRules {
+  const valid =
+    isRecord(value) &&
+    TIE_FORMATS.includes(value.format as string) &&
+    TIEBREAK_METHODS.includes(value.method as string) &&
+    typeof value.awayGoals === 'boolean' &&
+    typeof value.playsAet === 'boolean' &&
+    typeof value.homeAdvantage === 'boolean';
+  if (!valid) fail(`${label} has no valid tie rules.`);
+  return {
+    format: value.format as TieRules['format'],
+    awayGoals: value.awayGoals as boolean,
+    playsAet: value.playsAet as boolean,
+    method: value.method as TieRules['method'],
+    homeAdvantage: value.homeAdvantage as boolean,
+  };
+}
+
+/**
+ * Reads the matches and the outcome of one tie: a bracket tie, or a Season
+ * playoff (Task 209). Each team of the tie must be one of `teams`.
+ * `teamsName` names that set in an error, for example "a seed of the
+ * bracket".
+ */
+export function readTieOutcome(
+  value: Raw,
+  label: string,
+  teams: ReadonlySet<string>,
+  teamsName: string,
+  fail: Fail
+): TieResult<string> {
+  const isTeam = (id: unknown): id is string => typeof id === 'string' && teams.has(id);
+  if (
+    !isTeam(value.winnerId) ||
+    !isTeam(value.loserId) ||
+    value.winnerId === value.loserId
+  ) {
+    fail(`${label} names a winner or a loser that is not ${teamsName}.`);
+  }
+  if (!TIE_DECISIONS.includes(value.decidedBy as string)) {
+    fail(`${label} has no valid decision.`);
+  }
+  const matches = readList(value.matches, 'matches', fail).map((item, i) => {
+    const matchLabel = `${label}, match ${i + 1}`;
+    if (!isRecord(item) || !MATCH_PARTS.includes(item.part as string)) {
+      fail(`${matchLabel} has no valid part.`);
+    }
+    if (!isTeam(item.homeId) || !isTeam(item.awayId)) {
+      fail(`${matchLabel} names a team that is not ${teamsName}.`);
+    }
+    return {
+      part: item.part as TieResult<string>['matches'][number]['part'],
+      homeId: item.homeId,
+      awayId: item.awayId,
+      score: readScore(item.score, matchLabel, fail),
+      ...(item.aet === undefined
+        ? {}
+        : { aet: readScore(item.aet, `${matchLabel} AET`, fail) }),
+    };
+  });
+  return {
+    matches,
+    ...(value.penalties === undefined
+      ? {}
+      : { penalties: readScore(value.penalties, `${label} penalties`, fail) }),
+    winnerId: value.winnerId,
+    loserId: value.loserId,
+    decidedBy: value.decidedBy as TieResult<string>['decidedBy'],
+  };
 }
 
 function readTieResult(
@@ -597,44 +741,9 @@ function readTieResult(
   const fail: Fail = failWrapper;
   if (!isRecord(value)) fail(`${label} is not an object.`);
   if (!isNonBlankString(value.tieId)) fail(`${label} has no tie id.`);
-  const isSeed = (id: unknown): id is string => typeof id === 'string' && seeds.has(id);
-  if (
-    !isSeed(value.winnerId) ||
-    !isSeed(value.loserId) ||
-    value.winnerId === value.loserId
-  ) {
-    fail(`${label} names a winner or a loser that is not a seed of the bracket.`);
-  }
-  if (!TIE_DECISIONS.includes(value.decidedBy as string)) {
-    fail(`${label} has no valid decision.`);
-  }
-  const matches = readList(value.matches, 'matches', fail).map((item, i) => {
-    const matchLabel = `${label}, match ${i + 1}`;
-    if (!isRecord(item) || !MATCH_PARTS.includes(item.part as string)) {
-      fail(`${matchLabel} has no valid part.`);
-    }
-    if (!isSeed(item.homeId) || !isSeed(item.awayId)) {
-      fail(`${matchLabel} names a team that is not a seed of the bracket.`);
-    }
-    return {
-      part: item.part as SavedTieResult['matches'][number]['part'],
-      homeId: item.homeId,
-      awayId: item.awayId,
-      score: readScore(item.score, matchLabel),
-      ...(item.aet === undefined
-        ? {}
-        : { aet: readScore(item.aet, `${matchLabel} AET`) }),
-    };
-  });
   return {
     tieId: value.tieId,
-    matches,
-    ...(value.penalties === undefined
-      ? {}
-      : { penalties: readScore(value.penalties, `${label} penalties`) }),
-    winnerId: value.winnerId,
-    loserId: value.loserId,
-    decidedBy: value.decidedBy as SavedTieResult['decidedBy'],
+    ...readTieOutcome(value, label, seeds, 'a seed of the bracket', fail),
   };
 }
 
@@ -894,7 +1003,7 @@ function checkPlansAndPhases(
   });
 }
 
-function readLeague(
+export function readLeague(
   value: unknown,
   teams: ReadonlySet<string>,
   version: Version
@@ -949,7 +1058,9 @@ export function readWrapperBody(raw: Raw, version: Version): SavedLeagueEntry {
   const fail: Fail = failWrapper;
   if (!isUuidV4(raw.uuid)) fail('the file has no valid UUID.');
 
-  const teams = readList(raw.teams, 'teams', fail).map(readInstance);
+  const teams = readList(raw.teams, 'teams', fail).map((team, index) =>
+    readInstance(team, index)
+  );
   checkUnique(
     teams,
     (t) => t.blueprintUuid,

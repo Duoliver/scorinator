@@ -1,8 +1,7 @@
 import type { JSX, TargetedDragEvent } from 'preact';
 import { DropdownMenu, type DropdownMenuItem } from '@/design-system';
 import { groupLabel } from '@/engine/round-robin';
-import { TeamSwatch } from '@/features/components';
-import { TeamLabel } from '@/features/leagues/TeamLabel';
+import { TeamLabel, TeamSwatch } from '@/features/components';
 import type GroupCardsProps from './types';
 import styles from './GroupCards.module.css';
 

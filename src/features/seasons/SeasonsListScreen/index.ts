@@ -1,0 +1,1 @@
+export { SeasonsListScreen } from './SeasonsListScreen';

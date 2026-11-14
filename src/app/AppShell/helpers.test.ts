@@ -15,6 +15,25 @@ describe('isNavItemActive', () => {
     expect(isNavItemActive(leagues, '/teams')).toBe(false);
   });
 
+  it('marks Seasons for the Seasons list and a Season view (Task 212)', () => {
+    const seasons = navItem(ROUTES.seasons);
+    expect(isNavItemActive(seasons, '/seasons')).toBe(true);
+    expect(
+      isNavItemActive(seasons, '/seasons/00000000-0000-4000-8000-0000000000c1')
+    ).toBe(true);
+    expect(isNavItemActive(seasons, '/leagues')).toBe(false);
+    expect(isNavItemActive(navItem(ROUTES.leaguesDashboard), '/seasons')).toBe(false);
+  });
+
+  it('lists Seasons between Leagues and Teams (demo point 1)', () => {
+    expect(NAV_ITEMS.map((item) => item.label)).toEqual([
+      'Leagues',
+      'Seasons',
+      'Teams',
+      'File',
+    ]);
+  });
+
   it('marks any other item only for its exact path', () => {
     const teams = navItem(ROUTES.teams);
     expect(isNavItemActive(teams, '/teams')).toBe(true);

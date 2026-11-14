@@ -93,25 +93,23 @@ describe('parseTrigramList', () => {
   });
 });
 
+const team = (
+  id: string,
+  overrides: Partial<TrigramPickTeam<string>> = {}
+): TrigramPickTeam<string> => ({
+  id,
+  name: 'Ashfield',
+  tier: 'C' as Tier,
+  ovr: 60,
+  trigrams: ['ASH'],
+  lot: 0,
+  ...overrides,
+});
+
+const picked = (teams: TrigramPickTeam<string>[]): Record<string, string> =>
+  Object.fromEntries([...pickTrigrams(teams)].map(([id, pick]) => [id, pick.trigram]));
+
 describe('pickTrigrams', () => {
-  const team = (
-    id: string,
-    overrides: Partial<TrigramPickTeam<string>> = {}
-  ): TrigramPickTeam<string> => ({
-    id,
-    name: 'Ashfield',
-    tier: 'C' as Tier,
-    ovr: 60,
-    trigrams: ['ASH'],
-    lot: 0,
-    ...overrides,
-  });
-
-  const picked = (teams: TrigramPickTeam<string>[]): Record<string, string> =>
-    Object.fromEntries(
-      [...pickTrigrams(teams)].map(([id, pick]) => [id, pick.trigram])
-    );
-
   it('gives each team the first trigram of its list when nothing clashes', () => {
     expect(
       picked([
@@ -233,5 +231,26 @@ describe('pickTrigrams', () => {
 
   it('throws for a fixed trigram with a bad format', () => {
     expect(() => pickTrigrams([team('a', { fixed: 'A-H' })])).toThrow(RangeError);
+  });
+});
+
+describe('pickTrigrams in a Season (US-13.4, Task 208 choice 6)', () => {
+  it('gives the first batch its trigrams by the higher OVR, then the lot', () => {
+    expect(
+      picked([
+        team('a', { tier: 'B', ovr: 74, trigrams: ['ASH', 'ASN'] }),
+        team('b', { tier: 'A', ovr: 86, trigrams: ['ASH'] }),
+        team('c', { tier: 'B', ovr: 74, trigrams: ['ASH', 'ASR'], lot: 1 }),
+      ])
+    ).toEqual({ b: 'ASH', a: 'ASN', c: 'ASR' });
+  });
+
+  it('gives a later join a free trigram, and keeps the trigram of each roster team', () => {
+    expect(
+      picked([
+        team('roster', { tier: 'D', ovr: 55, fixed: 'ASH' }),
+        team('new', { tier: 'S', ovr: 95, trigrams: ['ASH', 'AFC'] }),
+      ])
+    ).toEqual({ roster: 'ASH', new: 'AFC' });
   });
 });

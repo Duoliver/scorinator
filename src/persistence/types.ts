@@ -78,9 +78,16 @@ export interface WrapperText {
  *   manifest write leaves an extra wrapper file at worst, never a manifest
  *   row with no file. A `null` manifest means that the manifest did not
  *   change, so `save` writes the wrappers only.
+ * - `removed` names the wrappers that the user deleted (Task 210). `save`
+ *   removes their files after the manifest write, so a crash leaves a file
+ *   that no manifest row names at worst. A UUID with no file is skipped.
  */
 export interface DatabaseFolder {
   readManifest(): Promise<string | null>;
   readWrapper(uuid: string): Promise<string>;
-  save(wrappers: readonly WrapperText[], manifest: string | null): Promise<void>;
+  save(
+    wrappers: readonly WrapperText[],
+    manifest: string | null,
+    removed?: readonly string[]
+  ): Promise<void>;
 }

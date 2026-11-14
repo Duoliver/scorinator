@@ -825,3 +825,114 @@ describe('smoke: M6 standings, zones, the chart, and trigrams (Task 158)', () =>
     expect(legend()).toEqual(['Champion', 'Relegation']);
   });
 });
+
+describe('smoke: MVP3 M1 Season core (Task 214)', () => {
+  /** Three teams: two Salt Marsh United from two places, for a name clash
+   * in the Season (US-13.4). */
+  const CSV_PATH = '/home/teams.csv';
+  const CSV = [
+    'Slug,Name,Colour,Tier,Location,Trigrams',
+    'salt-marsh-united,Salt Marsh United,#E53935,B,Saltmarsh,SMU',
+    'salt-marsh-west,Salt Marsh United,#1E88E5,C,Westbury,SMW',
+    'harborview-sc,Harborview SC,#43A047,A,Harborview,HSC',
+  ].join('\n');
+  const seasonFiles = (): string[] =>
+    [...disk.keys()].filter((path) => path.startsWith('/appdata/database/wrapper-'));
+  const rosterRows = (): string[] =>
+    within(screen.getByRole('table', { name: 'Season roster' }))
+      .getAllByRole('row')
+      .slice(1)
+      .map((row) => row.textContent ?? '');
+
+  it('makes a Season with a roster, finishes it, keeps it in a new session, and deletes it', async () => {
+    const user = userEvent.setup();
+    disk.set(CSV_PATH, CSV);
+    vi.mocked(open).mockResolvedValueOnce(CSV_PATH);
+    const { unmount } = render(<AppShell />);
+    expect(
+      await screen.findByRole('heading', { name: 'No leagues yet.' })
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole('link', { name: 'Teams' }));
+    await user.click(screen.getByRole('button', { name: 'Import teams...' }));
+    const confirm = await screen.findByRole('dialog', { name: 'Import teams?' });
+    await user.click(within(confirm).getByRole('button', { name: 'Import' }));
+
+    // 1. Create a Season on the Seasons screen (US-13.1).
+    await user.click(screen.getByRole('link', { name: 'Seasons' }));
+    expect(screen.getByRole('heading', { name: 'No Seasons yet' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: '+ New Season' }));
+    const dialog = screen.getByRole('dialog', { name: 'New Season' });
+    await user.type(within(dialog).getByLabelText('Name'), 'Liga Norte');
+    await user.type(within(dialog).getByLabelText('Year'), '2026-27');
+    await user.click(within(dialog).getByRole('button', { name: 'Create Season' }));
+
+    // 2. Open it, and add the three teams. The higher OVR keeps the name, so
+    // the Tier C team gets its Location (US-13.4, Task 208).
+    await user.click(screen.getByRole('link', { name: 'Open Season' }));
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Liga Norte' })
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: '+ Add teams' }));
+    const picker = screen.getByRole('dialog', { name: 'Add teams' });
+    await user.click(
+      within(picker).getAllByRole('button', { name: 'Salt Marsh United' })[0]
+    );
+    await user.click(within(picker).getByRole('button', { name: 'Salt Marsh United' }));
+    await user.click(within(picker).getByRole('button', { name: 'Harborview SC' }));
+    await user.click(within(picker).getByRole('button', { name: 'Add 3 teams' }));
+    expect(rosterRows()).toEqual([
+      expect.stringContaining('Salt Marsh United'),
+      expect.stringContaining('Salt Marsh United (Westbury)'),
+      expect.stringContaining('Harborview SC'),
+    ]);
+
+    // 3. Edit one Season team, then finish the Season (US-13.4, US-13.9).
+    await user.click(screen.getByRole('button', { name: 'Edit Harborview SC' }));
+    const ovr = screen.getByLabelText('OVR (80 to 89)');
+    await user.clear(ovr);
+    await user.type(ovr, '88');
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    await user.click(screen.getByRole('button', { name: 'Finish Season' }));
+    await user.click(
+      within(screen.getByRole('dialog')).getByRole('button', { name: 'Finish Season' })
+    );
+    const seasonBefore = Object.values(useDatabaseStore.getState().seasons)[0];
+    pressCtrlS();
+    expect(await screen.findByText('Saved.')).toBeInTheDocument();
+    expect(seasonFiles()).toHaveLength(1);
+
+    // 4. A new session: the Season row comes back from the manifest, and the
+    // Season from its file.
+    unmount();
+    resetSession();
+    openAt('/seasons');
+    const second = render(<AppShell />);
+    const card = await screen.findByRole('article', { name: 'Liga Norte 2026-27' });
+    expect(card).toHaveTextContent('Finished');
+    expect(card).toHaveTextContent('No leagues · 3 teams · No playoffs');
+    await user.click(within(card).getByRole('link', { name: 'Open Season' }));
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Liga Norte' })
+    ).toBeInTheDocument();
+    expect(useDatabaseStore.getState().seasons[seasonBefore.uuid]).toEqual(
+      seasonBefore
+    );
+    expect(screen.getByLabelText('Tier A, OVR 88')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '+ Add teams' })).toBeDisabled();
+
+    // 5. Delete the finished Season from the list, and save: its file goes
+    // (US-13.2, Task 210).
+    await user.click(screen.getByRole('link', { name: '← Seasons' }));
+    await user.click(
+      screen.getByRole('button', { name: 'More actions for Liga Norte 2026-27' })
+    );
+    await user.click(screen.getByRole('menuitem', { name: 'Delete...' }));
+    await user.click(
+      within(screen.getByRole('dialog')).getByRole('button', { name: 'Delete' })
+    );
+    pressCtrlS();
+    await waitFor(() => expect(seasonFiles()).toEqual([]));
+    expect(JSON.parse(disk.get(MANIFEST_PATH) ?? '{}').seasons).toEqual([]);
+    second.unmount();
+  });
+});

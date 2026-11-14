@@ -17,7 +17,6 @@ features/leagues/
   index.ts                  the barrel for the three screens
   leagueSummary.ts          used by LeagueDetailScreen and LeagueList
   GroupCards/               used by TeamsStep and LeagueDetailScreen
-  TeamLabel/                used by GroupCards and the setup steps
   ZoneEditor/               used by PhaseCard and the League Detail ZoneDrawer
   LeagueDetailScreen/
   LeaguesDashboardScreen/

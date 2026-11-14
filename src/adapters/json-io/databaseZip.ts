@@ -13,6 +13,7 @@ import { parseManifest } from './database';
 export interface DatabaseBundle {
   manifest: string;
   wrappers: WrapperText[];
+  seasons: WrapperText[];
 }
 
 const MANIFEST = 'manifest.json';
@@ -24,7 +25,7 @@ function fail(message: string): never {
 
 export function packDatabaseZip(bundle: DatabaseBundle): Uint8Array {
   const files: Zippable = { [MANIFEST]: strToU8(bundle.manifest) };
-  for (const wrapper of bundle.wrappers) {
+  for (const wrapper of [...bundle.wrappers, ...bundle.seasons]) {
     files[wrapperName(wrapper.uuid)] = strToU8(wrapper.contents);
   }
   return zipSync(files);
@@ -52,22 +53,28 @@ export function unpackDatabaseZip(bytes: Uint8Array): DatabaseBundle {
   if (manifestBytes === undefined) fail(`it has no ${MANIFEST}.`);
   const manifest = strFromU8(manifestBytes);
   let rows: { uuid: string; name: string }[];
+  let seasonRows: { uuid: string; name: string }[];
   try {
-    rows = parseManifest(manifest).wrappers;
+    ({ wrappers: rows, seasons: seasonRows } = parseManifest(manifest));
   } catch (error) {
     return fail(error instanceof Error ? error.message : String(error));
   }
 
-  const wrappers = rows.map((row) => {
+  const readFile = (row: { uuid: string; name: string }, noun: string): WrapperText => {
     const contents = files.get(wrapperName(row.uuid));
-    if (contents === undefined) fail(`it has no file for the league "${row.name}".`);
+    if (contents === undefined) fail(`it has no file for the ${noun} "${row.name}".`);
     return { uuid: row.uuid, contents: strFromU8(contents) };
-  });
+  };
+  const wrappers = rows.map((row) => readFile(row, 'league'));
+  const seasons = seasonRows.map((row) => readFile(row, 'Season'));
 
-  const known = new Set([MANIFEST, ...rows.map((row) => wrapperName(row.uuid))]);
+  const known = new Set([
+    MANIFEST,
+    ...[...rows, ...seasonRows].map((row) => wrapperName(row.uuid)),
+  ]);
   const other = [...files.keys()].find((name) => !known.has(name));
   if (other !== undefined)
     fail(`it has a file that a database does not have: "${other}".`);
 
-  return { manifest, wrappers };
+  return { manifest, wrappers, seasons };
 }

@@ -4,9 +4,9 @@ import type {
   ImportStep,
   RandomBytes,
 } from '@/engine/identity';
-import type { LeagueWrapper, TeamBlueprint } from '@/domain';
+import type { LeagueWrapper, SeasonWrapper, TeamBlueprint } from '@/domain';
 import { cryptoRandomBytes } from '@/app/random';
-import { parseLeagueWrapper } from '@/app/data/databaseFile';
+import { parseLeagueWrapper, parseSeasonWrapper } from '@/app/data/databaseFile';
 import { packDatabase, readDatabaseZip } from '@/app/data/databaseZip';
 import {
   importBlueprints,
@@ -15,7 +15,12 @@ import {
   planLeagueImport,
   type LeagueImportCounts,
 } from './importActions';
-import { currentRows, requireOpenDatabase, useDatabaseStore } from './databaseStore';
+import {
+  currentRows,
+  currentSeasonRows,
+  requireOpenDatabase,
+  useDatabaseStore,
+} from './databaseStore';
 
 /**
  * "Export entire database" and "Import entire database" (US-10.4,
@@ -46,8 +51,14 @@ export async function exportDatabaseZip(): Promise<Uint8Array> {
   const state = useDatabaseStore.getState();
   const { installationUuid } = requireOpenDatabase(state);
   return packDatabase(
-    { installationUuid, blueprints: state.blueprints, wrappers: currentRows(state) },
-    await readAllLeagues()
+    {
+      installationUuid,
+      blueprints: state.blueprints,
+      wrappers: currentRows(state),
+      seasons: currentSeasonRows(state),
+    },
+    await readAllLeagues(),
+    await readAllSeasons()
   );
 }
 
@@ -61,6 +72,20 @@ export async function readAllLeagues(): Promise<LeagueWrapper[]> {
       async (row) =>
         state.leagues[row.uuid] ??
         parseLeagueWrapper(await folder.readWrapper(row.uuid))
+    )
+  );
+}
+
+/** Each Season of the database: an open Season from memory, with its
+ * unsaved changes, and the others from their files (Task 210 choice 8). */
+export async function readAllSeasons(): Promise<SeasonWrapper[]> {
+  const state = useDatabaseStore.getState();
+  const { folder } = requireOpenDatabase(state);
+  return Promise.all(
+    currentSeasonRows(state).map(
+      async (row) =>
+        state.seasons[row.uuid] ??
+        parseSeasonWrapper(await folder.readWrapper(row.uuid))
     )
   );
 }

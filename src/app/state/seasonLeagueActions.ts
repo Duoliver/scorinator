@@ -4,7 +4,7 @@ import type { LeagueWrapper, SeasonWrapper } from '@/domain';
 import { cryptoRandomBytes } from '@/app/random';
 import {
   requireOpenDatabase,
-  requireRunningSeason,
+  requireRunningOpenSeason,
   getSeasonLeagueView,
   useDatabaseStore,
 } from './databaseStore';
@@ -35,9 +35,7 @@ export function createSeasonLeague(
 ): LeagueWrapper {
   const state = useDatabaseStore.getState();
   const { installationUuid } = requireOpenDatabase(state);
-  const season = state.seasons[seasonUuid];
-  if (!season) throw new RangeError(`No open Season has the UUID ${seasonUuid}.`);
-  requireRunningSeason(season);
+  const season = requireRunningOpenSeason(state, seasonUuid);
   checkTeamList(input.teams);
 
   const inRoster = new Set(season.teams.map((team) => team.blueprintUuid));

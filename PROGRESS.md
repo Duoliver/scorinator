@@ -94,6 +94,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 249 | Join the Tier and the OVR in one box in the roster demo | `docs/design-reference/MVP3/` | ✅ Done | 2026-11-13 | 2026-11-13 | [249](/docs/tasks/249-roster-tier-ovr.md) | Task created by User - 2026-11-13. After the Task 206 review. The user reviewed the task. |
 | 250 | Fix the comma in the Season delete text, for two parts | `features/seasons` | ✅ Done | 2026-11-13 | 2026-11-13 | [250](/docs/tasks/250-delete-text-comma.md) | Task created by User - 2026-11-13. From the Task 212 refactor pass. Refactor: no change. |
 | 251 | Check the unique roster trigrams of a Season file | `adapters/json-io` | ✅ Done | 2026-11-13 | 2026-11-13 | [251](/docs/tasks/251-season-trigram-check.md) | Task created by User - 2026-11-13. From the Task 213 review. Refactor: no change. |
+| 252 | One shared lookup of an open, running Season for the Season action files | `app/state` | 🟦 Refactor | 2026-11-14 |  | [252](/docs/tasks/252-shared-season-lookup.md) | Task created by User - 2026-11-14. From the Task 217 refactor pass. Review agreed, commit 1. The refactor pass is next. |
 
 **Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input, see Open Questions) · 🟩 Review · 🟦 Refactor (the pass, or its review: the Notes say which) · ✅ Done · ❌ Cancelled (the reason is in the Notes column)
 

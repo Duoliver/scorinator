@@ -182,6 +182,28 @@ export function requireRunningSeason(wrapper: SeasonWrapper): void {
   }
 }
 
+/** The open Season, or a `RangeError`: a change needs the Season in memory
+ * (Task 252). */
+export function requireOpenSeason(
+  state: Pick<DatabaseState, 'seasons'>,
+  uuid: string
+): SeasonWrapper {
+  const season = state.seasons[uuid];
+  if (!season) throw new RangeError(`No open Season has the UUID ${uuid}.`);
+  return season;
+}
+
+/** The open Season while it runs. Throws as `requireOpenSeason` and
+ * `requireRunningSeason` do (Task 252). */
+export function requireRunningOpenSeason(
+  state: Pick<DatabaseState, 'seasons'>,
+  uuid: string
+): SeasonWrapper {
+  const season = requireOpenSeason(state, uuid);
+  requireRunningSeason(season);
+  return season;
+}
+
 /** The address of a league of a Season: a league UUID is unique only in
  * its container, so the Season UUID comes with it (Task 196, Task 216). */
 export interface SeasonLeagueRef {

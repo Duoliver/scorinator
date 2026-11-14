@@ -6,7 +6,7 @@ import { cryptoRandomBytes, freshRng } from '@/app/random';
 import {
   isPlayoffNameTaken,
   requireOpenDatabase,
-  requireRunningSeason,
+  requireRunningOpenSeason,
   useDatabaseStore,
 } from './databaseStore';
 
@@ -17,21 +17,6 @@ export interface PlayoffInput {
   team1Uuid: string;
   team2Uuid: string;
   rules: TieRules;
-}
-
-/** The open, running Season, and the installation that changes it. Throws
- * a `RangeError` for a Season that is not open, and for a finished Season
- * (US-13.9). */
-function requireRunningOpenSeason(seasonUuid: string): {
-  season: SeasonWrapper;
-  installationUuid: string;
-} {
-  const state = useDatabaseStore.getState();
-  const { installationUuid } = requireOpenDatabase(state);
-  const season = state.seasons[seasonUuid];
-  if (!season) throw new RangeError(`No open Season has the UUID ${seasonUuid}.`);
-  requireRunningSeason(season);
-  return { season, installationUuid };
 }
 
 /** Puts the new playoff list in the store, with the Season stamped. */
@@ -68,7 +53,9 @@ export function createPlayoff(
   input: PlayoffInput,
   randomBytes: RandomBytes = cryptoRandomBytes
 ): Playoff {
-  const { season, installationUuid } = requireRunningOpenSeason(seasonUuid);
+  const state = useDatabaseStore.getState();
+  const { installationUuid } = requireOpenDatabase(state);
+  const season = requireRunningOpenSeason(state, seasonUuid);
   const name = input.name.trim();
   if (name === '') throw new RangeError('A playoff needs a name.');
   if (isPlayoffNameTaken(season, name)) {
@@ -116,7 +103,9 @@ export function playPlayoff(
   playoffUuid: string,
   rng: Rng = freshRng()
 ): void {
-  const { season, installationUuid } = requireRunningOpenSeason(seasonUuid);
+  const state = useDatabaseStore.getState();
+  const { installationUuid } = requireOpenDatabase(state);
+  const season = requireRunningOpenSeason(state, seasonUuid);
   const playoff = season.content.playoffs.find(
     (candidate) => candidate.uuid === playoffUuid
   );

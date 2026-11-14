@@ -14,7 +14,8 @@ import { joinSeasonRoster } from './seasonRoster';
 import {
   isSeasonNameTaken,
   requireOpenDatabase,
-  requireRunningSeason,
+  requireOpenSeason,
+  requireRunningOpenSeason,
   useDatabaseStore,
 } from './databaseStore';
 
@@ -36,13 +37,6 @@ function checkSeasonName(input: SeasonNameInput, exceptUuid?: string): SeasonNam
     throw new RangeError(`A Season named "${name}" with the year "${year}" exists.`);
   }
   return { name, year };
-}
-
-/** The open Season, or a `RangeError`: a change needs the Season in memory. */
-function requireOpenSeason(uuid: string): SeasonWrapper {
-  const season = useDatabaseStore.getState().seasons[uuid];
-  if (!season) throw new RangeError(`No open Season has the UUID ${uuid}.`);
-  return season;
 }
 
 /** Puts a changed Season in the store, stamped with the local installation
@@ -145,14 +139,15 @@ export function deleteSeason(uuid: string): void {
 
 /** Makes an open Season read only (US-13.9). */
 export function finishSeason(uuid: string): void {
-  const season = requireOpenSeason(uuid);
-  requireRunningSeason(season);
+  const season = requireRunningOpenSeason(useDatabaseStore.getState(), uuid);
   storeChangedSeason(season, { finished: true });
 }
 
 /** Makes a finished Season open to changes again (US-13.9). */
 export function reopenSeason(uuid: string): void {
-  storeChangedSeason(requireOpenSeason(uuid), { finished: false });
+  storeChangedSeason(requireOpenSeason(useDatabaseStore.getState(), uuid), {
+    finished: false,
+  });
 }
 
 /**
@@ -172,8 +167,7 @@ export function addSeasonTeams(
   blueprintUuids: readonly string[],
   rng: Rng = freshRng()
 ): TeamInstance[] {
-  const season = requireOpenSeason(seasonUuid);
-  requireRunningSeason(season);
+  const season = requireRunningOpenSeason(useDatabaseStore.getState(), seasonUuid);
   const byUuid = new Map(
     useDatabaseStore.getState().blueprints.map((b) => [b.uuid, b])
   );
@@ -218,8 +212,7 @@ export function updateSeasonTeam(
   blueprintUuid: string,
   changes: SeasonTeamChanges
 ): void {
-  const season = requireOpenSeason(seasonUuid);
-  requireRunningSeason(season);
+  const season = requireRunningOpenSeason(useDatabaseStore.getState(), seasonUuid);
   const team = season.teams.find(
     (candidate) => candidate.blueprintUuid === blueprintUuid
   );

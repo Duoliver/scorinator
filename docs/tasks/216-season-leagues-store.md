@@ -1,6 +1,6 @@
 # Task 216: Season leagues in the store
 
-**Status:** Refactor
+**Status:** Done
 
 ## Goal
 
@@ -33,11 +33,13 @@ Give `app/state` the leagues of a Season: create a league in a Season, play it w
   - (g) The view cache keys on the league object and the roster array. A change to another league keeps the view.
   - (h) The message for an unknown Season league names the Season and the league.
 - **2026-11-14:** The user agreed the review and the Claude choices (a) to (h). Commit 1. Status Refactor.
+- **2026-11-14:** Refactor pass, against the review checklist. Three changes, no change in behavior: `toSeasonLeagueView` is now `getSeasonLeagueView` (a function name starts with a verb). The comments of `LeagueRef` and `buildLeagueContent` say why, and no longer name their callers. A search finds the old name only in this task file, in the notes of commit 1. No gap outside the diff, no bug. Waits for the refactor review.
+- **2026-11-14:** The user agreed the refactor review. Done.
 
 ## Report
 
 - **What was built:**
-  - `app/state/databaseStore.ts`: `LeagueRef`, `SeasonLeagueRef`, `findLeagueWrapper`, `toSeasonLeagueView`.
+  - `app/state/databaseStore.ts`: `LeagueRef`, `SeasonLeagueRef`, `findLeagueWrapper`, `getSeasonLeagueView`.
   - `app/state/leagueWrapperActions.ts`: every league action takes a `LeagueRef`. One read seam (`requireLeague`, with the finished guard) and one write seam (`storeLeague`) serve both kinds of league.
   - `app/state/seasonLeagueActions.ts`: `createSeasonLeague`.
   - `app/state/newLeague.ts` and `app/state/seasonRoster.ts`: the shared create code and the join rules.
@@ -45,4 +47,4 @@ Give `app/state` the leagues of a Season: create a league in a Season, play it w
 - **Test approach:** store tests on the in-memory folder (`seasonLeagueActions.test.ts`, 27 cases): the view, the create and the join, the actions on a Season league, parallel play, the finished guard, and the save. Unit tests for the route builders (2 cases). The earlier league and Season tests pass unchanged. The full suite passes: 2247 tests. The type check, the lint, and the format check pass.
 - **Decisions made:** the eight choices (Decisions log). The Claude choices (a) to (h) are in the notes.
 - **What is left, what is next:** the screens call the actions with a plain UUID today. Task 218 calls `createSeasonLeague` from the wizard, and Task 219 opens League Detail with a `LeagueRef`, adds the Router entries, and the breadcrumbs. Task 217 adds the playoffs.
-- **Refactor:** waits for the review.
+- **Refactor:** one rename (`toSeasonLeagueView` to `getSeasonLeagueView`) and two comments. No change in behavior. The checks pass again: 2247 tests.

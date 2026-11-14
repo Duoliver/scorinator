@@ -175,8 +175,8 @@ export interface SeasonLeagueRef {
   leagueUuid: string;
 }
 
-/** The address of a league for the league actions (Task 216 choice 1): the
- * UUID of a standalone league, as in MVP2, or a Season league. */
+/** The address of a league: the UUID of a standalone league, as in MVP2,
+ * or the address of a Season league (Task 216 choice 1). */
 export type LeagueRef = string | SeasonLeagueRef;
 
 /** The last view of each Season league, with the roster it was made from.
@@ -190,7 +190,7 @@ const seasonLeagueViews = new WeakMap<
 /** A Season league as a league wrapper: the league, with the Season teams
  * of its `teamUuids`, in that order (Task 216 choice 3). The view never
  * holds `teamUuids`, so a league action cannot change the team list. */
-export function toSeasonLeagueView(
+export function getSeasonLeagueView(
   season: SeasonWrapper,
   league: SeasonLeague
 ): LeagueWrapper {
@@ -208,7 +208,7 @@ export function toSeasonLeagueView(
 }
 
 /** The open league at this address: a standalone league, or a Season
- * league of an open Season as `toSeasonLeagueView` gives it. Undefined for
+ * league of an open Season as `getSeasonLeagueView` gives it. Undefined for
  * a league that is not open, or that the Season does not have. */
 export function findLeagueWrapper(
   state: Pick<DatabaseState, 'leagues' | 'seasons'>,
@@ -219,7 +219,7 @@ export function findLeagueWrapper(
   const league = season?.content.leagues.find(
     (candidate) => candidate.uuid === ref.leagueUuid
   );
-  return season && league ? toSeasonLeagueView(season, league) : undefined;
+  return season && league ? getSeasonLeagueView(season, league) : undefined;
 }
 
 /** True when the opened league is not the object last opened or saved. A

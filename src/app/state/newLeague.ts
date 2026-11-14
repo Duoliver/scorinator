@@ -94,8 +94,8 @@ export function checkTeamList(teams: readonly TeamInstance[]): void {
 }
 
 /**
- * The content of a new league, for a standalone league and for a Season
- * league (Task 216 choice 5). It stores its `plans` (Task 128), and builds
+ * The content of a new league. One build for every new league, so a Season
+ * league is a full MVP2 league (US-13.5, Task 216 choice 5). It stores its `plans` (Task 128), and builds
  * phase 1 from the first plan with `buildPhase`: a round robin in the team
  * order, or Groups from `groups`, or a bracket with a stored draw (US-04.2).
  * The match order is shuffled (Task 30), and fixtures name teams by

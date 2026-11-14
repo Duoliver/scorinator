@@ -5,7 +5,7 @@ import { cryptoRandomBytes } from '@/app/random';
 import {
   requireOpenDatabase,
   requireRunningSeason,
-  toSeasonLeagueView,
+  getSeasonLeagueView,
   useDatabaseStore,
 } from './databaseStore';
 import { buildLeagueContent, checkTeamList, type CreateLeagueInput } from './newLeague';
@@ -79,5 +79,5 @@ export function createSeasonLeague(
   useDatabaseStore.setState((now) => ({
     seasons: { ...now.seasons, [seasonUuid]: changed },
   }));
-  return toSeasonLeagueView(changed, league);
+  return getSeasonLeagueView(changed, league);
 }

@@ -10,7 +10,7 @@ import {
   useDatabaseStore,
 } from './databaseStore';
 
-/** What the playoff dialog gives (US-13.7): a name, two Season teams, and
+/** A new playoff as the user sets it (US-13.7): a name, two Season teams, and
  * the rules of the tie. */
 export interface PlayoffInput {
   name: string;
@@ -127,14 +127,14 @@ export function playPlayoff(
     throw new RangeError(`The playoff "${playoff.name}" has a result already.`);
   }
 
-  const teamOf = (uuid: string): TieTeam<string> => {
+  const getTieTeam = (uuid: string): TieTeam<string> => {
     const team = season.teams.find((candidate) => candidate.blueprintUuid === uuid);
     if (!team)
       throw new RangeError(`The Season has no team with the Blueprint UUID ${uuid}.`);
     return { id: uuid, ovr: team.ovr };
   };
-  const team1 = teamOf(playoff.team1Uuid);
-  const team2 = teamOf(playoff.team2Uuid);
+  const team1 = getTieTeam(playoff.team1Uuid);
+  const team2 = getTieTeam(playoff.team2Uuid);
   const [higher, lower] =
     playoff.rules.format === TieFormat.SINGLE_MATCH ? [team1, team2] : [team2, team1];
   const result = playTie(higher, lower, playoff.rules, rng);

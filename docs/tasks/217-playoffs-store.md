@@ -1,6 +1,6 @@
 # Task 217: playoffs in the store
 
-**Status:** Refactor
+**Status:** Done
 
 ## Goal
 
@@ -31,6 +31,8 @@ Give `app/state` the playoffs of a Season: create a playoff with a unique name, 
   - (d) The file message for one team twice is now "has the same team as Team 1 and Team 2."
   - (e) The rename keeps the file format version 5: no saved file has a playoff yet (choice 5).
 - **2026-11-14:** The user agreed the review and the Claude choices (a) to (e). Commit 1. Status Refactor.
+- **2026-11-14:** Refactor pass, against the review checklist. Two changes, no change in behavior: the local function `teamOf` is now `getTieTeam` (a function name starts with a verb), and the `PlayoffInput` comment no longer names the dialog that uses it. `DOMAIN.md` still describes `Playoff` right. A gap outside the diff, for the user: three files look up an open, running Season the same way (`seasonActions.ts`, `seasonLeagueActions.ts`, and now `seasonPlayoffActions.ts`). One shared helper can serve them. No bug. Waits for the refactor review.
+- **2026-11-14:** The user agreed the refactor review. Done. The user asked for a task for the shared Season lookup: Task 252.
 ## Report
 
 - **What was built:**
@@ -41,4 +43,4 @@ Give `app/state` the playoffs of a Season: create a playoff with a unique name, 
 - **Test approach:** store tests on the in-memory folder (`seasonPlayoffActions.test.ts`, 16 cases): the create, the name and team checks, the play in both formats against `playTie` with the same seed, the stamp, no second play, the finished guard, and the save. The file and type tests follow the rename. The full suite passes: 2263 tests. The type check, the lint, and the format check pass.
 - **Decisions made:** the seven choices, and the two parked features (Decisions log). The Claude choices (a) to (e) are in the notes.
 - **What is left, what is next:** Task 220 builds the Playoffs tab and the playoff dialog on these actions. M3 adds the condition of a playoff team (US-14.3).
-- **Refactor:** waits for the review.
+- **Refactor:** one rename (`teamOf` to `getTieTeam`) and one comment. No change in behavior. The checks pass again.

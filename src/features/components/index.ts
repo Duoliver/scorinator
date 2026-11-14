@@ -27,7 +27,11 @@ export { ZoneLegend } from './ZoneLegend';
 export type { ZoneLegendProps } from './ZoneLegend';
 export type { TeamSwatchProps, TeamSwatchSize } from './TeamSwatch';
 export { SeasonTeamDrawer, useSeasonTeamEdit } from './SeasonTeamDrawer';
-export { findLeagueNames, formatSeasonLabel } from './seasonText';
+export {
+  FINISHED_SEASON_NOTICE,
+  findLeagueNames,
+  formatSeasonLabel,
+} from './seasonText';
 export type { SeasonTeamDrawerProps } from './SeasonTeamDrawer';
 export { LeagueList } from './LeagueList';
 export type { LeagueCard, LeagueListProps } from './LeagueList';

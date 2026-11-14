@@ -1,7 +1,11 @@
 import type { JSX } from 'preact';
 import { Badge, Button, ConfirmDialog, PickerDialog, Tabs } from '@/design-system';
 import { ROUTES } from '@/app/routes';
-import { LeagueList, SeasonTeamDrawer } from '@/features/components';
+import {
+  FINISHED_SEASON_NOTICE,
+  LeagueList,
+  SeasonTeamDrawer,
+} from '@/features/components';
 import { TeamsTab } from './TeamsTab';
 import type SeasonViewScreenProps from './types';
 import { useSeasonView } from './useSeasonView';
@@ -57,11 +61,7 @@ export function SeasonViewScreen({ uuid }: SeasonViewScreenProps): JSX.Element {
         </div>
       </div>
 
-      {view.isFinished && (
-        <p class={styles.notice}>
-          This Season is finished. It is read only. Reopen it to change it.
-        </p>
-      )}
+      {view.isFinished && <p class={styles.notice}>{FINISHED_SEASON_NOTICE}</p>}
 
       <section class={styles.section} aria-labelledby="season-leagues">
         <div class={styles.sectionHead}>

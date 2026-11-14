@@ -1,6 +1,6 @@
 # Task 219: the league cards and League Detail in a Season
 
-**Status:** Refactor
+**Status:** Done
 
 ## Goal
 
@@ -30,6 +30,8 @@ Show the leagues of a Season as cards in the Season view (US-13.3), and open eac
   - (e) A Season view card comes from `summarizeLeague` of the Season league view, so it says what the dashboard card says.
   - (f) `FEATURES.md` no longer lists `leagueSummary.ts` and `LeagueList` in its `features/leagues` tree.
 - **2026-11-14:** The user agreed the review and the Claude choices (a) to (f). Commit 1. Status Refactor.
+- **2026-11-14:** Refactor pass, against the review checklist. One change, no change in behavior, no change to markup or CSS: the finished notice text was a literal in the Season view and a constant in `useLeagueDetail.ts`. It is now one constant, `FINISHED_SEASON_NOTICE`, in `features/components/seasonText.ts`, and both screens use it. A search for the old paths `features/leagues/leagueSummary` and `LeaguesDashboardScreen/LeagueList` finds nothing outside the task files. The two copies of the notice CSS rule stay (choice b). No gap outside the diff, no bug. Waits for the refactor review.
+- **2026-11-14:** The user agreed the refactor review. Done.
 
 ## Report
 
@@ -42,4 +44,4 @@ Show the leagues of a Season as cards in the Season view (US-13.3), and open eac
 - **Test approach:** screen tests with Testing Library (`LeagueDetailScreen.season.test.tsx`, 11 cases): the breadcrumbs, a scorinate and the "Unsaved" badge, the bracket, no Export menu, the open from the file, a league not found, and the finished state for the fixtures, the zones, the bracket, and the byes. One Season view card test, one AppShell route test. The standalone League Detail and view tests pass with no change. The full suite passes: 2304 tests. The type check, the lint, and the format check pass.
 - **Decisions made:** the eight choices (Decisions log). The Claude choices (a) to (f) are in the notes.
 - **What is left, what is next:** Task 220 (the Playoffs tab) and Task 221 (the Resume tab). Task 247 adds the Export menu of a Season league. A live check: open a Season, open a league card, scorinate, then finish the Season and open the league again.
-- **Refactor:** waits for the review.
+- **Refactor:** one shared constant for the finished notice text. No change in behavior. The checks pass again: 2304 tests.

@@ -21,7 +21,7 @@ import {
 } from '@/app/state/databaseStore';
 import { openSeason } from '@/app/state/seasonActions';
 import { ROUTES, seasonDetailPath } from '@/app/routes';
-import { formatSeasonLabel } from '@/features/components';
+import { FINISHED_SEASON_NOTICE, formatSeasonLabel } from '@/features/components';
 import { summarizeLeague } from '@/app/state/summarizeLeague';
 import {
   describeLeague,
@@ -48,10 +48,6 @@ import type {
   ZoneDrawerView,
 } from './types';
 import { PhaseFormat } from '@/engine/phases';
-
-/** The text of League Detail in a finished Season (US-13.9). */
-export const FINISHED_NOTICE =
-  'This Season is finished. It is read only. Reopen it to change it.';
 
 /** The league with this UUID, ready for League Detail (Task 161). A league
  * in the manifest that is not open yet is read from its file once, with
@@ -184,7 +180,7 @@ export function useLeagueDetail(uuid: string, seasonUuid?: string): LeagueDetail
           },
           { label: league.content.name },
         ],
-        notice: readOnly ? FINISHED_NOTICE : undefined,
+        notice: readOnly ? FINISHED_SEASON_NOTICE : undefined,
         startConfirm,
         zoneDrawer,
       },

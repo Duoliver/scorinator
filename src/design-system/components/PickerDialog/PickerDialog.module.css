@@ -171,3 +171,21 @@
 .pick[data-highlight]:hover {
   background: var(--color-bg);
 }
+
+/* An item that cannot be picked (Task 220 choice 6): dimmed, with no hover. */
+.pick:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.pick:disabled:hover {
+  background: var(--color-surface);
+}
+
+/* The status of an item, at the end side of its row. */
+.status {
+  margin-left: auto;
+  font-size: var(--font-size-sm);
+  color: var(--color-fg-muted);
+  text-align: end;
+}

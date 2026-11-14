@@ -6,8 +6,11 @@ import {
   LeagueList,
   SeasonTeamDrawer,
 } from '@/features/components';
+import { PlayoffDialog } from './PlayoffDialog';
+import { PlayoffsTab } from './PlayoffsTab';
 import { TeamsTab } from './TeamsTab';
 import type SeasonViewScreenProps from './types';
+import type { SeasonTab } from './types';
 import { useSeasonView } from './useSeasonView';
 import styles from './SeasonViewScreen.module.css';
 
@@ -98,23 +101,47 @@ export function SeasonViewScreen({ uuid }: SeasonViewScreenProps): JSX.Element {
               />
             ),
           },
+          {
+            id: 'playoffs',
+            label: 'Playoffs',
+            content: (
+              <PlayoffsTab
+                rows={view.playoffRows}
+                isFinished={view.isFinished}
+                hasAetKey={view.hasAetKey}
+              />
+            ),
+          },
         ]}
-        defaultTab="teams"
+        defaultTab={view.activeTab}
+        onChange={(id) => view.setActiveTab(id as SeasonTab)}
         actions={
-          <Button
-            size="sm"
-            variant="secondary"
-            disabled={view.isFinished}
-            onClick={view.openPicker}
-          >
-            + Add teams
-          </Button>
+          view.activeTab === 'teams' ? (
+            <Button
+              size="sm"
+              variant="secondary"
+              disabled={view.isFinished}
+              onClick={view.openPicker}
+            >
+              + Add teams
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              variant="secondary"
+              disabled={view.isFinished}
+              onClick={view.openPlayoffDialog}
+            >
+              + New playoff
+            </Button>
+          )
         }
       />
 
       {view.finishConfirm && <ConfirmDialog {...view.finishConfirm} />}
       {view.picker && <PickerDialog {...view.picker} />}
       {view.drawer && <SeasonTeamDrawer {...view.drawer} />}
+      {view.playoffDialog && <PlayoffDialog {...view.playoffDialog} />}
     </div>
   );
 }

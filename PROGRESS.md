@@ -62,7 +62,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 217 | Playoffs in the store: create, the unique name, play with `playTie`, the result | `app/state` | ✅ Done | 2026-11-14 | 2026-11-14 | [217](/docs/tasks/217-playoffs-store.md) | M2. US-13.7. Refactor: one rename, one comment. A shared Season lookup: Task 252. |
 | 218 | The wizard in a Season: Season teams first, the other Blueprints dimmed with a status, the join at create, the Edit drawer on the Season team | `features/leagues` | ✅ Done | 2026-11-14 | 2026-11-14 | [218](/docs/tasks/218-season-wizard.md) | M2. US-13.5. Refactor: one helper moved, three comments. |
 | 219 | The league cards of the Season view. League Detail in a Season: the breadcrumbs, read only in a finished Season | `features/` | ✅ Done | 2026-11-14 | 2026-11-14 | [219](/docs/tasks/219-season-league-detail.md) | M2. US-13.3, US-13.6, US-13.9. Refactor: one shared text. |
-| 220 | The Playoffs tab and the playoff dialog | `features/seasons` | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M2. US-13.7. Depends on 215, 217. |
+| 220 | The Playoffs tab and the playoff dialog | `features/seasons` | 🟦 Refactor | 2026-11-14 |  | [220](/docs/tasks/220-playoffs-tab.md) | M2. US-13.7. Review agreed, commit 1. The refactor pass is next. |
 | 221 | The Resume tab: the winner or the first place, the zone teams, the highlight | `features/seasons` | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M2. US-13.8. Depends on 219. |
 | 222 | Smoke check M2 | — | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M2. Depends on 218, 220, 221. |
 | 223 | Demo: the League Detail Teams tab, and the team modal | `docs/design-reference/MVP3/` | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M3. US-14.2. Depends on 222. |
@@ -139,6 +139,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 and MVP2 decisions still apply.** They are in [`docs/archive/mvp1/PROGRESS.md`](/docs/archive/mvp1/PROGRESS.md), [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/), and [`docs/archive/mvp2/PROGRESS.md`](/docs/archive/mvp2/PROGRESS.md). An entry here changes an earlier decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-11-14 (Task 220 — the Playoffs tab):** The user agreed nine choices. The tab row action follows the open tab. `PlayoffsTab` and `PlayoffDialog` folders. A score line helper with the .txt export rules. The dialog starts with the bracket defaults, and "Home advantage" off. A live name check. `disabled` and `status` on a picker item. The status line names the winner. "No playoffs yet." A "* after extra time" key. Detail: [Task 220](/docs/tasks/220-playoffs-tab.md).
 
 - **2026-11-14 (Task 219 — League Detail in a Season):** The user agreed eight choices. One League Detail with a `seasonUuid` prop, at `/seasons/:uuid/leagues/:leagueUuid`. The breadcrumbs, and the "Unsaved" badge of the Season. Optional `leagueRef` and `readOnly` props on the views. A finished Season shows a notice and turns off every change control. No Export menu in a Season league until Task 247. `LeagueList` and `leagueSummary.ts` move to `features/components/`. The Season view cards keep the Season order. After the create, the new League Detail. Detail: [Task 219](/docs/tasks/219-season-league-detail.md).
 

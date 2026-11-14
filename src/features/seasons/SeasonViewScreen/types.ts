@@ -1,5 +1,7 @@
 import type { ConfirmDialogProps, MultiPickerProps } from '@/design-system';
 import type { RosterRow } from './TeamsTab';
+import type { PlayoffDialogProps } from './PlayoffDialog';
+import type { PlayoffRow } from './PlayoffsTab';
 import type { LeagueCard, SeasonTeamDrawerProps } from '@/features/components';
 
 export default interface SeasonViewScreenProps {
@@ -25,7 +27,18 @@ export interface OpenSeasonView {
   picker: MultiPickerProps | null;
   openDrawer: (blueprintUuid: string) => void;
   drawer: SeasonTeamDrawerProps | null;
+  /** The playoffs, in the order of creation (Task 220 choice 8). */
+  playoffRows: PlayoffRow[];
+  hasAetKey: boolean;
+  openPlayoffDialog: () => void;
+  playoffDialog: PlayoffDialogProps | null;
+  /** The open tab: its action shows on the tab row (Task 220 choice 1). */
+  activeTab: SeasonTab;
+  setActiveTab: (tab: SeasonTab) => void;
 }
+
+/** The tabs of the Season view. */
+export type SeasonTab = 'teams' | 'playoffs';
 
 /** What `useSeasonView` gives the screen: the Season, or why it does not
  * show (as League Detail does). */

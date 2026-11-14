@@ -18,7 +18,8 @@ import {
 } from '@/features/components';
 import { formatSeasonMeta } from '@/features/seasons/seasonText';
 import { useAddTeams } from './useAddTeams';
-import type { SeasonViewState } from './types';
+import { usePlayoffs } from './usePlayoffs';
+import type { SeasonTab, SeasonViewState } from './types';
 
 /** The Season view (Task 213). The screen opens the Season from its file,
  * as League Detail opens a league. The add dialog and the edit drawer have
@@ -36,6 +37,8 @@ export function useSeasonView(uuid: string): SeasonViewState {
   // of the last one.
   const [openError, setOpenError] = useState<{ uuid: string; message: string }>();
   const [confirmingFinish, setConfirmingFinish] = useState(false);
+  const [activeTab, setActiveTab] = useState<SeasonTab>('teams');
+  const playoffs = usePlayoffs(season);
 
   const needsOpen = season === undefined && isKnown;
   useEffect(() => {
@@ -105,6 +108,12 @@ export function useSeasonView(uuid: string): SeasonViewState {
       picker,
       openDrawer,
       drawer,
+      playoffRows: playoffs.rows,
+      hasAetKey: playoffs.hasAetKey,
+      openPlayoffDialog: playoffs.openDialog,
+      playoffDialog: playoffs.dialog,
+      activeTab,
+      setActiveTab,
     },
   };
 }

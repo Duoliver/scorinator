@@ -16,6 +16,11 @@ export interface PickerItem {
   /** Tints the row, for the items the caller puts first, such as the
    * Season teams (Task 215 point 6). */
   highlight?: boolean;
+  /** Shows the item, but it cannot be picked, such as the team of the other
+   * slot of a playoff (Task 220 choice 6). */
+  disabled?: boolean;
+  /** A short text at the end of the row, such as "Team 1". */
+  status?: string;
 }
 
 /** A button under the "Available" list, for example "+ Create new team". */

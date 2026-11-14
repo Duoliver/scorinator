@@ -352,3 +352,32 @@ describe('PickerDialog groups (Task 218 choice 5)', () => {
     ]);
   });
 });
+
+describe('PickerDialog disabled items (Task 220 choice 6)', () => {
+  const WITH_TAKEN: PickerItem[] = [
+    { id: 'a', label: 'Ashfield Rovers', disabled: true, status: 'Team 1' },
+    { id: 'h', label: 'Harborview SC' },
+  ];
+
+  it('shows a disabled item with its status, and does not pick it', async () => {
+    const onPick = vi.fn();
+    render(
+      <PickerDialog
+        mode="single"
+        title="Pick team 2"
+        items={WITH_TAKEN}
+        onPick={onPick}
+        onCancel={vi.fn()}
+      />
+    );
+
+    const taken = screen.getByRole('button', { name: 'Ashfield Rovers' });
+    expect(taken).toBeDisabled();
+    expect(within(taken).getByText('Team 1')).toBeInTheDocument();
+    await userEvent.click(taken);
+    expect(onPick).not.toHaveBeenCalled();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Harborview SC' }));
+    expect(onPick).toHaveBeenCalledWith('h');
+  });
+});

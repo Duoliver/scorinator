@@ -161,9 +161,11 @@ function AvailablePanel({
                     class={styles.pick}
                     aria-label={item.label}
                     data-highlight={item.highlight ? '' : undefined}
+                    disabled={item.disabled}
                     onClick={() => onPick(item.id)}
                   >
                     {item.content ?? item.label}
+                    {item.status && <span class={styles.status}>{item.status}</span>}
                   </button>
                 </li>
               ))}

@@ -1,10 +1,27 @@
 import type { ComponentChildren, RefObject } from 'preact';
-import type { DropdownMenuItem, FieldHandle, TabItem } from '@/design-system';
+import type {
+  BreadcrumbItem,
+  DropdownMenuItem,
+  FieldHandle,
+  TabItem,
+} from '@/design-system';
+import type { LeagueRef } from '@/app/state/databaseStore';
 import type { PlanZone, ZonePlan } from '@/engine/phases';
 import type { LeagueWrapper } from '@/domain';
 
 export default interface LeagueDetailScreenProps {
   uuid: string;
+  /** The Season of the league. Absent for a standalone league (Task 219
+   * choice 1). */
+  seasonUuid?: string;
+}
+
+/** How the views of League Detail reach the league: its address for the
+ * actions, and whether its controls are off, as in a finished Season
+ * (Task 219 choices 3 and 4). */
+export interface LeagueAccess {
+  leagueRef: LeagueRef;
+  readOnly: boolean;
 }
 
 /** What `useLeagueDetail` gives `LeagueDetailScreen` for an open league. */
@@ -24,8 +41,14 @@ export interface LeagueDetail {
   tabsActions: ComponentChildren;
   /** Opens a tab from outside `Tabs`: the new phase after a start. */
   tabsRef: RefObject<FieldHandle<string>>;
-  /** The items of the export menu (US-10.1). */
-  exportItems: DropdownMenuItem[];
+  /** The items of the export menu (US-10.1), or `undefined` for a Season
+   * league: Task 247 makes its menu (Task 219 choice 5). */
+  exportItems: DropdownMenuItem[] | undefined;
+  /** The breadcrumbs of a Season league, in place of "← Leagues" (Task 215
+   * point 7), or `undefined`. */
+  crumbs: BreadcrumbItem[] | undefined;
+  /** The notice of a finished Season (US-13.9), or `undefined`. */
+  notice: string | undefined;
   /** The confirm of a phase start while it is open (US-07.3). */
   startConfirm: PhaseStartConfirm | undefined;
   /** The "Edit zones" drawer while it is open (Task 189). */

@@ -91,7 +91,7 @@ function renderTable(
 }
 
 // --- The format line (US-01.2) -------------------------------------------
-// A copy of the screen texts in `features/leagues/leagueSummary.ts` and
+// A copy of the screen texts in `features/components/leagueSummary.ts` and
 // `formatTeamCount` (Task 148 choice 1). The tests pin the same texts.
 
 type PlanText = ResultsTxtInput['plans'][number];

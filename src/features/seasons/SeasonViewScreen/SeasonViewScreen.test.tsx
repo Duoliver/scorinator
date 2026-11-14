@@ -10,6 +10,7 @@ import { useStatusLineStore } from '@/app/state/statusLineStore';
 import {
   blueprint,
   HARBORVIEW,
+  LEAGUE,
   openTestDatabase,
   SEASON,
   seasonRow,
@@ -323,5 +324,21 @@ describe('SeasonViewScreen: "+ New league" (US-13.5, Task 218 choice 2)', () => 
 
     expect(await screen.findByRole('button', { name: '+ New league' })).toBeDisabled();
     expect(screen.queryByRole('link', { name: '+ New league' })).toBeNull();
+  });
+});
+
+describe('SeasonViewScreen: the league cards (US-13.3, Task 219 choices 6 and 7)', () => {
+  it('shows one card for each Season league, with its link to League Detail', async () => {
+    openWithSeason();
+    render(<SeasonViewScreen uuid={SEASON} />);
+
+    const section = await screen.findByRole('region', { name: 'Leagues' });
+    expect(
+      within(section).getByRole('heading', { name: 'Coastal Premier' })
+    ).toBeInTheDocument();
+    expect(
+      within(section).getByRole('link', { name: 'Open standings' })
+    ).toHaveAttribute('href', `/seasons/${SEASON}/leagues/${LEAGUE}`);
+    expect(within(section).queryByText('No leagues yet.')).toBeNull();
   });
 });

@@ -29,3 +29,5 @@ export type { TeamSwatchProps, TeamSwatchSize } from './TeamSwatch';
 export { SeasonTeamDrawer, useSeasonTeamEdit } from './SeasonTeamDrawer';
 export { findLeagueNames, formatSeasonLabel } from './seasonText';
 export type { SeasonTeamDrawerProps } from './SeasonTeamDrawer';
+export { LeagueList } from './LeagueList';
+export type { LeagueCard, LeagueListProps } from './LeagueList';

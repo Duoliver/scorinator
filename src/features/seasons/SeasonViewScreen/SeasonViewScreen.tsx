@@ -1,7 +1,7 @@
 import type { JSX } from 'preact';
 import { Badge, Button, ConfirmDialog, PickerDialog, Tabs } from '@/design-system';
 import { ROUTES } from '@/app/routes';
-import { SeasonTeamDrawer } from '@/features/components';
+import { LeagueList, SeasonTeamDrawer } from '@/features/components';
 import { TeamsTab } from './TeamsTab';
 import type SeasonViewScreenProps from './types';
 import { useSeasonView } from './useSeasonView';
@@ -78,7 +78,11 @@ export function SeasonViewScreen({ uuid }: SeasonViewScreenProps): JSX.Element {
             </Button>
           )}
         </div>
-        {!view.hasLeagues && <p class={styles.note}>No leagues yet.</p>}
+        {view.leagueCards.length > 0 ? (
+          <LeagueList leagues={view.leagueCards} />
+        ) : (
+          <p class={styles.note}>No leagues yet.</p>
+        )}
       </section>
 
       <Tabs

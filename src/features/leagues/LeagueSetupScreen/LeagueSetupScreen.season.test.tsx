@@ -285,7 +285,7 @@ describe('the wizard in a Season (US-13.5, Task 218)', () => {
     expect(within(rows[2]).getByText('Union Leste')).toBeInTheDocument();
   });
 
-  it('creates the league in the Season, and goes to the Season view', async () => {
+  it('creates the league in the Season, and opens its League Detail (Task 219 choice 8)', async () => {
     setLeagueDraft({
       ...emptyLeagueDraft(),
       details: { ...emptyLeagueDraft().details, name: 'Keep me' },
@@ -309,7 +309,7 @@ describe('the wizard in a Season (US-13.5, Task 218)', () => {
       DRAGOES,
     ]);
     expect(useDatabaseStore.getState().leagues).toEqual({});
-    expect(route).toHaveBeenCalledWith(`/seasons/${SEASON}`);
+    expect(route).toHaveBeenCalledWith(`/seasons/${SEASON}/leagues/${cup.uuid}`);
     const drafts = useLeagueDraftStore.getState();
     expect(getLeagueDraft(drafts, SEASON)).toEqual(emptyLeagueDraft());
     expect(getLeagueDraft(drafts).details.name).toBe('Keep me');

@@ -1,6 +1,6 @@
 import type { ConfirmDialogProps, MultiPickerProps } from '@/design-system';
 import type { RosterRow } from './TeamsTab';
-import type { SeasonTeamDrawerProps } from '@/features/components';
+import type { LeagueCard, SeasonTeamDrawerProps } from '@/features/components';
 
 export default interface SeasonViewScreenProps {
   uuid: string;
@@ -13,7 +13,9 @@ export interface OpenSeasonView {
   meta: string;
   isFinished: boolean;
   isUnsaved: boolean;
-  hasLeagues: boolean;
+  /** One card for each league, in Season order, as the leagues dashboard
+   * shows a league (Task 219 choices 6 and 7). */
+  leagueCards: LeagueCard[];
   /** The wizard of a new league in this Season (Task 218). */
   newLeaguePath: string;
   rosterRows: readonly RosterRow[];

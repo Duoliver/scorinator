@@ -23,7 +23,7 @@ import {
   JOINS_SEASON,
 } from '@/features/leagues/LeagueSetupScreen/seasonTeams';
 import { settingsChipLabels } from '@/features/leagues/LeagueSetupScreen/steps/SetupChips';
-import { formatLeagueName } from '@/features/leagues/leagueSummary';
+import { formatLeagueName } from '@/features/components/leagueSummary';
 import type TeamsStepProps from './types';
 import type { TeamsStepOverlay, TeamsStepState } from './types';
 import {

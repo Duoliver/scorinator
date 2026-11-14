@@ -16,7 +16,7 @@ import {
   type PhaseFormatKey,
 } from '@/features/leagues/LeagueSetupScreen/phasePlans';
 import { getAutomaticZones, PhaseFormat } from '@/engine/phases';
-import { phaseShortName } from '@/features/leagues/leagueSummary';
+import { phaseShortName } from '@/features/components/leagueSummary';
 import { ZoneEditor } from '@/features/leagues/ZoneEditor';
 import { BracketSettings } from '@/features/leagues/LeagueSetupScreen/steps/PhasesStep/BracketSettings';
 import type PhaseCardProps from './types';

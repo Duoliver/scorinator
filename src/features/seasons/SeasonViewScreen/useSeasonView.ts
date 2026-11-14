@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'preact/hooks';
 import { getErrorMessage } from '@/app/getErrorMessage';
-import { seasonLeagueNewPath } from '@/app/routes';
+import { seasonLeagueDetailPath, seasonLeagueNewPath } from '@/app/routes';
+import { summarizeLeague } from '@/app/state/summarizeLeague';
 import {
   currentSeasonRows,
+  getSeasonLeagueView,
   isSeasonUnsaved,
   useDatabaseStore,
 } from '@/app/state/databaseStore';
@@ -69,7 +71,12 @@ export function useSeasonView(uuid: string): SeasonViewState {
       meta: formatSeasonMeta(summarizeSeason(season)),
       isFinished: finished,
       isUnsaved,
-      hasLeagues: season.content.leagues.length > 0,
+      // The Season header has the "Unsaved" badge, so the cards have none.
+      leagueCards: season.content.leagues.map((league) => ({
+        row: summarizeLeague(getSeasonLeagueView(season, league)),
+        isUnsaved: false,
+        href: seasonLeagueDetailPath(uuid, league.uuid),
+      })),
       newLeaguePath: seasonLeagueNewPath(uuid),
       rosterRows,
       toggleFinished: (): void => {

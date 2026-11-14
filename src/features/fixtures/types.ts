@@ -1,5 +1,6 @@
 import type { TeamDisplay } from '@/features/components';
 import type { LeagueWrapper, PhaseResult } from '@/domain';
+import type { LeagueRef } from '@/app/state/databaseStore';
 
 export default interface FixturesViewProps {
   league: LeagueWrapper;
@@ -12,6 +13,12 @@ export default interface FixturesViewProps {
    * inactive tab, so a parent that must keep the matchday across a tab
    * switch stores it here and passes it back as `initialMatchday`. */
   onMatchdayChange?: (matchday: number) => void;
+  /** The address of the league for its actions: a Season league needs its
+   * Season (Task 219 choice 3). The league UUID when not given. */
+  leagueRef?: LeagueRef;
+  /** Turns off every control that changes the league, as in a finished
+   * Season (US-13.9). */
+  readOnly?: boolean;
 }
 
 /** What `useMatchdayNav` gives the header: the visible matchday, where it

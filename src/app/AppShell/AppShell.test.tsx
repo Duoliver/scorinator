@@ -191,6 +191,23 @@ describe('AppShell', () => {
     expect(navLink).toHaveAttribute('aria-current', 'page');
   });
 
+  it('routes to League Detail of a Season league, with Seasons marked active (Task 219)', async () => {
+    const season = seasonWrapper();
+    useDatabaseStore.setState({
+      seasons: { [SEASON]: season },
+      savedSeasons: { [SEASON]: season },
+    });
+    render(<AppShell />);
+
+    route(`/seasons/${SEASON}/leagues/${LEAGUE}`);
+
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Coastal Premier' })
+    ).toBeInTheDocument();
+    const [navLink] = screen.getAllByRole('link', { name: 'Seasons' });
+    expect(navLink).toHaveAttribute('aria-current', 'page');
+  });
+
   it('routes to the File screen when File is clicked, with File marked active', async () => {
     render(<AppShell />);
 

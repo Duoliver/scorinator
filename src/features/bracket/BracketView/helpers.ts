@@ -17,7 +17,7 @@ import {
 } from '@/engine/tiebreak';
 import type { PhasePlan } from '@/engine/phases';
 import type { TeamDisplay } from '@/features/components';
-import { phaseShortName } from '@/features/leagues/leagueSummary';
+import { phaseShortName } from '@/features/components/leagueSummary';
 import type { TieCardModel, TieCardRow } from './types';
 
 /** The grey swatch of a TBD slot, as in the handoff (US-04.7). */

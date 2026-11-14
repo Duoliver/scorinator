@@ -1,10 +1,17 @@
 import type { ConfirmDialogProps } from '@/design-system';
 import type { LeagueWrapper } from '@/domain';
+import type { LeagueRef } from '@/app/state/databaseStore';
 
 export default interface BracketViewProps {
   league: LeagueWrapper;
   /** The bracket phase, from 0. */
   phaseIndex: number;
+  /** The address of the league for its actions: a Season league needs its
+   * Season (Task 219 choice 3). The league UUID when not given. */
+  leagueRef?: LeagueRef;
+  /** Turns off every control that changes the league, as in a finished
+   * Season (US-13.9). */
+  readOnly?: boolean;
 }
 
 /** One team row of a tie card. `scores` has one cell for each score

@@ -2,7 +2,7 @@ import { roundName } from '@/engine/bracket';
 import type { LeagueProgress, PhaseSummary, WrapperSummary } from '@/domain';
 import { type PhasePlan, PhaseFormat, Legs } from '@/engine/phases';
 import type { PointsConfig } from '@/engine/standings';
-import { formatTeamCount } from '@/features/components';
+import { formatTeamCount } from './formatTeamCount';
 
 /** The short texts that describe a league, in one place, so the dashboard,
  * League Detail, and League Setup say the same thing (Task 59). */

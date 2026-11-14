@@ -14,7 +14,7 @@ import {
   formatLeagueName,
   formatPhasesLabel,
   phaseShortName,
-} from '@/features/leagues/leagueSummary';
+} from '@/features/components/leagueSummary';
 import { describePhasePlan } from '@/features/leagues/LeagueSetupScreen/phasePlans';
 import {
   endsWithGroups,

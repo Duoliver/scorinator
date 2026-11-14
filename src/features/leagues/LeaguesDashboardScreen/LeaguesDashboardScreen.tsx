@@ -1,8 +1,7 @@
 import type { JSX } from 'preact';
 import { Button } from '@/design-system';
 import { ROUTES } from '@/app/routes';
-import { FileImportDialogs } from '@/features/components';
-import { LeagueList } from './LeagueList';
+import { FileImportDialogs, LeagueList } from '@/features/components';
 import { LeaguesEmptyState } from './LeaguesEmptyState';
 import { useLeaguesDashboard } from './useLeaguesDashboard';
 import styles from './LeaguesDashboardScreen.module.css';

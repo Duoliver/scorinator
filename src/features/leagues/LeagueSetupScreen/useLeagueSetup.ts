@@ -3,7 +3,7 @@ import type { RefObject } from 'preact';
 import { route } from 'preact-router';
 import type { FieldHandle } from '@/design-system';
 import { getErrorMessage } from '@/app/getErrorMessage';
-import { leagueDetailPath, seasonDetailPath } from '@/app/routes';
+import { leagueDetailPath, seasonLeagueDetailPath } from '@/app/routes';
 import { useDatabaseStore } from '@/app/state/databaseStore';
 import { resetLeagueDraft } from '@/app/state/leagueDraftActions';
 import {
@@ -17,7 +17,7 @@ import { createSeasonLeague } from '@/app/state/seasonLeagueActions';
 import { teamListProblem } from '@/app/state/teamInstances';
 import type { SeasonWrapper } from '@/domain';
 import type { DetailsStepHandle } from '@/features/leagues/LeagueSetupScreen/steps/DetailsStep';
-import { formatAdvanceText } from '@/features/leagues/leagueSummary';
+import { formatAdvanceText } from '@/features/components/leagueSummary';
 import { leagueNameProblem } from './leagueName';
 import type { LeagueSetup } from './types';
 import {
@@ -132,9 +132,8 @@ export function useLeagueSetup(
       if (seasonUuid === undefined) {
         path = leagueDetailPath(createLeague(input).uuid);
       } else {
-        createSeasonLeague(seasonUuid, input);
-        // Task 219 sends the user to the new League Detail (choice 10).
-        path = seasonDetailPath(seasonUuid);
+        const league = createSeasonLeague(seasonUuid, input);
+        path = seasonLeagueDetailPath(seasonUuid, league.uuid);
       }
     } catch (error) {
       // `createLeague` throws for a Blueprint twice in the list, a closed

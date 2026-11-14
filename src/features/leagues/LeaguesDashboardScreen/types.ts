@@ -1,5 +1,4 @@
-import type { FileImportDialogsProps } from '@/features/components';
-import type { LeagueCard } from './LeagueList';
+import type { FileImportDialogsProps, LeagueCard } from '@/features/components';
 
 /** What `useLeaguesDashboard` gives `LeaguesDashboardScreen`. */
 export interface LeaguesDashboard {

@@ -190,8 +190,8 @@ describe('Playoff (US-13.7, Task 207 choice 4)', () => {
   });
 
   it('names the home team and the away team by their Blueprint uuids', () => {
-    expectTypeOf<Playoff['homeUuid']>().toEqualTypeOf<string>();
-    expectTypeOf<Playoff['awayUuid']>().toEqualTypeOf<string>();
+    expectTypeOf<Playoff['team1Uuid']>().toEqualTypeOf<string>();
+    expectTypeOf<Playoff['team2Uuid']>().toEqualTypeOf<string>();
   });
 
   it('has the format options of a bracket tie', () => {

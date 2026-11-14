@@ -206,3 +206,13 @@ In MVP3, the "Collections" modal of the Blueprint drawer picks existing collecti
 In MVP3, the teams list gets pages of 20 (US-15.8). Later, the leagues dashboard and the Season list can get pages too.
 
 *Raised during: MVP3, Task 199 (League and Season lists refinement), 2026-11-12. The user named it for later.*
+
+## 41. Play a Season playoff again
+In MVP3, a played playoff keeps its result: `playPlayoff` throws for a playoff with a result, and the Playoffs tab has no re-scorinate (US-13.7). Later, the user can play a playoff again, as a re-scorinate of a league fixture or a bracket tie does. The user named it a future MVP3 feature.
+
+*Raised during: MVP3, Task 217 (playoffs in the store), 2026-11-14. The user parked it.*
+
+## 42. The home team of a Season playoff
+In MVP3, Team 1 of a playoff plays the first leg of a two-legged tie at home. A single match is at a neutral venue, as in a bracket: Team 1 takes the home slot with no home boost, and the "Home advantage" switch acts on the two legs only (Task 217 choice 3, option A). Later, the user chooses which team plays at home first, and whether a single match has a home advantage. A single match with a home boost needs a new option in `engine/tiebreak`, so the brackets do not change.
+
+*Raised during: MVP3, Task 217 (playoffs in the store), 2026-11-14. The user parked it.*

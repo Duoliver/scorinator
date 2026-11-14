@@ -157,6 +157,20 @@ export function isSeasonNameTaken(
   );
 }
 
+/** True when another playoff of the Season has this name, in any case and
+ * with no spaces at the two ends (US-13.7). An edit can pass its own UUID,
+ * so a playoff never clashes with itself. */
+export function isPlayoffNameTaken(
+  season: SeasonWrapper,
+  name: string,
+  exceptUuid?: string
+): boolean {
+  const key = getNameKey(name);
+  return season.content.playoffs.some(
+    (playoff) => playoff.uuid !== exceptUuid && getNameKey(playoff.name) === key
+  );
+}
+
 /** Throws for a finished Season: it is read only, until the user reopens it
  * (US-13.9). The message names the Season, so an error shows which one. */
 export function requireRunningSeason(wrapper: SeasonWrapper): void {

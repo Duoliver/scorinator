@@ -16,13 +16,15 @@ export interface SeasonLeague extends League {
  * A one-off tie between two Season teams, outside the leagues (US-13.7). It
  * has the format options of a bracket tie. `result` is absent until the
  * user plays it. The UUID keys the playoff on a screen, and can link it to
- * a league later (Task 207 choice 4).
+ * a league later (Task 207 choice 4). The teams are "Team 1" and "Team 2",
+ * not home and away: Team 1 plays the first leg at home, and Team 2 the
+ * second (Task 217 choices 4 and 5).
  */
 export interface Playoff {
   uuid: string;
   name: string;
-  homeUuid: string;
-  awayUuid: string;
+  team1Uuid: string;
+  team2Uuid: string;
   rules: TieRules;
   result?: TieResult<string>;
 }

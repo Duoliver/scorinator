@@ -174,8 +174,8 @@ export interface SavedSeasonLeague extends SavedWrapperLeague {
 export interface SavedPlayoff {
   uuid: string;
   name: string;
-  homeUuid: string;
-  awayUuid: string;
+  team1Uuid: string;
+  team2Uuid: string;
   rules: TieRules;
   result?: TieResult<string>;
 }

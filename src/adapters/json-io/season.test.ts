@@ -88,8 +88,8 @@ function buildSeasonFile(): SavedSeasonFile {
         {
           uuid: PLAYOFF,
           name: 'Supertaça',
-          homeUuid: SALT_MARSH,
-          awayUuid: PORTO,
+          team1Uuid: SALT_MARSH,
+          team2Uuid: PORTO,
           rules: {
             format: 'single-match',
             awayGoals: false,
@@ -271,11 +271,11 @@ describe('parseSeasonFile checks (Task 209 choices 2 to 4)', () => {
 
   it('wants two different roster teams in a playoff', () => {
     fails(
-      (raw) => (raw.content.playoffs[0].awayUuid = SALT_MARSH),
-      'playoff 1 has the same team at home and away.'
+      (raw) => (raw.content.playoffs[0].team2Uuid = SALT_MARSH),
+      'playoff 1 has the same team as Team 1 and Team 2.'
     );
     fails(
-      (raw) => (raw.content.playoffs[0].homeUuid = INSTALLATION),
+      (raw) => (raw.content.playoffs[0].team1Uuid = INSTALLATION),
       'playoff 1 has a team that is not in the Season roster.'
     );
   });

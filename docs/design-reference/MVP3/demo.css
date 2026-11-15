@@ -444,3 +444,35 @@ dialog.drawer::backdrop { background: rgba(26, 26, 26, 0.35); }
 /* A demo element with the hidden attribute stays hidden, also when a
  * class above sets its display. */
 [hidden] { display: none !important; }
+
+/* ---- M2 demo classes (Task 215) ---------------------------------- */
+
+.switch { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.switch input { width: 2.5rem; height: 1.25rem; accent-color: var(--color-accent); }
+.seg { display: flex; flex-direction: column; gap: var(--space-2); }
+.seg-row { display: flex; border: var(--border-width) solid var(--color-fg); width: fit-content; }
+.seg-row button { padding: var(--space-2) var(--space-4); border: none; border-right: var(--border-width) solid var(--color-fg);
+  background: var(--color-surface); font-family: var(--font-condensed); font-weight: 700; font-size: var(--font-size-sm);
+  text-transform: uppercase; cursor: pointer; }
+.seg-row button:last-child { border-right: none; }
+.seg-row button[aria-pressed='true'] { background: var(--color-fg); color: var(--color-surface); }
+.select { width: 100%; font-family: var(--font-body); font-size: var(--font-size-xl); padding: var(--space-3);
+  border: var(--border-width) solid var(--color-border); background: var(--color-surface); }
+.versus { font-family: var(--font-condensed); font-weight: 700; text-transform: uppercase; color: var(--color-fg-muted); }
+.score { font-family: var(--font-mono); font-weight: 700; font-size: var(--font-size-xl); }
+.zone-row { display: grid; grid-template-columns: 2.5rem 1fr auto; gap: var(--space-3); align-items: center;
+  padding: var(--space-2) var(--space-3); border-bottom: var(--border-width) solid var(--color-bg); }
+.zone-row.winner { background: var(--color-zone-green-tint); box-shadow: inset var(--border-width-heavy) 0 0 var(--color-zone-green); font-weight: 700; }
+.zone-row.blue { background: var(--color-zone-blue-tint); box-shadow: inset var(--border-width-heavy) 0 0 var(--color-zone-blue); }
+.zone-row.red { background: var(--color-zone-red-tint); box-shadow: inset var(--border-width-heavy) 0 0 var(--color-zone-red); }
+.picker-section { margin: 0; padding: var(--space-1) var(--space-3); font-family: var(--font-condensed); font-weight: 700;
+  font-size: var(--font-size-xs); text-transform: uppercase; letter-spacing: 0.05em; background: var(--color-bg); }
+.picker-row.season { background: var(--color-zone-green-tint); }
+.picker-status { margin-left: auto; font-size: var(--font-size-sm); color: var(--color-fg-muted); }
+.crumbs { display: flex; gap: var(--space-2); font-size: var(--font-size-md); }
+.crumbs a { color: var(--color-fg); text-decoration: none; }
+.stepper { display: flex; gap: 0; border: var(--border-width) solid var(--color-fg); width: fit-content; }
+.stepper span { padding: var(--space-2) var(--space-5); font-family: var(--font-condensed); font-weight: 700;
+  font-size: var(--font-size-md); text-transform: uppercase; border-right: var(--border-width) solid var(--color-fg); }
+.stepper span:last-child { border-right: none; }
+.stepper span[aria-current='step'] { background: var(--color-accent); color: var(--color-accent-fg); }

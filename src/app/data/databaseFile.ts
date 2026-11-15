@@ -260,8 +260,8 @@ function copyPlayoff(playoff: Playoff | SavedPlayoff): Playoff {
   return {
     uuid: playoff.uuid,
     name: playoff.name,
-    homeUuid: playoff.homeUuid,
-    awayUuid: playoff.awayUuid,
+    team1Uuid: playoff.team1Uuid,
+    team2Uuid: playoff.team2Uuid,
     rules: { ...playoff.rules },
     ...(playoff.result ? { result: structuredClone(playoff.result) } : {}),
   };

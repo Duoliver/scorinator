@@ -1,4 +1,5 @@
 import { useMemo } from 'preact/hooks';
+import { leagueDetailPath } from '@/app/routes';
 import { planLeagueFileImport } from '@/app/importFileActions';
 import {
   currentRows,
@@ -22,6 +23,7 @@ export function useLeaguesDashboard(): LeaguesDashboard {
       currentRows({ rows, leagues }).map((row) => ({
         row,
         isUnsaved: isLeagueUnsaved({ leagues, savedLeagues }, row.uuid),
+        href: leagueDetailPath(row.uuid),
       })),
     [rows, leagues, savedLeagues]
   );

@@ -15,7 +15,12 @@ import { PhaseFormat } from '@/engine/phases';
  * bracket result, a star click opens the "Clear bracket results?" confirm
  * first, because `setBracketByes` clears every result (US-04.10).
  */
-export function useSeedList({ league, phaseIndex }: SeedListProps): SeedListState {
+export function useSeedList({
+  league,
+  phaseIndex,
+  leagueRef,
+  readOnly = false,
+}: SeedListProps): SeedListState {
   const [pending, setPending] = useState<string[] | null>(null);
   const lookup = useTeamLookup(league.teams);
   const phase = league.content.phases[phaseIndex];
@@ -30,7 +35,8 @@ export function useSeedList({ league, phaseIndex }: SeedListProps): SeedListStat
       ? seedTagsOf(phaseStandings(league, phaseIndex - 1), before.format)
       : new Map<string, string>();
 
-  const apply = (next: string[]): void => setBracketByes(league.uuid, next);
+  const apply = (next: string[]): void =>
+    setBracketByes(leagueRef ?? league.uuid, next);
   const confirm: ConfirmDialogProps | null = pending
     ? {
         title: 'Clear bracket results?',
@@ -46,7 +52,9 @@ export function useSeedList({ league, phaseIndex }: SeedListProps): SeedListStat
     : null;
 
   return {
-    rows: buildSeedRows(seeds, byeTeams, byes, tags, lookup),
+    rows: buildSeedRows(seeds, byeTeams, byes, tags, lookup).map((row) =>
+      readOnly ? { ...row, starDisabled: true } : row
+    ),
     hasTags: tags.size > 0,
     ...describeByes(seeds.length, byes, byeTeams.length),
     toggleBye: (teamId): void => {

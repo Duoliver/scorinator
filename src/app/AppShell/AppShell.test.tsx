@@ -17,6 +17,8 @@ import {
   LEAGUE,
   openTestDatabase,
   openTestLeague,
+  SEASON,
+  seasonWrapper,
   roundRobinLeague,
 } from '@/test/databaseRecords';
 
@@ -46,7 +48,7 @@ describe('AppShell', () => {
     render(<AppShell />);
     expect(screen.getByRole('status')).toHaveTextContent('Opening the database…');
     expect(
-      screen.queryByRole('heading', { name: 'No leagues yet.' })
+      screen.queryByRole('heading', { name: 'No Seasons yet' })
     ).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Teams' })).toBeInTheDocument();
   });
@@ -64,7 +66,7 @@ describe('AppShell', () => {
       'The database could not open: manifest.json is not valid: the text is not JSON.'
     );
     expect(
-      screen.queryByRole('heading', { name: 'No leagues yet.' })
+      screen.queryByRole('heading', { name: 'No Seasons yet' })
     ).not.toBeInTheDocument();
   });
 
@@ -80,13 +82,16 @@ describe('AppShell', () => {
     expect(remove).toHaveBeenCalledOnce();
   });
 
-  it('lands on Leagues by default, with Leagues marked as the active nav item', () => {
+  it('lands on Seasons by default, with Seasons marked as the active nav item (Task 256)', () => {
     render(<AppShell />);
 
-    expect(screen.getByRole('heading', { name: 'Leagues' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Leagues' })).toHaveAttribute(
+    expect(screen.getByRole('heading', { name: 'Seasons' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Seasons' })).toHaveAttribute(
       'aria-current',
       'page'
+    );
+    expect(screen.getByRole('link', { name: 'Leagues' })).not.toHaveAttribute(
+      'aria-current'
     );
     expect(screen.getByRole('link', { name: 'Teams' })).not.toHaveAttribute(
       'aria-current'
@@ -169,6 +174,41 @@ describe('AppShell', () => {
       'aria-current',
       'page'
     );
+  });
+
+  it('routes to the wizard in a Season, with Seasons marked active (Task 218)', async () => {
+    const season = seasonWrapper();
+    useDatabaseStore.setState({
+      seasons: { [SEASON]: season },
+      savedSeasons: { [SEASON]: season },
+    });
+    render(<AppShell />);
+
+    route(`/seasons/${SEASON}/leagues/new`);
+
+    expect(
+      await screen.findByRole('heading', { name: 'New league in Liga Norte' })
+    ).toBeInTheDocument();
+    // The breadcrumbs link to the Seasons list too.
+    const [navLink] = screen.getAllByRole('link', { name: 'Seasons' });
+    expect(navLink).toHaveAttribute('aria-current', 'page');
+  });
+
+  it('routes to League Detail of a Season league, with Seasons marked active (Task 219)', async () => {
+    const season = seasonWrapper();
+    useDatabaseStore.setState({
+      seasons: { [SEASON]: season },
+      savedSeasons: { [SEASON]: season },
+    });
+    render(<AppShell />);
+
+    route(`/seasons/${SEASON}/leagues/${LEAGUE}`);
+
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Coastal Premier' })
+    ).toBeInTheDocument();
+    const [navLink] = screen.getAllByRole('link', { name: 'Seasons' });
+    expect(navLink).toHaveAttribute('aria-current', 'page');
   });
 
   it('routes to the File screen when File is clicked, with File marked active', async () => {

@@ -125,6 +125,8 @@ export function resetXDraft(): void { /* ... */ }
 
 No per-field action (`setName`, `toggleTeam`, and so on). Those stay local to the screen, exactly as they would with no store at all. The store holds one snapshot, plus two ways to change it. It is not a live API surface that grows with every field the screen ever gains.
 
+A screen that opens for more than one container keeps one snapshot for each container. The League Setup wizard keeps the standalone draft at the top level, and one draft for each Season in `seasonDrafts`, by Season UUID. The two actions take the key, and the read helper `getLeagueDraft` gives one snapshot. So a Season wizard never clears the standalone draft. *(Added on 2026-11-14, Task 218 choice 3.)*
+
 Read and write that store at exactly three points, never per keystroke or per click:
 
 1. **On mount**, once, through `useLeagueDraftStore.getState()` — not a subscribed selector — to seed local `useState`.
@@ -247,6 +249,28 @@ When a parent centers a container, and the content of that container must appear
 /* Its button row centers its buttons too, also when they wrap. */
 .empty .actions {
   justify-content: center;
+}
+```
+
+## An end-side container puts its own children at the end
+
+The same rule applies to the end side. When a parent puts a container at the end side, the container puts its own children and its text at the end too. *(Added on 2026-11-14, Task 215.)*
+
+- A flex row of children sets `justify-content: flex-end`, also when it wraps.
+- Text in the container sets `text-align: end`.
+- A layout that stacks the container on a narrow screen sets both back to the start, when the stacked parts start at the start side.
+
+**Why:** a long text at the end side wraps on a narrow screen. Without `text-align: end`, its second line starts at the left edge of the container. The rules of a playoff head in the M2 demo are an example: two lines of text at the end side.
+
+```css
+/* The playoff head: the name at the start, the rules at the end. */
+.head {
+  display: flex;
+  justify-content: space-between;
+}
+
+.rules {
+  text-align: end;
 }
 ```
 

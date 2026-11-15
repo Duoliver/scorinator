@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Season wizard demo</title>
+<link rel="stylesheet" href="demo.css">
+<style>
+  .list .thead, .list .tr { grid-template-columns: minmax(12rem, 2fr) 5rem 6rem 7rem; }
+  .tier-ovr { justify-self: start; display: inline-flex; border: var(--border-width) solid var(--color-fg);
+    font-family: var(--font-mono); font-size: var(--font-size-md); font-weight: 700; }
+  .tier-ovr > span { padding: var(--space-1) var(--space-2); }
+  .tier-ovr .tier { background: var(--color-fg); color: var(--color-surface); }
+  .row-actions { display: flex; gap: var(--space-2); justify-content: flex-end; }
+  .drawer-note { margin: 0; font-size: var(--font-size-md); color: var(--color-fg-muted); }
+  .drawer-actions { display: flex; justify-content: flex-end; gap: var(--space-3); margin-top: auto; }
+</style>
+</head>
+<body>
+<!-- Demo for Task 215 (M2). Story: US-13.5. Static HTML with fake data. -->
+<div class="shell">
+  <nav class="nav">
+    <div class="brand">Scorinator</div>
+    <a class="nav-item" href="#">Leagues</a>
+    <a class="nav-item" href="m2-season-view.html" aria-current="page">Seasons</a>
+    <a class="nav-item" href="#">Teams</a>
+    <a class="nav-item" href="#">File</a>
+  </nav>
+
+  <main class="content">
+    <div class="screen">
+      <div>
+        <nav class="crumbs" aria-label="Breadcrumbs">
+          <a href="m1-seasons-list.html">Seasons</a><span>›</span>
+          <a href="m2-season-view.html">Liga Norte 2026-27</a><span>›</span>
+          <span>New league</span>
+        </nav>
+        <div class="title-row"><h1>New league in Liga Norte</h1></div>
+        <span class="meta">The league uses the Season teams. A team that is not in the Season joins it when you create the league.</span>
+      </div>
+
+      <div class="stepper"><span>Details</span><span>Phases</span><span aria-current="step">Teams</span><span>Review</span></div>
+
+      <div class="section">
+        <div class="section-head">
+          <h2>Teams</h2>
+          <button class="button sm" type="button" data-open="picker">+ Add teams</button>
+        </div>
+        <div class="table list">
+          <div class="thead"><span>Team</span><span>Trigram</span><span>Tier · OVR</span><span></span></div>
+          <div class="tr">
+            <span class="team-cell"><span class="swatch" style="background:#1565C0"></span>Porto Velho SC <span class="team-location">Porto Velho</span></span>
+            <span class="mono">POR</span>
+            <span class="tier-ovr" aria-label="Tier S, OVR 93"><span class="tier">S</span><span>93</span></span>
+            <span class="row-actions"><button class="button icon" type="button" data-open="edit" aria-label="Edit Porto Velho SC">✎</button><button class="button icon" type="button" aria-label="Switch Porto Velho SC">⇄</button><button class="button icon" type="button" aria-label="Remove Porto Velho SC">✕</button></span>
+          </div>
+          <div class="tr">
+            <span class="team-cell"><span class="swatch" style="background:#E53935"></span>Ashfield Rovers <span class="team-location">Ashfield</span></span>
+            <span class="mono">ASH</span>
+            <span class="tier-ovr" aria-label="Tier A, OVR 86"><span class="tier">A</span><span>86</span></span>
+            <span class="row-actions"><button class="button icon" type="button" data-open="edit" aria-label="Edit Ashfield Rovers">✎</button><button class="button icon" type="button" aria-label="Switch Ashfield Rovers">⇄</button><button class="button icon" type="button" aria-label="Remove Ashfield Rovers">✕</button></span>
+          </div>
+          <div class="tr">
+            <span class="team-cell"><span class="swatch" style="background:#827717"></span>Clube Ferroviário <span class="team-location">Estação</span> <span class="badge warning">Joins the Season</span></span>
+            <span class="mono">CLU</span>
+            <span class="tier-ovr" aria-label="Tier C, OVR 64"><span class="tier">C</span><span>64</span></span>
+            <span class="row-actions"><button class="button icon" type="button" data-open="edit-new" aria-label="Edit Clube Ferroviário">✎</button><button class="button icon" type="button" aria-label="Switch Clube Ferroviário">⇄</button><button class="button icon" type="button" aria-label="Remove Clube Ferroviário">✕</button></span>
+          </div>
+        </div>
+        <span class="count">3 teams. ⇄ opens the Switch dialog of MVP2, with the same two groups as "Add teams".</span>
+      </div>
+
+      <div class="actions"><button class="button sm" type="button">← Back</button><button class="button primary sm" type="button">Next: Review →</button></div>
+    </div>
+  </main>
+</div>
+
+<dialog class="modal" id="picker" aria-labelledby="picker-title">
+  <div class="modal-panel lg">
+    <div class="modal-head">
+      <div>
+        <h2 class="modal-title" id="picker-title">Add teams</h2>
+        <p class="modal-desc">Season teams first. A team that is not in the Season gets its OVR roll when you add it, and joins the Season when you create the league.</p>
+      </div>
+      <button class="close" type="button" aria-label="Close" data-close>✕</button>
+    </div>
+    <div class="field"><label class="label" for="search">Search</label><input class="input" id="search" placeholder="Name or Location"></div>
+    <div class="picker">
+      <div class="picker-panel">
+        <h3 class="picker-title">Teams</h3>
+        <ul class="picker-list">
+          <li class="picker-section">Season teams</li>
+          <li class="picker-row season"><span class="swatch" style="background:#2E7D32"></span>Riverside FC<span class="picker-status">In 1 league</span></li>
+          <li class="picker-row season"><span class="swatch" style="background:#6A1B9A"></span>Union Leste <span class="team-location">Vila Leste</span><span class="picker-status">Rests</span></li>
+          <li class="picker-section">Other teams</li>
+          <li class="picker-row other"><span class="swatch" style="background:#D81B60"></span>Dragões do Sul <span class="team-location">Baía</span><span class="picker-status">Not in the Season</span></li>
+          <li class="picker-row other"><span class="swatch" style="background:#64B5F6"></span>Estrela Azul<span class="picker-status">Not in the Season</span></li>
+        </ul>
+      </div>
+      <div class="picker-panel">
+        <h3 class="picker-title">In this league · 3</h3>
+        <ul class="picker-list">
+          <li class="picker-row">Porto Velho SC</li>
+          <li class="picker-row">Ashfield Rovers</li>
+          <li class="picker-row">Clube Ferroviário</li>
+        </ul>
+      </div>
+    </div>
+    <div class="modal-actions"><button class="button sm" type="button" data-close>Cancel</button><button class="button primary sm" type="button" data-close>Add 0 teams</button></div>
+  </div>
+</dialog>
+
+<dialog class="drawer" id="edit" aria-labelledby="edit-title">
+  <div class="drawer-panel">
+    <div class="modal-head"><h2 class="drawer-title" id="edit-title">Edit Season team</h2><button class="close" type="button" aria-label="Close" data-close>✕</button></div>
+    <p class="drawer-note">This changes the Season team. The change reaches every league of Liga Norte 2026-27: Primeira Divisão, Taça Norte.</p>
+    <div class="field"><label class="label" for="n">Team name</label><input class="input" id="n" value="Ashfield Rovers"></div>
+    <div class="fields-row">
+      <div class="field"><label class="label" for="t">Tier</label><select class="select" id="t"><option>A</option></select></div>
+      <div class="field"><label class="label" for="o">OVR (80 to 89)</label><input class="input mono" id="o" value="86"></div>
+    </div>
+    <div class="field"><label class="label" for="g">Trigram</label><input class="input mono" id="g" value="ASH"></div>
+    <div class="drawer-actions"><button class="button sm" type="button" data-close>Cancel</button><button class="button primary sm" type="button" data-close>Save</button></div>
+  </div>
+</dialog>
+
+<dialog class="drawer" id="edit-new" aria-labelledby="edit-new-title">
+  <div class="drawer-panel">
+    <div class="modal-head"><h2 class="drawer-title" id="edit-new-title">Edit team</h2><button class="close" type="button" aria-label="Close" data-close>✕</button></div>
+    <p class="drawer-note">Clube Ferroviário joins Liga Norte 2026-27 when you create the league. This OVR and Tier become its Season base.</p>
+    <div class="field"><label class="label" for="n2">Team name</label><input class="input" id="n2" value="Clube Ferroviário"></div>
+    <div class="fields-row">
+      <div class="field"><label class="label" for="t2">Tier</label><select class="select" id="t2"><option>C</option></select></div>
+      <div class="field"><label class="label" for="o2">OVR (60 to 69)</label><input class="input mono" id="o2" value="64"></div>
+    </div>
+    <div class="field"><label class="label" for="g2">Trigram</label><input class="input mono" id="g2" value="CLU"></div>
+    <div class="drawer-actions"><button class="button sm" type="button" data-close>Cancel</button><button class="button primary sm" type="button" data-close>Save</button></div>
+  </div>
+</dialog>
+
+<script>
+  document.addEventListener('click', (event) => {
+    const target = event.target.closest('button');
+    if (!target) return;
+    if (target.dataset.open) document.getElementById(target.dataset.open).showModal();
+    if (target.hasAttribute('data-close')) target.closest('dialog').close();
+  });
+  if (location.hash === '#picker') document.getElementById('picker').showModal();
+  if (location.hash === '#edit') document.getElementById('edit').showModal();
+  if (location.hash === '#edit-new') document.getElementById('edit-new').showModal();
+</script>
+</body>
+</html>

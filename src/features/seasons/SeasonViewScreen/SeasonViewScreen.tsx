@@ -1,9 +1,17 @@
 import type { JSX } from 'preact';
 import { Badge, Button, ConfirmDialog, PickerDialog, Tabs } from '@/design-system';
 import { ROUTES } from '@/app/routes';
-import { SeasonTeamDrawer } from './SeasonTeamDrawer';
+import {
+  FINISHED_SEASON_NOTICE,
+  LeagueList,
+  SeasonTeamDrawer,
+} from '@/features/components';
+import { PlayoffDialog } from './PlayoffDialog';
+import { PlayoffsTab } from './PlayoffsTab';
+import { ResumeTab } from './ResumeTab';
 import { TeamsTab } from './TeamsTab';
 import type SeasonViewScreenProps from './types';
+import type { SeasonTab } from './types';
 import { useSeasonView } from './useSeasonView';
 import styles from './SeasonViewScreen.module.css';
 
@@ -57,15 +65,28 @@ export function SeasonViewScreen({ uuid }: SeasonViewScreenProps): JSX.Element {
         </div>
       </div>
 
-      {view.isFinished && (
-        <p class={styles.notice}>
-          This Season is finished. It is read only. Reopen it to change it.
-        </p>
-      )}
+      {view.isFinished && <p class={styles.notice}>{FINISHED_SEASON_NOTICE}</p>}
 
       <section class={styles.section} aria-labelledby="season-leagues">
-        <h2 id="season-leagues">Leagues</h2>
-        {!view.hasLeagues && <p class={styles.note}>No leagues yet.</p>}
+        <div class={styles.sectionHead}>
+          <h2 id="season-leagues">Leagues</h2>
+          {/* A finished Season is read only (US-13.9): a link cannot be
+              disabled, so it is a disabled button. */}
+          {view.isFinished ? (
+            <Button size="sm" disabled>
+              + New league
+            </Button>
+          ) : (
+            <Button href={view.newLeaguePath} size="sm">
+              + New league
+            </Button>
+          )}
+        </div>
+        {view.leagueCards.length > 0 ? (
+          <LeagueList leagues={view.leagueCards} />
+        ) : (
+          <p class={styles.note}>No leagues yet.</p>
+        )}
       </section>
 
       <Tabs
@@ -81,23 +102,52 @@ export function SeasonViewScreen({ uuid }: SeasonViewScreenProps): JSX.Element {
               />
             ),
           },
+          {
+            id: 'playoffs',
+            label: 'Playoffs',
+            content: (
+              <PlayoffsTab
+                rows={view.playoffRows}
+                isFinished={view.isFinished}
+                hasAetKey={view.hasAetKey}
+              />
+            ),
+          },
+          {
+            id: 'resume',
+            label: 'Resume',
+            content: <ResumeTab cards={view.resumeCards} />,
+          },
         ]}
-        defaultTab="teams"
+        defaultTab={view.activeTab}
+        onChange={(id) => view.setActiveTab(id as SeasonTab)}
         actions={
-          <Button
-            size="sm"
-            variant="secondary"
-            disabled={view.isFinished}
-            onClick={view.openPicker}
-          >
-            + Add teams
-          </Button>
+          view.activeTab === 'teams' ? (
+            <Button
+              size="sm"
+              variant="secondary"
+              disabled={view.isFinished}
+              onClick={view.openPicker}
+            >
+              + Add teams
+            </Button>
+          ) : view.activeTab === 'playoffs' ? (
+            <Button
+              size="sm"
+              variant="secondary"
+              disabled={view.isFinished}
+              onClick={view.openPlayoffDialog}
+            >
+              + New playoff
+            </Button>
+          ) : undefined
         }
       />
 
       {view.finishConfirm && <ConfirmDialog {...view.finishConfirm} />}
       {view.picker && <PickerDialog {...view.picker} />}
       {view.drawer && <SeasonTeamDrawer {...view.drawer} />}
+      {view.playoffDialog && <PlayoffDialog {...view.playoffDialog} />}
     </div>
   );
 }

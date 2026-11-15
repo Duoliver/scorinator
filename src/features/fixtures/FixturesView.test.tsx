@@ -641,3 +641,41 @@ describe('FixturesView: the trigrams (Task 157, US-09.6)', () => {
     expect(container.querySelector('[data-part="trigram"]')).toBeNull();
   });
 });
+
+describe('FixturesView: the Location hint on the names (Task 253)', () => {
+  beforeEach(() => {
+    openTestDatabase(
+      ALL_TEAMS.slice(0, 2).map((team, index) => ({
+        ...team,
+        slug: `team-${index + 1}`,
+        tier: 'B',
+        location: index === 0 ? 'Coastal City' : '',
+      }))
+    );
+  });
+
+  it('gives a team with a Location a hint on its name, on hover and on focus', async () => {
+    render(<FixturesView league={league(2)} />);
+
+    const name = screen.getByText('FC United');
+    await userEvent.hover(name);
+
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('Coastal City');
+    expect(screen.getByRole('tooltip')).toHaveAttribute('data-not-hoverable');
+    expect(name.closest('[tabindex]')).toHaveAttribute('tabindex', '0');
+  });
+
+  it('gives a team with no Location no hint and no Tab stop', () => {
+    render(<FixturesView league={league(2)} />);
+
+    expect(screen.getByText('FC Rivals').closest('[tabindex]')).toBeNull();
+  });
+
+  it('marks each name as the cut text of TeamName (Task 180)', () => {
+    render(<FixturesView league={league(2)} />);
+
+    for (const team of ['FC United', 'FC Rivals']) {
+      expect(screen.getByText(team)).toHaveAttribute('data-part', 'name');
+    }
+  });
+});

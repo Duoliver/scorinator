@@ -1,7 +1,9 @@
 import { create } from 'zustand';
 import { getNameKey } from '@/engine/identity';
 import type {
+  League,
   LeagueWrapper,
+  SeasonLeague,
   SeasonSummary,
   SeasonWrapper,
   TeamBlueprint,
@@ -155,6 +157,20 @@ export function isSeasonNameTaken(
   );
 }
 
+/** True when another playoff of the Season has this name, in any case and
+ * with no spaces at the two ends (US-13.7). An edit can pass its own UUID,
+ * so a playoff never clashes with itself. */
+export function isPlayoffNameTaken(
+  season: SeasonWrapper,
+  name: string,
+  exceptUuid?: string
+): boolean {
+  const key = getNameKey(name);
+  return season.content.playoffs.some(
+    (playoff) => playoff.uuid !== exceptUuid && getNameKey(playoff.name) === key
+  );
+}
+
 /** Throws for a finished Season: it is read only, until the user reopens it
  * (US-13.9). The message names the Season, so an error shows which one. */
 export function requireRunningSeason(wrapper: SeasonWrapper): void {
@@ -164,6 +180,82 @@ export function requireRunningSeason(wrapper: SeasonWrapper): void {
       `The Season "${name}" (${year}) is finished. Reopen it to change it.`
     );
   }
+}
+
+/** The open Season, or a `RangeError`: a change needs the Season in memory
+ * (Task 252). */
+export function requireOpenSeason(
+  state: Pick<DatabaseState, 'seasons'>,
+  uuid: string
+): SeasonWrapper {
+  const season = state.seasons[uuid];
+  if (!season) throw new RangeError(`No open Season has the UUID ${uuid}.`);
+  return season;
+}
+
+/** The open Season while it runs. Throws as `requireOpenSeason` and
+ * `requireRunningSeason` do (Task 252). */
+export function requireRunningOpenSeason(
+  state: Pick<DatabaseState, 'seasons'>,
+  uuid: string
+): SeasonWrapper {
+  const season = requireOpenSeason(state, uuid);
+  requireRunningSeason(season);
+  return season;
+}
+
+/** The address of a league of a Season: a league UUID is unique only in
+ * its container, so the Season UUID comes with it (Task 196, Task 216). */
+export interface SeasonLeagueRef {
+  seasonUuid: string;
+  leagueUuid: string;
+}
+
+/** The address of a league: the UUID of a standalone league, as in MVP2,
+ * or the address of a Season league (Task 216 choice 1). */
+export type LeagueRef = string | SeasonLeagueRef;
+
+/** The last view of each Season league, with the roster it was made from.
+ * A league or a roster change makes a new object, so the cache never goes
+ * stale, and a screen selector gets the same view until a change. */
+const seasonLeagueViews = new WeakMap<
+  SeasonLeague,
+  { roster: SeasonWrapper['teams']; view: LeagueWrapper }
+>();
+
+/** A Season league as a league wrapper: the league, with the Season teams
+ * of its `teamUuids`, in that order (Task 216 choice 3). The view never
+ * holds `teamUuids`, so a league action cannot change the team list. */
+export function getSeasonLeagueView(
+  season: SeasonWrapper,
+  league: SeasonLeague
+): LeagueWrapper {
+  const cached = seasonLeagueViews.get(league);
+  if (cached?.roster === season.teams) return cached.view;
+  const byUuid = new Map(season.teams.map((team) => [team.blueprintUuid, team]));
+  const { teamUuids, ...content }: SeasonLeague = league;
+  const view: LeagueWrapper = {
+    uuid: league.uuid,
+    teams: teamUuids.flatMap((uuid) => byUuid.get(uuid) ?? []),
+    content: content satisfies League,
+  };
+  seasonLeagueViews.set(league, { roster: season.teams, view });
+  return view;
+}
+
+/** The open league at this address: a standalone league, or a Season
+ * league of an open Season as `getSeasonLeagueView` gives it. Undefined for
+ * a league that is not open, or that the Season does not have. */
+export function findLeagueWrapper(
+  state: Pick<DatabaseState, 'leagues' | 'seasons'>,
+  ref: LeagueRef
+): LeagueWrapper | undefined {
+  if (typeof ref === 'string') return state.leagues[ref];
+  const season = state.seasons[ref.seasonUuid];
+  const league = season?.content.leagues.find(
+    (candidate) => candidate.uuid === ref.leagueUuid
+  );
+  return season && league ? getSeasonLeagueView(season, league) : undefined;
 }
 
 /** True when the opened league is not the object last opened or saved. A

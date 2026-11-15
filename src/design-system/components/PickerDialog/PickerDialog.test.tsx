@@ -268,3 +268,116 @@ describe('PickerDialog, single mode', () => {
     expect(onCancel).toHaveBeenCalledTimes(2);
   });
 });
+
+describe('PickerDialog groups (Task 218 choice 5)', () => {
+  const GROUPED: PickerItem[] = [
+    { id: 'r', label: 'Riverside FC', group: 'Season teams', highlight: true },
+    { id: 'u', label: 'Union Leste', group: 'Season teams', highlight: true },
+    { id: 'd', label: 'Dragões do Sul', group: 'Other teams' },
+  ];
+
+  /** The names in one group list, in order. */
+  function namesInGroup(group: string): string[] {
+    const list = screen.getByRole('list', { name: group });
+    return within(list)
+      .getAllByRole('button')
+      .map((button) => button.getAttribute('aria-label') ?? '');
+  }
+
+  function renderGrouped(onPick = vi.fn()): void {
+    render(
+      <PickerDialog
+        mode="single"
+        title="Switch team"
+        items={GROUPED}
+        onPick={onPick}
+        onCancel={vi.fn()}
+      />
+    );
+  }
+
+  it('lists the items under their group titles, in the item order', () => {
+    renderGrouped();
+
+    expect(screen.getByText('Season teams')).toBeInTheDocument();
+    expect(screen.getByText('Other teams')).toBeInTheDocument();
+    expect(namesInGroup('Season teams')).toEqual(['Riverside FC', 'Union Leste']);
+    expect(namesInGroup('Other teams')).toEqual(['Dragões do Sul']);
+  });
+
+  it('marks a highlighted item, and only that one', () => {
+    renderGrouped();
+
+    expect(screen.getByRole('button', { name: 'Riverside FC' })).toHaveAttribute(
+      'data-highlight'
+    );
+    expect(screen.getByRole('button', { name: 'Dragões do Sul' })).not.toHaveAttribute(
+      'data-highlight'
+    );
+  });
+
+  it('hides a group with no match for the search', async () => {
+    renderGrouped();
+
+    await userEvent.type(screen.getByRole('textbox', { name: 'Search' }), 'drag');
+
+    expect(screen.queryByText('Season teams')).toBeNull();
+    expect(namesInGroup('Other teams')).toEqual(['Dragões do Sul']);
+  });
+
+  it('picks an item of a group', async () => {
+    const onPick = vi.fn();
+    renderGrouped(onPick);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Union Leste' }));
+
+    expect(onPick).toHaveBeenCalledWith('u');
+  });
+
+  it('keeps one plain list when no item has a group', () => {
+    render(
+      <PickerDialog
+        mode="single"
+        title="Switch team"
+        items={ITEMS}
+        onPick={vi.fn()}
+        onCancel={vi.fn()}
+      />
+    );
+
+    expect(namesIn('Available')).toEqual([
+      'Ashfield Rovers',
+      'Harborview SC',
+      'Salt Marsh United',
+    ]);
+  });
+});
+
+describe('PickerDialog disabled items (Task 220 choice 6)', () => {
+  const WITH_TAKEN: PickerItem[] = [
+    { id: 'a', label: 'Ashfield Rovers', disabled: true, status: 'Team 1' },
+    { id: 'h', label: 'Harborview SC' },
+  ];
+
+  it('shows a disabled item with its status, and does not pick it', async () => {
+    const onPick = vi.fn();
+    render(
+      <PickerDialog
+        mode="single"
+        title="Pick team 2"
+        items={WITH_TAKEN}
+        onPick={onPick}
+        onCancel={vi.fn()}
+      />
+    );
+
+    const taken = screen.getByRole('button', { name: 'Ashfield Rovers' });
+    expect(taken).toBeDisabled();
+    expect(within(taken).getByText('Team 1')).toBeInTheDocument();
+    await userEvent.click(taken);
+    expect(onPick).not.toHaveBeenCalled();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Harborview SC' }));
+    expect(onPick).toHaveBeenCalledWith('h');
+  });
+});

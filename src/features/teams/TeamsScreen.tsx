@@ -36,7 +36,9 @@ export function TeamsScreen(): JSX.Element {
         </div>
       </div>
 
-      <Table label="Teams" columns={columns} rows={rows} rowKey={getRowKey} />
+      <div class={styles.list}>
+        <Table label="Teams" columns={columns} rows={rows} rowKey={getRowKey} />
+      </div>
 
       <span class={styles.count}>{countText}</span>
 

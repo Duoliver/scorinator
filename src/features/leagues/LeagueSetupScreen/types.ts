@@ -4,7 +4,8 @@ import type { FieldHandle } from '@/design-system';
 import type { LeagueDraftDetails, LeagueSetupStep } from '@/app/state/leagueDraftStore';
 import type { PhasePlan, PlanZone } from '@/engine/phases';
 import type { GroupBy } from '@/engine/round-robin';
-import type { TeamBlueprint, TeamInstance } from '@/domain';
+import type { SeasonWrapper, TeamBlueprint, TeamInstance } from '@/domain';
+import type { SeasonTeamRows } from './seasonTeams';
 import type { DetailsStepHandle } from '@/features/leagues/LeagueSetupScreen/steps/DetailsStep';
 import type { TeamInstanceEdit } from '@/features/leagues/LeagueSetupScreen/steps/TeamsStep/EditTeamDrawer';
 import type { PhaseFormatKey } from './phasePlans';
@@ -49,8 +50,27 @@ export interface PhaseList {
   setZones: (index: number, zones: PlanZone[]) => void;
 }
 
+export default interface LeagueSetupScreenProps {
+  /** The Season of the new league. Absent for a standalone league (Task 218
+   * choice 1). */
+  seasonUuid?: string;
+}
+
+/** The Season of the wizard: none for a standalone league, or where its
+ * open stands. */
+export type WizardSeasonState =
+  | { kind: 'standalone' }
+  | { kind: 'opening' }
+  | { kind: 'not-found' }
+  | { kind: 'error'; message: string }
+  | { kind: 'finished'; label: string }
+  | { kind: 'open'; season: SeasonWrapper; label: string };
+
 /** What `useLeagueSetup` gives `LeagueSetupScreen`. */
 export interface LeagueSetup extends TeamList {
+  /** The team list as the create in a Season gives it, or `undefined` for a
+   * standalone league (Task 218 choice 6). */
+  seasonRows: SeasonTeamRows | undefined;
   step: LeagueSetupStep;
   details: LeagueDraftDetails;
   /** Why the league cannot start, or `null`: the name (Task 179), the team

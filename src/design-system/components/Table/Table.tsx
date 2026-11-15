@@ -55,10 +55,13 @@ export function Table<Row>({
           data-tone={rowTone?.(row)}
         >
           {columns.map((column) => (
+            // The column key lets a screen CSS pick a cell by its column,
+            // for example to restyle a row as a card (Task 255).
             <span
               key={column.key}
               class={alignClass[column.align ?? 'left']}
               role="cell"
+              data-column={column.key}
             >
               {column.render
                 ? column.render(row)

@@ -11,14 +11,24 @@ import {
   swapTeamsInCurrentGroups,
 } from '@/app/state/leagueWrapperActions';
 import { canChangeCurrentGroups, canStartNextPhase } from '@/app/state/phases';
-import { isLeagueUnsaved, useDatabaseStore } from '@/app/state/databaseStore';
+import {
+  currentSeasonRows,
+  findLeagueWrapper,
+  isLeagueUnsaved,
+  isSeasonUnsaved,
+  useDatabaseStore,
+  type LeagueRef,
+} from '@/app/state/databaseStore';
+import { openSeason } from '@/app/state/seasonActions';
+import { ROUTES, seasonDetailPath } from '@/app/routes';
+import { FINISHED_SEASON_NOTICE, formatSeasonLabel } from '@/features/components';
 import { summarizeLeague } from '@/app/state/summarizeLeague';
 import {
   describeLeague,
   formatHeaderProgress,
   formatPointsLabel,
   phaseShortName,
-} from '@/features/leagues/leagueSummary';
+} from '@/features/components/leagueSummary';
 import type { LeagueWrapper } from '@/domain';
 import {
   firstLeagueTab,
@@ -31,18 +41,41 @@ import {
   type MatchdayMemory,
   type PhaseStart,
 } from './helpers';
-import type { LeagueDetailState, PhaseStartConfirm, ZoneDrawerView } from './types';
+import type {
+  LeagueAccess,
+  LeagueDetailState,
+  PhaseStartConfirm,
+  ZoneDrawerView,
+} from './types';
 import { PhaseFormat } from '@/engine/phases';
 
 /** The league with this UUID, ready for League Detail (Task 161). A league
  * in the manifest that is not open yet is read from its file once, with
- * `openLeague`. A UUID that no manifest row has is not found. */
-export function useLeagueDetail(uuid: string): LeagueDetailState {
-  const league = useDatabaseStore((state) => state.leagues[uuid]);
-  const isUnsaved = useDatabaseStore((state) => isLeagueUnsaved(state, uuid));
-  const isKnown = useDatabaseStore((state) =>
-    state.rows.some((row) => row.uuid === uuid)
+ * `openLeague`. A UUID that no manifest row has is not found.
+ *
+ * With a `seasonUuid`, it is a league of that Season (Task 219). The
+ * Season opens from its file, the "Unsaved" badge follows the Season, and
+ * a finished Season makes the league read only. */
+export function useLeagueDetail(uuid: string, seasonUuid?: string): LeagueDetailState {
+  const ref: LeagueRef =
+    seasonUuid === undefined ? uuid : { seasonUuid, leagueUuid: uuid };
+  const league = useDatabaseStore((state) => findLeagueWrapper(state, ref));
+  const season = useDatabaseStore((state) =>
+    seasonUuid === undefined ? undefined : state.seasons[seasonUuid]
   );
+  const isUnsaved = useDatabaseStore((state) =>
+    seasonUuid === undefined
+      ? isLeagueUnsaved(state, uuid)
+      : isSeasonUnsaved(state, seasonUuid)
+  );
+  // A Season league is known while its Season is known and not open, so the
+  // Season opens. An open Season knows its leagues.
+  const isKnown = useDatabaseStore((state) => {
+    if (seasonUuid === undefined) return state.rows.some((row) => row.uuid === uuid);
+    const open = state.seasons[seasonUuid];
+    if (open) return open.content.leagues.some((candidate) => candidate.uuid === uuid);
+    return currentSeasonRows(state).some((row) => row.uuid === seasonUuid);
+  });
   // Kept with its UUID, so a route to another league does not show the
   // error of the last one.
   const [openError, setOpenError] = useState<{ uuid: string; message: string }>();
@@ -65,20 +98,27 @@ export function useLeagueDetail(uuid: string): LeagueDetailState {
   useEffect(() => {
     if (!needsOpen) return;
     let active = true;
-    openLeague(uuid).catch((error: unknown) => {
+    const open = seasonUuid === undefined ? openLeague(uuid) : openSeason(seasonUuid);
+    open.catch((error: unknown) => {
       if (active) setOpenError({ uuid, message: getErrorMessage(error) });
     });
     return (): void => {
       active = false;
     };
-  }, [uuid, needsOpen]);
+  }, [uuid, seasonUuid, needsOpen]);
 
   if (league) {
     // The same row as the dashboard card, so both say the same (US-01.2).
     const summary = summarizeLeague(league);
     const { plans, phases } = league.content;
     const hasPhaseTabs = plans.length > 1;
-    const start = findPhaseStart(league, () => setConfirmingStart(true));
+    // A finished Season keeps the league as it is (US-13.9, Task 219 choice
+    // 4): no start, no draw change, no zones.
+    const readOnly = season?.content.finished ?? false;
+    const access: LeagueAccess = { leagueRef: ref, readOnly };
+    const start = readOnly
+      ? undefined
+      : findPhaseStart(league, () => setConfirmingStart(true));
     const next = phases.length + 1;
     const startConfirm: PhaseStartConfirm | undefined = confirmingStart
       ? {
@@ -88,7 +128,7 @@ export function useLeagueDetail(uuid: string): LeagueDetailState {
           onConfirm: (): void => {
             setConfirmingStart(false);
             try {
-              startNextPhase(league.uuid);
+              startNextPhase(ref);
               // The new phase tab opens (Task 132 choice 3).
               tabsRef.current?.setValue(phaseTabId(next - 1));
             } catch (error) {
@@ -98,9 +138,10 @@ export function useLeagueDetail(uuid: string): LeagueDetailState {
           onCancel: () => setConfirmingStart(false),
         }
       : undefined;
-    const zoneDrawer = findZoneDrawer(league, zonePhase, hasPhaseTabs, () =>
+    const zoneDrawer = findZoneDrawer(ref, league, zonePhase, hasPhaseTabs, () =>
       setZonePhase(undefined)
     );
+    const editZones = readOnly ? undefined : setZonePhase;
     const onePlan = plans[0];
     return {
       kind: 'open',
@@ -112,10 +153,17 @@ export function useLeagueDetail(uuid: string): LeagueDetailState {
         // The `Unsaved` badge beside the title (Task 26).
         isUnsaved,
         tabs: hasPhaseTabs
-          ? getPhaseTabs(league, memory, start, findGroupsDraw(league), setZonePhase)
-          : getLeagueTabs(league, 0, memory),
+          ? getPhaseTabs(
+              league,
+              memory,
+              start,
+              readOnly ? undefined : findGroupsDraw(ref, league),
+              editZones,
+              access
+            )
+          : getLeagueTabs(league, 0, memory, undefined, access),
         tabsActions:
-          hasPhaseTabs || !onePlan || onePlan.format === PhaseFormat.BRACKET
+          hasPhaseTabs || readOnly || !onePlan || onePlan.format === PhaseFormat.BRACKET
             ? undefined
             : renderEditZonesButton(() => setZonePhase(0)),
         // The current phase is the last started one.
@@ -123,7 +171,16 @@ export function useLeagueDetail(uuid: string): LeagueDetailState {
           ? phaseTabId(Math.max(0, phases.length - 1))
           : firstLeagueTab(league, 0),
         tabsRef,
-        exportItems: getExportItems(league),
+        exportItems: season ? undefined : getExportItems(league),
+        crumbs: season && [
+          { label: 'Seasons', href: ROUTES.seasons },
+          {
+            label: formatSeasonLabel(season.content),
+            href: seasonDetailPath(season.uuid),
+          },
+          { label: league.content.name },
+        ],
+        notice: readOnly ? FINISHED_SEASON_NOTICE : undefined,
         startConfirm,
         zoneDrawer,
       },
@@ -153,6 +210,7 @@ function findPhaseStart(
 /** The "Edit zones" drawer of the phase at `phaseIndex`, or `undefined`
  * when it is closed (Task 189). Save sets the zones and closes it. */
 function findZoneDrawer(
+  ref: LeagueRef,
   league: LeagueWrapper,
   phaseIndex: number | undefined,
   hasPhaseTabs: boolean,
@@ -167,7 +225,7 @@ function findZoneDrawer(
     onSave: (zones): void => {
       close();
       try {
-        setPhaseZones(league.uuid, phaseIndex, zones);
+        setPhaseZones(ref, phaseIndex, zones);
       } catch (error) {
         setStatusLine({ tone: 'error', message: getErrorMessage(error) });
       }
@@ -188,16 +246,16 @@ function changeDraw(change: () => void): void {
 
 /** The draw of the current phase while Shuffle, moves, and swaps can change
  * it (Tasks 181 and 183, US-02.1, US-02.5), or `undefined`. */
-function findGroupsDraw(league: LeagueWrapper): GroupsDraw | undefined {
+function findGroupsDraw(ref: LeagueRef, league: LeagueWrapper): GroupsDraw | undefined {
   if (!canChangeCurrentGroups(league)) return undefined;
   const current = league.content.phases[league.content.phases.length - 1];
   if (current?.format !== PhaseFormat.GROUPS) return undefined;
   return {
     groups: current.groups,
     onMove: (team, groupIndex) =>
-      changeDraw(() => moveTeamInCurrentGroups(league.uuid, team, groupIndex)),
+      changeDraw(() => moveTeamInCurrentGroups(ref, team, groupIndex)),
     onSwap: (team, other) =>
-      changeDraw(() => swapTeamsInCurrentGroups(league.uuid, team, other)),
-    onShuffle: () => changeDraw(() => shuffleCurrentGroups(league.uuid)),
+      changeDraw(() => swapTeamsInCurrentGroups(ref, team, other)),
+    onShuffle: () => changeDraw(() => shuffleCurrentGroups(ref)),
   };
 }

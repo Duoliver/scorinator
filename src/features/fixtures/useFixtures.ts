@@ -32,8 +32,10 @@ export function useFixtures(props: FixturesViewProps): Fixtures {
   const phase = getShownPhase(league, props.phaseIndex);
   const { phases, plans } = league.content;
   const shownIndex = props.phaseIndex ?? phases.length - 1;
+  const ref = props.leagueRef ?? league.uuid;
   // The scorinate actions play the latest started phase only (Task 128).
-  const locked = shownIndex < phases.length - 1;
+  const isPastPhase = shownIndex < phases.length - 1;
+  const locked = isPastPhase || props.readOnly === true;
   const groupOf = getGroupIndexes(phase);
   const byGroup = (a: { group?: number }, b: { group?: number }): number =>
     (a.group ?? 0) - (b.group ?? 0);
@@ -57,8 +59,8 @@ export function useFixtures(props: FixturesViewProps): Fixtures {
         flashing: isFlashing(fixture.id),
         scorinate: () =>
           result
-            ? rescorinateFixture(league.uuid, fixture.id)
-            : scorinateFixture(league.uuid, fixture.id),
+            ? rescorinateFixture(ref, fixture.id)
+            : scorinateFixture(ref, fixture.id),
       };
     });
 
@@ -78,9 +80,9 @@ export function useFixtures(props: FixturesViewProps): Fixtures {
     rows,
     byes,
     matchdayFullyPlayed: isPhaseMatchdayPlayed(phase.fixtures, phase.results, matchday),
-    scorinateMatchday: () => scorinateMatchday(league.uuid, matchday),
+    scorinateMatchday: () => scorinateMatchday(ref, matchday),
     locked,
-    lockHint: locked
+    lockHint: isPastPhase
       ? `Phase ${shownIndex + 2} started. This phase is locked.`
       : undefined,
     completeBadge: getCompleteBadge(shownIndex >= plans.length - 1),

@@ -5,10 +5,10 @@ import styles from './TeamLabel.module.css';
 export type { TeamLabelProps };
 
 /** A team name with its Location below it, or on its line with `inline`, in
- * smaller muted text. Shared by the Teams step list, the add dialog rows,
- * and the Review step. It takes
- * the free width of its row, so the item after it sits at the row end
- * (Task 120 review). */
+ * smaller muted text. It takes the free width of its row, so the item after
+ * it sits at the row end (Task 120 review). The name is `data-part="name"`
+ * and the Location `data-part="location"`, so a screen CSS can style each
+ * one alone (Tasks 254, 257). */
 export function TeamLabel({
   name,
   location,
@@ -16,8 +16,12 @@ export function TeamLabel({
 }: TeamLabelProps): JSX.Element {
   return (
     <span class={inline ? `${styles.label} ${styles.inline}` : styles.label}>
-      <span>{name}</span>
-      {location !== '' && <span class={styles.location}>{location}</span>}
+      <span data-part="name">{name}</span>
+      {location !== '' && (
+        <span class={styles.location} data-part="location">
+          {location}
+        </span>
+      )}
     </span>
   );
 }

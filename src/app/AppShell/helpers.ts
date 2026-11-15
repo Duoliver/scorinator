@@ -3,14 +3,15 @@ import type { DatabaseStatus } from '@/app/state/databaseStore';
 import type { NavItem } from './types';
 
 export const NAV_ITEMS: NavItem[] = [
-  { label: 'Leagues', path: ROUTES.leaguesDashboard },
   { label: 'Seasons', path: ROUTES.seasons },
+  { label: 'Leagues', path: ROUTES.leaguesDashboard },
   { label: 'Teams', path: ROUTES.teams },
   { label: 'File', path: ROUTES.file },
 ];
 
-/** The start screen (Task 29). It also renders for any unmatched path. */
-export const DEFAULT_PATH = ROUTES.leaguesDashboard;
+/** The start screen: the Seasons list, the main module (Task 256). It
+ * also renders for any unmatched path. */
+export const DEFAULT_PATH = ROUTES.seasons;
 
 /** The nav items with screens below them: League Setup and League Detail
  * below Leagues, a Season view below Seasons (Task 212). Their URLs never
@@ -23,7 +24,7 @@ export function isNavItemActive(item: NavItem, activePath: string): boolean {
   return PARENT_PATHS.includes(item.path) && activePath.startsWith(`${item.path}/`);
 }
 
-/** `default` on the dashboard route renders it for any unmatched path,
+/** `default` on the start route renders it for any unmatched path,
  * including `ROUTES.root`, but the router `onChange` still reports the
  * literal browser url. This gives the path the router rendered, so the nav
  * highlight matches. */

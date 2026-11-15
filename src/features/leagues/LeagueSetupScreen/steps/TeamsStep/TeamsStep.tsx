@@ -1,6 +1,6 @@
 import type { JSX } from 'preact';
 import { Button, Card, PickerDialog, Table } from '@/design-system';
-import { TeamFormDrawer } from '@/features/components';
+import { SeasonTeamDrawer, TeamFormDrawer } from '@/features/components';
 import { SetupChips } from '@/features/leagues/LeagueSetupScreen/steps/SetupChips';
 import type TeamsStepProps from './types';
 import type { TeamsStepState } from './types';
@@ -86,7 +86,7 @@ function TeamListArea({
         <AddActions step={step} onShuffleGroups={props.onShuffleGroups} />
         <GroupCards
           groups={groups}
-          teams={teams}
+          teams={step.rows}
           locationOf={step.locationOf}
           onEdit={step.openEdit}
           onSwitch={step.openSwitch}
@@ -105,12 +105,7 @@ function TeamListArea({
   return (
     <>
       <AddActions step={step} />
-      <Table
-        label="Teams"
-        columns={step.columns}
-        rows={[...teams]}
-        rowKey={getRowKey}
-      />
+      <Table label="Teams" columns={step.columns} rows={step.rows} rowKey={getRowKey} />
       <span class={styles.count}>{step.countText}</span>
       {step.warning && <p class={styles.warning}>{step.warning}</p>}
       {props.bracketWarning && <p class={styles.note}>{props.bracketWarning}</p>}
@@ -154,10 +149,11 @@ export function TeamsStep({ onBack, onNext, ...props }: TeamsStepProps): JSX.Ele
             searchPlaceholder={TEAM_SEARCH_PLACEHOLDER}
             selected={step.pickerSelected}
             onSelectedChange={step.setPickerSelected}
-            availableAction={{
-              label: '+ Create new team',
-              onClick: step.openPickerTeam,
-            }}
+            availableAction={
+              step.canCreateTeam
+                ? { label: '+ Create new team', onClick: step.openPickerTeam }
+                : undefined
+            }
             confirmLabel={step.pickerConfirmLabel}
             onConfirm={step.confirmPicker}
             onCancel={step.closePicker}
@@ -172,10 +168,11 @@ export function TeamsStep({ onBack, onNext, ...props }: TeamsStepProps): JSX.Ele
             searchPlaceholder={TEAM_SEARCH_PLACEHOLDER}
             current={step.switchCurrent}
             onPick={step.pickSwitch}
-            availableAction={{
-              label: '+ Create new team',
-              onClick: step.openSwitchTeam,
-            }}
+            availableAction={
+              step.canCreateTeam
+                ? { label: '+ Create new team', onClick: step.openSwitchTeam }
+                : undefined
+            }
             onCancel={step.closeSwitch}
           />
         )}
@@ -191,6 +188,7 @@ export function TeamsStep({ onBack, onNext, ...props }: TeamsStepProps): JSX.Ele
         )}
 
         {step.editDrawer && <EditTeamDrawer {...step.editDrawer} />}
+        {step.seasonDrawer && <SeasonTeamDrawer {...step.seasonDrawer} />}
 
         <div class={styles.footer}>
           <Button variant="secondary" onClick={onBack}>

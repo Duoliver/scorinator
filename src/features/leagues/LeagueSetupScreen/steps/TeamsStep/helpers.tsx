@@ -6,9 +6,13 @@ import {
   type PickerItem,
   type TableColumn,
 } from '@/design-system';
-import type { TeamBlueprint, TeamInstance } from '@/domain';
+import type { SeasonWrapper, TeamBlueprint, TeamInstance } from '@/domain';
 import type { TrigramPick } from '@/engine/identity';
 import { TeamLabel, TeamSwatch } from '@/features/components';
+import {
+  formatSeasonTeamStatus,
+  NOT_IN_SEASON,
+} from '@/features/leagues/LeagueSetupScreen/seasonTeams';
 import styles from './TeamsStep.module.css';
 
 export const getRowKey = (team: TeamInstance): string => team.blueprintUuid;
@@ -38,17 +42,22 @@ export const getTeamsStepColumns = (
   pickOf: (blueprintUuid: string) => TrigramPick | undefined,
   onEdit: (blueprintUuid: string) => void,
   onSwitch: (blueprintUuid: string) => void,
-  onRemove: (blueprintUuid: string) => void
+  onRemove: (blueprintUuid: string) => void,
+  badgeOf: (blueprintUuid: string) => string | undefined = () => undefined
 ): TableColumn<TeamInstance>[] => [
   {
     key: 'team',
     header: 'Team',
-    render: (team) => (
-      <div class={styles.teamCell}>
-        <TeamSwatch colour={team.colour} />
-        <TeamLabel name={team.name} location={locationOf(team.blueprintUuid)} />
-      </div>
-    ),
+    render: (team): JSX.Element => {
+      const badge = badgeOf(team.blueprintUuid);
+      return (
+        <div class={styles.teamCell}>
+          <TeamSwatch colour={team.colour} />
+          <TeamLabel name={team.name} location={locationOf(team.blueprintUuid)} />
+          {badge && <Badge tone="warning">{badge}</Badge>}
+        </div>
+      );
+    },
   },
   {
     key: 'trigram',
@@ -116,6 +125,93 @@ export const toPickerItem = (blueprint: TeamBlueprint): PickerItem => ({
     </span>
   ),
 });
+
+/** One row of the dialogs of a wizard in a Season: swatch, name over
+ * Location, the Season status, and the Tier (Task 215 point 6). */
+function SeasonPickRow({
+  colour,
+  name,
+  location,
+  status,
+  tier,
+}: {
+  colour: string;
+  name: string;
+  location: string;
+  status: string;
+  tier: string;
+}): JSX.Element {
+  return (
+    <span class={`${styles.teamCell} ${styles.pickRow}`}>
+      <TeamSwatch colour={colour} />
+      <TeamLabel name={name} location={location} />
+      <span class={styles.pickStatus}>{status}</span>
+      <Badge tone="dark">{tier}</Badge>
+    </span>
+  );
+}
+
+/**
+ * The items of the "Add teams" and Switch dialogs in a Season (Task 218
+ * choice 5): the Season teams first, tinted, with where they play, then
+ * the other Blueprints with "Not in the Season". A team of the list is not
+ * an item. A Season team whose Blueprint was deleted cannot be added again,
+ * so it is not an item either.
+ */
+export function getSeasonPickerItems(
+  season: SeasonWrapper,
+  blueprints: readonly TeamBlueprint[],
+  inList: ReadonlySet<string>
+): PickerItem[] {
+  const byUuid = new Map(blueprints.map((b) => [b.uuid, b]));
+  const inRoster = new Set(season.teams.map((team) => team.blueprintUuid));
+  const seasonItems = season.teams.flatMap((team): PickerItem[] => {
+    const blueprint = byUuid.get(team.blueprintUuid);
+    if (!blueprint || inList.has(team.blueprintUuid)) return [];
+    const leagueCount = season.content.leagues.filter((league) =>
+      league.teamUuids.includes(team.blueprintUuid)
+    ).length;
+    return [
+      {
+        id: team.blueprintUuid,
+        label: team.name,
+        searchText: `${team.name} ${blueprint.location}`,
+        group: SEASON_TEAMS,
+        highlight: true,
+        content: (
+          <SeasonPickRow
+            colour={team.colour}
+            name={team.name}
+            location={blueprint.location}
+            status={formatSeasonTeamStatus(leagueCount)}
+            tier={team.tier}
+          />
+        ),
+      },
+    ];
+  });
+  const otherItems = blueprints
+    .filter((b) => !inRoster.has(b.uuid) && !inList.has(b.uuid))
+    .map((b): PickerItem => ({
+      id: b.uuid,
+      label: b.name,
+      searchText: `${b.name} ${b.location}`,
+      group: OTHER_TEAMS,
+      content: (
+        <SeasonPickRow
+          colour={b.colour}
+          name={b.name}
+          location={b.location}
+          status={NOT_IN_SEASON}
+          tier={b.tier}
+        />
+      ),
+    }));
+  return [...seasonItems, ...otherItems];
+}
+
+export const SEASON_TEAMS = 'Season teams';
+export const OTHER_TEAMS = 'Other teams';
 
 /** The row of a team of the list in the "Currently in slot" panel of the
  * Switch dialog (US-08.5). */

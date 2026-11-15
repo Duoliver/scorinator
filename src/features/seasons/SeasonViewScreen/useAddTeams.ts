@@ -4,7 +4,8 @@ import type { SeasonWrapper } from '@/domain';
 import { useDatabaseStore } from '@/app/state/databaseStore';
 import { addSeasonTeams } from '@/app/state/seasonActions';
 import { setStatusLine } from '@/app/state/statusLineActions';
-import { formatCount, formatSeasonLabel } from '@/features/seasons/seasonText';
+import { formatSeasonLabel } from '@/features/components';
+import { formatCount } from '@/features/seasons/seasonText';
 import { ADD_TEAMS_TEXT, formatJoinHints, toPickerItem } from './helpers';
 
 /** The "Add teams" dialog of the Season view (US-13.4, Task 213 choice 5):

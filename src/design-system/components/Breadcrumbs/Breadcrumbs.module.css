@@ -1,0 +1,32 @@
+.list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--font-size-md);
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* The separator sits before each item but the first. Screen readers skip
+ * it: the list already gives the order. */
+.item + .item::before {
+  content: '›';
+  color: var(--color-fg-muted);
+}
+
+.link {
+  color: var(--color-fg);
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}

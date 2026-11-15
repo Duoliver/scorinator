@@ -27,7 +27,10 @@ import { PhaseFormat } from '@/engine/phases';
 export function useBracketView({
   league,
   phaseIndex,
+  leagueRef,
+  readOnly = false,
 }: BracketViewProps): BracketViewState {
+  const ref = leagueRef ?? league.uuid;
   const [confirmTie, setConfirmTie] = useState<string | null>(null);
   const lookup = useTeamLookup(league.teams);
   const phase = league.content.phases[phaseIndex];
@@ -52,14 +55,16 @@ export function useBracketView({
           lookup,
           playable.has(tie.id)
         )
-      ),
+      )
+      // A finished Season keeps every result as it is (US-13.9).
+      .map((card) => (readOnly ? { ...card, canScorinate: false } : card)),
   }));
 
   const winnerId = findBracketWinner(rounds, results);
   const scorinateTie = (tieId: string): void => {
     const played = results.some((result) => result.tieId === tieId);
     if (played && hasDependentResults(rounds, results, tieId)) setConfirmTie(tieId);
-    else scorinateBracketTie(league.uuid, tieId);
+    else scorinateBracketTie(ref, tieId);
   };
   const confirm: ConfirmDialogProps | null = confirmTie
     ? {
@@ -69,7 +74,7 @@ export function useBracketView({
         tone: 'destructive',
         onConfirm: (): void => {
           setConfirmTie(null);
-          scorinateBracketTie(league.uuid, confirmTie);
+          scorinateBracketTie(ref, confirmTie);
         },
         onCancel: (): void => setConfirmTie(null),
       }
@@ -83,8 +88,8 @@ export function useBracketView({
       tree.status === 'missing-byes'
         ? `Assign ${tree.assigned} / ${tree.byes} byes to play the first round.`
         : undefined,
-    canScorinateBracket: playable.size > 0,
-    scorinateBracket: () => scorinateBracket(league.uuid),
+    canScorinateBracket: playable.size > 0 && !readOnly,
+    scorinateBracket: () => scorinateBracket(ref),
     scorinateTie,
     confirm,
   };

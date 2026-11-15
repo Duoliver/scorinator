@@ -3,18 +3,21 @@ import type { RefObject } from 'preact';
 import { route } from 'preact-router';
 import type { FieldHandle } from '@/design-system';
 import { getErrorMessage } from '@/app/getErrorMessage';
-import { leagueDetailPath } from '@/app/routes';
+import { leagueDetailPath, seasonLeagueDetailPath } from '@/app/routes';
+import { useDatabaseStore } from '@/app/state/databaseStore';
 import { resetLeagueDraft } from '@/app/state/leagueDraftActions';
 import {
+  getLeagueDraft,
   useLeagueDraftStore,
   type LeagueDraftDetails,
   type LeagueSetupStep,
 } from '@/app/state/leagueDraftStore';
 import { createLeague } from '@/app/state/leagueWrapperActions';
+import { createSeasonLeague } from '@/app/state/seasonLeagueActions';
 import { teamListProblem } from '@/app/state/teamInstances';
-import type { LeagueWrapper } from '@/domain';
+import type { SeasonWrapper } from '@/domain';
 import type { DetailsStepHandle } from '@/features/leagues/LeagueSetupScreen/steps/DetailsStep';
-import { formatAdvanceText } from '@/features/leagues/leagueSummary';
+import { formatAdvanceText } from '@/features/components/leagueSummary';
 import { leagueNameProblem } from './leagueName';
 import type { LeagueSetup } from './types';
 import {
@@ -23,19 +26,26 @@ import {
   phaseChecks,
   phaseProblemText,
 } from './phaseChecks';
+import { getSeasonTeamRows } from './seasonTeams';
 import { useLeagueDraftSync } from './useLeagueDraftSync';
 import { usePhaseList } from './usePhaseList';
 import { usePhaseOneGroups } from './usePhaseOneGroups';
 import { useTeamList } from './useTeamList';
 
-/** The League Setup wizard: the draft, the step changes, and the create. */
-export function useLeagueSetup(): LeagueSetup {
+/** The League Setup wizard: the draft, the step changes, and the create.
+ * With a Season, the wizard keeps the draft of that Season, and creates the
+ * league in it (Task 218). */
+export function useLeagueSetup(
+  seasonUuid?: string,
+  season?: SeasonWrapper
+): LeagueSetup {
   // Read the persisted draft once, on mount — not a subscribed selector.
   // Nothing below ties this screen's render to `leagueDraftStore` while it
   // stays mounted; see that store's file for why. `useState`'s initial
   // value only runs once, on the first render, so calling `getState()`
   // outside it costs nothing extra on later renders.
-  const initialDraft = useLeagueDraftStore.getState();
+  const initialDraft = getLeagueDraft(useLeagueDraftStore.getState(), seasonUuid);
+  const blueprints = useDatabaseStore((state) => state.blueprints);
   const [details, setDetails] = useState<LeagueDraftDetails>(initialDraft.details);
   const [step, setStep] = useState<LeagueSetupStep>(initialDraft.step);
   const teamList = useTeamList(initialDraft.teams, initialDraft.fixedTrigrams);
@@ -60,8 +70,12 @@ export function useLeagueSetup(): LeagueSetup {
       groups: phaseOne.groups,
       step,
     },
-    detailsStepRef
+    detailsStepRef,
+    seasonUuid
   );
+  const seasonRows =
+    season &&
+    getSeasonTeamRows(season, teamList.teams, blueprints, teamList.fixedTrigrams);
 
   // Reads whatever is currently in the Details fields before a step change
   // can unmount them — `Tabs` only renders the active tab's content, so this
@@ -102,18 +116,25 @@ export function useLeagueSetup(): LeagueSetup {
     // The Review step disables "Create league" while `createProblem` holds a
     // reason, the name included (Task 179).
     if (createProblem) return;
-    let league: LeagueWrapper;
+    // The Instances keep the OVR they rolled at the add (Task 81). In a
+    // Season, a joining team keeps it as its Season base (Task 215).
+    const input = {
+      name: details.name.trim(),
+      homeAdvantage: details.homeAdvantage,
+      points: details.points,
+      teams: teamList.teams,
+      fixedTrigrams: teamList.fixedTrigrams,
+      plans: phaseList.plans,
+      groups: phaseOne.groups ?? undefined,
+    };
+    let path: string;
     try {
-      // The Instances keep the OVR they rolled at the add (Task 81).
-      league = createLeague({
-        name: details.name.trim(),
-        homeAdvantage: details.homeAdvantage,
-        points: details.points,
-        teams: teamList.teams,
-        fixedTrigrams: teamList.fixedTrigrams,
-        plans: phaseList.plans,
-        groups: phaseOne.groups ?? undefined,
-      });
+      if (seasonUuid === undefined) {
+        path = leagueDetailPath(createLeague(input).uuid);
+      } else {
+        const league = createSeasonLeague(seasonUuid, input);
+        path = seasonLeagueDetailPath(seasonUuid, league.uuid);
+      }
     } catch (error) {
       // `createLeague` throws for a Blueprint twice in the list, a closed
       // database, or plans that do not fit the teams (Task 128). Until Task
@@ -126,12 +147,13 @@ export function useLeagueSetup(): LeagueSetup {
     // `useLeagueDraftSync`. Local state itself needs no reset: this
     // instance is about to unmount and never render again.
     skipDraftSync();
-    resetLeagueDraft();
-    route(leagueDetailPath(league.uuid));
+    resetLeagueDraft(seasonUuid);
+    route(path);
   };
 
   return {
     ...teamList,
+    seasonRows,
     step,
     details,
     createProblem,

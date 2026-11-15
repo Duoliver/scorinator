@@ -6,8 +6,9 @@ import { exportLeague, exportResults, exportSlugList } from '@/app/exportActions
 import type { LeagueWrapper } from '@/domain';
 import { FixturesView } from '@/features/fixtures';
 import { GroupCards } from '@/features/leagues/GroupCards';
-import { formatAdvanceText, phaseShortName } from '@/features/leagues/leagueSummary';
+import { formatAdvanceText, phaseShortName } from '@/features/components/leagueSummary';
 import { StandingsView } from '@/features/standings';
+import type { LeagueAccess } from './types';
 import styles from './LeagueDetailScreen.module.css';
 import { PhaseFormat } from '@/engine/phases';
 
@@ -103,22 +104,23 @@ export const getLeagueTabs = (
   league: LeagueWrapper,
   phaseIndex: number,
   memory: MatchdayMemory,
-  draw?: GroupsDraw
+  draw?: GroupsDraw,
+  access?: LeagueAccess
 ): TabItem[] =>
   league.content.phases[phaseIndex]?.format === PhaseFormat.BRACKET
     ? [
         {
           id: 'bracket',
           label: 'Bracket',
-          content: <BracketView league={league} phaseIndex={phaseIndex} />,
+          content: <BracketView league={league} phaseIndex={phaseIndex} {...access} />,
         },
         {
           id: 'seed-list',
           label: 'Seed List',
-          content: <SeedList league={league} phaseIndex={phaseIndex} />,
+          content: <SeedList league={league} phaseIndex={phaseIndex} {...access} />,
         },
       ]
-    : getScheduledTabs(league, phaseIndex, memory, draw);
+    : getScheduledTabs(league, phaseIndex, memory, draw, access);
 
 /** The first sub-tab of a started phase: "Bracket" for a bracket, and
  * "Standings" for the others (Task 141). */
@@ -131,7 +133,8 @@ const getScheduledTabs = (
   league: LeagueWrapper,
   phaseIndex: number,
   memory: MatchdayMemory,
-  draw?: GroupsDraw
+  draw?: GroupsDraw,
+  access?: LeagueAccess
 ): TabItem[] => [
   {
     id: 'standings',
@@ -155,6 +158,7 @@ const getScheduledTabs = (
         phaseIndex={phaseIndex}
         initialMatchday={memory.matchdayOf(phaseIndex)}
         onMatchdayChange={(matchday) => memory.setMatchday(phaseIndex, matchday)}
+        {...access}
       />
     ),
   },
@@ -178,7 +182,8 @@ export const getPhaseTabs = (
   memory: MatchdayMemory,
   start: PhaseStart | undefined,
   draw: GroupsDraw | undefined,
-  onEditZones: (phaseIndex: number) => void
+  onEditZones: ((phaseIndex: number) => void) | undefined,
+  access?: LeagueAccess
 ): TabItem[] =>
   league.content.plans.map((plan, index) => {
     const number = index + 1;
@@ -186,7 +191,7 @@ export const getPhaseTabs = (
     const isCurrent = index === league.content.phases.length - 1;
     const currentDraw = isCurrent ? draw : undefined;
     const editZones =
-      plan.format === PhaseFormat.BRACKET ? undefined : (
+      plan.format === PhaseFormat.BRACKET || !onEditZones ? undefined : (
         <EditZonesButton onClick={() => onEditZones(index)} />
       );
     let actions: JSX.Element | undefined;
@@ -198,7 +203,7 @@ export const getPhaseTabs = (
       content: started ? (
         <Tabs
           key={phaseTabId(index)}
-          tabs={getLeagueTabs(league, index, memory, currentDraw)}
+          tabs={getLeagueTabs(league, index, memory, currentDraw, access)}
           defaultTab={firstLeagueTab(league, index)}
           actions={
             (editZones || actions) && (

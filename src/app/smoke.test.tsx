@@ -24,7 +24,9 @@ import { useDatabaseStore } from '@/app/state/databaseStore';
  * (Task 151): each export, a database import into an empty database, a
  * repeated import, and a conflict. A sixth test runs the M6 flow (Task
  * 158): Form, the zones from the wizard and from "Edit zones", the chart
- * with its zones, and the fixtures trigrams. */
+ * with its zones, and the fixtures trigrams. Two more tests run the MVP3
+ * M1 flow (Task 214), and the M2 flow (Task 222): Season leagues, a
+ * playoff, the Resume tab, and the read-only finished Season. */
 
 const disk = vi.hoisted(() => new Map<string, string>());
 const binaryDisk = vi.hoisted(() => new Map<string, Uint8Array>());
@@ -115,6 +117,14 @@ function standingsRows(): string[] {
     .map((row) => row.textContent ?? '');
 }
 
+/** The text of each row of the Season roster, without the header row. */
+function rosterRows(): string[] {
+  return within(screen.getByRole('table', { name: 'Season roster' }))
+    .getAllByRole('row')
+    .slice(1)
+    .map((row) => row.textContent ?? '');
+}
+
 beforeEach(() => {
   disk.clear();
   binaryDisk.clear();
@@ -130,7 +140,7 @@ describe('smoke: create, scorinate, save, and open a league again', () => {
     // 1. The app opens the database: the first start writes the manifest.
     // Then create two teams on the Teams screen.
     expect(
-      await screen.findByRole('heading', { name: 'No leagues yet.' })
+      await screen.findByRole('heading', { name: 'No Seasons yet' })
     ).toBeInTheDocument();
     expect([...disk.keys()]).toEqual([MANIFEST_PATH]);
     await user.click(screen.getByRole('link', { name: 'Teams' }));
@@ -180,7 +190,7 @@ describe('smoke: create, scorinate, save, and open a league again', () => {
     // dashboard card comes from the manifest, with no league file read.
     unmount();
     resetSession();
-    openAt('/');
+    openAt('/leagues');
     render(<AppShell />);
     expect(
       await screen.findByRole('heading', { name: 'Coastal Premier' })
@@ -223,7 +233,7 @@ describe('smoke: M2 teams and team selection (Task 122)', () => {
     vi.mocked(open).mockResolvedValueOnce(CSV_PATH);
     const { unmount } = render(<AppShell />);
     expect(
-      await screen.findByRole('heading', { name: 'No leagues yet.' })
+      await screen.findByRole('heading', { name: 'No Seasons yet' })
     ).toBeInTheDocument();
 
     // 1. Import the CSV on the Teams screen, through the confirm (Task 168).
@@ -269,7 +279,7 @@ describe('smoke: M2 teams and team selection (Task 122)', () => {
     // league Instances from the league file.
     unmount();
     resetSession();
-    openAt('/');
+    openAt('/leagues');
     render(<AppShell />);
     expect(
       await screen.findByRole('heading', { name: 'Coastal Premier' })
@@ -318,7 +328,7 @@ describe('smoke: M3 phases, groups, and the phase start (Task 133)', () => {
     vi.mocked(open).mockResolvedValueOnce(CSV_PATH);
     const { unmount } = render(<AppShell />);
     expect(
-      await screen.findByRole('heading', { name: 'No leagues yet.' })
+      await screen.findByRole('heading', { name: 'No Seasons yet' })
     ).toBeInTheDocument();
 
     // 1. Import the six teams.
@@ -395,7 +405,7 @@ describe('smoke: M3 phases, groups, and the phase start (Task 133)', () => {
     const [leagueBefore] = Object.values(useDatabaseStore.getState().leagues);
     unmount();
     resetSession();
-    openAt('/');
+    openAt('/leagues');
     render(<AppShell />);
     expect(
       await screen.findByRole('heading', { name: 'Group Cup' })
@@ -440,7 +450,7 @@ describe('smoke: M4 bracket after groups (Task 143)', () => {
     vi.mocked(open).mockResolvedValueOnce(CSV_PATH);
     const { unmount } = render(<AppShell />);
     expect(
-      await screen.findByRole('heading', { name: 'No leagues yet.' })
+      await screen.findByRole('heading', { name: 'No Seasons yet' })
     ).toBeInTheDocument();
 
     // 1. Import the eight teams.
@@ -544,7 +554,7 @@ describe('smoke: M4 bracket after groups (Task 143)', () => {
     const [leagueBefore] = Object.values(useDatabaseStore.getState().leagues);
     unmount();
     resetSession();
-    openAt('/');
+    openAt('/leagues');
     render(<AppShell />);
     expect(
       await screen.findByRole('heading', { name: 'Knockout Cup' })
@@ -585,7 +595,7 @@ describe('smoke: M5 files, imports, and conflicts (Task 151)', () => {
     disk.set(CSV_PATH, CSV);
     vi.mocked(open).mockResolvedValueOnce(CSV_PATH);
     const { unmount } = render(<AppShell />);
-    await screen.findByRole('heading', { name: 'No leagues yet.' });
+    await screen.findByRole('heading', { name: 'No Seasons yet' });
 
     const openFileScreen = async (): Promise<void> => {
       await user.click(screen.getByRole('link', { name: 'File' }));
@@ -643,7 +653,7 @@ describe('smoke: M5 files, imports, and conflicts (Task 151)', () => {
       if (path.startsWith('/appdata/')) disk.delete(path);
     }
     resetSession();
-    openAt('/');
+    openAt('/leagues');
     const second = render(<AppShell />);
     await screen.findByRole('heading', { name: 'No leagues yet.' });
     await openFileScreen();
@@ -688,7 +698,7 @@ describe('smoke: M5 files, imports, and conflicts (Task 151)', () => {
     await statusIs('Saved.');
     second.unmount();
     resetSession();
-    openAt('/');
+    openAt('/leagues');
     render(<AppShell />);
     expect(await screen.findByText('2 leagues running')).toBeInTheDocument();
     expect(useDatabaseStore.getState().blueprints).toHaveLength(2);
@@ -739,7 +749,7 @@ describe('smoke: M6 standings, zones, the chart, and trigrams (Task 158)', () =>
     disk.set(CSV_PATH, CSV);
     vi.mocked(open).mockResolvedValueOnce(CSV_PATH);
     const { unmount } = render(<AppShell />);
-    await screen.findByRole('heading', { name: 'No leagues yet.' });
+    await screen.findByRole('heading', { name: 'No Seasons yet' });
 
     // 1. Import the six teams. The wizard makes a round robin with a red
     // zone for places 5 to 6.
@@ -814,7 +824,7 @@ describe('smoke: M6 standings, zones, the chart, and trigrams (Task 158)', () =>
     const [leagueBefore] = Object.values(useDatabaseStore.getState().leagues);
     unmount();
     resetSession();
-    openAt('/');
+    openAt('/leagues');
     render(<AppShell />);
     await user.click(await screen.findByRole('link', { name: 'Open standings' }));
     await screen.findByRole('heading', { level: 1, name: 'Zone League' });
@@ -838,11 +848,6 @@ describe('smoke: MVP3 M1 Season core (Task 214)', () => {
   ].join('\n');
   const seasonFiles = (): string[] =>
     [...disk.keys()].filter((path) => path.startsWith('/appdata/database/wrapper-'));
-  const rosterRows = (): string[] =>
-    within(screen.getByRole('table', { name: 'Season roster' }))
-      .getAllByRole('row')
-      .slice(1)
-      .map((row) => row.textContent ?? '');
 
   it('makes a Season with a roster, finishes it, keeps it in a new session, and deletes it', async () => {
     const user = userEvent.setup();
@@ -850,7 +855,7 @@ describe('smoke: MVP3 M1 Season core (Task 214)', () => {
     vi.mocked(open).mockResolvedValueOnce(CSV_PATH);
     const { unmount } = render(<AppShell />);
     expect(
-      await screen.findByRole('heading', { name: 'No leagues yet.' })
+      await screen.findByRole('heading', { name: 'No Seasons yet' })
     ).toBeInTheDocument();
     await user.click(screen.getByRole('link', { name: 'Teams' }));
     await user.click(screen.getByRole('button', { name: 'Import teams...' }));
@@ -933,6 +938,202 @@ describe('smoke: MVP3 M1 Season core (Task 214)', () => {
     pressCtrlS();
     await waitFor(() => expect(seasonFiles()).toEqual([]));
     expect(JSON.parse(disk.get(MANIFEST_PATH) ?? '{}').seasons).toEqual([]);
+    second.unmount();
+  });
+});
+
+describe('smoke: MVP3 M2 Season leagues and playoffs (Task 222)', () => {
+  /** Four teams. Three go in the roster, and Dragões do Sul joins the
+   * Season from the wizard (Task 218). */
+  const CSV_PATH = '/home/teams.csv';
+  const CSV = [
+    'Slug,Name,Colour,Tier,Location,Trigrams',
+    'salt-marsh-united,Salt Marsh United,#E53935,B,Saltmarsh,SMU',
+    'harborview-sc,Harborview SC,#43A047,A,Harborview,HSC',
+    'riverside-fc,Riverside FC,#1E88E5,C,Ribeira,RIV',
+    'dragoes-do-sul,Dragões do Sul,#D81B60,B,Baía,DRA',
+  ].join('\n');
+  const FINISHED_NOTICE =
+    'This Season is finished. It is read only. Reopen it to change it.';
+  const openStandings = (index: number): HTMLElement =>
+    within(screen.getByRole('region', { name: 'Leagues' })).getAllByRole('link', {
+      name: 'Open standings',
+    })[index];
+
+  /** Makes a league in the open Season with the wizard: each team from its
+   * group of the "Add teams" dialog (Task 218). */
+  async function createSeasonLeague(
+    user: ReturnType<typeof userEvent.setup>,
+    name: string,
+    picks: [group: string, team: string][]
+  ): Promise<void> {
+    await user.click(screen.getByRole('link', { name: '+ New league' }));
+    await user.type(await screen.findByLabelText('League name'), name);
+    await user.click(screen.getByRole('button', { name: 'Next: Phases →' }));
+    await user.click(screen.getByRole('button', { name: 'Next: Teams →' }));
+    await user.click(screen.getByRole('button', { name: '+ Add teams' }));
+    const picker = screen.getByRole('dialog', { name: 'Add teams' });
+    for (const [group, team] of picks) {
+      const list = within(picker).getByRole('list', { name: group });
+      await user.click(within(list).getByRole('button', { name: team }));
+    }
+    await user.click(
+      within(picker).getByRole('button', { name: `Add ${picks.length} teams` })
+    );
+    await user.click(screen.getByRole('button', { name: 'Next: Review →' }));
+    await user.click(screen.getByRole('button', { name: 'Create league' }));
+    // After the create, League Detail of the new league (Task 219 choice 8).
+    expect(await screen.findByRole('heading', { level: 1, name })).toBeInTheDocument();
+    await user.click(
+      within(screen.getByRole('navigation', { name: 'Breadcrumbs' })).getByRole(
+        'link',
+        { name: 'Liga Norte 2026-27' }
+      )
+    );
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Liga Norte' })
+    ).toBeInTheDocument();
+  }
+
+  it('plays a Season league and a playoff, keeps them in a new session, and locks them when finished', async () => {
+    const user = userEvent.setup();
+    disk.set(CSV_PATH, CSV);
+    vi.mocked(open).mockResolvedValueOnce(CSV_PATH);
+    const { unmount } = render(<AppShell />);
+    expect(
+      await screen.findByRole('heading', { name: 'No Seasons yet' })
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole('link', { name: 'Teams' }));
+    await user.click(screen.getByRole('button', { name: 'Import teams...' }));
+    const confirm = await screen.findByRole('dialog', { name: 'Import teams?' });
+    await user.click(within(confirm).getByRole('button', { name: 'Import' }));
+
+    // 1. A Season with three roster teams (as Task 214).
+    await user.click(screen.getByRole('link', { name: 'Seasons' }));
+    await user.click(screen.getByRole('button', { name: '+ New Season' }));
+    const dialog = screen.getByRole('dialog', { name: 'New Season' });
+    await user.type(within(dialog).getByLabelText('Name'), 'Liga Norte');
+    await user.type(within(dialog).getByLabelText('Year'), '2026-27');
+    await user.click(within(dialog).getByRole('button', { name: 'Create Season' }));
+    await user.click(screen.getByRole('link', { name: 'Open Season' }));
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Liga Norte' })
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: '+ Add teams' }));
+    const picker = screen.getByRole('dialog', { name: 'Add teams' });
+    for (const team of ['Salt Marsh United', 'Harborview SC', 'Riverside FC']) {
+      await user.click(within(picker).getByRole('button', { name: team }));
+    }
+    await user.click(within(picker).getByRole('button', { name: 'Add 3 teams' }));
+
+    // 2. Two leagues with the wizard. Salt Marsh United plays in both, and
+    // Dragões do Sul joins the Season at the create (US-13.5, US-13.6).
+    await createSeasonLeague(user, 'Primeira Divisão', [
+      ['Season teams', 'Salt Marsh United'],
+      ['Season teams', 'Harborview SC'],
+      ['Other teams', 'Dragões do Sul'],
+    ]);
+    await createSeasonLeague(user, 'Taça Norte', [
+      ['Season teams', 'Salt Marsh United'],
+      ['Season teams', 'Riverside FC'],
+    ]);
+    expect(rosterRows()).toEqual([
+      expect.stringContaining('Salt Marsh United'),
+      expect.stringContaining('Harborview SC'),
+      expect.stringContaining('Riverside FC'),
+      expect.stringContaining('Dragões do Sul'),
+    ]);
+
+    // 3. Scorinate one matchday of the first league, from its card. The
+    // other league stays unplayed (US-13.6).
+    await user.click(openStandings(0));
+    const crumbs = await screen.findByRole('navigation', { name: 'Breadcrumbs' });
+    expect(within(crumbs).getByText('Primeira Divisão')).toHaveAttribute(
+      'aria-current',
+      'page'
+    );
+    await user.click(screen.getByRole('tab', { name: 'Fixtures' }));
+    await user.click(screen.getByRole('button', { name: 'Scorinate matchday' }));
+    await user.click(within(crumbs).getByRole('link', { name: 'Liga Norte 2026-27' }));
+    const [primeira, taca] = Object.values(useDatabaseStore.getState().seasons)[0]
+      .content.leagues;
+    expect(primeira.phases[0]).toHaveProperty('results', [expect.anything()]);
+    expect(taca.phases[0]).toHaveProperty('results', []);
+
+    // 4. A playoff from the Playoffs tab, played to its winner (US-13.7).
+    await user.click(await screen.findByRole('tab', { name: 'Playoffs' }));
+    await user.click(screen.getByRole('button', { name: '+ New playoff' }));
+    const playoffDialog = screen.getByRole('dialog', { name: 'New playoff' });
+    await user.type(within(playoffDialog).getByLabelText('Name'), 'Supertaça');
+    await user.click(within(playoffDialog).getByRole('button', { name: 'Team 1' }));
+    await user.click(
+      within(screen.getByRole('dialog', { name: 'Pick team 1' })).getByRole('button', {
+        name: 'Salt Marsh United',
+      })
+    );
+    await user.click(within(playoffDialog).getByRole('button', { name: 'Team 2' }));
+    await user.click(
+      within(screen.getByRole('dialog', { name: 'Pick team 2' })).getByRole('button', {
+        name: 'Dragões do Sul',
+      })
+    );
+    await user.click(
+      within(playoffDialog).getByRole('button', { name: 'Create playoff' })
+    );
+    const playoff = screen.getByRole('article', { name: 'Supertaça' });
+    await user.click(within(playoff).getByRole('button', { name: 'Play' }));
+    expect(
+      await screen.findByText(/^Played Supertaça: .+ wins\.$/)
+    ).toBeInTheDocument();
+    expect(within(playoff).getAllByText('✓ Played').length).toBeGreaterThan(0);
+
+    // 5. The Resume tab: the first place now of the played league, and no
+    // result yet in the other one (US-13.8).
+    await user.click(screen.getByRole('tab', { name: 'Resume' }));
+    expect(
+      within(screen.getByRole('link', { name: /Primeira Divisão/ })).getByText(
+        'First place now'
+      )
+    ).toBeInTheDocument();
+    expect(
+      within(screen.getByRole('link', { name: /Taça Norte/ })).getByText(
+        'No results yet.'
+      )
+    ).toBeInTheDocument();
+    const seasonBefore = Object.values(useDatabaseStore.getState().seasons)[0];
+    pressCtrlS();
+    expect(await screen.findByText('Saved.')).toBeInTheDocument();
+
+    // 6. A new session: the leagues, the result, and the playoff come back
+    // from the Season file.
+    unmount();
+    resetSession();
+    openAt('/seasons');
+    const second = render(<AppShell />);
+    const card = await screen.findByRole('article', { name: 'Liga Norte 2026-27' });
+    expect(card).toHaveTextContent('2 leagues · 4 teams · 1 playoff');
+    await user.click(within(card).getByRole('link', { name: 'Open Season' }));
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Liga Norte' })
+    ).toBeInTheDocument();
+    expect(useDatabaseStore.getState().seasons[seasonBefore.uuid]).toEqual(
+      seasonBefore
+    );
+
+    // 7. Finish the Season: no new playoff, and League Detail is read only
+    // (US-13.9).
+    await user.click(screen.getByRole('button', { name: 'Finish Season' }));
+    await user.click(
+      within(screen.getByRole('dialog')).getByRole('button', { name: 'Finish Season' })
+    );
+    await user.click(screen.getByRole('tab', { name: 'Playoffs' }));
+    expect(screen.getByRole('button', { name: '+ New playoff' })).toBeDisabled();
+    await user.click(openStandings(1));
+    expect(await screen.findByText(FINISHED_NOTICE)).toBeInTheDocument();
+    await user.click(screen.getByRole('tab', { name: 'Fixtures' }));
+    for (const button of screen.getAllByRole('button', { name: /Scorinate/ })) {
+      expect(button).toBeDisabled();
+    }
     second.unmount();
   });
 });

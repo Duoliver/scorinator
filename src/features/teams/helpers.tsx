@@ -30,12 +30,27 @@ export const getTeamColumns = (
     width: '2rem',
     render: (row) => <TeamSwatch colour={row.colour} size="lg" />,
   },
-  { key: 'name', header: 'Name' },
+  {
+    key: 'name',
+    header: 'Name',
+    render: (row) => <span class={styles.name}>{row.name}</span>,
+  },
   {
     key: 'location',
     header: 'Location',
+    // The pin shows only in the narrow card. A card with no Location has
+    // no Location line (Task 255).
     render: (row) =>
-      row.location === '' ? <span class={styles.muted}>—</span> : row.location,
+      row.location === '' ? (
+        <span class={`${styles.muted} ${styles.noLocation}`}>—</span>
+      ) : (
+        <>
+          <span class={styles.pin} aria-hidden="true">
+            📍
+          </span>
+          {row.location}
+        </>
+      ),
   },
   {
     key: 'trigrams',

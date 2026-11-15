@@ -1,18 +1,26 @@
 import { useEffect, useState } from 'preact/hooks';
 import { getErrorMessage } from '@/app/getErrorMessage';
+import { seasonLeagueDetailPath, seasonLeagueNewPath } from '@/app/routes';
+import { summarizeLeague } from '@/app/state/summarizeLeague';
 import {
   currentSeasonRows,
+  getSeasonLeagueView,
   isSeasonUnsaved,
   useDatabaseStore,
 } from '@/app/state/databaseStore';
 import { finishSeason, openSeason, reopenSeason } from '@/app/state/seasonActions';
 import { setStatusLine } from '@/app/state/statusLineActions';
 import { summarizeSeason } from '@/app/state/summarizeSeason';
-import { formatSeasonLabel, formatSeasonMeta } from '@/features/seasons/seasonText';
-import { findLeagueNames } from './helpers';
+import {
+  findLeagueNames,
+  formatSeasonLabel,
+  useSeasonTeamEdit,
+} from '@/features/components';
+import { formatSeasonMeta } from '@/features/seasons/seasonText';
 import { useAddTeams } from './useAddTeams';
-import { useTeamEdit } from './useTeamEdit';
-import type { SeasonViewState } from './types';
+import { usePlayoffs } from './usePlayoffs';
+import { useResume } from './useResume';
+import type { SeasonTab, SeasonViewState } from './types';
 
 /** The Season view (Task 213). The screen opens the Season from its file,
  * as League Detail opens a league. The add dialog and the edit drawer have
@@ -25,11 +33,14 @@ export function useSeasonView(uuid: string): SeasonViewState {
   );
   const blueprints = useDatabaseStore((state) => state.blueprints);
   const { openPicker, picker } = useAddTeams(season);
-  const { openDrawer, drawer } = useTeamEdit(season);
+  const { openDrawer, drawer } = useSeasonTeamEdit(season);
   // Kept with its UUID, so a route to another Season does not show the error
   // of the last one.
   const [openError, setOpenError] = useState<{ uuid: string; message: string }>();
   const [confirmingFinish, setConfirmingFinish] = useState(false);
+  const [activeTab, setActiveTab] = useState<SeasonTab>('teams');
+  const playoffs = usePlayoffs(season);
+  const resumeCards = useResume(season);
 
   const needsOpen = season === undefined && isKnown;
   useEffect(() => {
@@ -65,7 +76,13 @@ export function useSeasonView(uuid: string): SeasonViewState {
       meta: formatSeasonMeta(summarizeSeason(season)),
       isFinished: finished,
       isUnsaved,
-      hasLeagues: season.content.leagues.length > 0,
+      // The Season header has the "Unsaved" badge, so the cards have none.
+      leagueCards: season.content.leagues.map((league) => ({
+        row: summarizeLeague(getSeasonLeagueView(season, league)),
+        isUnsaved: false,
+        href: seasonLeagueDetailPath(uuid, league.uuid),
+      })),
+      newLeaguePath: seasonLeagueNewPath(uuid),
       rosterRows,
       toggleFinished: (): void => {
         if (!finished) {
@@ -93,6 +110,13 @@ export function useSeasonView(uuid: string): SeasonViewState {
       picker,
       openDrawer,
       drawer,
+      playoffRows: playoffs.rows,
+      hasAetKey: playoffs.hasAetKey,
+      openPlayoffDialog: playoffs.openDialog,
+      playoffDialog: playoffs.dialog,
+      resumeCards,
+      activeTab,
+      setActiveTab,
     },
   };
 }

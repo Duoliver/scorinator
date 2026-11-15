@@ -38,6 +38,24 @@ export function SeasonViewRoute(props: RoutableProps & { uuid?: string }): JSX.E
   return <SeasonViewScreen uuid={props.uuid ?? ''} />;
 }
 
+/** Carries the Season `uuid` of `ROUTES.seasonLeagueNew` to the wizard, so
+ * it makes the league in that Season (Task 218). */
+export function SeasonLeagueSetupRoute(
+  props: RoutableProps & { uuid?: string }
+): JSX.Element {
+  return <LeagueSetupScreen seasonUuid={props.uuid ?? ''} />;
+}
+
+/** Carries the two UUIDs of `ROUTES.seasonLeagueDetail` to League Detail:
+ * a league UUID is unique only in its Season (Task 196, Task 219). */
+export function SeasonLeagueDetailRoute(
+  props: RoutableProps & { uuid?: string; leagueUuid?: string }
+): JSX.Element {
+  return (
+    <LeagueDetailScreen seasonUuid={props.uuid ?? ''} uuid={props.leagueUuid ?? ''} />
+  );
+}
+
 /** Unlike the adapters above, this one does carry a real prop across:
  * `uuid`, the one param `preact-router` injects for `ROUTES.leagueDetail`
  * (`/leagues/:uuid`) and the one piece of routing information

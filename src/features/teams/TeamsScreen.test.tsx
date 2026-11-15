@@ -115,6 +115,20 @@ describe('TeamsScreen', () => {
       expect(harborview).toHaveTextContent('—');
     });
 
+    it('puts a pin before the location for the narrow card, hidden from screen readers (Task 255)', () => {
+      render(<TeamsScreen />);
+      const [ashfield, harborview] = screen.getAllByRole('row').slice(1);
+      const cell = (row: HTMLElement): HTMLElement => {
+        const found = row.querySelector<HTMLElement>('[data-column="location"]');
+        if (!found) throw new Error('No Location cell');
+        return found;
+      };
+      const pin = within(cell(ashfield)).getByText('📍');
+      expect(pin).toHaveAttribute('aria-hidden', 'true');
+      expect(cell(ashfield)).toHaveTextContent('📍Ashfield');
+      expect(within(cell(harborview)).queryByText('📍')).toBeNull();
+    });
+
     it('shows the trigrams split by a dot, or the name trigram for an empty list', () => {
       render(<TeamsScreen />);
       expect(screen.getByText('ASH · AFC')).toBeInTheDocument();

@@ -7,7 +7,7 @@ import {
   PhaseFormat,
   Legs,
 } from '@/engine/phases';
-import { formatPhaseLabel } from '@/features/leagues/leagueSummary';
+import { formatPhaseLabel } from '@/features/components/leagueSummary';
 import { GroupBy } from '@/engine/round-robin';
 import { TieFormat, TiebreakMethod } from '@/engine/tiebreak';
 

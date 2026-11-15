@@ -1,6 +1,6 @@
 import type { JSX } from 'preact';
 import { Badge, Button } from '@/design-system';
-import { TeamSwatch } from '@/features/components';
+import { TeamName, TeamSwatch } from '@/features/components';
 import type FixturesViewProps from './types';
 import { GroupTag, flashAttr, scoreText } from './helpers';
 import { useFixtures } from './useFixtures';
@@ -140,7 +140,9 @@ export function FixturesView(props: FixturesViewProps): JSX.Element {
           >
             {row.groupTag && <GroupTag letter={row.groupTag} />}
             <div class={styles.home}>
-              <span class={styles.teamName}>{row.home.name}</span>
+              <span class={styles.teamName}>
+                <TeamName name={row.home.name} location={row.home.location} />
+              </span>
               {row.home.trigram && (
                 <span class={styles.trigram} data-part="trigram">
                   {row.home.trigram}
@@ -173,7 +175,9 @@ export function FixturesView(props: FixturesViewProps): JSX.Element {
                   {row.away.trigram}
                 </span>
               )}
-              <span class={styles.teamName}>{row.away.name}</span>
+              <span class={styles.teamName}>
+                <TeamName name={row.away.name} location={row.away.location} />
+              </span>
               <span
                 class={styles.goals}
                 data-goals="away"

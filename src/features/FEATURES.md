@@ -15,12 +15,10 @@ A screen folder that holds more than one component gives each component its own 
 ```
 features/leagues/
   index.ts                  the barrel for the three screens
-  leagueSummary.ts          used by LeagueDetailScreen and LeagueList
   GroupCards/               used by TeamsStep and LeagueDetailScreen
   ZoneEditor/               used by PhaseCard and the League Detail ZoneDrawer
   LeagueDetailScreen/
   LeaguesDashboardScreen/
-    LeagueList/             only the dashboard uses it
     LeaguesEmptyState/
   LeagueSetupScreen/
     leagueName.ts           used by useLeagueSetup and DetailsStep

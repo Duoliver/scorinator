@@ -115,13 +115,14 @@ As a user, I want to create a league inside a Season, so that the league uses th
 
 - [ ] The user creates a league from the Season view, at any time while the Season is not finished.
 - [ ] A Season league is a full league: the MVP2 wizard, with every phase format.
-- [ ] The Teams step lists the Season teams first, with a highlight. Then it lists the other Blueprints, with less opacity and a short text with their status.
-- [ ] A Blueprint that is not in the Season joins the Season roster when the league is created, with its OVR rolled (US-13.4).
+- [ ] The Teams step lists the Season teams first, with a highlight. Then it lists the other Blueprints, with a short text with their status. The other Blueprints are not dimmed: the user can add them (Task 215 review, 2026-11-14).
+- [ ] The Teams step keeps the ⇄ switch of MVP2 (US-08.5) (Task 215 review, 2026-11-14).
+- [ ] A Blueprint that is not in the Season gets its OVR roll when the user adds it to the Teams step, as in MVP2 (Task 81). The ✎ Edit can change its OVR and Tier. It joins the Season roster when the league is created, with that OVR as its base OVR (US-13.4).
 - [ ] Each team of the league is its Season team, with the Season base OVR and Tier.
 - [ ] The wizard ✎ Edit changes the Season team. The change reaches every league of the Season. The drawer title says so.
 - [ ] A league runs from its creation. No team joins a running league.
 
-**Notes:** answers of rounds 1 to 4, and the review. Round 4: the Edit changes the Season team. The drawer title text is a Claude choice, to confirm.
+**Notes:** answers of rounds 1 to 4, and the review. Round 4: the Edit changes the Season team. The drawer title "Edit Season team" was agreed in the Task 215 review. On 2026-11-14, the Task 215 review removed the less opacity of the other Blueprints, and kept the ⇄ switch. It also moved the OVR roll of a joining team to the add, as in MVP2.
 
 ---
 
@@ -152,16 +153,18 @@ As a user, I want to play named one-off playoffs between two Season teams, so th
 **Acceptance criteria:**
 
 - [ ] The "Playoffs" tab lists the playoffs of the Season, by name.
-- [ ] The user creates a playoff: a name, two teams from the Season roster, the home team, and the format.
+- [ ] The user creates a playoff: a name, "Team 1" and "Team 2" from the Season roster, and the format.
+- [ ] Each team field opens the single team picker of the ⇄ switch, with the Season roster only. The team of the other slot shows in the list, disabled.
+- [ ] Team 1 plays at home in a single match, and in the first leg of a two-legged tie.
 - [ ] A playoff name is unique in its Season.
 - [ ] A playoff team plays as its Season team: the Season base OVR and Tier, plus its condition for that playoff (US-14.3).
-- [ ] The format has the options of a bracket tie: one match or two legs, away goals, AET, and the tiebreak method (US-03.1, US-03.2, US-04.1).
+- [ ] The format has the options of a bracket tie: one match or two legs, away goals, AET, and the tiebreak method (US-03.1, US-03.2, US-04.1). Each playoff also has its own "Home advantage" switch.
 - [ ] A playoff belongs to the Season, not to a league.
-- [ ] The user plays the playoff, and the tab shows its result.
+- [ ] The user plays the playoff, and the tab shows its result: one line for each playoff, with the total, and each match score and the decision in a row below.
 
 **Out of scope:** a link from a playoff to a league (later).
 
-**Notes:** answers of rounds 1 and 2, and the review (a unique name, the Season team). The condition came from Task 197 (US-14.3), with the user's agreement on 2026-11-12.
+**Notes:** answers of rounds 1 and 2, and the review (a unique name, the Season team). The condition came from Task 197 (US-14.3), with the user's agreement on 2026-11-12. The Task 215 review (2026-11-14) gave "Team 1" and "Team 2", the team picker, the home team, the "Home advantage" switch, and the line layout. The layout is in `docs/design-reference/MVP3/m2-season-view.html`.
 
 ---
 
@@ -178,8 +181,10 @@ As a user, I want a short resume of the Season, so that I can see its results at
 - [ ] For each league, the tab also lists the teams of the other zones (US-12.5).
 - [ ] The winner of each league has a highlight.
 - [ ] For a running league, the tab shows the same content from the current standings: the team in first place, and the teams in the zones.
+- [ ] For a complete bracket, the tab shows the champion and the runner-up. With a third-place playoff, it also shows the third and the fourth place. A running bracket shows "No winner yet".
+- [ ] A click on the card of a league opens its League Detail.
 
-**Notes:** round 8 settled the content. The layout is for the build task of this story. Task 203 (2026-11-13) added the running league. The user asked if the tab shows while the leagues run, and gave the content.
+**Notes:** round 8 settled the content. The layout is for the build task of this story. Task 203 (2026-11-13) added the running league. The user asked if the tab shows while the leagues run, and gave the content. The Task 215 review (2026-11-14) added the bracket places and the card link.
 
 ---
 

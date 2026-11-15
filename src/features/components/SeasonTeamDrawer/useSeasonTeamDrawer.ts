@@ -3,7 +3,7 @@ import type { FieldHandle } from '@/design-system';
 import { getNameKey, normalizeTrigram } from '@/engine/identity';
 import { isOvrInTier, isTier, ovrAfterTierChange, type Tier } from '@/engine/tier-ovr';
 import { freshRng } from '@/app/random';
-import { checkTeamName } from '@/features/components';
+import { checkTeamName } from '@/features/components/TeamForm';
 import {
   formatOvrRange,
   formatReachNote,

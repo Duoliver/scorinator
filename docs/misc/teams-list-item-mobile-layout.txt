@@ -1,0 +1,6 @@
+[ ] Team name        [ A ]
+📍 Location
+TRI, GRA, MSS
+team-name         [ EDIT ]
+
+the footer (team-name + edit) is flex-row align-items: bottom, so a long slug does not displace the action button from the card floor

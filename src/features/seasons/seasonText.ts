@@ -17,8 +17,3 @@ export function formatSeasonMeta(row: SeasonSummary): string {
     formatCount(row.playoffCount, 'playoff'),
   ].join(' · ');
 }
-
-/** The name and the year of a Season, as one label: "Liga Norte 2026". */
-export function formatSeasonLabel(row: Pick<SeasonSummary, 'name' | 'year'>): string {
-  return `${row.name} ${row.year}`;
-}

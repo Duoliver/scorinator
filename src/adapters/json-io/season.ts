@@ -85,23 +85,23 @@ function readPlayoff(
   if (!isNonBlankString(value.name)) failSeason(`${label} has no name.`);
   const isRosterTeam = (id: unknown): id is string =>
     typeof id === 'string' && roster.has(id);
-  if (!isRosterTeam(value.homeUuid) || !isRosterTeam(value.awayUuid)) {
+  if (!isRosterTeam(value.team1Uuid) || !isRosterTeam(value.team2Uuid)) {
     failSeason(`${label} has a team that is not in the Season roster.`);
   }
-  if (value.homeUuid === value.awayUuid) {
-    failSeason(`${label} has the same team at home and away.`);
+  if (value.team1Uuid === value.team2Uuid) {
+    failSeason(`${label} has the same team as Team 1 and Team 2.`);
   }
   const rules = readTieRules(value.rules, label, failSeason);
   const playoff: SavedPlayoff = {
     uuid: value.uuid,
     name: value.name,
-    homeUuid: value.homeUuid,
-    awayUuid: value.awayUuid,
+    team1Uuid: value.team1Uuid,
+    team2Uuid: value.team2Uuid,
     rules,
   };
   if (value.result === undefined) return playoff;
   if (!isRecord(value.result)) failSeason(`${label} result is not an object.`);
-  const teams = new Set([value.homeUuid, value.awayUuid]);
+  const teams = new Set([value.team1Uuid, value.team2Uuid]);
   return {
     ...playoff,
     result: readTieOutcome(

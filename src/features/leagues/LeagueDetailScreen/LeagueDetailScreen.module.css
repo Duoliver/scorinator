@@ -71,3 +71,14 @@
   flex-direction: column;
   gap: var(--space-4);
 }
+
+/* The notice of a finished Season (US-13.9): the look of the Season view
+ * notice, so a read-only Season reads the same on both screens. */
+.notice {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border: var(--border-width) solid var(--color-fg);
+  background: var(--color-zone-yellow-tint);
+  box-shadow: inset var(--border-width-heavy) 0 0 var(--color-zone-yellow);
+  font-size: var(--font-size-lg);
+}

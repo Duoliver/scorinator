@@ -1,5 +1,5 @@
 import type { JSX } from 'preact';
-import { Badge, ConfirmDialog, DropdownMenu, Tabs } from '@/design-system';
+import { Badge, Breadcrumbs, ConfirmDialog, DropdownMenu, Tabs } from '@/design-system';
 import { ROUTES } from '@/app/routes';
 import type LeagueDetailScreenProps from './types';
 import { useLeagueDetail } from './useLeagueDetail';
@@ -8,13 +8,23 @@ import styles from './LeagueDetailScreen.module.css';
 
 export type { LeagueDetailScreenProps };
 
-export function LeagueDetailScreen({ uuid }: LeagueDetailScreenProps): JSX.Element {
-  const state = useLeagueDetail(uuid);
-  const backLink = (
-    <a href={ROUTES.leaguesDashboard} class={styles.backLink}>
-      ← Leagues
-    </a>
-  );
+/** One league: its header, its phase tabs, and its views. A Season league
+ * shows the breadcrumbs of its Season in place of "← Leagues" (Task 219). */
+export function LeagueDetailScreen({
+  uuid,
+  seasonUuid,
+}: LeagueDetailScreenProps): JSX.Element {
+  const state = useLeagueDetail(uuid, seasonUuid);
+  const backLink =
+    seasonUuid === undefined ? (
+      <a href={ROUTES.leaguesDashboard} class={styles.backLink}>
+        ← Leagues
+      </a>
+    ) : (
+      <a href={ROUTES.seasons} class={styles.backLink}>
+        ← Seasons
+      </a>
+    );
 
   if (state.kind !== 'open') {
     return (
@@ -33,7 +43,7 @@ export function LeagueDetailScreen({ uuid }: LeagueDetailScreenProps): JSX.Eleme
   return (
     <div class={styles.screen}>
       <div>
-        {backLink}
+        {detail.crumbs ? <Breadcrumbs items={detail.crumbs} /> : backLink}
         <div class={styles.header}>
           <div>
             <div class={styles.titleRow}>
@@ -46,10 +56,14 @@ export function LeagueDetailScreen({ uuid }: LeagueDetailScreenProps): JSX.Eleme
             <Badge tone={detail.isComplete ? 'accent' : 'dark'}>
               {detail.progress}
             </Badge>
-            <DropdownMenu label="Export" align="end" items={detail.exportItems} />
+            {detail.exportItems && (
+              <DropdownMenu label="Export" align="end" items={detail.exportItems} />
+            )}
           </div>
         </div>
       </div>
+
+      {detail.notice && <p class={styles.notice}>{detail.notice}</p>}
 
       <Tabs
         ref={detail.tabsRef}

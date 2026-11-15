@@ -68,3 +68,10 @@
   display: flex;
   gap: var(--space-3);
 }
+
+/* The line under the title, as the join note in a Season (Task 218). */
+.note {
+  margin: 0;
+  font-size: var(--font-size-md);
+  color: var(--color-fg-muted);
+}

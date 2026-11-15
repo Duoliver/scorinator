@@ -45,7 +45,8 @@ function OriginalState({
   );
 }
 
-/** "Edit team for this league": the drawer of one wizard team. A Save
+/** The drawer of one wizard team, "Edit team for this league" by default.
+ * A Season wizard gives its own title and note (Task 218). A Save
  * changes the Instance only, never the Blueprint (US-08.4, Task 172). */
 export function EditTeamDrawer({
   team,
@@ -54,6 +55,8 @@ export function EditTeamDrawer({
   pickedTrigram,
   otherNames,
   otherFixedTrigrams,
+  title = 'Edit team for this league',
+  note,
   rng,
   onSave,
   onCancel,
@@ -68,8 +71,9 @@ export function EditTeamDrawer({
   });
 
   return (
-    <Drawer title="Edit team for this league" onClose={onCancel}>
+    <Drawer title={title} onClose={onCancel}>
       <div class={styles.form}>
+        {note && <p class={styles.note}>{note}</p>}
         <OriginalState blueprint={blueprint} />
 
         <TeamNameField

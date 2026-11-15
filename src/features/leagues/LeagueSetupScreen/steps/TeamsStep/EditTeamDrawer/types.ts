@@ -25,6 +25,11 @@ export default interface EditTeamDrawerProps {
   otherNames: readonly string[];
   /** The trigrams that the other teams of the list have fixed. */
   otherFixedTrigrams: readonly string[];
+  /** The drawer title. "Edit team for this league" when not given. */
+  title?: string;
+  /** A line under the title, such as the join note in a Season (Task 218
+   * choice 8). */
+  note?: string;
   /** The source of a new OVR roll. A fresh one when not given. */
   rng?: Rng;
   onSave: (changes: TeamInstanceEdit) => void;

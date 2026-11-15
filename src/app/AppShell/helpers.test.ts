@@ -25,10 +25,10 @@ describe('isNavItemActive', () => {
     expect(isNavItemActive(navItem(ROUTES.leaguesDashboard), '/seasons')).toBe(false);
   });
 
-  it('lists Seasons between Leagues and Teams (demo point 1)', () => {
+  it('lists Seasons first, the main module, then Leagues (Task 256 choice 1)', () => {
     expect(NAV_ITEMS.map((item) => item.label)).toEqual([
-      'Leagues',
       'Seasons',
+      'Leagues',
       'Teams',
       'File',
     ]);
@@ -44,7 +44,7 @@ describe('isNavItemActive', () => {
 
 describe('toActivePath', () => {
   it('gives the start screen for the root url, which the router renders by default', () => {
-    expect(toActivePath(ROUTES.root)).toBe(ROUTES.leaguesDashboard);
+    expect(toActivePath(ROUTES.root)).toBe(ROUTES.seasons);
   });
 
   it('keeps any other url', () => {

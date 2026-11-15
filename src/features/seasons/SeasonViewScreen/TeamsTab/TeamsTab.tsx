@@ -15,12 +15,14 @@ export function TeamsTab({ rows, isFinished, onEdit }: TeamsTabProps): JSX.Eleme
   }
   return (
     <div class={styles.tab}>
-      <Table
-        label="Season roster"
-        columns={getRosterColumns(isFinished, onEdit)}
-        rows={[...rows]}
-        rowKey={getRowKey}
-      />
+      <div class={styles.list}>
+        <Table
+          label="Season roster"
+          columns={getRosterColumns(isFinished, onEdit)}
+          rows={[...rows]}
+          rowKey={getRowKey}
+        />
+      </div>
       <span class={styles.muted}>
         {formatCount(rows.length, 'team')} in the roster. A team cannot leave the
         Season.

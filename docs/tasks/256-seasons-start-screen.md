@@ -1,6 +1,6 @@
 # Task 256: the Seasons module as the main screen
 
-**Status:** Refactor
+**Status:** Done
 
 ## Goal
 
@@ -21,6 +21,8 @@ The user agreed the criteria and the three default choices on 2026-11-15: (1) th
 - **2026-11-15:** The user agreed the criteria and the default choices. Started.
 - **2026-11-15:** Tests first: the start screen, the nav order, and the root path, failed. Then they passed. The eight smoke cases failed at their first step, as expected: each one waited for the Leagues dashboard. Each case now waits for "No Seasons yet", and each new session opens at `/leagues`, where the case checks its league. Two AppShell tests of the loading state now check the Seasons heading. The comment of `LeaguesDashboardScreen` no longer calls it the start screen.
 - **2026-11-15:** The user agreed the review. Commit 1. The refactor pass is next.
+- **2026-11-15:** The refactor pass read the diff against the review checklist. No change. No gap outside the diff, and no bug found.
+- **2026-11-15:** The user agreed the refactor review. Done. Commit 2.
 
 ## Report
 
@@ -28,4 +30,4 @@ The user agreed the criteria and the three default choices on 2026-11-15: (1) th
 - **Test approach:** three changed AppShell tests (the start screen, the nav order, the root path), two loading-state tests, and the eight smoke cases. The full suite passes: 2336 tests. The type check, the lint, and the format check pass.
 - **Decisions made:** the start screen of Task 29 changes (Decisions log).
 - **What is left, what is next:** a live check: start the app. Then the next layout tweak of the user, or M3.
-- **Refactor:** waits for the review.
+- **Refactor:** no change. The diff follows the checklist: the new comments say why, the names stay, and a search for "start screen" finds no stale text in `src/` or the live docs.

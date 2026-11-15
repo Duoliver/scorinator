@@ -52,3 +52,79 @@
   background: var(--color-surface);
   color: var(--color-fg);
 }
+
+/* A size container, as the Teams list (Task 255): the sidebar takes width
+ * from the content. */
+.list {
+  container: season-roster / inline-size;
+}
+
+/* The narrow card of the roster (Task 257), as the Teams list card of Task
+ * 255: the swatch, the name, and the Tier · OVR box on the first line, the
+ * Location below the name, then the leagues at full width, then the
+ * trigram with "✎" at the bottom. Each row of `Table` has an inline `grid-template-columns`,
+ * so the row becomes a flex row, where the grid columns do not apply. */
+@container season-roster (max-width: 35rem) {
+  .list [role='row']:first-child {
+    display: none;
+  }
+
+  .list [role='row'] {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: var(--space-3);
+    row-gap: var(--space-2);
+  }
+
+  /* The team cell holds the swatch, the name, and the Location line below
+   * the name. The box stays at the top of the card. */
+  .list [data-column='team'] {
+    order: 1;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .list [data-column='team'] .teamCell {
+    align-items: flex-start;
+  }
+
+  .list [data-column='team'] span:has(> [data-part='name']) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+  }
+
+  /* The pin of the Location line, as in the Teams list card. The second
+   * `content` gives the pin no text for a screen reader, where the browser
+   * reads it. */
+  .list [data-column='team'] [data-part='location']::before {
+    content: '📍 ';
+    content: '📍 ' / '';
+  }
+
+  .list [data-column='tierOvr'] {
+    order: 2;
+    align-self: flex-start;
+  }
+
+  /* The leagues take the full width, so a long list wraps on its own
+   * line (Task 257 review). */
+  .list [data-column='leagues'] {
+    order: 3;
+    flex-basis: 100%;
+  }
+
+  /* The footer: the trigram and "✎" on the bottom line. */
+  .list [data-column='trigram'] {
+    order: 4;
+    flex: 1;
+    min-width: 0;
+    align-self: flex-end;
+  }
+
+  .list [data-column='actions'] {
+    order: 5;
+    align-self: flex-end;
+  }
+}

@@ -19,9 +19,9 @@ describe('TeamLabel (Task 120 review)', () => {
     expect(container.textContent).toBe('Old Town');
   });
 
-  it('marks the name, so a screen CSS can bold the name alone (Task 254)', () => {
+  it('marks the name and the Location, for a screen CSS (Tasks 254, 257)', () => {
     render(<TeamLabel name="Ashfield Rovers" location="Ashfield" />);
     expect(screen.getByText('Ashfield Rovers')).toHaveAttribute('data-part', 'name');
-    expect(screen.getByText('Ashfield')).not.toHaveAttribute('data-part');
+    expect(screen.getByText('Ashfield')).toHaveAttribute('data-part', 'location');
   });
 });

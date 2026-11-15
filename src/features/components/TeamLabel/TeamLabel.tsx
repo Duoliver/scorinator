@@ -6,8 +6,9 @@ export type { TeamLabelProps };
 
 /** A team name with its Location below it, or on its line with `inline`, in
  * smaller muted text. It takes the free width of its row, so the item after
- * it sits at the row end (Task 120 review). The name is `data-part="name"`,
- * so a screen CSS can bold the name alone (Task 254). */
+ * it sits at the row end (Task 120 review). The name is `data-part="name"`
+ * and the Location `data-part="location"`, so a screen CSS can style each
+ * one alone (Tasks 254, 257). */
 export function TeamLabel({
   name,
   location,
@@ -16,7 +17,11 @@ export function TeamLabel({
   return (
     <span class={inline ? `${styles.label} ${styles.inline}` : styles.label}>
       <span data-part="name">{name}</span>
-      {location !== '' && <span class={styles.location}>{location}</span>}
+      {location !== '' && (
+        <span class={styles.location} data-part="location">
+          {location}
+        </span>
+      )}
     </span>
   );
 }

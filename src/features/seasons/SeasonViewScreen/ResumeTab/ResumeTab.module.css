@@ -1,0 +1,122 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+  gap: var(--space-5);
+}
+
+/* The card of the leagues dashboard, as a link (Task 215 round 1). */
+.card {
+  display: flex;
+  flex-direction: column;
+  border: var(--border-width) solid var(--color-border);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-offset-md);
+  color: var(--color-fg);
+  text-decoration: none;
+}
+
+.card:hover,
+.card:focus-visible {
+  transform: translate(-1px, -1px);
+  outline: none;
+}
+
+.card:focus-visible {
+  border-color: var(--color-accent);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-bottom: var(--border-width) solid var(--color-fg);
+}
+
+.title {
+  margin: 0;
+  min-width: 0;
+}
+
+.rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  border-bottom: var(--border-width) solid var(--color-bg);
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+/* The winner and the zone tones: the tint and the stripe of the standings
+ * rows (Task 155, US-12.5). */
+.row[data-tone='winner'] {
+  background: var(--color-zone-green-tint);
+  box-shadow: inset var(--border-width-heavy) 0 0 var(--color-zone-green);
+  font-weight: 700;
+}
+
+.row[data-tone='green'] {
+  background: var(--color-zone-green-tint);
+  box-shadow: inset var(--border-width-heavy) 0 0 var(--color-zone-green);
+}
+
+.row[data-tone='blue'] {
+  background: var(--color-zone-blue-tint);
+  box-shadow: inset var(--border-width-heavy) 0 0 var(--color-zone-blue);
+}
+
+.row[data-tone='yellow'] {
+  background: var(--color-zone-yellow-tint);
+  box-shadow: inset var(--border-width-heavy) 0 0 var(--color-zone-yellow);
+}
+
+.row[data-tone='red'] {
+  background: var(--color-zone-red-tint);
+  box-shadow: inset var(--border-width-heavy) 0 0 var(--color-zone-red);
+}
+
+.place {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-md);
+}
+
+.team {
+  display: flex;
+  min-width: 0;
+}
+
+/* A team name cuts on its text, so `TeamName` sees the cut and gives the
+ * full name in its hint (Task 180). */
+.team [data-part='name'] {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The label sits at the end side of the row. */
+.label {
+  font-size: var(--font-size-sm);
+  color: var(--color-fg-muted);
+  text-align: end;
+}
+
+.note,
+.empty {
+  margin: 0;
+  color: var(--color-fg-muted);
+}
+
+.note {
+  padding: var(--space-3) var(--space-4);
+}

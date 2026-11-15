@@ -13,6 +13,7 @@ import {
   HARBORVIEW,
   LEAGUE,
   openTestDatabase,
+  result,
   SALT_MARSH,
   SEASON,
   seasonRow,
@@ -123,13 +124,14 @@ describe('SeasonViewScreen: the open (US-13.3, choice 4)', () => {
     ).toBeInTheDocument();
   });
 
-  it('shows the Teams and Playoffs tabs (Task 213 choice 2, Task 220)', async () => {
+  it('shows the Teams, Playoffs, and Resume tabs (Tasks 213, 220, 221)', async () => {
     openWithSeason();
     render(<SeasonViewScreen uuid={SEASON} />);
     await screen.findByRole('heading', { level: 1, name: 'Liga Norte' });
     expect(screen.getAllByRole('tab').map((tab) => tab.textContent)).toEqual([
       'Teams',
       'Playoffs',
+      'Resume',
     ]);
   });
 });
@@ -549,5 +551,43 @@ describe('SeasonViewScreen: the Playoffs tab (US-13.7, Task 220)', () => {
     expect(screen.getByRole('button', { name: '+ New playoff' })).toBeDisabled();
     const open = screen.getByRole('article', { name: 'Taça de Honra' });
     expect(within(open).getByRole('button', { name: 'Play' })).toBeDisabled();
+  });
+});
+
+describe('SeasonViewScreen: the Resume tab (US-13.8, Task 221)', () => {
+  async function openResume(season: SeasonWrapper): Promise<void> {
+    openWithSeason({ season });
+    render(<SeasonViewScreen uuid={SEASON} />);
+    await userEvent.click(await screen.findByRole('tab', { name: 'Resume' }));
+  }
+
+  it('shows one card for each league, as a link to its League Detail', async () => {
+    await openResume(seasonWrapper());
+
+    const card = screen.getByRole('link', { name: /Coastal Premier/ });
+    expect(card).toHaveAttribute('href', `/seasons/${SEASON}/leagues/${LEAGUE}`);
+    expect(within(card).getByText('No results yet.')).toBeInTheDocument();
+  });
+
+  it('shows the team in first place of a running league', async () => {
+    const season = seasonWrapper();
+    season.content.leagues[0].phases[0].results = [
+      result('p1.g1.md1.m1', SALT_MARSH, HARBORVIEW),
+    ];
+    await openResume(season);
+
+    const card = screen.getByRole('link', { name: /Coastal Premier/ });
+    expect(within(card).getByText('Salt Marsh United')).toBeInTheDocument();
+    expect(within(card).getByText('First place now')).toBeInTheDocument();
+  });
+
+  it('says so for a Season with no league, and has no tab row action', async () => {
+    const season = seasonWrapper();
+    season.content.leagues = [];
+    await openResume(season);
+
+    expect(screen.getAllByText('No leagues yet.').length).toBeGreaterThan(0);
+    expect(screen.queryByRole('button', { name: '+ New playoff' })).toBeNull();
+    expect(screen.queryByRole('button', { name: '+ Add teams' })).toBeNull();
   });
 });

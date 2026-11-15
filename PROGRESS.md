@@ -63,7 +63,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 218 | The wizard in a Season: Season teams first, the other Blueprints dimmed with a status, the join at create, the Edit drawer on the Season team | `features/leagues` | ✅ Done | 2026-11-14 | 2026-11-14 | [218](/docs/tasks/218-season-wizard.md) | M2. US-13.5. Refactor: one helper moved, three comments. |
 | 219 | The league cards of the Season view. League Detail in a Season: the breadcrumbs, read only in a finished Season | `features/` | ✅ Done | 2026-11-14 | 2026-11-14 | [219](/docs/tasks/219-season-league-detail.md) | M2. US-13.3, US-13.6, US-13.9. Refactor: one shared text. |
 | 220 | The Playoffs tab and the playoff dialog | `features/seasons` | ✅ Done | 2026-11-14 | 2026-11-14 | [220](/docs/tasks/220-playoffs-tab.md) | M2. US-13.7. Refactor: five small changes. The fixtures hint: Task 253. |
-| 221 | The Resume tab: the winner or the first place, the zone teams, the highlight | `features/seasons` | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M2. US-13.8. Depends on 219. |
+| 221 | The Resume tab: the winner or the first place, the zone teams, the highlight | `features/seasons` | 🟦 Refactor | 2026-11-14 |  | [221](/docs/tasks/221-resume-tab.md) | M2. US-13.8. The user agreed the review. Refactor pass next. |
 | 222 | Smoke check M2 | — | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M2. Depends on 218, 220, 221. |
 | 223 | Demo: the League Detail Teams tab, and the team modal | `docs/design-reference/MVP3/` | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M3. US-14.2. Depends on 222. |
 | 224 | The real OVR: one pure function, with integer arithmetic | `engine/tier-ovr` | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M3. US-14.1. No dependency. |
@@ -139,6 +139,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 and MVP2 decisions still apply.** They are in [`docs/archive/mvp1/PROGRESS.md`](/docs/archive/mvp1/PROGRESS.md), [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/), and [`docs/archive/mvp2/PROGRESS.md`](/docs/archive/mvp2/PROGRESS.md). An entry here changes an earlier decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-11-14 (Task 221 — the Resume tab):** The user agreed eight choices. A card shows the last started phase: place 1, "Champion" or "First place now", with the green highlight, then the zone teams. A Groups phase shows the first place of each group. A bracket shows places 1 to 4 when complete, else "No winner yet.". "No results yet." before the first result. The card is a link to League Detail. `TeamName` with the Location hint. Detail: [Task 221](/docs/tasks/221-resume-tab.md).
 
 - **2026-11-14 (Task 220 — the Playoffs tab):** The user agreed nine choices. The tab row action follows the open tab. `PlayoffsTab` and `PlayoffDialog` folders. A score line helper with the .txt export rules. The dialog starts with the bracket defaults, and "Home advantage" off. A live name check. `disabled` and `status` on a picker item. The status line names the winner. "No playoffs yet." A "* after extra time" key. Detail: [Task 220](/docs/tasks/220-playoffs-tab.md).
 

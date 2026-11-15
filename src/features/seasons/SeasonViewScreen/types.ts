@@ -2,6 +2,7 @@ import type { ConfirmDialogProps, MultiPickerProps } from '@/design-system';
 import type { RosterRow } from './TeamsTab';
 import type { PlayoffDialogProps } from './PlayoffDialog';
 import type { PlayoffRow } from './PlayoffsTab';
+import type { ResumeCard } from './ResumeTab';
 import type { LeagueCard, SeasonTeamDrawerProps } from '@/features/components';
 
 export default interface SeasonViewScreenProps {
@@ -32,13 +33,15 @@ export interface OpenSeasonView {
   hasAetKey: boolean;
   openPlayoffDialog: () => void;
   playoffDialog: PlayoffDialogProps | null;
+  /** The cards of the Resume tab, in Season order (Task 221). */
+  resumeCards: ResumeCard[];
   /** The open tab: its action shows on the tab row (Task 220 choice 1). */
   activeTab: SeasonTab;
   setActiveTab: (tab: SeasonTab) => void;
 }
 
 /** The tabs of the Season view. */
-export type SeasonTab = 'teams' | 'playoffs';
+export type SeasonTab = 'teams' | 'playoffs' | 'resume';
 
 /** What `useSeasonView` gives the screen: the Season, or why it does not
  * show (as League Detail does). */

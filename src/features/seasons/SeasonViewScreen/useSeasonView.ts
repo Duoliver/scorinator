@@ -19,6 +19,7 @@ import {
 import { formatSeasonMeta } from '@/features/seasons/seasonText';
 import { useAddTeams } from './useAddTeams';
 import { usePlayoffs } from './usePlayoffs';
+import { useResume } from './useResume';
 import type { SeasonTab, SeasonViewState } from './types';
 
 /** The Season view (Task 213). The screen opens the Season from its file,
@@ -39,6 +40,7 @@ export function useSeasonView(uuid: string): SeasonViewState {
   const [confirmingFinish, setConfirmingFinish] = useState(false);
   const [activeTab, setActiveTab] = useState<SeasonTab>('teams');
   const playoffs = usePlayoffs(season);
+  const resumeCards = useResume(season);
 
   const needsOpen = season === undefined && isKnown;
   useEffect(() => {
@@ -112,6 +114,7 @@ export function useSeasonView(uuid: string): SeasonViewState {
       hasAetKey: playoffs.hasAetKey,
       openPlayoffDialog: playoffs.openDialog,
       playoffDialog: playoffs.dialog,
+      resumeCards,
       activeTab,
       setActiveTab,
     },

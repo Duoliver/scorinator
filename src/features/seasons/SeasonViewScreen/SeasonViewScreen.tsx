@@ -8,6 +8,7 @@ import {
 } from '@/features/components';
 import { PlayoffDialog } from './PlayoffDialog';
 import { PlayoffsTab } from './PlayoffsTab';
+import { ResumeTab } from './ResumeTab';
 import { TeamsTab } from './TeamsTab';
 import type SeasonViewScreenProps from './types';
 import type { SeasonTab } from './types';
@@ -112,6 +113,11 @@ export function SeasonViewScreen({ uuid }: SeasonViewScreenProps): JSX.Element {
               />
             ),
           },
+          {
+            id: 'resume',
+            label: 'Resume',
+            content: <ResumeTab cards={view.resumeCards} />,
+          },
         ]}
         defaultTab={view.activeTab}
         onChange={(id) => view.setActiveTab(id as SeasonTab)}
@@ -125,7 +131,7 @@ export function SeasonViewScreen({ uuid }: SeasonViewScreenProps): JSX.Element {
             >
               + Add teams
             </Button>
-          ) : (
+          ) : view.activeTab === 'playoffs' ? (
             <Button
               size="sm"
               variant="secondary"
@@ -134,7 +140,7 @@ export function SeasonViewScreen({ uuid }: SeasonViewScreenProps): JSX.Element {
             >
               + New playoff
             </Button>
-          )
+          ) : undefined
         }
       />
 

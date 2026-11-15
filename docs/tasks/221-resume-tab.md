@@ -1,6 +1,6 @@
 # Task 221: the Resume tab
 
-**Status:** Refactor
+**Status:** Done
 
 ## Goal
 
@@ -27,6 +27,8 @@ Give the Season view its "Resume" tab (US-13.8): one card for each league with i
   - (d) The group rows have no highlight: no group leader is the winner of the league.
   - (e) The card lifts by one pixel on a hover, and gets the accent border on a keyboard focus.
 - **2026-11-15:** The user agreed the review, with the Claude choices (a) to (e). Commit 1. The refactor pass is next.
+- **2026-11-15:** The refactor pass read the diff against the review checklist. Four changes, in the report. No gap outside the diff, and no bug found.
+- **2026-11-15:** The user agreed the refactor review, with no new check in the app. Done. Commit 2.
 
 ## Report
 
@@ -34,4 +36,4 @@ Give the Season view its "Resume" tab (US-13.8): one card for each league with i
 - **Test approach:** unit tests for the card content (6 cases, with leagues played through the store actions): no result, a running and a complete round robin with a zone, a Groups phase, a running bracket, and a complete bracket with a third-place playoff. Screen tests (3 cases): the card link, the first place now, and an empty Season. The full suite passes: 2329 tests. The type check, the lint, and the format check pass.
 - **Decisions made:** the eight choices (Decisions log). The Claude choices (a) to (e) are in the notes.
 - **What is left, what is next:** Task 253 (the fixtures hint), then Task 222, the M2 smoke check. A live check: open the Resume tab of a Season with a running league, a complete league, and a bracket.
-- **Refactor:** waits for the review.
+- **Refactor:** four changes, no change in behavior. (1) The card hover uses `-0.0625rem`, not `-1px` (the rem rule). (2) The winner and green tones share one CSS rule, and the winner adds the bold. (3) The barrel no longer exports `ResumeCardRow`: no file outside the folder uses it. (4) A `createBracket` test helper replaces two copies of the same `createLeague` call. The full suite (2329 tests), the type check, the lint, and the format check pass.

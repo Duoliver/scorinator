@@ -17,7 +17,7 @@
 
 .card:hover,
 .card:focus-visible {
-  transform: translate(-1px, -1px);
+  transform: translate(-0.0625rem, -0.0625rem);
   outline: none;
 }
 
@@ -60,15 +60,14 @@
 
 /* The winner and the zone tones: the tint and the stripe of the standings
  * rows (Task 155, US-12.5). */
-.row[data-tone='winner'] {
-  background: var(--color-zone-green-tint);
-  box-shadow: inset var(--border-width-heavy) 0 0 var(--color-zone-green);
-  font-weight: 700;
-}
-
+.row[data-tone='winner'],
 .row[data-tone='green'] {
   background: var(--color-zone-green-tint);
   box-shadow: inset var(--border-width-heavy) 0 0 var(--color-zone-green);
+}
+
+.row[data-tone='winner'] {
+  font-weight: 700;
 }
 
 .row[data-tone='blue'] {

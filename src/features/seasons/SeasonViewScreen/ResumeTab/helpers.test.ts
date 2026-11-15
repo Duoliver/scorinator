@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { LeagueWrapper } from '@/domain';
-import { DEFAULT_BRACKET_RULES } from '@/engine/phases';
+import { DEFAULT_BRACKET_RULES, type PhasePlan } from '@/engine/phases';
 import { useDatabaseStore } from '@/app/state/databaseStore';
 import {
   createLeague,
@@ -36,6 +36,25 @@ function openRoundRobin(): void {
     },
   ];
   openTestLeague(wrapper);
+}
+
+/** A cup of the four teams, with one bracket phase. Gives its UUID. */
+function createBracket(plan: PhasePlan): string {
+  return createLeague({
+    name: 'Cup',
+    homeAdvantage: false,
+    points: { win: 3, draw: 1, loss: 0 },
+    teams: useDatabaseStore.getState().blueprints.map((b, index) => ({
+      blueprintUuid: b.uuid,
+      slug: b.slug,
+      name: b.name,
+      colour: b.colour,
+      tier: b.tier,
+      ovr: 70 + index,
+      trigram: '',
+    })),
+    plans: [plan],
+  }).uuid;
 }
 
 beforeEach(() => {
@@ -92,21 +111,7 @@ describe('getResumeContent (US-13.8, Task 221)', () => {
   });
 
   it('says "No winner yet" for a running bracket (choice 4)', () => {
-    const { uuid } = createLeague({
-      name: 'Cup',
-      homeAdvantage: false,
-      points: { win: 3, draw: 1, loss: 0 },
-      teams: useDatabaseStore.getState().blueprints.map((b, index) => ({
-        blueprintUuid: b.uuid,
-        slug: b.slug,
-        name: b.name,
-        colour: b.colour,
-        tier: b.tier,
-        ovr: 70 + index,
-        trigram: '',
-      })),
-      plans: [{ format: 'bracket' }],
-    });
+    const uuid = createBracket({ format: 'bracket' });
 
     expect(getResumeContent(league(uuid))).toEqual({
       rows: [],
@@ -115,22 +120,9 @@ describe('getResumeContent (US-13.8, Task 221)', () => {
   });
 
   it('shows places 1 to 4 of a complete bracket with a third-place playoff', () => {
-    const { uuid } = createLeague({
-      name: 'Cup',
-      homeAdvantage: false,
-      points: { win: 3, draw: 1, loss: 0 },
-      teams: useDatabaseStore.getState().blueprints.map((b, index) => ({
-        blueprintUuid: b.uuid,
-        slug: b.slug,
-        name: b.name,
-        colour: b.colour,
-        tier: b.tier,
-        ovr: 70 + index,
-        trigram: '',
-      })),
-      plans: [
-        { format: 'bracket', rules: { ...DEFAULT_BRACKET_RULES, thirdPlace: true } },
-      ],
+    const uuid = createBracket({
+      format: 'bracket',
+      rules: { ...DEFAULT_BRACKET_RULES, thirdPlace: true },
     });
     scorinateBracket(uuid);
     scorinateBracket(uuid);

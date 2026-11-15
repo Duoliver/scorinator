@@ -96,6 +96,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 251 | Check the unique roster trigrams of a Season file | `adapters/json-io` | ✅ Done | 2026-11-13 | 2026-11-13 | [251](/docs/tasks/251-season-trigram-check.md) | Task created by User - 2026-11-13. From the Task 213 review. Refactor: no change. |
 | 252 | One shared lookup of an open, running Season for the Season action files | `app/state` | ✅ Done | 2026-11-14 | 2026-11-14 | [252](/docs/tasks/252-shared-season-lookup.md) | Task created by User - 2026-11-14. From the Task 217 refactor pass. Refactor: no change. |
 | 253 | The Location hint on the fixtures team names, as in the standings and the bracket | `features/fixtures` | ✅ Done | 2026-11-15 | 2026-11-15 | [253](/docs/tasks/253-fixtures-name-hint.md) | Task created by User - 2026-11-14. From the Task 220 refactor pass. Refactor: one repeated CSS line. |
+| 254 | Bold team names in the Teams list and the Season Teams tab, as in the standings | `features/teams`, `features/seasons`, `features/components/` | 🟦 Refactor | 2026-11-15 |  | [254](/docs/tasks/254-bold-team-names.md) | Task created by User - 2026-11-15. Layout tweak before M3. The user agreed the review. Refactor pass next. |
 
 **Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input, see Open Questions) · 🟩 Review · 🟦 Refactor (the pass, or its review: the Notes say which) · ✅ Done · ❌ Cancelled (the reason is in the Notes column)
 

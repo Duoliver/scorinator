@@ -18,4 +18,10 @@ describe('TeamLabel (Task 120 review)', () => {
     const { container } = render(<TeamLabel name="Old Town" location="" />);
     expect(container.textContent).toBe('Old Town');
   });
+
+  it('marks the name, so a screen CSS can bold the name alone (Task 254)', () => {
+    render(<TeamLabel name="Ashfield Rovers" location="Ashfield" />);
+    expect(screen.getByText('Ashfield Rovers')).toHaveAttribute('data-part', 'name');
+    expect(screen.getByText('Ashfield')).not.toHaveAttribute('data-part');
+  });
 });

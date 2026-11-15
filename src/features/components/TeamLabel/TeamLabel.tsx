@@ -8,7 +8,8 @@ export type { TeamLabelProps };
  * smaller muted text. Shared by the Teams step list, the add dialog rows,
  * and the Review step. It takes
  * the free width of its row, so the item after it sits at the row end
- * (Task 120 review). */
+ * (Task 120 review). The name is `data-part="name"`, so a screen CSS can
+ * bold the name alone (Task 254). */
 export function TeamLabel({
   name,
   location,
@@ -16,7 +17,7 @@ export function TeamLabel({
 }: TeamLabelProps): JSX.Element {
   return (
     <span class={inline ? `${styles.label} ${styles.inline}` : styles.label}>
-      <span>{name}</span>
+      <span data-part="name">{name}</span>
       {location !== '' && <span class={styles.location}>{location}</span>}
     </span>
   );

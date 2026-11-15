@@ -30,7 +30,11 @@ export const getTeamColumns = (
     width: '2rem',
     render: (row) => <TeamSwatch colour={row.colour} size="lg" />,
   },
-  { key: 'name', header: 'Name' },
+  {
+    key: 'name',
+    header: 'Name',
+    render: (row) => <span class={styles.name}>{row.name}</span>,
+  },
   {
     key: 'location',
     header: 'Location',

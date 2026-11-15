@@ -10,6 +10,12 @@
   gap: var(--space-3);
 }
 
+/* The name in bold, as in the standings. The Location keeps its own look
+ * (Task 254). */
+.teamCell [data-part='name'] {
+  font-weight: 600;
+}
+
 .mono {
   font-family: var(--font-mono);
   font-size: var(--font-size-md);

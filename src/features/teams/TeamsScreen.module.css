@@ -18,6 +18,11 @@
   gap: var(--space-3);
 }
 
+/* The name in bold, as in the standings (Task 254). */
+.name {
+  font-weight: 600;
+}
+
 .slug {
   font-family: var(--font-mono);
   font-size: var(--font-size-md);

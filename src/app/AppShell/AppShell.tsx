@@ -53,9 +53,9 @@ export function AppShell(): JSX.Element {
             <TeamsRoute path={ROUTES.teams} />
             <FileRoute path={ROUTES.file} />
             <LeagueSetupRoute path={ROUTES.leaguesNew} />
-            <LeaguesDashboardRoute path={ROUTES.leaguesDashboard} default />
+            <LeaguesDashboardRoute path={ROUTES.leaguesDashboard} />
             <LeagueDetailRoute path={ROUTES.leagueDetail} />
-            <SeasonsRoute path={ROUTES.seasons} />
+            <SeasonsRoute path={ROUTES.seasons} default />
             <SeasonViewRoute path={ROUTES.seasonDetail} />
             <SeasonLeagueSetupRoute path={ROUTES.seasonLeagueNew} />
             <SeasonLeagueDetailRoute path={ROUTES.seasonLeagueDetail} />

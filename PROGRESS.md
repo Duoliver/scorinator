@@ -98,6 +98,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 253 | The Location hint on the fixtures team names, as in the standings and the bracket | `features/fixtures` | ✅ Done | 2026-11-15 | 2026-11-15 | [253](/docs/tasks/253-fixtures-name-hint.md) | Task created by User - 2026-11-14. From the Task 220 refactor pass. Refactor: one repeated CSS line. |
 | 254 | Bold team names in the Teams list and the Season Teams tab, as in the standings | `features/teams`, `features/seasons`, `features/components/` | ✅ Done | 2026-11-15 | 2026-11-15 | [254](/docs/tasks/254-bold-team-names.md) | Task created by User - 2026-11-15. Layout tweak before M3. Refactor: one comment. |
 | 255 | The Teams list on a narrow screen: one card for each team, from the user's sketch | `features/teams` | ✅ Done | 2026-11-15 | 2026-11-15 | [255](/docs/tasks/255-teams-list-mobile.md) | Task created by User - 2026-11-15. Layout tweak before M3. Refactor: one test guard. |
+| 256 | The Seasons module as the main screen, in place of Leagues | `app/` | 🟦 Refactor | 2026-11-15 |  | [256](/docs/tasks/256-seasons-start-screen.md) | Task created by User - 2026-11-15. Layout tweak before M3. The user agreed the review. Refactor pass next. |
 
 **Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input, see Open Questions) · 🟩 Review · 🟦 Refactor (the pass, or its review: the Notes say which) · ✅ Done · ❌ Cancelled (the reason is in the Notes column)
 
@@ -142,6 +143,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 and MVP2 decisions still apply.** They are in [`docs/archive/mvp1/PROGRESS.md`](/docs/archive/mvp1/PROGRESS.md), [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/), and [`docs/archive/mvp2/PROGRESS.md`](/docs/archive/mvp2/PROGRESS.md). An entry here changes an earlier decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-11-15 (Task 256 — the start screen):** The user made the Seasons module the main screen. This changes the start screen of Task 29 (MVP1). The app opens on the Seasons list, for `/` and any unknown path. The sidebar order is Seasons, Leagues, Teams, File. The Leagues dashboard stays at `/leagues`. Detail: [Task 256](/docs/tasks/256-seasons-start-screen.md).
 
 - **2026-11-14 (Task 221 — the Resume tab):** The user agreed eight choices. A card shows the last started phase: place 1, "Champion" or "First place now", with the green highlight, then the zone teams. A Groups phase shows the first place of each group. A bracket shows places 1 to 4 when complete, else "No winner yet.". "No results yet." before the first result. The card is a link to League Detail. `TeamName` with the Location hint. Detail: [Task 221](/docs/tasks/221-resume-tab.md).
 

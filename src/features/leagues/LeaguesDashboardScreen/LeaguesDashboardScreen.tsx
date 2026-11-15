@@ -15,7 +15,7 @@ import styles from './LeaguesDashboardScreen.module.css';
  * `handleCreate` does, is for an *imperative* navigation with no click to
  * intercept — not the case for an ordinary link here.
  *
- * Leagues is the start screen (Task 29). With no leagues, it shows
+ * The standalone leagues. With no leagues, it shows
  * `LeaguesEmptyState` and hides `+ New League`, which would repeat the
  * empty state's Create league. */
 export function LeaguesDashboardScreen(): JSX.Element {

@@ -140,7 +140,7 @@ describe('smoke: create, scorinate, save, and open a league again', () => {
     // 1. The app opens the database: the first start writes the manifest.
     // Then create two teams on the Teams screen.
     expect(
-      await screen.findByRole('heading', { name: 'No leagues yet.' })
+      await screen.findByRole('heading', { name: 'No Seasons yet' })
     ).toBeInTheDocument();
     expect([...disk.keys()]).toEqual([MANIFEST_PATH]);
     await user.click(screen.getByRole('link', { name: 'Teams' }));
@@ -190,7 +190,7 @@ describe('smoke: create, scorinate, save, and open a league again', () => {
     // dashboard card comes from the manifest, with no league file read.
     unmount();
     resetSession();
-    openAt('/');
+    openAt('/leagues');
     render(<AppShell />);
     expect(
       await screen.findByRole('heading', { name: 'Coastal Premier' })
@@ -233,7 +233,7 @@ describe('smoke: M2 teams and team selection (Task 122)', () => {
     vi.mocked(open).mockResolvedValueOnce(CSV_PATH);
     const { unmount } = render(<AppShell />);
     expect(
-      await screen.findByRole('heading', { name: 'No leagues yet.' })
+      await screen.findByRole('heading', { name: 'No Seasons yet' })
     ).toBeInTheDocument();
 
     // 1. Import the CSV on the Teams screen, through the confirm (Task 168).
@@ -279,7 +279,7 @@ describe('smoke: M2 teams and team selection (Task 122)', () => {
     // league Instances from the league file.
     unmount();
     resetSession();
-    openAt('/');
+    openAt('/leagues');
     render(<AppShell />);
     expect(
       await screen.findByRole('heading', { name: 'Coastal Premier' })
@@ -328,7 +328,7 @@ describe('smoke: M3 phases, groups, and the phase start (Task 133)', () => {
     vi.mocked(open).mockResolvedValueOnce(CSV_PATH);
     const { unmount } = render(<AppShell />);
     expect(
-      await screen.findByRole('heading', { name: 'No leagues yet.' })
+      await screen.findByRole('heading', { name: 'No Seasons yet' })
     ).toBeInTheDocument();
 
     // 1. Import the six teams.
@@ -405,7 +405,7 @@ describe('smoke: M3 phases, groups, and the phase start (Task 133)', () => {
     const [leagueBefore] = Object.values(useDatabaseStore.getState().leagues);
     unmount();
     resetSession();
-    openAt('/');
+    openAt('/leagues');
     render(<AppShell />);
     expect(
       await screen.findByRole('heading', { name: 'Group Cup' })
@@ -450,7 +450,7 @@ describe('smoke: M4 bracket after groups (Task 143)', () => {
     vi.mocked(open).mockResolvedValueOnce(CSV_PATH);
     const { unmount } = render(<AppShell />);
     expect(
-      await screen.findByRole('heading', { name: 'No leagues yet.' })
+      await screen.findByRole('heading', { name: 'No Seasons yet' })
     ).toBeInTheDocument();
 
     // 1. Import the eight teams.
@@ -554,7 +554,7 @@ describe('smoke: M4 bracket after groups (Task 143)', () => {
     const [leagueBefore] = Object.values(useDatabaseStore.getState().leagues);
     unmount();
     resetSession();
-    openAt('/');
+    openAt('/leagues');
     render(<AppShell />);
     expect(
       await screen.findByRole('heading', { name: 'Knockout Cup' })
@@ -595,7 +595,7 @@ describe('smoke: M5 files, imports, and conflicts (Task 151)', () => {
     disk.set(CSV_PATH, CSV);
     vi.mocked(open).mockResolvedValueOnce(CSV_PATH);
     const { unmount } = render(<AppShell />);
-    await screen.findByRole('heading', { name: 'No leagues yet.' });
+    await screen.findByRole('heading', { name: 'No Seasons yet' });
 
     const openFileScreen = async (): Promise<void> => {
       await user.click(screen.getByRole('link', { name: 'File' }));
@@ -653,7 +653,7 @@ describe('smoke: M5 files, imports, and conflicts (Task 151)', () => {
       if (path.startsWith('/appdata/')) disk.delete(path);
     }
     resetSession();
-    openAt('/');
+    openAt('/leagues');
     const second = render(<AppShell />);
     await screen.findByRole('heading', { name: 'No leagues yet.' });
     await openFileScreen();
@@ -698,7 +698,7 @@ describe('smoke: M5 files, imports, and conflicts (Task 151)', () => {
     await statusIs('Saved.');
     second.unmount();
     resetSession();
-    openAt('/');
+    openAt('/leagues');
     render(<AppShell />);
     expect(await screen.findByText('2 leagues running')).toBeInTheDocument();
     expect(useDatabaseStore.getState().blueprints).toHaveLength(2);
@@ -749,7 +749,7 @@ describe('smoke: M6 standings, zones, the chart, and trigrams (Task 158)', () =>
     disk.set(CSV_PATH, CSV);
     vi.mocked(open).mockResolvedValueOnce(CSV_PATH);
     const { unmount } = render(<AppShell />);
-    await screen.findByRole('heading', { name: 'No leagues yet.' });
+    await screen.findByRole('heading', { name: 'No Seasons yet' });
 
     // 1. Import the six teams. The wizard makes a round robin with a red
     // zone for places 5 to 6.
@@ -824,7 +824,7 @@ describe('smoke: M6 standings, zones, the chart, and trigrams (Task 158)', () =>
     const [leagueBefore] = Object.values(useDatabaseStore.getState().leagues);
     unmount();
     resetSession();
-    openAt('/');
+    openAt('/leagues');
     render(<AppShell />);
     await user.click(await screen.findByRole('link', { name: 'Open standings' }));
     await screen.findByRole('heading', { level: 1, name: 'Zone League' });
@@ -855,7 +855,7 @@ describe('smoke: MVP3 M1 Season core (Task 214)', () => {
     vi.mocked(open).mockResolvedValueOnce(CSV_PATH);
     const { unmount } = render(<AppShell />);
     expect(
-      await screen.findByRole('heading', { name: 'No leagues yet.' })
+      await screen.findByRole('heading', { name: 'No Seasons yet' })
     ).toBeInTheDocument();
     await user.click(screen.getByRole('link', { name: 'Teams' }));
     await user.click(screen.getByRole('button', { name: 'Import teams...' }));
@@ -1001,7 +1001,7 @@ describe('smoke: MVP3 M2 Season leagues and playoffs (Task 222)', () => {
     vi.mocked(open).mockResolvedValueOnce(CSV_PATH);
     const { unmount } = render(<AppShell />);
     expect(
-      await screen.findByRole('heading', { name: 'No leagues yet.' })
+      await screen.findByRole('heading', { name: 'No Seasons yet' })
     ).toBeInTheDocument();
     await user.click(screen.getByRole('link', { name: 'Teams' }));
     await user.click(screen.getByRole('button', { name: 'Import teams...' }));

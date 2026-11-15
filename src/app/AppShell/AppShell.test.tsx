@@ -48,7 +48,7 @@ describe('AppShell', () => {
     render(<AppShell />);
     expect(screen.getByRole('status')).toHaveTextContent('Opening the database…');
     expect(
-      screen.queryByRole('heading', { name: 'No leagues yet.' })
+      screen.queryByRole('heading', { name: 'No Seasons yet' })
     ).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Teams' })).toBeInTheDocument();
   });
@@ -66,7 +66,7 @@ describe('AppShell', () => {
       'The database could not open: manifest.json is not valid: the text is not JSON.'
     );
     expect(
-      screen.queryByRole('heading', { name: 'No leagues yet.' })
+      screen.queryByRole('heading', { name: 'No Seasons yet' })
     ).not.toBeInTheDocument();
   });
 
@@ -82,13 +82,16 @@ describe('AppShell', () => {
     expect(remove).toHaveBeenCalledOnce();
   });
 
-  it('lands on Leagues by default, with Leagues marked as the active nav item', () => {
+  it('lands on Seasons by default, with Seasons marked as the active nav item (Task 256)', () => {
     render(<AppShell />);
 
-    expect(screen.getByRole('heading', { name: 'Leagues' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Leagues' })).toHaveAttribute(
+    expect(screen.getByRole('heading', { name: 'Seasons' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Seasons' })).toHaveAttribute(
       'aria-current',
       'page'
+    );
+    expect(screen.getByRole('link', { name: 'Leagues' })).not.toHaveAttribute(
+      'aria-current'
     );
     expect(screen.getByRole('link', { name: 'Teams' })).not.toHaveAttribute(
       'aria-current'

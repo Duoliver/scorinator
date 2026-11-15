@@ -5,11 +5,9 @@ import styles from './TeamLabel.module.css';
 export type { TeamLabelProps };
 
 /** A team name with its Location below it, or on its line with `inline`, in
- * smaller muted text. Shared by the Teams step list, the add dialog rows,
- * and the Review step. It takes
- * the free width of its row, so the item after it sits at the row end
- * (Task 120 review). The name is `data-part="name"`, so a screen CSS can
- * bold the name alone (Task 254). */
+ * smaller muted text. It takes the free width of its row, so the item after
+ * it sits at the row end (Task 120 review). The name is `data-part="name"`,
+ * so a screen CSS can bold the name alone (Task 254). */
 export function TeamLabel({
   name,
   location,

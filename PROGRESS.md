@@ -100,6 +100,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 255 | The Teams list on a narrow screen: one card for each team, from the user's sketch | `features/teams` | ✅ Done | 2026-11-15 | 2026-11-15 | [255](/docs/tasks/255-teams-list-mobile.md) | Task created by User - 2026-11-15. Layout tweak before M3. Refactor: one test guard. |
 | 256 | The Seasons module as the main screen, in place of Leagues | `app/` | ✅ Done | 2026-11-15 | 2026-11-15 | [256](/docs/tasks/256-seasons-start-screen.md) | Task created by User - 2026-11-15. Layout tweak before M3. Refactor: no change. |
 | 257 | The Season Teams tab on a narrow screen: one card for each roster team, as Task 255 | `features/seasons` | ✅ Done | 2026-11-15 | 2026-11-15 | [257](/docs/tasks/257-season-roster-mobile.md) | Task created by User - 2026-11-15. Layout tweak before M3. Refactor: no change. Shared-CSS note in the task file. |
+| 258 | Tighter spacing on the league cards, standalone and in a Season: padding `--space-3`, gap `--space-2` | `features/components/`, `design-system/` | ✅ Done | 2026-11-15 | 2026-11-15 | [258](/docs/tasks/258-league-card-spacing.md) | Task created by User - 2026-11-15. The user's Card padding scale change only. The user closed it. |
 
 **Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input, see Open Questions) · 🟩 Review · 🟦 Refactor (the pass, or its review: the Notes say which) · ✅ Done · ❌ Cancelled (the reason is in the Notes column)
 

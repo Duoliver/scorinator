@@ -42,3 +42,81 @@
   font-size: var(--font-size-md);
   color: var(--color-fg-muted);
 }
+
+/* A size container, not a viewport query, because the sidebar takes width
+ * from the content (as the fixtures do). */
+.list {
+  container: teams-list / inline-size;
+}
+
+/* The pin of the Location line, for the narrow card only (Task 255). */
+.pin {
+  display: none;
+  margin-inline-end: var(--space-1);
+}
+
+/* The narrow card of the user's sketch (Task 255): the swatch, the name,
+ * and the Tier on the first line, then the Location, the trigrams, and
+ * the slug with "Edit" at the bottom. Each row of `Table` has an inline
+ * `grid-template-columns`, so the row becomes a flex row, where the grid
+ * columns do not apply, and `order` puts the cells in the sketch order. */
+@container teams-list (max-width: 35rem) {
+  .list [role='row']:first-child {
+    display: none;
+  }
+
+  .list [role='row'] {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: var(--space-3);
+    row-gap: var(--space-2);
+  }
+
+  .list [data-column='colour'] {
+    order: 1;
+  }
+
+  .list [data-column='name'] {
+    order: 2;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .list [data-column='tier'] {
+    order: 3;
+  }
+
+  .list [data-column='location'] {
+    order: 4;
+    flex-basis: 100%;
+  }
+
+  .list [data-column='location']:has(.noLocation) {
+    display: none;
+  }
+
+  .list [data-column='trigrams'] {
+    order: 5;
+    flex-basis: 100%;
+  }
+
+  /* The footer: the slug and "Edit" on the bottom line, so a long slug
+   * that wraps does not push "Edit" off the card floor. */
+  .list [data-column='slug'] {
+    order: 6;
+    flex: 1;
+    min-width: 0;
+    align-self: flex-end;
+    overflow-wrap: anywhere;
+  }
+
+  .list [data-column='actions'] {
+    order: 7;
+    align-self: flex-end;
+  }
+
+  .pin {
+    display: inline;
+  }
+}

@@ -77,6 +77,18 @@ describe('Table', () => {
     expect(within(first).queryByRole('columnheader')).not.toBeInTheDocument();
   });
 
+  it('marks each cell with the key of its column, for a screen CSS (Task 255)', () => {
+    render(
+      <Table label="Standings" columns={columns} rows={rows} rowKey={(r) => r.id} />
+    );
+    const [, first] = screen.getAllByRole('row');
+    expect(
+      within(first)
+        .getAllByRole('cell')
+        .map((cell) => cell.getAttribute('data-column'))
+    ).toEqual(['pos', 'name', 'pts']);
+  });
+
   it("uses a column's custom render function instead of the raw value", () => {
     const customColumns: TableColumn<StandingsRow>[] = [
       ...columns.slice(0, 2),

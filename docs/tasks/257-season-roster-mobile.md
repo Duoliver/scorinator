@@ -1,6 +1,6 @@
 # Task 257: the Season Teams tab on a narrow screen
 
-**Status:** Refactor
+**Status:** Done
 
 ## Goal
 
@@ -35,6 +35,8 @@ The user agreed the criteria and the five default choices on 2026-11-15: (1) the
   - (c) The swatch sits at the top of the team cell, beside the name.
 - **2026-11-15:** Review change, from the user: the leagues and the trigram switch places in the card. The leagues take a full-width line, and the trigram goes to the footer with "✎". This changes choices 3 and 4. CSS only.
 - **2026-11-15:** The user agreed the review, with the Claude choices (a) to (c). The full suite (2336 tests), the type check, and the lint pass. Commit 1. The refactor pass is next.
+- **2026-11-15:** The refactor pass read the diff against the review checklist. No change. One gap outside the diff, for the user to decide: two rules of the card layout repeat in `TeamsScreen.module.css` (Task 255) and `TeamsTab.module.css`: the hidden header row and the wrapping flex row. A shared CSS module in `features/components/` could hold them. No bug found.
+- **2026-11-15:** The user agreed the refactor review. Done. Commit 2.
 
 ## Report
 
@@ -42,4 +44,4 @@ The user agreed the criteria and the five default choices on 2026-11-15: (1) the
 - **Test approach:** one changed unit test for the `TeamLabel` marks. The card look is CSS, so the user checks it in the real app. The full suite passes: 2336 tests. The type check, the lint, and the format check pass.
 - **Decisions made:** the five choices of the user, and the Claude choices (a) to (c), are in the notes.
 - **What is left, what is next:** a live check at a narrow width. Then the next layout tweak of the user, or M3.
-- **Refactor:** waits for the review.
+- **Refactor:** no change. The diff follows the checklist: the comments say why, each size is a token, no `!important`, and the TeamLabel test covers the new mark. One gap is outside the diff, in the notes.

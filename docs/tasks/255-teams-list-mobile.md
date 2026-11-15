@@ -1,6 +1,6 @@
 # Task 255: the Teams list on a narrow screen
 
-**Status:** Refactor
+**Status:** Done
 
 ## Goal
 
@@ -37,6 +37,8 @@ The user agreed the criteria and the choices on 2026-11-15.
   - (b) The Location text keeps the row text colour. Only the pin is new.
   - (c) The Tab order stays the DOM order: the name, then "Edit". `order` changes only the look.
 - **2026-11-15:** The user agreed the review, with the Claude choices (a) to (c). Commit 1. The refactor pass is next.
+- **2026-11-15:** The refactor pass read the diff against the review checklist. One change, in the report. No gap outside the diff, and no bug found. The sketch in `docs/misc/` stays untracked: it is the user's file.
+- **2026-11-15:** The user agreed the refactor review. Done. Commit 2, with the sketch file, as the user asked.
 
 ## Report
 
@@ -44,4 +46,4 @@ The user agreed the criteria and the choices on 2026-11-15.
 - **Test approach:** one unit test for the `data-column` mark, and one screen test for the pin and its `aria-hidden`. The card look is CSS, so the user checks it in the real app. The full suite passes: 2336 tests. The type check, the lint, and the format check pass.
 - **Decisions made:** the user's answers to the seven choices, and the Claude choices (a) to (c), are in the notes.
 - **What is left, what is next:** a live check at a narrow width. Then the next layout tweak of the user, or M3.
-- **Refactor:** waits for the review.
+- **Refactor:** one change, no change in behavior. The new pin test used two non-null assertions (`!`). Its cell helper now throws for a missing cell, as the other screen tests of the repo do. The full suite (2336 tests), the type check, the lint, and the format check pass.

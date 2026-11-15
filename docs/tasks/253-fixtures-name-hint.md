@@ -1,6 +1,6 @@
 # Task 253: the Location hint on the fixtures team names
 
-**Status:** Refactor
+**Status:** Done
 
 ## Goal
 
@@ -25,6 +25,8 @@ The user agreed the criteria on 2026-11-15.
   - (b) The bye row keeps its plain name. The criteria name the match rows only.
   - (c) `TeamName` gets no trigram: the row keeps its own trigram beside the swatch (Task 157 choice 3).
 - **2026-11-15:** The user agreed the review, with the Claude choices (a) to (c). Commit 1. The refactor pass is next.
+- **2026-11-15:** The refactor pass read the diff against the review checklist. One change, in the report. No gap outside the diff, and no bug found.
+- **2026-11-15:** The user agreed the refactor review, with no new check in the app. Done. Commit 2.
 
 ## Report
 
@@ -32,4 +34,4 @@ The user agreed the criteria on 2026-11-15.
 - **Test approach:** three screen tests: the hint on hover, with a Tab stop; no hint and no Tab stop with no Location; the cut text mark on each name. jsdom has no layout, so the cut itself stays a `TeamName` test, and the stacked layout is a CSS check in the app. The full suite passes: 2332 tests. The type check, the lint, and the format check pass.
 - **Decisions made:** the Claude choices (a) to (c) are in the notes.
 - **What is left, what is next:** a live check: a long name and a Location, in the wide and the narrow row. Then Task 222, the M2 smoke check.
-- **Refactor:** waits for the review.
+- **Refactor:** one change, no change in behavior. The stacked `.teamName` rule no longer repeats `min-width: 0`: the base rule now sets it for both layouts. The full suite (2332 tests), the type check, the lint, and the format check pass.

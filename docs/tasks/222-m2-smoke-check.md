@@ -1,6 +1,6 @@
 # Task 222: M2 smoke check
 
-**Status:** Refactor
+**Status:** Done
 
 ## Goal
 
@@ -27,6 +27,8 @@ The user agreed the criteria on 2026-11-15.
 - **2026-11-15:** The user agreed the criteria. Started on the smoke case.
 - **2026-11-15:** The automated case passed at its first run: a smoke test checks code that exists, so it does not fail first. A check with one wrong count ("9 playoffs") made it fail, so the case reads the real screen. It imports four teams, makes "Liga Norte" 2026-27 with three roster teams, and creates "Primeira Divisão" (Dragões do Sul joins) and "Taça Norte" with the wizard. It scorinates matchday 1 of the first league, creates and plays "Supertaça", reads the Resume tab, saves, opens the Season in a new session, finishes it, and checks the read-only League Detail.
 - **2026-11-15:** The user agreed the review. Commit 1. The refactor pass is next.
+- **2026-11-15:** The refactor pass read the diff against the review checklist. One change, in the report. The CSV import and the Season create steps repeat in each case, as in every smoke case of the file: each case reads as one flow. No bug found.
+- **2026-11-15:** The user agreed the refactor review. Done. M2 is complete.
 
 ## Report
 
@@ -34,4 +36,4 @@ The user agreed the criteria on 2026-11-15.
 - **Test approach:** the case drives the real `AppShell` on the in-memory disk of the earlier smoke cases. The full suite passes: 2333 tests. The type check, the lint, the format check, and the build pass.
 - **Decisions made:** none.
 - **What is left:** the user runs the same flow in the real app with `npm run tauri:dev`. Then M2 is complete, and M3 starts with Task 223, the M3 demo.
-- **Refactor:** waits for the review.
+- **Refactor:** one change, no change in behavior. The M1 and the M2 cases had the same `rosterRows` helper. One `rosterRows` function at the file level, beside `standingsRows`, now serves both. The full suite (2333 tests), the type check, the lint, the format check, and the build pass.

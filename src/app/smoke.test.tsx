@@ -117,6 +117,14 @@ function standingsRows(): string[] {
     .map((row) => row.textContent ?? '');
 }
 
+/** The text of each row of the Season roster, without the header row. */
+function rosterRows(): string[] {
+  return within(screen.getByRole('table', { name: 'Season roster' }))
+    .getAllByRole('row')
+    .slice(1)
+    .map((row) => row.textContent ?? '');
+}
+
 beforeEach(() => {
   disk.clear();
   binaryDisk.clear();
@@ -840,11 +848,6 @@ describe('smoke: MVP3 M1 Season core (Task 214)', () => {
   ].join('\n');
   const seasonFiles = (): string[] =>
     [...disk.keys()].filter((path) => path.startsWith('/appdata/database/wrapper-'));
-  const rosterRows = (): string[] =>
-    within(screen.getByRole('table', { name: 'Season roster' }))
-      .getAllByRole('row')
-      .slice(1)
-      .map((row) => row.textContent ?? '');
 
   it('makes a Season with a roster, finishes it, keeps it in a new session, and deletes it', async () => {
     const user = userEvent.setup();
@@ -952,11 +955,6 @@ describe('smoke: MVP3 M2 Season leagues and playoffs (Task 222)', () => {
   ].join('\n');
   const FINISHED_NOTICE =
     'This Season is finished. It is read only. Reopen it to change it.';
-  const rosterRows = (): string[] =>
-    within(screen.getByRole('table', { name: 'Season roster' }))
-      .getAllByRole('row')
-      .slice(1)
-      .map((row) => row.textContent ?? '');
   const openStandings = (index: number): HTMLElement =>
     within(screen.getByRole('region', { name: 'Leagues' })).getAllByRole('link', {
       name: 'Open standings',

@@ -24,7 +24,7 @@
 
 /* The text at the two ends, such as "Crisis" and "Peak" (US-14.1), as in
  * the Task 223 demo. */
-.endLabel {
+.sideLabel {
   font-family: var(--font-mono);
   font-size: var(--font-size-sm);
   color: var(--color-fg-muted);

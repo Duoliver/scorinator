@@ -72,7 +72,7 @@ function SegmentedControlBase<T extends string | number>(
       )}
       <div class={styles.row}>
         {startLabel && (
-          <span aria-hidden="true" class={styles.endLabel}>
+          <span aria-hidden="true" class={styles.sideLabel}>
             {startLabel}
           </span>
         )}
@@ -112,7 +112,7 @@ function SegmentedControlBase<T extends string | number>(
           })}
         </div>
         {endLabel && (
-          <span aria-hidden="true" class={styles.endLabel}>
+          <span aria-hidden="true" class={styles.sideLabel}>
             {endLabel}
           </span>
         )}

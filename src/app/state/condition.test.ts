@@ -1,9 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { LeagueWrapper } from '@/domain';
-import { HARBORVIEW, leagueWrapper, result, SALT_MARSH } from '@/test/databaseRecords';
+import { HARBORVIEW, leagueWrapper, SALT_MARSH } from '@/test/databaseRecords';
 import { leagueOvrOf } from './bracket';
 import { getRealOvr, getTeamCondition } from './condition';
-import { isLeagueComplete } from './summarizeLeague';
 
 /** The test league, with the given levels. */
 function withLevels(
@@ -49,22 +48,5 @@ describe('leagueOvrOf with the condition (Task 226, US-14.2)', () => {
     const ovrOf = leagueOvrOf(leagueWrapper());
     expect(ovrOf(SALT_MARSH)).toBe(74);
     expect(ovrOf(HARBORVIEW)).toBe(63);
-  });
-});
-
-describe('isLeagueComplete (Task 226)', () => {
-  it('is false while a fixture of the last phase has no result', () => {
-    expect(isLeagueComplete(leagueWrapper())).toBe(false);
-    expect(
-      isLeagueComplete(leagueWrapper([result('p1.g1.md1.m1', SALT_MARSH, HARBORVIEW)]))
-    ).toBe(false);
-  });
-
-  it('is true when each fixture of the last phase has a result', () => {
-    const done = leagueWrapper([
-      result('p1.g1.md1.m1', SALT_MARSH, HARBORVIEW),
-      result('p1.g1.md2.m1', HARBORVIEW, SALT_MARSH),
-    ]);
-    expect(isLeagueComplete(done)).toBe(true);
   });
 });

@@ -124,11 +124,6 @@ export function buildLeagueContent(
   const groups = firstPlan?.format === PhaseFormat.GROUPS ? input.groups : undefined;
   checkPlans(plans, teamUuids.length, groups);
   if (groups) checkDraw(groups, teamUuids);
-  const conditions = pickConditions(
-    input.conditions,
-    new Set(teamUuids),
-    'The team list'
-  );
   const rng = createSeededRng(freshSeed());
   const phaseOne = startedPhase(buildPhase(firstPlan, 1, [...teamUuids], rng, groups));
   return {
@@ -140,6 +135,6 @@ export function buildLeagueContent(
     lastModifiedByInstallation: installationUuid,
     plans: structuredClone([...plans]),
     phases: [phaseOne],
-    ...conditions,
+    ...pickConditions(input.conditions, new Set(teamUuids), 'The team list'),
   };
 }

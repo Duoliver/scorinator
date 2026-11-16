@@ -7,7 +7,7 @@ import {
   SALT_MARSH,
   scheduled,
 } from '@/test/databaseRecords';
-import { summarizeLeague } from './summarizeLeague';
+import { isLeagueComplete, summarizeLeague } from './summarizeLeague';
 
 describe('summarizeLeague (Task 76 d)', () => {
   it('gives the card fields of the league', () => {
@@ -156,5 +156,22 @@ describe('summarizeLeague (Task 76 d)', () => {
       },
     };
     expect(summarizeLeague(empty).progress).toEqual({ kind: 'completed' });
+  });
+});
+
+describe('isLeagueComplete (Task 226)', () => {
+  it('is false while a fixture of the last phase has no result', () => {
+    expect(isLeagueComplete(leagueWrapper())).toBe(false);
+    expect(
+      isLeagueComplete(leagueWrapper([result('p1.g1.md1.m1', SALT_MARSH, HARBORVIEW)]))
+    ).toBe(false);
+  });
+
+  it('is true when each fixture of the last phase has a result', () => {
+    const done = leagueWrapper([
+      result('p1.g1.md1.m1', SALT_MARSH, HARBORVIEW),
+      result('p1.g1.md2.m1', HARBORVIEW, SALT_MARSH),
+    ]);
+    expect(isLeagueComplete(done)).toBe(true);
   });
 });

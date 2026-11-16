@@ -76,12 +76,6 @@ export function createPlayoff(
     }
   }
 
-  const conditions = pickConditions(
-    input.conditions,
-    new Set([input.team1Uuid, input.team2Uuid]),
-    'The playoff'
-  );
-
   const isSingle = input.rules.format === TieFormat.SINGLE_MATCH;
   const playoff: Playoff = {
     uuid: uuidV4(randomBytes),
@@ -89,7 +83,11 @@ export function createPlayoff(
     team1Uuid: input.team1Uuid,
     team2Uuid: input.team2Uuid,
     rules: { ...input.rules, awayGoals: isSingle ? false : input.rules.awayGoals },
-    ...conditions,
+    ...pickConditions(
+      input.conditions,
+      new Set([input.team1Uuid, input.team2Uuid]),
+      'The playoff'
+    ),
   };
   storePlayoffs(season, [...season.content.playoffs, playoff], installationUuid);
   return playoff;

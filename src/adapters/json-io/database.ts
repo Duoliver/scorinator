@@ -1014,7 +1014,7 @@ export function readConditions(
   value: unknown,
   teams: ReadonlySet<string>,
   label: string,
-  place: string,
+  place: 'league' | 'playoff',
   fail: Fail
 ): { conditions?: SavedConditions } {
   if (value === undefined) return {};
@@ -1053,7 +1053,6 @@ export function readLeague(
   );
   const plans = readPlans(value, phases.length, version);
   checkPlansAndPhases(plans, phases);
-  const conditions = readConditions(value.conditions, teams, label, 'league', fail);
 
   return {
     uuid: value.uuid,
@@ -1063,7 +1062,7 @@ export function readLeague(
     ...provenance,
     plans,
     phases,
-    ...conditions,
+    ...readConditions(value.conditions, teams, label, 'league', fail),
   };
 }
 

@@ -193,7 +193,7 @@ export function parseManifestRecord(text: string): Manifest {
 /** A copy of the condition levels that are not 0 (Task 225), or no field
  * when every team is at level 0. A league with no level then writes the
  * same file as before the condition. */
-function conditionsCopy(conditions: ConditionLevels | undefined): {
+function copyConditions(conditions: ConditionLevels | undefined): {
   conditions?: ConditionLevels;
 } {
   const kept = Object.entries(conditions ?? {}).filter(([, level]) => level !== 0);
@@ -212,7 +212,7 @@ function mapLeagueToFile(league: League): SavedWrapperLeague {
     lastModifiedByInstallation: league.lastModifiedByInstallation,
     plans: league.plans.map(planCopy),
     phases: league.phases.map(phaseToFile),
-    ...conditionsCopy(league.conditions),
+    ...copyConditions(league.conditions),
   };
 }
 
@@ -226,7 +226,7 @@ function mapLeagueFromFile(league: SavedWrapperLeague): League {
     lastModifiedByInstallation: league.lastModifiedByInstallation,
     plans: league.plans.map(planCopy),
     phases: league.phases.map(phaseFromFile),
-    ...conditionsCopy(league.conditions),
+    ...copyConditions(league.conditions),
   };
 }
 
@@ -277,7 +277,7 @@ function copyPlayoff(playoff: Playoff | SavedPlayoff): Playoff {
     team2Uuid: playoff.team2Uuid,
     rules: { ...playoff.rules },
     ...(playoff.result ? { result: structuredClone(playoff.result) } : {}),
-    ...conditionsCopy(playoff.conditions),
+    ...copyConditions(playoff.conditions),
   };
 }
 

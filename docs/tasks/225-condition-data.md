@@ -1,6 +1,6 @@
 # Task 225: the condition data
 
-**Status:** Refactor
+**Status:** Done
 
 ## Goal
 
@@ -24,11 +24,13 @@ Store a condition level for each team in each league, standalone or in a Season,
 - **2026-11-16:** The user agreed the criteria and seven choices: (1) a `conditions` map on the league, not on the Instance. (2) An optional `Record<blueprintUuid, ConditionLevel>`, absent means 0. (3) The same map on `Playoff`, with Team 1 and Team 2 as keys. (4) The writer keeps only the levels that are not 0. (5) A bad level or an unknown team makes the file invalid. (6) Format version 5 stays. (7) `app/data` maps the field.
 - **2026-11-16:** Tests first: 18 of the new tests failed before the code. One stray comment in `databaseFile.ts` sat above `mapLeagueToFile`, with the text of `leagueToFile`. It moved back above `leagueToFile`, next to the new `conditionsCopy` helper.
 - **2026-11-16:** The user agreed the review. Commit 1, then the refactor pass.
+- **2026-11-16:** Refactor pass done: three changes. The refactor review waits for the user.
+- **2026-11-16:** The user agreed the refactor review: Done.
 
 ## Report
 
-- **What was built:** `League.conditions` and `Playoff.conditions` in `domain/`, with a `ConditionLevels` type. `SavedWrapperLeague.conditions` and `SavedPlayoff.conditions` in `adapters/json-io`, with one shared reader, `readConditions`. It checks each level and each team, and drops a level 0. `app/data/databaseFile.ts` copies the levels that are not 0 in both directions, through `conditionsCopy`. The league export and the database zip use the same maps and readers, so they carry the levels too. `DOMAIN.md` names the new type.
+- **What was built:** `League.conditions` and `Playoff.conditions` in `domain/`, with a `ConditionLevels` type. `SavedWrapperLeague.conditions` and `SavedPlayoff.conditions` in `adapters/json-io`, with one shared reader, `readConditions`. It checks each level and each team, and drops a level 0. `app/data/databaseFile.ts` copies the levels that are not 0 in both directions, through `copyConditions`. The league export and the database zip use the same maps and readers, so they carry the levels too. `DOMAIN.md` names the new type.
 - **Test approach:** unit tests in `adapters/json-io`: 11 for a league (round trip, no field, a version 4 file, level 0 dropped, seven bad inputs) and 7 for a Season (a different level in each league, a roster team not in the league, playoff round trip, playoff level 0, three bad playoff inputs). 4 round-trip tests in `app/data`, one of them checks that a league with all levels at 0 writes the same text as before. Full suite: 2385 tests pass. Lint, the format check, and the type check pass.
 - **Decisions made:** the seven choices above. They are in the `PROGRESS.md` Decisions log.
 - **What is left, what is next:** no action reads or sets a level yet. Task 226 adds the actions, the lock after the league ends, and the real OVR in scorination.
-- **Refactor:** waits for the review.
+- **Refactor:** three changes, no change in behavior. (1) `conditionsCopy` is now `copyConditions`: a new function name starts with a verb (`coding-standards.md`). The note of 2026-11-16 keeps the old name, as a record of that moment. (2) `readLeague` spreads `readConditions` in its return, as `readPlayoff` does, in place of a `conditions` variable that held a wrapper object. (3) The `place` parameter of `readConditions` is `'league' | 'playoff'`, not any string. No markup or CSS change. Lint, the format check, the type check, and the full suite (2385 tests) pass.

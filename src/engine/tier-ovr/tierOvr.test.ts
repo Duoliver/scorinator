@@ -76,6 +76,11 @@ describe('rollOVR', () => {
         'isTier',
         'ovrAfterTierChange',
         'rollOVR',
+        // The condition (Task 224). `applyCondition` gives the real OVR of
+        // a match from the stored base OVR. It does not set the base OVR.
+        'CONDITION_LEVELS',
+        'applyCondition',
+        'isConditionLevel',
       ].sort()
     );
   });

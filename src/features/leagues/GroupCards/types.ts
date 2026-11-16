@@ -23,7 +23,7 @@ export default interface GroupCardsProps {
    * fit problem. On: a team in a group of 2 cannot move, for a phase that
    * has started (Task 181 choice 4). */
   keepTwoPerGroup?: boolean;
-  /** Content at the end of a team row, before its ⋮ menu, such as the
-   * condition button of the wizard (Task 229). League Detail gives none. */
+  /** Content at the end of a team row, before its ⋮ menu, such as a
+   * condition button (Task 229). */
   renderRowEnd?: (blueprintUuid: string) => JSX.Element;
 }

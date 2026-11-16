@@ -1,6 +1,6 @@
 # Task 229: the condition in the wizards
 
-**Status:** Refactor
+**Status:** Done
 
 ## Goal
 
@@ -26,6 +26,8 @@ The user sets the condition level of each team when a league or a playoff is mad
 - **2026-11-16:** With a Groups phase 1, the Teams step shows the group cards (`GroupCards`) in place of the table. The user chose the condition icon in each card row too: `GroupCards` gets an optional condition slot that only the wizard uses. The League Detail cards stay as they are. Note: the wizard table has a "Tier" column, not "Tier · OVR" as in the demo (Task 120): the "Condition" column goes between "Tier" and the row actions.
 - **2026-11-16:** Tests first: 10 new screen tests failed before the code. The JSX of the condition button went in `helpers.tsx` (`renderConditionPicker`), so `useTeamsStep` stays a `.ts` hook with no markup (the three-layer rule). The notice state is now a list of lines, `importNotice`, in place of `notFound`.
 - **2026-11-16:** The user agreed the review. Commit 1, then the refactor pass.
+- **2026-11-16:** Refactor pass done: three comments. The refactor review waits for the user.
+- **2026-11-16:** The user agreed the refactor review: Done.
 
 ## Report
 
@@ -33,4 +35,4 @@ The user sets the condition level of each team when a league or a playoff is mad
 - **Test approach:** Testing Library through the screens. `ConditionControl.test.tsx` (7): the levels, the names, the group, the end labels and `hideEnds`, `onChange`, `disabled`. `TeamsStep.test.tsx` (7): the column at level 0, a pick that sets the level and closes the panel, Escape, a removed team that comes back at 0, the group card icon, the slug list levels and both notice lines, one bad level in the singular. `LeagueSetupScreen.test.tsx` (2): the create passes the levels, the draft keeps them across a remount. `SeasonViewScreen.test.tsx` (1): the playoff dialog levels, with a new pick that keeps the slot level. 17 new tests. Full suite: 2463 tests pass. Lint, the format check, and the type check pass. No screenshot: the user checks the screens in the real app.
 - **Decisions made:** the six choices, option A (Task 268), and the group card slot. They are in the `PROGRESS.md` Decisions log.
 - **What is left, what is next:** Tasks 230 (the team modal) and 231 (the League Detail Teams tab) use `ConditionControl`.
-- **Refactor:** waits for the review.
+- **Refactor:** three comments, no change in code. Each one named its callers, against the comments rule of `coding-standards.md`: `renderRowEnd` in `GroupCards/types.ts` ("the condition button of the wizard", "League Detail gives none"), `renderConditionPicker` in `helpers.tsx` ("for the table and the group cards"), and `renderCondition` in `TeamsStep/types.ts` ("the group cards show it too"). No markup or CSS change. Lint, the format check, the type check, and the full suite (2463 tests) pass.

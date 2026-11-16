@@ -19,8 +19,7 @@ import styles from './TeamsStep.module.css';
 
 export const getRowKey = (team: TeamInstance): string => team.blueprintUuid;
 
-/** The condition button of one team, for the table and the group cards
- * (US-14.2). */
+/** The condition button of one team (US-14.2). */
 export function renderConditionPicker(
   teamName: string,
   level: ConditionLevel,

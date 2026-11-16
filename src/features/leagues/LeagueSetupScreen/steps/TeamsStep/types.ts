@@ -80,7 +80,7 @@ export interface TeamsStepState {
    * did not find, and the levels that are not valid. `null` for no notice. */
   importNotice: string[] | null;
   closeImportNotice: () => void;
-  /** The condition button of a team: the group cards show it too. */
+  /** The condition button of one team (US-14.2). */
   renderCondition: (blueprintUuid: string) => JSX.Element;
   overlay: TeamsStepOverlay;
   pickerItems: PickerItem[];

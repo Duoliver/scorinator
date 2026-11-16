@@ -34,3 +34,5 @@ Task 207 added the Season types (2026-11-13):
 |---|---|
 | `season.ts` | `Season`: a UUID, the provenance fields, a name and a free-text year (Task 209), the finished state, its leagues, and its playoffs (US-13.1, US-13.9). `SeasonLeague`: a `League` that names its teams in `teamUuids` (US-13.6). `Playoff`: a tie between two Season teams, with `TieRules` and an optional `TieResult` (US-13.7) |
 | `wrapper.ts` | `SeasonWrapper`: its Instances are the Season roster, in join order (US-13.4). `SeasonSummary`: the manifest row of a Season card. `Manifest.seasons` holds one for each Season (Task 209) |
+
+Task 225 added the condition levels (2026-11-16): `ConditionLevels` in `league.ts`, the level of each team by Blueprint UUID. `League.conditions` and `Playoff.conditions` are optional. A team with no entry is at level 0. The level lives on the league, not on the Instance, because a Season team has one Instance and a level in each league (US-14.2).

@@ -32,11 +32,12 @@ import {
   GroupBy,
 } from '@/engine/round-robin';
 import type { PointsConfig } from '@/engine/standings';
-import { isTier } from '@/engine/tier-ovr';
+import { isConditionLevel, isTier } from '@/engine/tier-ovr';
 import {
   DATABASE_FORMAT_VERSION,
   OLDEST_DATABASE_FORMAT_VERSION,
   type SavedBlueprint,
+  type SavedConditions,
   SavedFileKind,
   type SavedLeagueEntry,
   type SavedBracketPhase,
@@ -1003,6 +1004,34 @@ function checkPlansAndPhases(
   });
 }
 
+/**
+ * Reads the condition levels of a league or a playoff (Task 225). A level 0
+ * is dropped, and an empty result gives no field, so a file with all teams
+ * at 0 reads as a file with no levels. `place` names the owner of the
+ * teams in the error text: "league" or "playoff".
+ */
+export function readConditions(
+  value: unknown,
+  teams: ReadonlySet<string>,
+  label: string,
+  place: string,
+  fail: Fail
+): { conditions?: SavedConditions } {
+  if (value === undefined) return {};
+  if (!isRecord(value)) fail(`${label} has no valid conditions.`);
+  const conditions: SavedConditions = {};
+  for (const [team, level] of Object.entries(value)) {
+    if (!isConditionLevel(level)) {
+      fail(`${label} has a condition level that is not -2 to 2.`);
+    }
+    if (!teams.has(team)) {
+      fail(`${label} has a condition for a team that is not in the ${place}.`);
+    }
+    if (level !== 0) conditions[team] = level;
+  }
+  return Object.keys(conditions).length > 0 ? { conditions } : {};
+}
+
 export function readLeague(
   value: unknown,
   teams: ReadonlySet<string>,
@@ -1024,6 +1053,7 @@ export function readLeague(
   );
   const plans = readPlans(value, phases.length, version);
   checkPlansAndPhases(plans, phases);
+  const conditions = readConditions(value.conditions, teams, label, 'league', fail);
 
   return {
     uuid: value.uuid,
@@ -1033,6 +1063,7 @@ export function readLeague(
     ...provenance,
     plans,
     phases,
+    ...conditions,
   };
 }
 

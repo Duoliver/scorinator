@@ -21,6 +21,7 @@ import {
 } from '@/adapters/json-io';
 import { type PhasePlan, type PlanZone, PhaseFormat } from '@/engine/phases';
 import type {
+  ConditionLevels,
   League,
   LeagueWrapper,
   Manifest,
@@ -189,8 +190,16 @@ export function parseManifestRecord(text: string): Manifest {
   };
 }
 
-/** The league and its Instances in the file shape: the body of a wrapper
- * file, and one item of a league file (Task 145). */
+/** A copy of the condition levels that are not 0 (Task 225), or no field
+ * when every team is at level 0. A league with no level then writes the
+ * same file as before the condition. */
+function conditionsCopy(conditions: ConditionLevels | undefined): {
+  conditions?: ConditionLevels;
+} {
+  const kept = Object.entries(conditions ?? {}).filter(([, level]) => level !== 0);
+  return kept.length > 0 ? { conditions: Object.fromEntries(kept) } : {};
+}
+
 /** The league fields of a file, for a standalone league and for a league
  * of a Season (Task 209). */
 function mapLeagueToFile(league: League): SavedWrapperLeague {
@@ -203,6 +212,7 @@ function mapLeagueToFile(league: League): SavedWrapperLeague {
     lastModifiedByInstallation: league.lastModifiedByInstallation,
     plans: league.plans.map(planCopy),
     phases: league.phases.map(phaseToFile),
+    ...conditionsCopy(league.conditions),
   };
 }
 
@@ -216,9 +226,12 @@ function mapLeagueFromFile(league: SavedWrapperLeague): League {
     lastModifiedByInstallation: league.lastModifiedByInstallation,
     plans: league.plans.map(planCopy),
     phases: league.phases.map(phaseFromFile),
+    ...conditionsCopy(league.conditions),
   };
 }
 
+/** The league and its Instances in the file shape: the body of a wrapper
+ * file, and one item of a league file (Task 145). */
 export function leagueToFile(wrapper: LeagueWrapper): SavedLeagueEntry {
   return {
     uuid: wrapper.uuid,
@@ -264,6 +277,7 @@ function copyPlayoff(playoff: Playoff | SavedPlayoff): Playoff {
     team2Uuid: playoff.team2Uuid,
     rules: { ...playoff.rules },
     ...(playoff.result ? { result: structuredClone(playoff.result) } : {}),
+    ...conditionsCopy(playoff.conditions),
   };
 }
 

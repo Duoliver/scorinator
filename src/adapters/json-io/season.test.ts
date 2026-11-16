@@ -298,3 +298,69 @@ describe('parseSeasonFile checks (Task 209 choices 2 to 4)', () => {
     );
   });
 });
+
+describe('the condition levels of a Season (Task 225, US-14.2, US-14.3)', () => {
+  it('gives one Season team its own level in each league', () => {
+    const text = seasonText((raw) => {
+      raw.content.leagues[0].conditions = { [SALT_MARSH]: 2 };
+      raw.content.leagues[1].conditions = { [SALT_MARSH]: -2, [PORTO]: 1 };
+    });
+    const file = parseSeasonFile(text);
+    expect(file.content.leagues[0].conditions).toEqual({ [SALT_MARSH]: 2 });
+    expect(file.content.leagues[1].conditions).toEqual({
+      [SALT_MARSH]: -2,
+      [PORTO]: 1,
+    });
+    expect(parseSeasonFile(serializeSeasonFile(file))).toEqual(file);
+  });
+
+  it('rejects a level for a roster team that is not in the league', () => {
+    const text = seasonText(
+      (raw) => (raw.content.leagues[0].conditions = { [PORTO]: 1 })
+    );
+    expect(() => parseSeasonFile(text)).toThrow(
+      'A Season file is not valid: league 1: the league has a condition for a team that is not in the league.'
+    );
+  });
+
+  it('gives the same playoff levels after a round trip', () => {
+    const text = seasonText(
+      (raw) => (raw.content.playoffs[0].conditions = { [SALT_MARSH]: 1, [PORTO]: -2 })
+    );
+    const file = parseSeasonFile(text);
+    expect(file.content.playoffs[0].conditions).toEqual({
+      [SALT_MARSH]: 1,
+      [PORTO]: -2,
+    });
+    expect(parseSeasonFile(serializeSeasonFile(file))).toEqual(file);
+  });
+
+  it('reads a playoff with no levels, and drops a level 0', () => {
+    expect('conditions' in parseSeasonFile(seasonText()).content.playoffs[0]).toBe(
+      false
+    );
+    const text = seasonText(
+      (raw) => (raw.content.playoffs[0].conditions = { [SALT_MARSH]: 0 })
+    );
+    expect('conditions' in parseSeasonFile(text).content.playoffs[0]).toBe(false);
+  });
+
+  it.each<[string, unknown, string]>([
+    ['a list', [], 'playoff 1 has no valid conditions.'],
+    [
+      'a level of -3',
+      { [PORTO]: -3 },
+      'playoff 1 has a condition level that is not -2 to 2.',
+    ],
+    [
+      'a roster team that is not in the playoff',
+      { [HARBORVIEW]: 1 },
+      'playoff 1 has a condition for a team that is not in the playoff.',
+    ],
+  ])('rejects playoff conditions with %s', (_name, conditions, message) => {
+    const text = seasonText((raw) => (raw.content.playoffs[0].conditions = conditions));
+    expect(() => parseSeasonFile(text)).toThrow(
+      `A Season file is not valid: ${message}`
+    );
+  });
+});

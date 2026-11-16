@@ -3,7 +3,7 @@ import type { GroupBye, Legs, PhaseFormat, PhasePlan } from '@/engine/phases';
 import type { Bye, PhaseFixture } from '@/engine/round-robin';
 import type { MatchResult, PointsConfig } from '@/engine/standings';
 import type { TieResult, TieRules } from '@/engine/tiebreak';
-import type { Tier } from '@/engine/tier-ovr';
+import type { ConditionLevel, Tier } from '@/engine/tier-ovr';
 
 // ---------------------------------------------------------------------------
 // MVP2 database files (Task 106): `manifest.json` and `wrapper-{uuid}.json`.
@@ -147,7 +147,14 @@ export interface SavedWrapperLeague extends SavedProvenance {
   plans: SavedPhasePlan[];
   /** The started phases only, in order. */
   phases: SavedPhase[];
+  /** The condition levels that are not 0 (Task 225). */
+  conditions?: SavedConditions;
 }
+
+/** The condition level of each team, by Blueprint UUID (Task 225). A team
+ * with no entry is at level 0. The field keeps format version 5, because a
+ * file with no field reads as all level 0. */
+export type SavedConditions = Record<string, ConditionLevel>;
 
 /** One league with its Instances: the body of a wrapper file, and one item
  * of a league file (Task 145). */
@@ -178,6 +185,8 @@ export interface SavedPlayoff {
   team2Uuid: string;
   rules: TieRules;
   result?: TieResult<string>;
+  /** The condition levels of the playoff that are not 0 (Task 225). */
+  conditions?: SavedConditions;
 }
 
 export interface SavedSeason extends SavedProvenance {

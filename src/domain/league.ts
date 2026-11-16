@@ -2,6 +2,7 @@ import type { BracketTieResult } from '@/engine/bracket';
 import type { GroupBye, Legs, PhaseFormat, PhasePlan } from '@/engine/phases';
 import type { Bye, PhaseFixture } from '@/engine/round-robin';
 import type { MatchResult, PointsConfig } from '@/engine/standings';
+import type { ConditionLevel } from '@/engine/tier-ovr';
 import type { Provenance } from './provenance';
 
 /** The format of a started phase (US-01.2). The legs of a round robin or
@@ -84,6 +85,10 @@ export type Phase = ScheduledPhase | BracketPhase;
  * - `phases` holds the started phases only, in order. "Create league"
  *   builds phase 1, and each later phase builds at its own start (US-07.3).
  *   The current phase is the last one.
+ * - `conditions` holds the condition level of each team, by Blueprint UUID
+ *   (US-14.2). A team with no entry is at level 0. The level lives on the
+ *   league, not on the Instance, because a Season team has one Instance
+ *   and a level in each of its leagues (Task 225 choice 1).
  */
 export interface League extends Provenance {
   uuid: string;
@@ -92,4 +97,9 @@ export interface League extends Provenance {
   points: PointsConfig;
   plans: PhasePlan[];
   phases: Phase[];
+  conditions?: ConditionLevels;
 }
+
+/** The condition level of each team, by Blueprint UUID (US-14.1). A team
+ * with no entry is at level 0. */
+export type ConditionLevels = Record<string, ConditionLevel>;

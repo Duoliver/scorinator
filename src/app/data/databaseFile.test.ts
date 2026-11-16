@@ -5,7 +5,7 @@ import {
   type BracketTieResult,
 } from '@/engine/bracket';
 import { createSeededRng } from '@/engine/rng';
-import type { LeagueWrapper, Manifest } from '@/domain';
+import type { LeagueWrapper, Manifest, SeasonWrapper } from '@/domain';
 import {
   blueprint,
   HARBORVIEW,
@@ -319,5 +319,67 @@ describe('the Season wrapper map (Task 209)', () => {
     expect(() => parseSeasonWrapper(serializeLeagueWrapper(leagueWrapper()))).toThrow(
       'A Season file is not valid:'
     );
+  });
+});
+
+describe('the condition levels (Task 225, US-14.2, US-14.3)', () => {
+  it('keeps the levels of a league after a round trip', () => {
+    const base = leagueWrapper();
+    const wrapper: LeagueWrapper = {
+      ...base,
+      content: { ...base.content, conditions: { [SALT_MARSH]: 2, [HARBORVIEW]: -1 } },
+    };
+    expect(parseLeagueWrapper(serializeLeagueWrapper(wrapper))).toEqual(wrapper);
+  });
+
+  it('writes only the levels that are not 0', () => {
+    const base = leagueWrapper();
+    const wrapper: LeagueWrapper = {
+      ...base,
+      content: { ...base.content, conditions: { [SALT_MARSH]: 0, [HARBORVIEW]: 1 } },
+    };
+    const file = JSON.parse(serializeLeagueWrapper(wrapper));
+    expect(file.content.conditions).toEqual({ [HARBORVIEW]: 1 });
+  });
+
+  it('writes the same file as before for a league with all levels at 0', () => {
+    const base = leagueWrapper();
+    const zero: LeagueWrapper = {
+      ...base,
+      content: { ...base.content, conditions: { [SALT_MARSH]: 0 } },
+    };
+    expect(serializeLeagueWrapper(zero)).toBe(serializeLeagueWrapper(base));
+    expect('conditions' in JSON.parse(serializeLeagueWrapper(base)).content).toBe(
+      false
+    );
+  });
+
+  it('keeps the levels of a Season league and of a playoff after a round trip', () => {
+    const base = seasonWrapper();
+    const [league] = base.content.leagues;
+    const wrapper: SeasonWrapper = {
+      ...base,
+      content: {
+        ...base.content,
+        leagues: [{ ...league, conditions: { [SALT_MARSH]: -2 } }],
+        playoffs: [
+          {
+            uuid: testUuid(0xd1),
+            name: 'Supertaça',
+            team1Uuid: SALT_MARSH,
+            team2Uuid: HARBORVIEW,
+            rules: {
+              format: 'single-match',
+              awayGoals: false,
+              playsAet: true,
+              method: 'penalties',
+              homeAdvantage: true,
+            },
+            conditions: { [HARBORVIEW]: 1 },
+          },
+        ],
+      },
+    };
+    expect(parseSeasonWrapper(serializeSeasonWrapper(wrapper))).toEqual(wrapper);
   });
 });

@@ -5,6 +5,7 @@ import {
   isNonBlankString,
   isRecord,
   readFileHeader,
+  readConditions,
   readInstance,
   readLeague,
   readList,
@@ -92,16 +93,17 @@ function readPlayoff(
     failSeason(`${label} has the same team as Team 1 and Team 2.`);
   }
   const rules = readTieRules(value.rules, label, failSeason);
+  const teams = new Set([value.team1Uuid, value.team2Uuid]);
   const playoff: SavedPlayoff = {
     uuid: value.uuid,
     name: value.name,
     team1Uuid: value.team1Uuid,
     team2Uuid: value.team2Uuid,
     rules,
+    ...readConditions(value.conditions, teams, label, 'playoff', failSeason),
   };
   if (value.result === undefined) return playoff;
   if (!isRecord(value.result)) failSeason(`${label} result is not an object.`);
-  const teams = new Set([value.team1Uuid, value.team2Uuid]);
   return {
     ...playoff,
     result: readTieOutcome(

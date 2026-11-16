@@ -20,6 +20,7 @@ export { isMvp1File } from './mvp1';
 export { DATABASE_FORMAT_VERSION } from './types';
 export type {
   SavedBlueprint,
+  SavedConditions,
   SavedBlueprintFile,
   SavedInstance,
   SavedLeagueEntry,

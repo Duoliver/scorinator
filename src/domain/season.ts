@@ -1,5 +1,5 @@
 import type { TieResult, TieRules } from '@/engine/tiebreak';
-import type { League } from './league';
+import type { ConditionLevels, League } from './league';
 import type { Provenance } from './provenance';
 
 /**
@@ -18,7 +18,8 @@ export interface SeasonLeague extends League {
  * user plays it. The UUID keys the playoff on a screen, and can link it to
  * a league later (Task 207 choice 4). The teams are "Team 1" and "Team 2",
  * not home and away: Team 1 plays the first leg at home, and Team 2 the
- * second (Task 217 choices 4 and 5).
+ * second (Task 217 choices 4 and 5). `conditions` holds the level of each
+ * team for this playoff only (US-14.3). A team with no entry is at level 0.
  */
 export interface Playoff {
   uuid: string;
@@ -27,6 +28,7 @@ export interface Playoff {
   team2Uuid: string;
   rules: TieRules;
   result?: TieResult<string>;
+  conditions?: ConditionLevels;
 }
 
 /**

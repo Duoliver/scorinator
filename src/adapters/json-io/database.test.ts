@@ -851,3 +851,65 @@ describe('the Season rows of the manifest (Task 209)', () => {
     );
   });
 });
+
+describe('the condition levels of a league (Task 225, US-14.2)', () => {
+  it('gives the same levels after a round trip', () => {
+    const text = wrapperText(
+      (raw) => (raw.content.conditions = { [SALT_MARSH]: 2, [HARBORVIEW]: -1 })
+    );
+    const wrapper = parseWrapper(text);
+    expect(wrapper.content.conditions).toEqual({ [SALT_MARSH]: 2, [HARBORVIEW]: -1 });
+    expect(parseWrapper(serializeWrapper(wrapper))).toEqual(wrapper);
+  });
+
+  it('reads a league with no levels, with no "conditions" field', () => {
+    expect('conditions' in parseWrapper(wrapperText()).content).toBe(false);
+  });
+
+  it('reads a version 4 file with no levels', () => {
+    const text = wrapperText((raw) => (raw.formatVersion = 4));
+    expect('conditions' in parseWrapper(text).content).toBe(false);
+  });
+
+  it('drops a level 0, and an empty map', () => {
+    const zero = wrapperText(
+      (raw) => (raw.content.conditions = { [SALT_MARSH]: 0, [HARBORVIEW]: 1 })
+    );
+    expect(parseWrapper(zero).content.conditions).toEqual({ [HARBORVIEW]: 1 });
+    const allZero = wrapperText(
+      (raw) => (raw.content.conditions = { [SALT_MARSH]: 0 })
+    );
+    expect('conditions' in parseWrapper(allZero).content).toBe(false);
+    const empty = wrapperText((raw) => (raw.content.conditions = {}));
+    expect('conditions' in parseWrapper(empty).content).toBe(false);
+  });
+
+  it.each<[string, unknown, string]>([
+    ['a list', [], 'the league has no valid conditions.'],
+    ['a text', 'peak', 'the league has no valid conditions.'],
+    ['null', null, 'the league has no valid conditions.'],
+    [
+      'a level of 3',
+      { [SALT_MARSH]: 3 },
+      'the league has a condition level that is not -2 to 2.',
+    ],
+    [
+      'a level of 0.5',
+      { [SALT_MARSH]: 0.5 },
+      'the league has a condition level that is not -2 to 2.',
+    ],
+    [
+      'a level as text',
+      { [SALT_MARSH]: '1' },
+      'the league has a condition level that is not -2 to 2.',
+    ],
+    [
+      'a team that is not in the league',
+      { [OTHER_LEAGUE]: 1 },
+      'the league has a condition for a team that is not in the league.',
+    ],
+  ])('rejects conditions with %s', (_name, conditions, message) => {
+    const text = wrapperText((raw) => (raw.content.conditions = conditions));
+    expect(() => parseWrapper(text)).toThrow(`A league file is not valid: ${message}`);
+  });
+});

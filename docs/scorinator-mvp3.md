@@ -14,7 +14,7 @@ The epic numbers go on from MVP2, which ends at epic 12, so the story IDs stay u
 |---|---|
 | 13. Season | C1, C2, C3, C4, C5 (Must), C6 (Should) |
 | 14. Team condition | C10 (Must) |
-| 15. Teams module | C36, C44 (Must), C7 (Should), C11, C12 (Could) |
+| 15. Teams module | C44 (Must), C36, C7 (Should), C11, C12 (Could) |
 | 16. League and Season lists | C21, C45, C46 (Must), C23 (Should), C22 (Could) |
 | 17. Brackets and phases | C25, C27, C29 (Should) |
 | 18. Debug mode | C16 (Should) |
@@ -42,7 +42,7 @@ The epic numbers go on from MVP2, which ends at epic 12, so the story IDs stay u
 
 ### Teams module
 
-- **Blueprint collections** (C36): see `scorinator-future-features.md` §21 for the first notes.
+- **Blueprint collections** (C36, Should): see `scorinator-future-features.md` §21 for the first notes. *(Changed on 2026-11-16, Task 259, with the user's approval. C36 was a Must item.)*
 - A **search** on the Teams screen (C44).
 - **A custom team colour** (C7, Should): a "Colour" modal, opened from the colour field of a drawer. Row 1: the current colour and the selected colour. Row 2: the palette swatches. Row 3: a hex field and RGB sliders, kept in sync. "Cancel" and "OK". This needs a `Slider` primitive in `design-system/`. *(Changed on 2026-11-12, Task 198, with the user's approval.)*
 - Could: copy the Instances of a league to the database, as a new Blueprint or over an existing one (C11). Restore a deleted Blueprint from a league (C12, future features §11).

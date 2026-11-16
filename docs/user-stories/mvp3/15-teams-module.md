@@ -2,7 +2,7 @@
 
 Source: [`docs/scorinator-mvp3.md`](/docs/scorinator-mvp3.md) §0 Scope, §1 Teams module. Refined in [Task 198](/docs/tasks/198-refine-teams-module.md), from the user's answers in four rounds (2026-11-12). The user agreed all stories on 2026-11-12.
 
-Items: C36, C44 (Must), C7 (Should), from [Task 195](/docs/tasks/195-mvp3-scope.md). C11 and C12 (Could) have no stories: the user did not ask for them (2026-11-12).
+Items: C44 (Must), C36, C7 (Should), from [Task 195](/docs/tasks/195-mvp3-scope.md). C36 was a Must item until 2026-11-16: Task 259 moved collections (US-15.1 to US-15.5) to Should, out of the build. C11 and C12 (Could) have no stories: the user did not ask for them (2026-11-12).
 
 **Terms used in this file:**
 
@@ -34,6 +34,8 @@ As a user, I want to create collections of teams, so that I find teams faster, t
 
 **Notes:** answers of rounds 1 and 2. The UUID follows the MVP2 identity rule: every exportable entity has one. An empty collection, the confirm on a disband, and the removal on a Blueprint delete are Claude choices. The user agreed them on 2026-11-12.
 
+**Build:** not approved. Collections (C36) moved from Must to Should on 2026-11-16 (Task 259). The story stays Agreed for a later approval.
+
 ---
 
 ### US-15.2: add and remove the teams of a collection
@@ -55,6 +57,8 @@ As a user, I want to put teams into collections, and take them out, so that each
 
 **Notes:** answers of rounds 1 to 3.
 
+**Build:** not approved. Collections (C36) moved from Must to Should on 2026-11-16 (Task 259). The story stays Agreed for a later approval.
+
 ---
 
 ### US-15.3: the Teams and Collections tabs
@@ -74,6 +78,8 @@ As a user, I want the Teams screen to show my teams and my collections in two ta
 
 **Notes:** answers of rounds 2 and 3. The team count and the content of the detail are Claude choices. The user agreed them on 2026-11-12.
 
+**Build:** not approved. Collections (C36) moved from Must to Should on 2026-11-16 (Task 259). The story stays Agreed for a later approval.
+
 ---
 
 ### US-15.4: collections in the "Add teams" dialog
@@ -92,6 +98,8 @@ As a user, I want to use my collections when I add teams to a league, so that I 
 - [ ] The Season "Teams" tab does not group its roster by collection.
 
 **Notes:** answers of rounds 1 to 3.
+
+**Build:** not approved. Collections (C36) moved from Must to Should on 2026-11-16 (Task 259). The story stays Agreed for a later approval.
 
 ---
 
@@ -113,6 +121,8 @@ As a user, I want my collections to go into my exports, so that I keep them, or 
 
 **Notes:** answers of rounds 1 and 2. The "(2)" rule from US-13.11, and the teams that exist after the import, are Claude choices. The user agreed them on 2026-11-12.
 
+**Build:** not approved. Collections (C36) moved from Must to Should on 2026-11-16 (Task 259). The story stays Agreed for a later approval.
+
 ---
 
 ### US-15.6: search the Teams screen
@@ -124,10 +134,10 @@ As a user, I want to search my teams, so that I find one team in a long list.
 
 **Acceptance criteria:**
 
-- [ ] The "Teams" tab has a search field.
+- [ ] The Teams screen has a search field. *(Changed on 2026-11-16, Task 259. It said the "Teams" tab: the tabs of US-15.3 are not approved.)*
 - [ ] The search matches the name and the Location, as the "Add teams" search does today. It ignores case.
 - [ ] The list shows only the teams that match. An empty field shows all teams.
-- [ ] Every team search matches the same fields: the Teams tab, the "Add teams" dialog, and the Season roster dialog.
+- [ ] Every team search matches the same fields: the Teams screen, the "Add teams" dialog, and the Season roster dialog.
 
 **Out of scope:** a filter and a sort (§35). A search on the slug, the trigrams, or the collection names (§38).
 
@@ -168,7 +178,7 @@ As a user, I want the teams list in pages, so that a long list stays easy to rea
 
 **Acceptance criteria:**
 
-- [ ] The "Teams" tab shows the Blueprints in pages of 20.
+- [ ] The Teams screen shows the Blueprints in pages of 20. *(Changed on 2026-11-16, Task 259. It said the "Teams" tab.)*
 - [ ] The page controls have "Previous", "Next", and the page numbers.
 - [ ] The search (US-15.6) looks through all the Blueprints. Its results show in pages of 20 too.
 - [ ] A new search goes back to page 1.

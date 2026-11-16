@@ -15,10 +15,12 @@ Earlier logs are archived and read only. Read them when a task needs history: a 
 
 - Season (C1 to C5): US-13.1 to US-13.9, and US-13.11.
 - Team condition (C10): US-14.1 to US-14.4.
-- Teams module (C36, C44): US-15.1 to US-15.6, and US-15.8.
+- Teams module (C44): US-15.6 and US-15.8.
 - League and Season lists (C21, C45, C46): US-16.1 to US-16.5.
 
-Not approved for the build: the MVP3 Should items (US-13.10, US-15.7, C23, and epics 17 to 19), the MVP3 Could items, and MVP4. Their refinement stays allowed. Do not build anything from them. This line is the single source of truth for scope. If it does not name an item, treat the item as not approved, even when a task description elsewhere seems to imply more.
+Not approved for the build: the MVP3 Should items (US-13.10, US-15.1 to US-15.5, US-15.7, C23, C36, and epics 17 to 19), the MVP3 Could items, and MVP4. Their refinement stays allowed. Do not build anything from them. This line is the single source of truth for scope. If it does not name an item, treat the item as not approved, even when a task description elsewhere seems to imply more.
+
+*(Changed on 2026-11-16, Task 259. Collections (C36, US-15.1 to US-15.5) moved from Must to Should, out of the build.)*
 
 ---
 
@@ -75,15 +77,15 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 230 | The team modal: the read-only base, the control, "Cancel" and "Save", "Operation cancelled". It opens from six places of League Detail, and from the Season Teams tab with no control | `features/components/` | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M3. US-14.2. Depends on 223, 226, 227. |
 | 231 | The League Detail Teams tab | `features/leagues` | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M3. US-14.2. Depends on 223, 226, 227. |
 | 232 | Smoke check M3 | — | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M3. Depends on 228 to 231. |
-| 233 | Demo: the Teams screen tabs, the Collections tab, the collection detail, the Collections modal, and the "Add teams" dialog with collections | `docs/design-reference/MVP3/` | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M4. US-15.1 to 15.4, US-15.6, US-15.8. Depends on 232. |
-| 234 | Collections in the domain and the files: the type with UUID and provenance, the manifest, the teams export, the database zip, the import plan | `domain/`, `adapters/json-io`, `engine/identity` | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M4. US-15.1, US-15.5. Depends on 208. |
-| 235 | Collection actions: create, rename, disband, add and remove teams, the Blueprint delete, the import | `app/state` | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M4. US-15.1, US-15.2, US-15.5. Depends on 234. |
+| 233 | Demo: the search field and the page controls of the Teams screen | `docs/design-reference/MVP3/` | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M4. US-15.6, US-15.8. Depends on 232. Collections cut (Task 259). |
+| 234 | Collections in the domain and the files: the type with UUID and provenance, the manifest, the teams export, the database zip, the import plan | `domain/`, `adapters/json-io`, `engine/identity` | ❌ Cancelled |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | Task 259: collections (C36) are a Should item now. |
+| 235 | Collection actions: create, rename, disband, add and remove teams, the Blueprint delete, the import | `app/state` | ❌ Cancelled |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | Task 259: collections (C36) are a Should item now. |
 | 236 | A pages primitive: "Previous", "Next", and the page numbers | `design-system/` | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M4. US-15.8. No dependency. |
 | 237 | One team search for the three places, and the page slice | `features/components/` | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M4. US-15.6, US-15.8. No dependency. |
-| 238 | The Teams tab: the search and the pages | `features/teams` | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M4. US-15.3, US-15.6, US-15.8. Depends on 233, 236, 237. |
-| 239 | The Collections tab, the collection detail, and the Collections modal of the drawer | `features/teams`, `features/components/` | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M4. US-15.1, US-15.2, US-15.3. Depends on 233, 235, 238. |
-| 240 | Collections in the "Add teams" dialog and in the Season roster dialog | `features/` | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M4. US-15.4, US-15.6. Depends on 233, 235, 237. |
-| 241 | Smoke check M4 | — | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M4. Depends on 239, 240. |
+| 238 | The Teams screen: the search and the pages | `features/teams` | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M4. US-15.6, US-15.8. Depends on 233, 236, 237. |
+| 239 | The Collections tab, the collection detail, and the Collections modal of the drawer | `features/teams`, `features/components/` | ❌ Cancelled |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | Task 259: collections (C36) are a Should item now. |
+| 240 | Collections in the "Add teams" dialog and in the Season roster dialog | `features/` | ❌ Cancelled |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | Task 259: collections (C36) are a Should item now. |
+| 241 | Smoke check M4 | — | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M4. Depends on 238. |
 | 242 | Demo: the league card menu, the rename dialog, the dashboard search, and the Season export and import on the File screen | `docs/design-reference/MVP3/` | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M5. US-13.11, US-16.2 to 16.4. Depends on 241. |
 | 243 | The unique league name in its container: the check, the Details step block, "(2)" on a league import | `app/state`, `features/leagues` | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M5. US-16.1. Depends on 208, 216. |
 | 244 | Rename and delete a league in the store, in both containers. The file goes at the next save | `app/state` | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M5. US-16.2, US-16.3. Depends on 216. |
@@ -101,6 +103,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 256 | The Seasons module as the main screen, in place of Leagues | `app/` | ✅ Done | 2026-11-15 | 2026-11-15 | [256](/docs/tasks/256-seasons-start-screen.md) | Task created by User - 2026-11-15. Layout tweak before M3. Refactor: no change. |
 | 257 | The Season Teams tab on a narrow screen: one card for each roster team, as Task 255 | `features/seasons` | ✅ Done | 2026-11-15 | 2026-11-15 | [257](/docs/tasks/257-season-roster-mobile.md) | Task created by User - 2026-11-15. Layout tweak before M3. Refactor: no change. Shared-CSS note in the task file. |
 | 258 | Tighter spacing on the league cards, standalone and in a Season: padding `--space-3`, gap `--space-2` | `features/components/`, `design-system/` | ✅ Done | 2026-11-15 | 2026-11-15 | [258](/docs/tasks/258-league-card-spacing.md) | Task created by User - 2026-11-15. The user's Card padding scale change only. The user closed it. |
+| 259 | Take collections out of M4, and park them with the MVP3 Should and Could items | `PROGRESS.md`, `docs/` | ✅ Done | 2026-11-16 | 2026-11-16 | [259](/docs/tasks/259-park-collections.md) | Task created by User - 2026-11-16. C36 is Should now. Tasks 234, 235, 239, 240 cancelled. The user reviewed it. |
 
 **Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input, see Open Questions) · 🟩 Review · 🟦 Refactor (the pass, or its review: the Notes say which) · ✅ Done · ❌ Cancelled (the reason is in the Notes column)
 
@@ -145,6 +148,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 and MVP2 decisions still apply.** They are in [`docs/archive/mvp1/PROGRESS.md`](/docs/archive/mvp1/PROGRESS.md), [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/), and [`docs/archive/mvp2/PROGRESS.md`](/docs/archive/mvp2/PROGRESS.md). An entry here changes an earlier decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-11-16 (Task 259 — collections out of the build):** The user took collections out of M4. C36 moves from Must to Should. US-15.1 to US-15.5 are not approved, and keep the status Agreed. US-15.3 goes with them: the Teams screen gets no tabs. Tasks 234, 235, 239, and 240 are cancelled. Task 233 demos the search and the pages only. Task 238 builds them on the Teams screen. Task 241 waits for 238. Detail: [Task 259](/docs/tasks/259-park-collections.md).
 
 - **2026-11-15 (Task 256 — the start screen):** The user made the Seasons module the main screen. This changes the start screen of Task 29 (MVP1). The app opens on the Seasons list, for `/` and any unknown path. The sidebar order is Seasons, Leagues, Teams, File. The Leagues dashboard stays at `/leagues`. Detail: [Task 256](/docs/tasks/256-seasons-start-screen.md).
 

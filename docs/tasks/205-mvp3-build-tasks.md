@@ -29,6 +29,7 @@ Turn the 26 approved MVP3 Must stories into build task rows on the `PROGRESS.md`
 - **2026-11-13:** Claude drafted the map: 43 tasks (206 to 248) in five milestones, M1 to M5. A script checked the map: each of the 26 Must stories maps to one build task at least, and no row names US-13.10 or US-15.7. Three module questions (Q1 to Q3) sent.
 - **2026-11-13:** The user agreed the map and the recommendations for Q1 to Q3. Claude added rows 206 to 248 to the status board, and a note on the MVP3 build milestones. Each row links to this file until its task file exists.
 - **2026-11-13:** The user agreed the review: Done.
+- **2026-11-16 (Task 259):** The user took collections (C36) out of the build. US-15.1 to US-15.5 are not approved now. M4 cancels Tasks 234, 235, 239, and 240. Tasks 233, 238, and 241 lose their collection parts. The approved Must stories go from 26 to 21. US-15.6 maps to Tasks 237 and 238 (it named Task 240 too).
 
 ## Build map (Agreed)
 
@@ -80,15 +81,15 @@ Each milestone starts with a demo task and ends with a smoke check task. The scr
 
 | # | Task | Layer | Stories | Depends on |
 |---|---|---|---|---|
-| 233 | Demo: the Teams screen tabs, the Collections tab, the collection detail, the Collections modal, and the "Add teams" dialog with collections | `docs/design-reference/MVP3/` | US-15.1 to 15.4, US-15.6, US-15.8 | 232 |
-| 234 | Collections in the domain and the files: the type with UUID and provenance, the manifest, the teams export, the database zip, the import plan | `domain/`, `adapters/json-io`, `engine/identity` | US-15.1, US-15.5 | 208 |
-| 235 | Collection actions: create, rename, disband, add and remove teams, the Blueprint delete, the import | `app/state` | US-15.1, US-15.2, US-15.5 | 234 |
+| 233 | Demo: the search field and the page controls of the Teams screen | `docs/design-reference/MVP3/` | US-15.6, US-15.8 | 232 |
+| ~~234~~ | Cancelled (Task 259). Collections in the domain and the files | — | ~~US-15.1, US-15.5~~ | — |
+| ~~235~~ | Cancelled (Task 259). Collection actions | — | ~~US-15.1, US-15.2, US-15.5~~ | — |
 | 236 | A pages primitive: "Previous", "Next", and the page numbers | `design-system/` | US-15.8 | — |
 | 237 | One team search for the three places, and the page slice | `features/components/` | US-15.6, US-15.8 | — |
-| 238 | The Teams tab: the search and the pages | `features/teams` | US-15.3, US-15.6, US-15.8 | 233, 236, 237 |
-| 239 | The Collections tab, the collection detail, and the Collections modal of the drawer | `features/teams`, `features/components/` | US-15.1, US-15.2, US-15.3 | 233, 235, 238 |
-| 240 | Collections in the "Add teams" dialog and in the Season roster dialog | `features/` | US-15.4, US-15.6 | 233, 235, 237 |
-| 241 | Smoke check M4 | — | — | 239, 240 |
+| 238 | The Teams screen: the search and the pages | `features/teams` | US-15.6, US-15.8 | 233, 236, 237 |
+| ~~239~~ | Cancelled (Task 259). The Collections tab, the collection detail, the Collections modal | — | ~~US-15.1, US-15.2, US-15.3~~ | — |
+| ~~240~~ | Cancelled (Task 259). Collections in the "Add teams" dialog and the Season roster dialog | — | ~~US-15.4~~ | — |
+| 241 | Smoke check M4 | — | — | 238 |
 
 ### M5: League lists and the Season file
 

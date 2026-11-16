@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Condition setters demo</title>
+<link rel="stylesheet" href="demo.css">
+<style>
+  .list .thead, .list .tr { grid-template-columns: minmax(12rem, 2fr) 5rem 6rem 6rem 7rem; }
+  .list .cond-head, .list .cond-cell { justify-self: center; }
+  .row-actions { display: flex; gap: var(--space-2); justify-content: flex-end; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+  .team-pick { display: flex; align-items: center; gap: var(--space-3); width: 100%; min-width: 0; text-align: left; cursor: pointer; }
+  .team-pick .name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .slot-cond { display: flex; justify-content: center; }
+  .rules { display: flex; flex-direction: column; gap: var(--space-4); }
+</style>
+</head>
+<body>
+<!-- Demo for Task 223 (M3). Stories: US-14.1, US-14.2, US-14.3. Static HTML with fake data. -->
+<div class="shell">
+  <nav class="nav">
+    <div class="brand">Scorinator</div>
+    <a class="nav-item" href="#" aria-current="page">Seasons</a>
+    <a class="nav-item" href="#">Leagues</a>
+    <a class="nav-item" href="#">Teams</a>
+    <a class="nav-item" href="#">File</a>
+  </nav>
+
+  <main class="content">
+    <div class="screen">
+      <div>
+        <nav class="crumbs" aria-label="Breadcrumbs">
+          <a href="#">Seasons</a><span>›</span>
+          <a href="#">Liga Norte 2026-27</a><span>›</span>
+          <span>New league</span>
+        </nav>
+        <div class="title-row"><h1>New league in Liga Norte</h1></div>
+      </div>
+
+      <div class="stepper"><span>Details</span><span>Phases</span><span aria-current="step">Teams</span><span>Review</span></div>
+
+      <div class="section">
+        <div class="section-head">
+          <h2>Teams</h2>
+          <button class="button sm" type="button">+ Add teams</button>
+        </div>
+        <div class="table list" id="wizard-teams"></div>
+        <span class="count">4 teams. A click on a condition opens the control.</span>
+      </div>
+
+      <div class="actions"><button class="button sm" type="button">← Back</button><button class="button primary sm" type="button">Next: Review →</button></div>
+    </div>
+  </main>
+</div>
+
+<dialog class="modal" id="playoff-dialog" aria-labelledby="playoff-title">
+  <form class="modal-panel md" method="dialog">
+    <div class="modal-head">
+      <div>
+        <h2 class="modal-title" id="playoff-title">New playoff</h2>
+        <p class="modal-desc">A one-off tie between two Season teams. It belongs to the Season, not to a league.</p>
+      </div>
+      <button class="close" type="button" aria-label="Close" data-close>✕</button>
+    </div>
+    <div class="field">
+      <label class="label" for="playoff-name">Name</label>
+      <input class="input" id="playoff-name" value="Troféu do Rio">
+    </div>
+    <div class="form-grid">
+      <div class="field">
+        <span class="label" id="team1-label">Team 1</span>
+        <button class="input team-pick" type="button" aria-labelledby="team1-label">
+          <span class="swatch" style="background:#2E7D32"></span><span class="name">Riverside FC</span>
+        </button>
+        <div class="slot-cond" data-slot="0"></div>
+      </div>
+      <div class="field">
+        <span class="label" id="team2-label">Team 2</span>
+        <button class="input team-pick" type="button" aria-labelledby="team2-label">
+          <span class="swatch" style="background:#E53935"></span><span class="name">Ashfield Rovers</span>
+        </button>
+        <div class="slot-cond" data-slot="1"></div>
+      </div>
+    </div>
+    <p class="hint">The condition is for this playoff only.</p>
+    <div class="rules">
+      <div class="seg">
+        <span class="label">Tie format</span>
+        <div class="seg-row">
+          <button type="button" aria-pressed="false">Single match</button>
+          <button type="button" aria-pressed="true">Two-legged</button>
+        </div>
+      </div>
+      <label class="switch"><span class="label">Away goals rule</span><input type="checkbox" checked></label>
+      <label class="switch"><span class="label">Plays AET</span><input type="checkbox" checked></label>
+      <label class="switch"><span class="label">Home advantage</span><input type="checkbox" checked></label>
+    </div>
+    <div class="modal-actions">
+      <button class="button sm" type="button" data-close>Cancel</button>
+      <button class="button primary sm" type="button" data-close>Create playoff</button>
+    </div>
+  </form>
+</dialog>
+
+<aside class="demo-panel" aria-label="Demo controls">
+  <strong>Demo controls (not in the app)</strong>
+  <button class="button sm" type="button" id="open-playoff">Playoff dialog</button>
+</aside>
+
+<script>
+  const $ = (s) => document.querySelector(s);
+  const ICONS = { '-2': '↓', '-1': '↘', '0': '–', '1': '↗', '2': '↑' };
+  const NAMES = { '-2': 'Crisis, level -2', '-1': 'Level -1', '0': 'Level 0', '1': 'Level +1', '2': 'Peak, level +2' };
+  const teams = [
+    { name: 'Porto Velho SC', loc: 'Porto Velho', tri: 'POR', colour: '#1565C0', tier: 'S', ovr: 93, level: 0 },
+    { name: 'Ashfield Rovers', loc: 'Ashfield', tri: 'ASH', colour: '#E53935', tier: 'A', ovr: 86, level: 1 },
+    { name: 'Clube Ferroviário', loc: 'Estação', tri: 'CLU', colour: '#827717', tier: 'C', ovr: 64, level: -1 },
+    { name: 'Estrela Azul', loc: '', tri: 'EST', colour: '#64B5F6', tier: 'D', ovr: 52, level: 0 },
+  ];
+  const playoff = [{ level: 0 }, { level: 2 }];
+  let openPop = null;
+
+  // `ends` shows "Crisis" and "Peak". The playoff dialog has no end labels.
+  function control(level, onPick, ends = true) {
+    const wrap = document.createElement('div');
+    wrap.className = 'cond';
+    wrap.innerHTML = ends
+      ? `<span class="cond-end">Crisis</span><div class="cond-row" role="group" aria-label="Condition"></div><span class="cond-end">Peak</span>`
+      : `<div class="cond-row" role="group" aria-label="Condition"></div>`;
+    const row = wrap.querySelector('.cond-row');
+    for (const value of [-2, -1, 0, 1, 2]) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = ICONS[value];
+      b.setAttribute('aria-label', NAMES[value]);
+      b.title = NAMES[value];
+      b.setAttribute('aria-pressed', String(value === level));
+      b.addEventListener('click', () => onPick(value));
+      row.appendChild(b);
+    }
+    return wrap;
+  }
+
+  // The icon of a row, and its overlay. A pick closes the overlay.
+  function conditionCell(cell, item, rerender) {
+    cell.innerHTML = '';
+    const icon = document.createElement('button');
+    icon.type = 'button';
+    icon.className = 'cond-icon';
+    icon.textContent = ICONS[item.level];
+    icon.setAttribute('aria-label', `Condition: ${NAMES[item.level]}`);
+    icon.setAttribute('aria-expanded', 'false');
+    cell.appendChild(icon);
+    icon.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const wasOpen = openPop && openPop.parentElement === cell;
+      closePop();
+      if (wasOpen) return;
+      const pop = document.createElement('div');
+      pop.className = 'cond-pop below';
+      pop.appendChild(control(item.level, (v) => { item.level = v; closePop(); rerender(); }));
+      pop.addEventListener('click', (ev) => ev.stopPropagation());
+      cell.appendChild(pop);
+      icon.setAttribute('aria-expanded', 'true');
+      openPop = pop;
+    });
+  }
+  function closePop() {
+    if (!openPop) return;
+    openPop.parentElement.querySelector('.cond-icon')?.setAttribute('aria-expanded', 'false');
+    openPop.remove();
+    openPop = null;
+  }
+  document.addEventListener('click', closePop);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && openPop) { e.preventDefault(); closePop(); } });
+
+  function renderWizard() {
+    const box = $('#wizard-teams');
+    box.innerHTML = '<div class="thead"><span>Team</span><span>Trigram</span><span>Tier · OVR</span><span class="cond-head">Condition</span><span></span></div>';
+    teams.forEach((t) => {
+      const row = document.createElement('div');
+      row.className = 'tr';
+      row.innerHTML = `<span class="team-cell"><span class="swatch" style="background:${t.colour}"></span>${t.name}${t.loc ? ` <span class="team-location">${t.loc}</span>` : ''}</span><span class="mono">${t.tri}</span><span class="tier-ovr" aria-label="Tier ${t.tier}, OVR ${t.ovr}"><span class="tier">${t.tier}</span><span class="ovr">${t.ovr}</span></span><span class="cond-cell"></span><span class="row-actions"><button class="button icon" type="button" aria-label="Edit ${t.name}">✎</button><button class="button icon" type="button" aria-label="Switch ${t.name}">⇄</button><button class="button icon" type="button" aria-label="Remove ${t.name}">✕</button></span>`;
+      conditionCell(row.querySelector('.cond-cell'), t, renderWizard);
+      box.appendChild(row);
+    });
+  }
+  // The playoff dialog: the control below each team field, always open.
+  function renderPlayoff() {
+    document.querySelectorAll('#playoff-dialog [data-slot]').forEach((cell) => {
+      const item = playoff[Number(cell.dataset.slot)];
+      cell.innerHTML = '';
+      cell.appendChild(control(item.level, (v) => { item.level = v; renderPlayoff(); }, false));
+    });
+  }
+
+  $('#open-playoff').addEventListener('click', () => $('#playoff-dialog').showModal());
+  document.querySelectorAll('[data-close]').forEach((b) => b.addEventListener('click', () => $('#playoff-dialog').close()));
+  $('#playoff-dialog').addEventListener('cancel', (e) => { if (openPop) { e.preventDefault(); closePop(); } });
+
+  renderWizard();
+  renderPlayoff();
+  if (location.hash === '#playoff') $('#playoff-dialog').showModal();
+</script>
+</body>
+</html>

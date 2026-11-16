@@ -476,3 +476,41 @@ dialog.drawer::backdrop { background: rgba(26, 26, 26, 0.35); }
   font-size: var(--font-size-md); text-transform: uppercase; border-right: var(--border-width) solid var(--color-fg); }
 .stepper span:last-child { border-right: none; }
 .stepper span[aria-current='step'] { background: var(--color-accent); color: var(--color-accent-fg); }
+
+/* ---- M3 demo classes (Task 223) ---------------------------------- */
+
+/* The Tier and OVR box of the roster demo (Task 249). */
+.tier-ovr { justify-self: start; display: inline-flex; border: var(--border-width) solid var(--color-fg);
+  font-family: var(--font-mono); font-size: var(--font-size-md); font-weight: 700; }
+.tier-ovr > span { padding: var(--space-1) var(--space-2); }
+.tier-ovr .tier { background: var(--color-fg); color: var(--color-surface); }
+.tier-ovr .ovr { background: var(--color-surface); color: var(--color-fg); min-width: 2.25rem; text-align: center; }
+
+/* The condition control (US-14.1): "Crisis", five icon buttons, "Peak". */
+.cond { display: inline-flex; align-items: center; gap: var(--space-2); }
+.cond-end { font-family: var(--font-mono); font-size: var(--font-size-sm); color: var(--color-fg-muted); }
+.cond-row { display: flex; border: var(--border-width) solid var(--color-fg); width: fit-content; }
+.cond-row button { width: 2rem; height: 2rem; padding: 0; border: none; border-right: var(--border-width) solid var(--color-fg);
+  background: var(--color-surface); color: var(--color-fg); font-family: var(--font-mono); font-size: var(--font-size-xl);
+  font-weight: 700; cursor: pointer; }
+.cond-row button:last-child { border-right: none; }
+.cond-row button:hover:not(:disabled) { background: var(--color-bg); }
+.cond-row button[aria-pressed='true'] { background: var(--color-accent); color: var(--color-accent-fg); }
+.cond-row button:disabled { cursor: not-allowed; }
+.cond.locked { opacity: 0.5; }
+
+/* The condition icon of a wizard row, and its overlay (US-14.2). */
+.cond-cell { position: relative; }
+.cond-icon { width: 2rem; height: 2rem; padding: 0; border: var(--border-width) solid var(--color-fg);
+  background: var(--color-surface); color: var(--color-fg); font-family: var(--font-mono); font-size: var(--font-size-xl);
+  font-weight: 700; cursor: pointer; box-shadow: var(--shadow-offset-sm); }
+.cond-icon:hover { background: var(--color-fg); color: var(--color-surface); }
+.cond-pop { position: absolute; left: 50%; transform: translateX(-50%); z-index: 3; padding: var(--space-2) var(--space-3);
+  background: var(--color-surface); border: var(--border-width) solid var(--color-fg); box-shadow: var(--shadow-offset-md); }
+.cond-pop.below { top: calc(100% + var(--space-2)); }
+.cond-pop.above { bottom: calc(100% + var(--space-2)); }
+
+/* A team name that opens the team modal. */
+.team-link { border: none; background: none; padding: 0; font: inherit; font-weight: 600; color: inherit;
+  cursor: pointer; text-align: left; }
+.team-link:hover { text-decoration: underline; }

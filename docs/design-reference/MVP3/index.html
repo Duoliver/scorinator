@@ -75,6 +75,36 @@
       <li><strong>A finished Season in League Detail.</strong> A notice, and the scorinate buttons disabled.</li>
     </ol>
   </section>
+  <section class="section" aria-labelledby="m3">
+    <h2 id="m3">M3: Team condition (Task 223)</h2>
+    <p>Stories: US-14.1 to US-14.3. The screens: Tasks 229 to 231.</p>
+    <div class="links">
+      <a class="button sm" href="m3-league-detail.html">League Detail: standings</a>
+      <a class="button sm" href="m3-league-detail.html#teams">Teams tab</a>
+      <a class="button sm" href="m3-league-detail.html#modal">Team modal</a>
+      <a class="button sm" href="m3-league-detail.html#season-modal">Team modal, Season Teams tab</a>
+      <a class="button sm" href="m3-league-detail.html?ended#teams">... league complete</a>
+      <a class="button sm" href="m3-league-detail.html?finished#teams">... Season finished</a>
+      <a class="button sm" href="m3-condition-setters.html">Wizard Teams step</a>
+      <a class="button sm" href="m3-condition-setters.html#playoff">Playoff dialog</a>
+    </div>
+    <h3>Points to review</h3>
+    <p>Round 1 (2026-11-16): the user agreed points 1 to 11, and changed the team modal and the playoff dialog. Round 2: the overlay opens below the icon, and the playoff control is centred under its field.</p>
+    <ol>
+      <li><strong>The place of the tab.</strong> "Teams" is the last tab of League Detail: after "Chart", and after "Bracket" and "Seed List" in a bracket phase.</li>
+      <li><strong>The Teams tab row.</strong> Team and Location, trigram, "Base" (the Tier and OVR box of the roster), and the control at the end side. The head says "Base".</li>
+      <li><strong>The control.</strong> "Crisis" and "Peak" in small grey mono text at the two ends. Five square buttons with the icons ↓ ↘ – ↗ ↑. The current level is green, as in the sketch. A tooltip names the level, for example "Level +1".</li>
+      <li><strong>A change in the tab.</strong> It applies at once, and the header shows the "Unsaved" badge.</li>
+      <li><strong>The team names.</strong> In the standings, the fixtures, and the Teams tab, a name is a button. It underlines on hover, and opens the team modal.</li>
+      <li><strong>The team modal.</strong> From the sketch: a box with the colour, the name, the Location, and the big trigram at the end side. No X (round 1). Below: "Base", the Tier and OVR box, and the control. The footer says "There are unsaved changes" after a change. "Save" is disabled until a change.</li>
+      <li><strong>Cancel.</strong> "Cancel" and Escape close the modal. After a change, the status line at the bottom of the menu says "Operation cancelled". With no change, it says nothing.</li>
+      <li><strong>A complete league.</strong> A notice: "This league is complete. The condition of its teams cannot change." The control is disabled in the tab and in the modal, and the modal says why. A finished Season shows its M2 notice, and the control is disabled.</li>
+      <li><strong>The modal from the Season Teams tab.</strong> No control. A "Leagues" line names the leagues of the team. One "Close" button.</li>
+      <li><strong>The Teams tab on a narrow screen.</strong> One card for each team, as the Teams list of Task 255: the colour, the name, the Tier and OVR, and the trigram, then the control on a line of its own.</li>
+      <li><strong>The wizard Teams step.</strong> From the sketch: a "Condition" column between "Tier · OVR" and the row actions. The icon of the level sits in a square button. A click opens the overlay below the icon, centred on it (round 2). A pick closes the overlay. Escape or a click outside closes it with no change.</li>
+      <li><strong>The playoff dialog.</strong> Changed in round 1: the control sits below each team field, always open, with no "Crisis" and "Peak" labels. Round 2: the control is centred under its field. A hint says: "The condition is for this playoff only."</li>
+    </ol>
+  </section>
 </div>
 </body>
 </html>

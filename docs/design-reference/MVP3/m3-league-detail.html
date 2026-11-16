@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>League Detail condition demo</title>
+<link rel="stylesheet" href="demo.css">
+<style>
+  .standings .thead, .standings .tr { grid-template-columns: 2.5rem minmax(12rem, 1fr) repeat(3, 3rem); }
+  .fixtures .tr { grid-template-columns: 1fr 4rem 1fr; }
+  .fixtures .home { justify-self: end; text-align: right; }
+  .fixtures .score { text-align: center; }
+  .md-head { font-family: var(--font-condensed); font-weight: 700; font-size: var(--font-size-sm); text-transform: uppercase; }
+
+  /* The Teams tab (US-14.2). A container, as the Teams list of Task 255. */
+  .league-teams { container: league-teams / inline-size; }
+  .league-teams .thead, .league-teams .tr { grid-template-columns: minmax(12rem, 2fr) 5rem 6rem minmax(16rem, auto); }
+  .league-teams .cond-col { justify-self: end; }
+  @container league-teams (max-width: 40rem) {
+    .league-teams .thead { display: none; }
+    .league-teams .tr { display: flex; flex-wrap: wrap; align-items: center; column-gap: var(--space-3); row-gap: var(--space-3); }
+    .league-teams .team-col { flex: 1; min-width: 0; }
+    .league-teams .trigram-col { order: 3; }
+    .league-teams .tier-col { order: 2; }
+    .league-teams .cond-col { order: 4; flex-basis: 100%; justify-self: start; }
+  }
+
+  /* The team modal, from the user's sketch. */
+  .team-box { display: flex; align-items: center; gap: var(--space-3);
+    border: var(--border-width) solid var(--color-fg); padding: var(--space-3); }
+  .team-box .team-id { flex: 1; min-width: 0; }
+  .team-box .swatch { width: 2.5rem; height: 2.5rem; }
+  .team-box .team-name { font-family: var(--font-heading); font-weight: 700; font-size: var(--font-size-2xl); }
+  .team-trigram { font-family: var(--font-mono); font-weight: 700; font-size: var(--font-size-4xl); }
+  .team-line { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4); }
+  .team-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3);
+    border-top: var(--border-width) solid var(--color-fg); padding-top: var(--space-4); }
+  .team-foot .modal-actions { margin-left: auto; }
+  .leagues-list { margin: 0; font-size: var(--font-size-lg); }
+</style>
+</head>
+<body>
+<!-- Demo for Task 223 (M3). Stories: US-14.1, US-14.2. Static HTML with fake data. -->
+<div class="shell">
+  <nav class="nav">
+    <div class="brand">Scorinator</div>
+    <a class="nav-item" href="#" aria-current="page">Seasons</a>
+    <a class="nav-item" href="#">Leagues</a>
+    <a class="nav-item" href="#">Teams</a>
+    <a class="nav-item" href="#">File</a>
+    <p class="status-line" id="status" aria-live="polite"></p>
+  </nav>
+  <main class="content">
+    <div class="screen">
+      <div>
+        <nav class="crumbs" aria-label="Breadcrumbs">
+          <a href="#">Seasons</a><span>›</span>
+          <a href="#">Liga Norte 2026-27</a><span>›</span>
+          <span>Primeira Divisão</span>
+        </nav>
+        <div class="header">
+          <div>
+            <div class="title-row"><h1>Primeira Divisão</h1><span class="badge warning" id="unsaved" hidden>Unsaved</span></div>
+            <span class="meta">Round robin (two-way) · 8 teams · Home adv. on · 3/1/0 pts</span>
+          </div>
+          <div class="header-end">
+            <span class="badge dark" id="progress">Round robin · MD 6/14</span>
+            <button class="button sm" type="button">Export ▾</button>
+          </div>
+        </div>
+      </div>
+
+      <p class="notice" id="ended-notice" hidden>This league is complete. The condition of its teams cannot change.</p>
+      <p class="notice" id="finished-notice" hidden>This league is in a finished Season. It is read only. Reopen the Season to change it.</p>
+
+      <div class="tabs-row">
+        <div class="tabs" role="tablist">
+          <button class="tab" type="button" role="tab" aria-selected="true" data-tab="standings">Standings</button>
+          <button class="tab" type="button" role="tab" aria-selected="false" data-tab="fixtures">Fixtures</button>
+          <button class="tab" type="button" role="tab" aria-selected="false" data-tab="chart">Chart</button>
+          <button class="tab" type="button" role="tab" aria-selected="false" data-tab="teams">Teams</button>
+        </div>
+        <div class="actions"><button class="button primary sm" type="button" data-edit>Scorinate MD 7</button></div>
+      </div>
+
+      <section class="tab-panel" data-panel="standings">
+        <div class="table standings" id="standings"></div>
+        <p class="hint">A click on a team name opens the team modal. The fixtures, the group cards, the tie cards, the Seed List, and the Chart legend do the same.</p>
+      </section>
+
+      <section class="tab-panel" data-panel="fixtures" hidden>
+        <span class="md-head">Matchday 6</span>
+        <div class="table fixtures" id="fixtures"></div>
+      </section>
+
+      <section class="tab-panel" data-panel="chart" hidden>
+        <div class="placeholder">The Chart of MVP2. Its legend names open the team modal.</div>
+      </section>
+
+      <section class="tab-panel" data-panel="teams" hidden>
+        <div class="table league-teams" id="teams"></div>
+        <span class="count">8 teams. A change applies at once.</span>
+      </section>
+    </div>
+  </main>
+</div>
+
+<dialog class="modal" id="team-modal" aria-labelledby="team-modal-name">
+  <form class="modal-panel md" method="dialog">
+    <div class="team-box">
+      <span class="swatch" id="tm-swatch"></span>
+      <div class="team-id">
+        <div class="team-name" id="team-modal-name"></div>
+        <span class="team-location" id="tm-location"></span>
+      </div>
+      <span class="team-trigram" id="tm-trigram"></span>
+    </div>
+    <div class="team-line">
+      <span class="label">Base</span>
+      <span class="tier-ovr" id="tm-base"></span>
+      <div id="tm-control"></div>
+    </div>
+    <div id="tm-leagues" hidden>
+      <span class="label">Leagues</span>
+      <p class="leagues-list">Primeira Divisão · Taça Norte</p>
+    </div>
+    <p class="hint" id="tm-locked" hidden>This league is complete. The condition cannot change.</p>
+    <div class="team-foot">
+      <span class="hint" id="tm-dirty" hidden>There are unsaved changes</span>
+      <div class="modal-actions" id="tm-edit-actions">
+        <button class="button sm" type="button" data-cancel>Cancel</button>
+        <button class="button primary sm" type="button" id="tm-save">Save</button>
+      </div>
+      <div class="modal-actions" id="tm-close-actions" hidden>
+        <button class="button sm" type="button" data-cancel>Close</button>
+      </div>
+    </div>
+  </form>
+</dialog>
+
+<aside class="demo-panel" aria-label="Demo controls">
+  <strong>Demo controls (not in the app)</strong>
+  <label><input type="checkbox" id="toggle-ended"> The league is complete</label>
+  <label><input type="checkbox" id="toggle-finished"> The Season is finished</label>
+  <button class="button sm" type="button" id="open-season-modal">Team modal from the Season Teams tab</button>
+  <span>Make the window narrow to see the cards of the Teams tab.</span>
+</aside>
+
+<script>
+  const $ = (s) => document.querySelector(s);
+  const ICONS = { '-2': '↓', '-1': '↘', '0': '–', '1': '↗', '2': '↑' };
+  const NAMES = { '-2': 'Crisis, level -2', '-1': 'Level -1', '0': 'Level 0', '1': 'Level +1', '2': 'Peak, level +2' };
+  const teams = [
+    { name: 'Porto Velho SC', loc: 'Porto Velho', tri: 'POR', colour: '#1565C0', tier: 'S', ovr: 93, level: 0 },
+    { name: 'Ashfield Rovers', loc: 'Ashfield', tri: 'ASH', colour: '#E53935', tier: 'A', ovr: 86, level: 1 },
+    { name: 'Riverside FC', loc: 'Riverside', tri: 'RIV', colour: '#2E7D32', tier: 'A', ovr: 81, level: 0 },
+    { name: 'União Atlética', loc: 'Vila Nova', tri: 'UNI', colour: '#6A1B9A', tier: 'B', ovr: 77, level: -1 },
+    { name: 'Clube Ferroviário', loc: 'Estação', tri: 'CLU', colour: '#827717', tier: 'C', ovr: 64, level: 2 },
+    { name: 'Atlético do Vale', loc: 'Vale', tri: 'ATL', colour: '#F9A825', tier: 'C', ovr: 66, level: 0 },
+    { name: 'Marítimo Norte', loc: 'Porto Norte', tri: 'MAR', colour: '#00838F', tier: 'D', ovr: 55, level: -2 },
+    { name: 'Estrela Azul', loc: '', tri: 'EST', colour: '#64B5F6', tier: 'D', ovr: 52, level: 0 },
+  ];
+  const standings = [[0, 6, 9, 16], [1, 6, 6, 13], [2, 6, 3, 11], [4, 6, 1, 9], [3, 6, -2, 7], [5, 6, -3, 6], [7, 6, -6, 4], [6, 6, -8, 2]];
+  const fixtures = [[0, '2 - 1', 6], [1, '0 - 0', 2], [3, '1 - 3', 4], [5, '2 - 2', 7]];
+  const state = { ended: false, finished: false };
+  const locked = () => state.ended || state.finished;
+
+  const teamLink = (i) => `<button class="team-link" type="button" data-team="${i}">${teams[i].name}</button>`;
+  const tierOvr = (t) => `<span class="tier">${t.tier}</span><span class="ovr">${t.ovr}</span>`;
+
+  function control(level, onPick, disabled) {
+    const wrap = document.createElement('div');
+    wrap.className = 'cond' + (disabled ? ' locked' : '');
+    wrap.innerHTML = `<span class="cond-end">Crisis</span><div class="cond-row" role="group" aria-label="Condition"></div><span class="cond-end">Peak</span>`;
+    const row = wrap.querySelector('.cond-row');
+    for (const value of [-2, -1, 0, 1, 2]) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = ICONS[value];
+      b.setAttribute('aria-label', NAMES[value]);
+      b.title = NAMES[value];
+      b.setAttribute('aria-pressed', String(value === level));
+      b.disabled = disabled;
+      b.addEventListener('click', () => onPick(value));
+      row.appendChild(b);
+    }
+    return wrap;
+  }
+
+  function renderStandings() {
+    $('#standings').innerHTML = '<div class="thead"><span>#</span><span>Team</span><span>P</span><span>GD</span><span>Pts</span></div>' +
+      standings.map(([i, p, gd, pts], n) => `<div class="tr"><span>${n + 1}</span><span class="team-cell"><span class="swatch" style="background:${teams[i].colour}"></span>${teamLink(i)}</span><span>${p}</span><span>${gd > 0 ? '+' + gd : gd}</span><span>${pts}</span></div>`).join('');
+  }
+  function renderFixtures() {
+    $('#fixtures').innerHTML = fixtures.map(([h, s, a]) => `<div class="tr"><span class="home">${teamLink(h)}</span><span class="score">${s}</span><span>${teamLink(a)}</span></div>`).join('');
+  }
+  function renderTeams() {
+    const box = $('#teams');
+    box.innerHTML = '<div class="thead"><span>Team</span><span>Trigram</span><span>Base</span><span class="cond-col">Condition</span></div>';
+    teams.forEach((t, i) => {
+      const row = document.createElement('div');
+      row.className = 'tr';
+      row.innerHTML = `<span class="team-cell team-col"><span class="swatch" style="background:${t.colour}"></span>${teamLink(i)}${t.loc ? ` <span class="team-location">${t.loc}</span>` : ''}</span><span class="mono trigram-col">${t.tri}</span><span class="tier-col"><span class="tier-ovr" aria-label="Tier ${t.tier}, OVR ${t.ovr}">${tierOvr(t)}</span></span><span class="cond-col"></span>`;
+      row.querySelector('.cond-col').appendChild(control(t.level, (v) => { t.level = v; markUnsaved(); renderTeams(); }, locked()));
+      box.appendChild(row);
+    });
+  }
+  function markUnsaved() { $('#unsaved').hidden = false; }
+  function setStatus(text) { $('#status').textContent = text; }
+
+  // The team modal. `seasonView` opens it from the Season Teams tab, with no control.
+  let current = null;
+  let draft = 0;
+  function openModal(i, seasonView = false) {
+    current = teams[i];
+    draft = current.level;
+    $('#tm-swatch').style.background = current.colour;
+    $('#team-modal-name').textContent = current.name;
+    $('#tm-location').textContent = current.loc;
+    $('#tm-trigram').textContent = current.tri;
+    $('#tm-base').innerHTML = tierOvr(current);
+    $('#tm-base').setAttribute('aria-label', `Tier ${current.tier}, OVR ${current.ovr}`);
+    $('#tm-leagues').hidden = !seasonView;
+    $('#tm-locked').hidden = seasonView || !state.ended || state.finished;
+    $('#tm-edit-actions').hidden = seasonView;
+    $('#tm-close-actions').hidden = !seasonView;
+    renderModalControl(seasonView);
+    $('#team-modal').showModal();
+  }
+  function renderModalControl(seasonView) {
+    const slot = $('#tm-control');
+    slot.innerHTML = '';
+    if (!seasonView) slot.appendChild(control(draft, (v) => { draft = v; renderModalControl(false); }, locked()));
+    const dirty = !seasonView && draft !== current.level;
+    $('#tm-dirty').hidden = !dirty;
+    $('#tm-save').disabled = !dirty;
+  }
+  function cancelModal() {
+    const changed = current && draft !== current.level;
+    $('#team-modal').close();
+    if (changed) setStatus('Operation cancelled');
+  }
+  $('#team-modal').addEventListener('cancel', (e) => { e.preventDefault(); cancelModal(); });
+  document.querySelectorAll('[data-cancel]').forEach((b) => b.addEventListener('click', cancelModal));
+  $('#tm-save').addEventListener('click', () => {
+    current.level = draft;
+    $('#team-modal').close();
+    markUnsaved();
+    renderTeams();
+  });
+  document.addEventListener('click', (e) => {
+    const link = e.target.closest('[data-team]');
+    if (link) { setStatus(''); openModal(Number(link.dataset.team)); }
+  });
+  $('#open-season-modal').addEventListener('click', () => openModal(1, true));
+
+  // Tabs.
+  document.querySelectorAll('[data-tab]').forEach((tab) => tab.addEventListener('click', () => selectTab(tab.dataset.tab)));
+  function selectTab(name) {
+    document.querySelectorAll('[data-tab]').forEach((t) => t.setAttribute('aria-selected', String(t.dataset.tab === name)));
+    document.querySelectorAll('[data-panel]').forEach((p) => (p.hidden = p.dataset.panel !== name));
+  }
+
+  // Demo controls.
+  function applyState() {
+    $('#ended-notice').hidden = !state.ended || state.finished;
+    $('#finished-notice').hidden = !state.finished;
+    $('#progress').textContent = state.ended ? 'Complete · MD 14/14' : 'Round robin · MD 6/14';
+    document.querySelectorAll('[data-edit]').forEach((b) => (b.disabled = locked()));
+    renderTeams();
+  }
+  $('#toggle-ended').addEventListener('change', (e) => { state.ended = e.target.checked; applyState(); });
+  $('#toggle-finished').addEventListener('change', (e) => { state.finished = e.target.checked; applyState(); });
+
+  renderStandings();
+  renderFixtures();
+  state.ended = location.search.includes('ended');
+  state.finished = location.search.includes('finished');
+  $('#toggle-ended').checked = state.ended;
+  $('#toggle-finished').checked = state.finished;
+  applyState();
+  if (location.hash === '#teams') selectTab('teams');
+  if (location.hash === '#modal') openModal(1);
+  if (location.hash === '#season-modal') openModal(1, true);
+</script>
+</body>
+</html>

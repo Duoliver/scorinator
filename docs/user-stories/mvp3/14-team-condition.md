@@ -74,7 +74,7 @@ As a user, I want to set the condition of a team in one league, so that its form
 
 - [ ] Each team in a league has its own condition. In a Season, one Season team can have a different condition in each league.
 - [ ] A standalone league and a Season league both have the condition.
-- [ ] The Teams step of the wizard sets the condition of each team. Each team row shows the icon of its level. A click on the icon opens an overlay with the control (US-14.1).
+- [ ] The Teams step of the wizard sets the condition of each team. Each team row shows the icon of its level. A click on the icon opens an overlay with the control (US-14.1), below the icon. *(Changed on 2026-11-16, Task 223 review: the place was open.)*
 - [ ] The user can change the condition at any time while the league runs. After the league ends, the user cannot change it.
 - [ ] The standings, the fixtures, and the bracket do not show the condition directly.
 - [ ] No screen shows the real OVR.
@@ -84,12 +84,12 @@ As a user, I want to set the condition of a team in one league, so that its form
 - [ ] A click on a team name in League Detail opens the team modal. The places: the standings, the group cards, the fixtures, the tie cards, the Seed List, and the Chart legend.
 - [ ] The team modal shows the items of a "Teams" tab row. The base Tier and OVR are read only.
 - [ ] The team modal has "Cancel" and "Save". "Save" applies the new level and closes the modal.
-- [ ] "Cancel", the X, and Escape close the modal and drop the change. If the user changed the level, the status line shows "Operation cancelled".
+- [ ] "Cancel" and Escape close the modal and drop the change. If the user changed the level, the status line shows "Operation cancelled". The modal has no X. *(Changed on 2026-11-16, Task 223 review. It said "Cancel", the X, and Escape.)*
 - [ ] A click on a team name in the Season "Teams" tab opens the team modal with no control. A Season team can be in more than one league.
 - [ ] Could: a click on a team name in the Season "Resume" tab opens the team modal, with the control for the league of that row. The build task decides.
 - [ ] A played match keeps its score. A match scorinated or re-scorinated after the change uses the new real OVR.
 
-**Notes:** Task 197 left the place open: a "Teams" tab or a modal. Task 203 (2026-11-13) gave both, from the notes and the sketches of the user in `docs/14-condition-sketches-and-drafts/`. The modal sketch is a rough idea only. The place of the wizard overlay is for the build task: above or below the current condition, relative to the row or to the condition. The "Teams" tab and the modal show no real OVR, for now. League Detail has these tabs today: Standings, Fixtures, Chart, Bracket, Seed List.
+**Notes:** Task 197 left the place open: a "Teams" tab or a modal. Task 203 (2026-11-13) gave both, from the notes and the sketches of the user in `docs/14-condition-sketches-and-drafts/`. The modal sketch is a rough idea only. The Task 223 review put the wizard overlay below the icon. The "Teams" tab and the modal show no real OVR, for now. League Detail has these tabs today: Standings, Fixtures, Chart, Bracket, Seed List.
 
 ---
 
@@ -102,7 +102,7 @@ As a user, I want to set the condition of each team in a Season playoff, so that
 
 **Acceptance criteria:**
 
-- [ ] The playoff wizard sets the condition of each of the two teams (US-13.7).
+- [ ] The playoff wizard sets the condition of each of the two teams (US-13.7). The control sits below the team field of each team, centred under it, always open, with no "Crisis" and "Peak" labels. *(Changed on 2026-11-16, Task 223 review.)*
 - [ ] The condition of a playoff team is for that playoff only. It does not come from a league of the Season.
 - [ ] The playoff uses the real OVR of each team, with the percentages of US-14.1.
 

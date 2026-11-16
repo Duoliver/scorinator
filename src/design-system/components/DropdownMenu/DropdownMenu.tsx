@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import type { JSX, TargetedKeyboardEvent } from 'preact';
 import { Button } from '@/design-system/components/Button';
+import { getRestingBox, placePopup, type PopupPlace } from '@/design-system/placement';
 import type DropdownMenuProps from './types';
 import type { DropdownMenuAlign, DropdownMenuItem, DropdownMenuTone } from './types';
 import styles from './DropdownMenu.module.css';
@@ -11,68 +12,6 @@ export type {
   DropdownMenuItem,
   DropdownMenuTone,
 };
-
-/** The space between the trigger and the menu (the handoff 26px top below a
- * 22px button), and between the menu and the window edge, in px: the
- * position is a runtime value from the layout. */
-const GAP = 4;
-const EDGE = 8;
-
-interface Place {
-  top: number;
-  left: number;
-}
-
-interface Box {
-  top: number;
-  bottom: number;
-  left: number;
-  right: number;
-}
-
-/** The trigger box without its CSS move. `Button` moves 1px on hover and
- * 2px on a press (the neubrutalist look), so the measured box is off by
- * that much while the pointer is on it. The menu lines up with the button
- * at rest. */
-function restingBox(element: Element): Box {
-  const box = element.getBoundingClientRect();
-  const transform = getComputedStyle(element).transform;
-  let dx = 0;
-  let dy = 0;
-  const matrix = /^matrix\(([^)]+)\)$/.exec(transform);
-  const translate = /translate\(\s*(-?[\d.]+)px,\s*(-?[\d.]+)px\s*\)/.exec(transform);
-  if (matrix) {
-    const values = matrix[1].split(',').map(Number);
-    dx = values[4] ?? 0;
-    dy = values[5] ?? 0;
-  } else if (translate) {
-    dx = Number(translate[1]);
-    dy = Number(translate[2]);
-  }
-  return {
-    top: box.top - dy,
-    bottom: box.bottom - dy,
-    left: box.left - dx,
-    right: box.right - dx,
-  };
-}
-
-/** Below the trigger, or above it when the window has no room below. On
- * the end or the start edge of the trigger. The menu keeps that edge, also
- * near the window edge. It moves in, `EDGE` px from the window edge, only
- * when it would go out of the window. */
-function placeMenu(trigger: Box, menu: DOMRect, align: DropdownMenuAlign): Place {
-  const below = trigger.bottom + GAP;
-  const above = trigger.top - GAP - menu.height;
-  const fitsBelow = below + menu.height <= window.innerHeight - EDGE;
-  const top = fitsBelow || above < EDGE ? below : above;
-  const wanted = align === 'end' ? trigger.right - menu.width : trigger.left;
-  let left = wanted;
-  if (wanted < 0) left = EDGE;
-  else if (wanted + menu.width > window.innerWidth)
-    left = window.innerWidth - menu.width - EDGE;
-  return { top, left };
-}
 
 /** The next enabled item from `from`, in `step` direction, with a wrap.
  * `-1` when no item is enabled. */
@@ -115,7 +54,7 @@ export function DropdownMenu({
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
-  const [place, setPlace] = useState<Place | null>(null);
+  const [place, setPlace] = useState<PopupPlace | null>(null);
 
   // One item with an icon gives every item the icon column, so the labels
   // line up.
@@ -139,7 +78,7 @@ export function DropdownMenu({
     const trigger = triggerButton();
     const menu = menuRef.current;
     if (open && trigger && menu) {
-      setPlace(placeMenu(restingBox(trigger), menu.getBoundingClientRect(), align));
+      setPlace(placePopup(getRestingBox(trigger), menu.getBoundingClientRect(), align));
     } else {
       setPlace(null);
     }

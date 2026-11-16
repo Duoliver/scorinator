@@ -1,0 +1,7 @@
+{
+  "name": "@design-system/popover",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./Popover.tsx",
+  "types": "./Popover.tsx"
+}

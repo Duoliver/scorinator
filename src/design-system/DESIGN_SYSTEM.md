@@ -74,6 +74,8 @@ A team stores its hex value, not a palette entry. After a palette change, an old
 
 `Drawer`, `Modal`, and `ConfirmDialog` render a native `<dialog>` and call `showModal()` on mount. The browser then gives the focus trap, the backdrop, and Escape, and it stacks a later dialog over an earlier one. The caller mounts the overlay to open it and unmounts it to close it. Do not add an `open` prop, and do not write a focus trap.
 
+A popup next to its trigger is not an overlay of this kind: `DropdownMenu`, `Tooltip`, and `Popover` show a `position: fixed` panel, and the page stays usable. `DropdownMenu` and `Popover` share their place rule in `placement.ts`: below the trigger, or above it with no room below, inside the window. A click outside, a scroll, and Escape close them. *(Added on 2026-11-16, Task 268.)*
+
 Open a second overlay from inside the first one, after the first one is open, as a confirm from the team drawer does. Two overlays that mount in the same render open in the wrong order: the parent calls `showModal()` last and lands on top.
 
 While any dialog is open, one rule in `tokens/elements.css` locks the page scroll: `html:has(dialog[open]) { overflow: hidden }`. A `Drawer` scrolls its content inside itself, below a fixed title and close button (Task 170). jsdom has no layout, so only the real app shows a scroll.

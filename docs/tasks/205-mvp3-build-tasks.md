@@ -31,6 +31,7 @@ Turn the 26 approved MVP3 Must stories into build task rows on the `PROGRESS.md`
 - **2026-11-13:** The user agreed the review: Done.
 - **2026-11-16 (Task 259):** The user took collections (C36) out of the build. US-15.1 to US-15.5 are not approved now. M4 cancels Tasks 234, 235, 239, and 240. Tasks 233, 238, and 241 lose their collection parts. The approved Must stories go from 26 to 21. US-15.6 maps to Tasks 237 and 238 (it named Task 240 too).
 - **2026-11-16 (Task 260):** The user moved C29 to Must, as manual seeding of a first-phase bracket (US-17.1 to US-17.3). A new milestone M6, after M5: Tasks 261 to 267. The approved Must stories go from 21 to 24.
+- **2026-11-16 (Task 229):** The wizard overlay needs a popup primitive. The user added Task 268, `Popover` in `design-system/`, to M3. Task 229 waits for it.
 
 ## Build map (Agreed)
 
@@ -73,7 +74,8 @@ Each milestone starts with a demo task and ends with a smoke check task. The scr
 | 226 | Condition actions: set a level, the lock after the league ends, scorination with the real OVR | `app/state` | US-14.1, US-14.2, US-14.3 | 225 |
 | 227 | `SegmentedControl`: the end labels ("Crisis", "Peak") and the level icons | `design-system/` | US-14.1 | — |
 | 228 | The slug list with the level: parse and write, export and import | `adapters/txt`, `app/data` | US-14.4 | 226 |
-| 229 | The condition in the wizards: the icon and the overlay in the Teams step, and in the playoff dialog | `features/` | US-14.2, US-14.3 | 226, 227 |
+| 268 | `Popover`: a popup panel next to its trigger (added 2026-11-16, Task 229 option A) | `design-system/` | US-14.2 | — |
+| 229 | The condition in the wizards: the icon and the overlay in the Teams step, and in the playoff dialog | `features/` | US-14.2, US-14.3 | 226, 227, 268 |
 | 230 | The team modal: the read-only base, the control, "Cancel" and "Save", "Operation cancelled". It opens from six places of League Detail, and from the Season Teams tab with no control | `features/components/` (Q3) | US-14.2 | 223, 226, 227 |
 | 231 | The League Detail Teams tab | `features/leagues` | US-14.2 | 223, 226, 227 |
 | 232 | Smoke check M3 | — | — | 228 to 231 |

@@ -113,6 +113,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 265 | The Seed List drag, the "Back to the draw" button, and the header text | `features/bracket` | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M6. US-17.1, US-17.3. Depends on 261, 264. |
 | 266 | The drag on the bracket tree | `features/bracket` | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M6. US-17.2. Depends on 261, 264. |
 | 267 | Smoke check M6 | — | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M6. Depends on 265, 266. |
+| 268 | `Popover`: a popup panel next to its trigger, with the placement and the close rules of `DropdownMenu` | `design-system/` | 🟦 Refactor | 2026-11-16 |  | [268](/docs/tasks/268-popover.md) | Task created by User - 2026-11-16. M3, from Task 229 (option A). `Popover`, shared `placement.ts`. 17 tests. Refactor pass next. |
 
 **Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input, see Open Questions) · 🟩 Review · 🟦 Refactor (the pass, or its review: the Notes say which) · ✅ Done · ❌ Cancelled (the reason is in the Notes column)
 
@@ -157,6 +158,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 and MVP2 decisions still apply.** They are in [`docs/archive/mvp1/PROGRESS.md`](/docs/archive/mvp1/PROGRESS.md), [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/), and [`docs/archive/mvp2/PROGRESS.md`](/docs/archive/mvp2/PROGRESS.md). An entry here changes an earlier decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-11-16 (Task 268 — the Popover):** The user added Task 268 from Task 229 (option A), and agreed six choices. `Popover` in `design-system/`: `label`, `icon`, `panelLabel`, `align` (`start`, `center`, `end`, default `center`), and `children` as a function of `close`. A square icon `Button` trigger with `aria-haspopup="dialog"`. A non-modal `role="dialog"` panel, not a native `<dialog>`. `DropdownMenu` and `Popover` share `placement.ts`. `DESIGN_SYSTEM.md`: a popup next to its trigger is not a dialog. Escape closes only the `Popover` inside a `Modal`. Detail: [Task 268](/docs/tasks/268-popover.md).
 
 - **2026-11-16 (Task 228 — the slug list with the level):** The user agreed six choices. A line is `slug level`, for example `north-fc +1`. The writer writes the level of every team, with a plus for a positive level, and `0`. The reader takes `-2` to `+2`, also `1` and `2` with no plus. A line with no level is level 0. A line with two parts and a bad level imports the team at level 0 and reports the line in `badLevels`. A line with three parts or more, or a bad slug, throws the line error. The first copy of a slug sets the level. `planSlugListImport` gives a `levels` map. Task 229 puts the levels and the alert in the wizard. Detail: [Task 228](/docs/tasks/228-slug-list-level.md).
 

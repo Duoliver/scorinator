@@ -42,6 +42,9 @@ export { Switch } from './components/Switch';
 export type { SwitchProps } from './components/Switch';
 
 export { DropdownMenu } from './components/DropdownMenu';
+export { Popover } from './components/Popover';
+export type { PopoverProps } from './components/Popover';
+export type { PopupAlign } from './placement';
 export type {
   DropdownMenuAlign,
   DropdownMenuItem,

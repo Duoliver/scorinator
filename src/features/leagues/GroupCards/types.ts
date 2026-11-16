@@ -1,3 +1,4 @@
+import type { JSX } from 'preact';
 import type { TeamInstance } from '@/domain';
 
 export default interface GroupCardsProps {
@@ -22,4 +23,7 @@ export default interface GroupCardsProps {
    * fit problem. On: a team in a group of 2 cannot move, for a phase that
    * has started (Task 181 choice 4). */
   keepTwoPerGroup?: boolean;
+  /** Content at the end of a team row, before its ⋮ menu, such as the
+   * condition button of the wizard (Task 229). League Detail gives none. */
+  renderRowEnd?: (blueprintUuid: string) => JSX.Element;
 }

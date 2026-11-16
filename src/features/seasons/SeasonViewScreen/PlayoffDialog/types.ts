@@ -2,6 +2,7 @@ import type { SinglePickerProps } from '@/design-system';
 import type { TeamInstance } from '@/domain';
 import type { PlayoffInput } from '@/app/state/seasonPlayoffActions';
 import type { TieFormat, TiebreakMethod } from '@/engine/tiebreak';
+import type { ConditionLevel } from '@/engine/tier-ovr';
 
 export default interface PlayoffDialogProps {
   /** The Season roster: a playoff team is a Season team (US-13.7). */
@@ -23,6 +24,9 @@ export interface PlayoffDialogState {
   team1: TeamInstance | undefined;
   team2: TeamInstance | undefined;
   openPicker: (slot: PlayoffSlot) => void;
+  /** Sets the condition level of a slot (US-14.3). The level stays with
+   * the slot when the user picks another team (Task 229 choice 5). */
+  setLevel: (slot: PlayoffSlot, level: ConditionLevel) => void;
   /** The single team picker of one slot while it is open (Task 215 point
    * 4c), or `null`. */
   picker: SinglePickerProps | null;

@@ -1,6 +1,13 @@
+import type { JSX } from 'preact';
 import type { PickerItem, TableColumn } from '@/design-system';
-import type { TeamBlueprint, TeamFields, TeamInstance } from '@/domain';
+import type {
+  ConditionLevels,
+  TeamBlueprint,
+  TeamFields,
+  TeamInstance,
+} from '@/domain';
 import type { PointsConfig } from '@/engine/standings';
+import type { ConditionLevel } from '@/engine/tier-ovr';
 import type { SeasonTeamDrawerProps } from '@/features/components';
 import type { SeasonTeamRows } from '@/features/leagues/LeagueSetupScreen/seasonTeams';
 import type { EditTeamDrawerProps, TeamInstanceEdit } from './EditTeamDrawer';
@@ -21,6 +28,11 @@ export default interface TeamsStepProps {
   onSwitchTeam: (blueprintUuid: string, replacement: TeamBlueprint) => void;
   /** Changes one Instance from the Edit drawer (US-08.4, Task 172). */
   onUpdateTeam: (blueprintUuid: string, edit: TeamInstanceEdit) => void;
+  /** The condition levels of the list, by Blueprint UUID (US-14.2). */
+  conditions: Readonly<ConditionLevels>;
+  onSetCondition: (blueprintUuid: string, level: ConditionLevel) => void;
+  /** Adds the levels of a slug list import (US-14.4). */
+  onAddConditions: (levels: Readonly<ConditionLevels>) => void;
   /** The phase-1 draw as Blueprint UUIDs, when phase 1 is Groups (Task
    * 130). The step then shows group cards in place of the table. */
   groups?: readonly (readonly string[])[] | null;
@@ -64,9 +76,12 @@ export interface TeamsStepState {
   canGoNext: boolean;
   /** A reason the list cannot start a league, as a warning (US-08.6). */
   warning: string | null;
-  /** The slugs that the last slug list import did not find, or `null`. */
-  notFound: string[] | null;
-  closeNotFound: () => void;
+  /** The lines of the notice of the last slug list import: the slugs that it
+   * did not find, and the levels that are not valid. `null` for no notice. */
+  importNotice: string[] | null;
+  closeImportNotice: () => void;
+  /** The condition button of a team: the group cards show it too. */
+  renderCondition: (blueprintUuid: string) => JSX.Element;
   overlay: TeamsStepOverlay;
   pickerItems: PickerItem[];
   pickerSelected: string[];

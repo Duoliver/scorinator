@@ -28,6 +28,7 @@ function Harness({
 }: Partial<typeof summary> & {
   initial?: TeamInstance[];
   onTeams?: (teams: readonly TeamInstance[]) => void;
+  groups?: readonly (readonly string[])[];
 }): JSX.Element {
   const list = useTeamList(initial);
   onTeams?.(list.teams);
@@ -41,6 +42,9 @@ function Harness({
       onRemoveTeam={list.removeTeam}
       onSwitchTeam={list.switchTeam}
       onUpdateTeam={list.updateTeam}
+      conditions={list.conditions}
+      onSetCondition={list.setCondition}
+      onAddConditions={list.addConditions}
     />
   );
 }
@@ -604,6 +608,9 @@ describe('TeamsStep with a phase-1 draw (Task 130)', () => {
         onRemoveTeam={overrides.onRemoveTeam ?? vi.fn()}
         onSwitchTeam={vi.fn()}
         onUpdateTeam={vi.fn()}
+        conditions={{}}
+        onSetCondition={vi.fn()}
+        onAddConditions={vi.fn()}
         groups={draw}
         groupsAdvanceText="Top 1 of each group advance to the Bracket."
         onShuffleGroups={overrides.onShuffleGroups ?? vi.fn()}
@@ -707,5 +714,122 @@ describe('TeamsStep with a phase-1 draw (Task 130)', () => {
     fireEvent.dragStart(row, { dataTransfer });
     fireEvent.drop(groupCard('Group A'), { dataTransfer });
     expect(onMoveTeam).not.toHaveBeenCalled();
+  });
+});
+
+describe('TeamsStep, the condition (US-14.2, Task 229)', () => {
+  const ashfield = instance({
+    blueprintUuid: testUuid(1),
+    slug: 'ashfield-rovers',
+    name: 'Ashfield Rovers',
+  });
+  const conditionButton = (name: string, level: string): HTMLElement =>
+    screen.getByRole('button', { name: `Condition of ${name}: ${level}` });
+
+  it('shows the icon of level 0 for a new team, in a "Condition" column', () => {
+    render(<Harness initial={[ashfield]} />);
+    expect(
+      within(screen.getByRole('table', { name: 'Teams' })).getByRole('columnheader', {
+        name: 'Condition',
+      })
+    ).toBeInTheDocument();
+    expect(conditionButton('Ashfield Rovers', 'Level 0')).toHaveTextContent('–');
+  });
+
+  it('opens the control on a click, and a pick sets the level and closes it', async () => {
+    render(<Harness initial={[ashfield]} />);
+    await userEvent.click(conditionButton('Ashfield Rovers', 'Level 0'));
+    const panel = screen.getByRole('dialog', { name: 'Condition of Ashfield Rovers' });
+    expect(within(panel).getByText('Crisis')).toBeInTheDocument();
+    await userEvent.click(within(panel).getByRole('radio', { name: 'Level +1' }));
+
+    expect(
+      screen.queryByRole('dialog', { name: 'Condition of Ashfield Rovers' })
+    ).toBeNull();
+    expect(conditionButton('Ashfield Rovers', 'Level +1')).toHaveTextContent('↗');
+  });
+
+  it('closes on Escape with no change', async () => {
+    render(<Harness initial={[ashfield]} />);
+    await userEvent.click(conditionButton('Ashfield Rovers', 'Level 0'));
+    await userEvent.keyboard('{Escape}');
+    expect(
+      screen.queryByRole('dialog', { name: 'Condition of Ashfield Rovers' })
+    ).toBeNull();
+    expect(conditionButton('Ashfield Rovers', 'Level 0')).toBeInTheDocument();
+  });
+
+  it('drops the level of a removed team, so it comes back at level 0', async () => {
+    render(<Harness initial={[ashfield]} />);
+    await userEvent.click(conditionButton('Ashfield Rovers', 'Level 0'));
+    await userEvent.click(screen.getByRole('radio', { name: 'Peak, level +2' }));
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Remove Ashfield Rovers' })
+    );
+    await userEvent.click(screen.getByRole('button', { name: '+ Add teams' }));
+    const dialog = screen.getByRole('dialog', { name: 'Add teams' });
+    await userEvent.click(
+      within(dialog).getByRole('button', { name: /Ashfield Rovers/ })
+    );
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Add 1 team' }));
+    expect(conditionButton('Ashfield Rovers', 'Level 0')).toBeInTheDocument();
+  });
+
+  it('shows the icon in each group card row too', () => {
+    const harborview = instance({
+      blueprintUuid: testUuid(2),
+      slug: 'harborview-sc',
+      name: 'Harborview SC',
+    });
+    render(
+      <Harness
+        initial={[ashfield, harborview]}
+        groups={[[testUuid(1)], [testUuid(2)]]}
+      />
+    );
+    const card = screen.getByRole('region', { name: 'Group A' });
+    expect(
+      within(card).getByRole('button', {
+        name: 'Condition of Ashfield Rovers: Level 0',
+      })
+    ).toBeInTheDocument();
+  });
+
+  it('sets the levels of a slug list import, and shows the bad level lines', async () => {
+    vi.spyOn(slugListTxt, 'importSlugListTxt').mockResolvedValue({
+      entries: [
+        { slug: 'old-town', level: 2 },
+        { slug: 'harborview-sc', level: 0 },
+        { slug: 'north-fc', level: 0 },
+      ],
+      badLevels: [
+        { line: 2, text: 'harborview-sc +3' },
+        { line: 4, text: 'south-fc x' },
+      ],
+    });
+    render(<Harness />);
+    await userEvent.click(screen.getByRole('button', { name: 'Import slug list' }));
+
+    expect(conditionButton('Old Town', 'Peak, level +2')).toBeInTheDocument();
+    expect(conditionButton('Harborview SC', 'Level 0')).toBeInTheDocument();
+    const notice = screen.getByRole('alert');
+    expect(notice).toHaveTextContent('1 slug not found: north-fc');
+    expect(notice).toHaveTextContent(
+      '2 levels not valid, set to 0: line 2 "harborview-sc +3", line 4 "south-fc x"'
+    );
+  });
+
+  it('shows one bad level in the singular, with no "not found" line', async () => {
+    vi.spyOn(slugListTxt, 'importSlugListTxt').mockResolvedValue({
+      entries: [{ slug: 'old-town', level: 0 }],
+      badLevels: [{ line: 1, text: 'old-town 9' }],
+    });
+    render(<Harness />);
+    await userEvent.click(screen.getByRole('button', { name: 'Import slug list' }));
+    const notice = screen.getByRole('alert');
+    expect(notice).toHaveTextContent(
+      '1 level not valid, set to 0: line 1 "old-town 9"'
+    );
+    expect(notice).not.toHaveTextContent('not found');
   });
 });

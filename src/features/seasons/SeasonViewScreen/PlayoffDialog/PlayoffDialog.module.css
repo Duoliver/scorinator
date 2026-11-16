@@ -26,6 +26,13 @@
   gap: var(--space-4);
 }
 
+/* The condition control below a team field, centred under it (Task 223
+   review). */
+.condition {
+  display: flex;
+  justify-content: center;
+}
+
 /* A team field: the box of an `Input`, as a button that opens the picker. */
 .teamPick {
   display: flex;

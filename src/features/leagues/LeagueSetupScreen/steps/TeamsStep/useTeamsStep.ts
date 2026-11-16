@@ -1,4 +1,5 @@
 import { useState } from 'preact/hooks';
+import type { JSX } from 'preact';
 import type { TeamFields } from '@/domain';
 import type { TrigramPick } from '@/engine/identity';
 import type { TeamInstanceEdit } from './EditTeamDrawer';
@@ -26,11 +27,15 @@ import { settingsChipLabels } from '@/features/leagues/LeagueSetupScreen/steps/S
 import { formatLeagueName } from '@/features/components/leagueSummary';
 import type TeamsStepProps from './types';
 import type { TeamsStepOverlay, TeamsStepState } from './types';
+import { getTeamCondition } from '@/app/state/condition';
 import {
   NO_SLUGS,
+  describeBadLevels,
+  describeNotFound,
   describeSlugListImport,
   getSeasonPickerItems,
   getTeamsStepColumns,
+  renderConditionPicker,
   pickerConfirmLabel,
   toCurrentItem,
   toPickerItem,
@@ -49,13 +54,16 @@ export function useTeamsStep({
   onRemoveTeam,
   onSwitchTeam,
   onUpdateTeam,
+  conditions,
+  onSetCondition,
+  onAddConditions,
   season,
 }: Omit<TeamsStepProps, 'onBack' | 'onNext'>): TeamsStepState {
   const blueprints = useDatabaseStore((state) => state.blueprints);
   const locationOf = useBlueprintLocation();
   const [overlay, setOverlay] = useState<TeamsStepOverlay>('none');
   const [pickerSelected, setPickerSelected] = useState<string[]>([]);
-  const [notFound, setNotFound] = useState<string[] | null>(null);
+  const [importNotice, setImportNotice] = useState<string[] | null>(null);
   // The team that the Switch dialog replaces (US-08.5).
   const [switchUuid, setSwitchUuid] = useState<string | null>(null);
   // The team that the Edit drawer changes (US-08.4).
@@ -192,18 +200,30 @@ export function useTeamsStep({
         setStatusLine({ tone: 'error', message: NO_SLUGS });
         return;
       }
-      // Task 229 puts the levels and the bad level lines in the wizard.
       const plan = planSlugListImport(file.entries, blueprints, teams);
       onAddTeams(plan.add);
+      onAddConditions(plan.levels);
       setStatusLine({
         tone: 'info',
         message: describeSlugListImport(plan.add.length, plan.alreadyInList),
       });
-      setNotFound(plan.notFound.length > 0 ? plan.notFound : null);
+      const notice = [
+        ...(plan.notFound.length > 0 ? [describeNotFound(plan.notFound)] : []),
+        ...(file.badLevels.length > 0 ? [describeBadLevels(file.badLevels)] : []),
+      ];
+      setImportNotice(notice.length > 0 ? notice : null);
     } catch (error) {
       setStatusLine({ tone: 'error', message: getErrorMessage(error) });
     }
   };
+
+  const nameOf = new Map(rows.map((row) => [row.blueprintUuid, row.name]));
+  const renderCondition = (blueprintUuid: string): JSX.Element =>
+    renderConditionPicker(
+      nameOf.get(blueprintUuid) ?? blueprintUuid,
+      getTeamCondition(conditions, blueprintUuid),
+      (level) => onSetCondition(blueprintUuid, level)
+    );
 
   return {
     leagueName: formatLeagueName(name),
@@ -215,8 +235,10 @@ export function useTeamsStep({
       openEdit,
       openSwitch,
       onRemoveTeam,
+      (team) => renderCondition(team.blueprintUuid),
       (uuid) => (isJoining(uuid) ? JOINS_SEASON : undefined)
     ),
+    renderCondition,
     rows,
     seasonDrawer: seasonEdit.drawer,
     canCreateTeam: season === undefined,
@@ -227,8 +249,8 @@ export function useTeamsStep({
     canLoadAll: loadable.length > 0,
     canGoNext: teams.length > 0,
     warning: teams.length > 0 ? teamListProblem(teams) : null,
-    notFound,
-    closeNotFound: () => setNotFound(null),
+    importNotice,
+    closeImportNotice: () => setImportNotice(null),
     overlay,
     pickerItems: season
       ? getSeasonPickerItems(season.season, blueprints, inList)

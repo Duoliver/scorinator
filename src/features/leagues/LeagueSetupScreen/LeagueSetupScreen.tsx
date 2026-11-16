@@ -82,6 +82,9 @@ export function LeagueSetupScreen({ seasonUuid }: LeagueSetupScreenProps): JSX.E
           onRemoveTeam={setup.removeTeam}
           onSwitchTeam={setup.switchTeam}
           onUpdateTeam={setup.updateTeam}
+          conditions={setup.conditions}
+          onSetCondition={setup.setCondition}
+          onAddConditions={setup.addConditions}
           groups={setup.groups}
           groupsAdvanceText={setup.groupsAdvanceText}
           bracketWarning={setup.bracketWarning}

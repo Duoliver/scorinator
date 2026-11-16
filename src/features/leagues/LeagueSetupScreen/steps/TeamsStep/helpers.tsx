@@ -13,9 +13,21 @@ import {
   formatSeasonTeamStatus,
   NOT_IN_SEASON,
 } from '@/features/leagues/LeagueSetupScreen/seasonTeams';
+import type { ConditionLevel } from '@/engine/tier-ovr';
+import { ConditionPicker } from './ConditionPicker';
 import styles from './TeamsStep.module.css';
 
 export const getRowKey = (team: TeamInstance): string => team.blueprintUuid;
+
+/** The condition button of one team, for the table and the group cards
+ * (US-14.2). */
+export function renderConditionPicker(
+  teamName: string,
+  level: ConditionLevel,
+  onChange: (level: ConditionLevel) => void
+): JSX.Element {
+  return <ConditionPicker teamName={teamName} level={level} onChange={onChange} />;
+}
 
 export const FALLBACK_HINT = 'No free trigram. Add an alternative to the team.';
 
@@ -35,14 +47,15 @@ function TrigramCell({ pick }: { pick: TrigramPick | undefined }): JSX.Element {
 }
 
 /** The team list columns (US-08.1): swatch, name with Location, the live
- * trigram (Task 121), Tier, ✎ Edit (Task 172), ⇄ Switch, and ✕ Remove. No
- * OVR: the Edit drawer shows it (Task 120). */
+ * trigram (Task 121), Tier, the condition (US-14.2), ✎ Edit (Task 172), ⇄
+ * Switch, and ✕ Remove. No OVR: the Edit drawer shows it (Task 120). */
 export const getTeamsStepColumns = (
   locationOf: (blueprintUuid: string) => string,
   pickOf: (blueprintUuid: string) => TrigramPick | undefined,
   onEdit: (blueprintUuid: string) => void,
   onSwitch: (blueprintUuid: string) => void,
   onRemove: (blueprintUuid: string) => void,
+  renderCondition: (team: TeamInstance) => JSX.Element,
   badgeOf: (blueprintUuid: string) => string | undefined = () => undefined
 ): TableColumn<TeamInstance>[] => [
   {
@@ -70,6 +83,12 @@ export const getTeamsStepColumns = (
     header: 'Tier',
     width: '5rem',
     render: (team) => <Badge tone="dark">{team.tier}</Badge>,
+  },
+  {
+    key: 'condition',
+    header: 'Condition',
+    width: '6rem',
+    render: renderCondition,
   },
   {
     key: 'actions',
@@ -244,6 +263,16 @@ export function describeSlugListImport(added: number, alreadyInList: number): st
 export function describeNotFound(slugs: readonly string[]): string {
   const noun = slugs.length === 1 ? 'slug' : 'slugs';
   return `${slugs.length} ${noun} not found: ${slugs.join(', ')}`;
+}
+
+/** The slug list lines with a level that is not valid (US-14.4, Task 229
+ * choice 4), as the notice says them. */
+export function describeBadLevels(
+  lines: readonly { line: number; text: string }[]
+): string {
+  const noun = lines.length === 1 ? 'level' : 'levels';
+  const list = lines.map(({ line, text }) => `line ${line} "${text}"`).join(', ');
+  return `${lines.length} ${noun} not valid, set to 0: ${list}`;
 }
 
 export const NO_SLUGS = 'The file has no slugs.';

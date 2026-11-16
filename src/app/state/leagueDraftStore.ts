@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { type PhasePlan, Legs, PhaseFormat } from '@/engine/phases';
 import { DEFAULT_POINTS_CONFIG, type PointsConfig } from '@/engine/standings';
-import type { TeamInstance } from '@/domain';
+import type { ConditionLevels, TeamInstance } from '@/domain';
 
 /** The four steps of the League Setup wizard, by their `Tabs` id (US-01.1). */
 export type LeagueSetupStep = 'details' | 'phases' | 'teams' | 'review';
@@ -20,6 +20,9 @@ export interface LeagueDraft {
   /** The trigrams fixed in the Edit drawer, by Blueprint UUID (US-09.6,
    * Task 121 choice 2). A team with no entry takes the live pick. */
   fixedTrigrams: Record<string, string>;
+  /** The condition levels of the Teams step, by Blueprint UUID, with no
+   * level 0 (US-14.2, Task 229 choice 2). */
+  conditions: ConditionLevels;
   /** The phase chain of the Phases step (Task 129). */
   plans: PhasePlan[];
   /** The phase-1 draw as Blueprint UUIDs, when phase 1 is Groups, or
@@ -33,6 +36,7 @@ export function emptyLeagueDraft(): LeagueDraft {
     details: { name: '', points: DEFAULT_POINTS_CONFIG, homeAdvantage: false },
     teams: [],
     fixedTrigrams: {},
+    conditions: {},
     plans: [{ format: PhaseFormat.ROUND_ROBIN, legs: Legs.TWO_WAY }],
     groups: null,
     step: 'details',

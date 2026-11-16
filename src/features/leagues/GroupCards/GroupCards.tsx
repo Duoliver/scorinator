@@ -31,6 +31,7 @@ export function GroupCards({
   onMove,
   onSwap,
   keepTwoPerGroup,
+  renderRowEnd,
 }: GroupCardsProps): JSX.Element {
   const teamOf = new Map(teams.map((team) => [team.blueprintUuid, team]));
   // A move out of a group of 2 would leave 1 team (Task 181 choice 4).
@@ -135,6 +136,7 @@ export function GroupCards({
                     <span class={styles.label}>
                       <TeamLabel name={team.name} location={locationOf?.(uuid) ?? ''} />
                     </span>
+                    {renderRowEnd?.(uuid)}
                     <DropdownMenu
                       label={`Options for ${team.name}`}
                       icon="⋮"

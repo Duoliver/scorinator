@@ -4,7 +4,13 @@ import type { FieldHandle } from '@/design-system';
 import type { LeagueDraftDetails, LeagueSetupStep } from '@/app/state/leagueDraftStore';
 import type { PhasePlan, PlanZone } from '@/engine/phases';
 import type { GroupBy } from '@/engine/round-robin';
-import type { SeasonWrapper, TeamBlueprint, TeamInstance } from '@/domain';
+import type {
+  ConditionLevels,
+  SeasonWrapper,
+  TeamBlueprint,
+  TeamInstance,
+} from '@/domain';
+import type { ConditionLevel } from '@/engine/tier-ovr';
 import type { SeasonTeamRows } from './seasonTeams';
 import type { DetailsStepHandle } from '@/features/leagues/LeagueSetupScreen/steps/DetailsStep';
 import type { TeamInstanceEdit } from '@/features/leagues/LeagueSetupScreen/steps/TeamsStep/EditTeamDrawer';
@@ -27,6 +33,12 @@ export interface TeamList {
   updateTeam: (blueprintUuid: string, edit: TeamInstanceEdit) => void;
   /** The trigrams fixed in the Edit drawer, by Blueprint UUID (Task 172). */
   fixedTrigrams: Record<string, string>;
+  /** The condition levels, by Blueprint UUID, with no level 0 (US-14.2). */
+  conditions: ConditionLevels;
+  /** Sets the level of one team. Level 0 removes its entry. */
+  setCondition: (blueprintUuid: string, level: ConditionLevel) => void;
+  /** Adds the levels of a slug list import (US-14.4). */
+  addConditions: (levels: Readonly<ConditionLevels>) => void;
 }
 
 /** What `usePhaseList` gives: the phase chain of the Phases step, a stable

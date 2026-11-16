@@ -2,6 +2,7 @@ import { useState } from 'preact/hooks';
 import { DEFAULT_BRACKET_RULES } from '@/engine/phases';
 import { TieFormat, type TiebreakMethod } from '@/engine/tiebreak';
 import type { TeamInstance } from '@/domain';
+import type { ConditionLevel } from '@/engine/tier-ovr';
 import type PlayoffDialogProps from './types';
 import type { PlayoffDialogState, PlayoffSlot } from './types';
 import { NAME_TAKEN, getTeamItem } from './helpers';
@@ -26,6 +27,10 @@ export function usePlayoffDialog({
   const [playsAet, setPlaysAet] = useState(DEFAULT_BRACKET_RULES.playsAet);
   const [method, setMethod] = useState<TiebreakMethod>(DEFAULT_BRACKET_RULES.method);
   const [homeAdvantage, setHomeAdvantage] = useState(false);
+  const [levels, setLevels] = useState<Record<PlayoffSlot, ConditionLevel>>({
+    1: 0,
+    2: 0,
+  });
 
   const teamOf = (uuid: string | undefined): TeamInstance | undefined =>
     teams.find((team) => team.blueprintUuid === uuid);
@@ -62,6 +67,7 @@ export function usePlayoffDialog({
     team1: teamOf(uuids[1]),
     team2: teamOf(uuids[2]),
     openPicker: setPicking,
+    setLevel: (slot, level) => setLevels((now) => ({ ...now, [slot]: level })),
     picker,
     format,
     setFormat,
@@ -88,6 +94,7 @@ export function usePlayoffDialog({
           method,
           homeAdvantage,
         },
+        conditions: { [uuids[1]]: levels[1], [uuids[2]]: levels[2] },
       });
     },
   };

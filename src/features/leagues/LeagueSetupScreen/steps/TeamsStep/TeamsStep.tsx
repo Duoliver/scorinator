@@ -6,7 +6,7 @@ import type TeamsStepProps from './types';
 import type { TeamsStepState } from './types';
 import { EditTeamDrawer } from './EditTeamDrawer';
 import { GroupCards } from '@/features/leagues/GroupCards';
-import { describeNotFound, getRowKey, TEAM_SEARCH_PLACEHOLDER } from './helpers';
+import { getRowKey, TEAM_SEARCH_PLACEHOLDER } from './helpers';
 import { useTeamsStep } from './useTeamsStep';
 import styles from './TeamsStep.module.css';
 
@@ -92,6 +92,7 @@ function TeamListArea({
           onSwitch={step.openSwitch}
           onRemove={props.onRemoveTeam}
           onMove={(uuid, groupIndex) => props.onMoveTeam?.(uuid, groupIndex)}
+          renderRowEnd={step.renderCondition}
         />
         {props.groupsAdvanceText && (
           <p class={styles.count}>{props.groupsAdvanceText}</p>
@@ -124,14 +125,18 @@ export function TeamsStep({ onBack, onNext, ...props }: TeamsStepProps): JSX.Ele
           <SetupChips labels={step.chipLabels} />
         </div>
 
-        {step.notFound && (
+        {step.importNotice && (
           <div role="alert" class={styles.notice}>
-            <span>{describeNotFound(step.notFound)}</span>
+            <span class={styles.noticeLines}>
+              {step.importNotice.map((line) => (
+                <span key={line}>{line}</span>
+              ))}
+            </span>
             <Button
               size="icon"
               variant="ghost"
               aria-label="Close the notice"
-              onClick={step.closeNotFound}
+              onClick={step.closeImportNotice}
             >
               ✕
             </Button>

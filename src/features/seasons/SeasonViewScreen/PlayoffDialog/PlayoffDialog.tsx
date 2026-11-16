@@ -9,7 +9,8 @@ import {
 } from '@/design-system';
 import { TieFormat } from '@/engine/tiebreak';
 import type { TeamInstance } from '@/domain';
-import { TeamSwatch } from '@/features/components';
+import { ConditionControl, TeamSwatch } from '@/features/components';
+import type { ConditionLevel } from '@/engine/tier-ovr';
 import type PlayoffDialogProps from './types';
 import type { PlayoffSlot } from './types';
 import { FORMAT_OPTIONS, METHOD_OPTIONS } from './helpers';
@@ -19,15 +20,19 @@ import styles from './PlayoffDialog.module.css';
 export type { PlayoffDialogProps };
 
 /** "Team 1" or "Team 2": a field that opens the team picker. The label
- * names the button, as a field label names its input (Task 215 point 4). */
+ * names the button, as a field label names its input (Task 215 point 4).
+ * The condition control sits below it, centred, with no end labels (US-14.3,
+ * Task 223 review). */
 function TeamField({
   slot,
   team,
   onOpen,
+  onLevel,
 }: {
   slot: PlayoffSlot;
   team: TeamInstance | undefined;
   onOpen: (slot: PlayoffSlot) => void;
+  onLevel: (slot: PlayoffSlot, level: ConditionLevel) => void;
 }): JSX.Element {
   const labelId = `playoff-team-${slot}`;
   return (
@@ -50,6 +55,14 @@ function TeamField({
           <span class={styles.placeholder}>Pick a team…</span>
         )}
       </button>
+      <div class={styles.condition}>
+        <ConditionControl
+          label={`Condition of Team ${slot}`}
+          defaultLevel={0}
+          onChange={(level) => onLevel(slot, level)}
+          hideEnds
+        />
+      </div>
     </div>
   );
 }
@@ -76,8 +89,18 @@ export function PlayoffDialog(props: PlayoffDialogProps): JSX.Element {
           )}
         </div>
         <div class={styles.teams}>
-          <TeamField slot={1} team={dialog.team1} onOpen={dialog.openPicker} />
-          <TeamField slot={2} team={dialog.team2} onOpen={dialog.openPicker} />
+          <TeamField
+            slot={1}
+            team={dialog.team1}
+            onOpen={dialog.openPicker}
+            onLevel={dialog.setLevel}
+          />
+          <TeamField
+            slot={2}
+            team={dialog.team2}
+            onOpen={dialog.openPicker}
+            onLevel={dialog.setLevel}
+          />
         </div>
         <div class={styles.rules}>
           <SegmentedControl

@@ -26,6 +26,7 @@ beforeEach(() => {
     details: { name: '', points: DEFAULT_POINTS_CONFIG, homeAdvantage: false },
     teams: [],
     fixedTrigrams: {},
+    conditions: {},
     plans: [{ format: 'round-robin', legs: 'two-way' }],
     groups: null,
     step: 'details',
@@ -640,5 +641,40 @@ describe('LeagueSetupScreen', () => {
       await userEvent.click(screen.getByRole('button', { name: '⟲ Shuffle groups' }));
       expect([...cardTeams('Group A'), ...cardTeams('Group B')]).toHaveLength(4);
     });
+  });
+});
+
+describe('LeagueSetupScreen, the condition (US-14.2, Task 229)', () => {
+  it('creates the league with the levels of the Teams step', async () => {
+    render(<LeagueSetupScreen />);
+    await userEvent.type(screen.getByLabelText('League name'), 'Coastal Premier');
+    await goToTeamsStep();
+    await addTwoTeams();
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Condition of FC United: Level 0' })
+    );
+    await userEvent.click(screen.getByRole('radio', { name: 'Level -1' }));
+    await userEvent.click(screen.getByText('Next: Review →'));
+    await userEvent.click(screen.getByText('Create league'));
+
+    const [league] = Object.values(useDatabaseStore.getState().leagues);
+    expect(league.content.conditions).toEqual({ [testUuid(1)]: -1 });
+  });
+
+  it('keeps the levels across a nav switch, in the draft', async () => {
+    render(<LeagueSetupScreen />);
+    await userEvent.type(screen.getByLabelText('League name'), 'Coastal Premier');
+    await goToTeamsStep();
+    await addTwoTeams();
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Condition of Harborview SC: Level 0' })
+    );
+    await userEvent.click(screen.getByRole('radio', { name: 'Level +1' }));
+    cleanup();
+
+    render(<LeagueSetupScreen />);
+    expect(
+      screen.getByRole('button', { name: 'Condition of Harborview SC: Level +1' })
+    ).toBeInTheDocument();
   });
 });

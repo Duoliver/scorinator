@@ -48,7 +48,11 @@ export function useLeagueSetup(
   const blueprints = useDatabaseStore((state) => state.blueprints);
   const [details, setDetails] = useState<LeagueDraftDetails>(initialDraft.details);
   const [step, setStep] = useState<LeagueSetupStep>(initialDraft.step);
-  const teamList = useTeamList(initialDraft.teams, initialDraft.fixedTrigrams);
+  const teamList = useTeamList(
+    initialDraft.teams,
+    initialDraft.fixedTrigrams,
+    initialDraft.conditions
+  );
   const phaseList = usePhaseList(initialDraft.plans);
   const phaseOne = usePhaseOneGroups(
     teamList,
@@ -66,6 +70,7 @@ export function useLeagueSetup(
       details,
       teams: teamList.teams,
       fixedTrigrams: teamList.fixedTrigrams,
+      conditions: teamList.conditions,
       plans: phaseList.plans,
       groups: phaseOne.groups,
       step,
@@ -124,6 +129,7 @@ export function useLeagueSetup(
       points: details.points,
       teams: teamList.teams,
       fixedTrigrams: teamList.fixedTrigrams,
+      conditions: teamList.conditions,
       plans: phaseList.plans,
       groups: phaseOne.groups ?? undefined,
     };

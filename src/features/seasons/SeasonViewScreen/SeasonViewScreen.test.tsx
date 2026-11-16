@@ -516,6 +516,48 @@ describe('SeasonViewScreen: the Playoffs tab (US-13.7, Task 220)', () => {
     expect(screen.queryByRole('dialog', { name: 'New playoff' })).toBeNull();
   });
 
+  it('creates a playoff with the level of each slot (US-14.3, Task 229)', async () => {
+    await openPlayoffs(seasonWrapper());
+    await userEvent.click(screen.getByRole('button', { name: '+ New playoff' }));
+    const dialog = screen.getByRole('dialog', { name: 'New playoff' });
+    await userEvent.type(within(dialog).getByLabelText('Name'), 'Supertaça');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Team 1' }));
+    await userEvent.click(
+      within(screen.getByRole('dialog', { name: 'Pick team 1' })).getByRole('button', {
+        name: 'Harborview SC',
+      })
+    );
+    const team1 = within(dialog).getByRole('radiogroup', {
+      name: 'Condition of Team 1',
+    });
+    expect(within(dialog).queryByText('Crisis')).toBeNull();
+    await userEvent.click(within(team1).getByRole('radio', { name: 'Level +1' }));
+    // A new pick for the slot keeps its level (choice 5).
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Team 1' }));
+    await userEvent.click(
+      within(screen.getByRole('dialog', { name: 'Pick team 1' })).getByRole('button', {
+        name: 'Salt Marsh United',
+      })
+    );
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Team 2' }));
+    await userEvent.click(
+      within(screen.getByRole('dialog', { name: 'Pick team 2' })).getByRole('button', {
+        name: 'Harborview SC',
+      })
+    );
+    const team2 = within(dialog).getByRole('radiogroup', {
+      name: 'Condition of Team 2',
+    });
+    await userEvent.click(
+      within(team2).getByRole('radio', { name: 'Crisis, level -2' })
+    );
+    await userEvent.click(
+      within(dialog).getByRole('button', { name: 'Create playoff' })
+    );
+
+    expect(playoffs()[0].conditions).toEqual({ [SALT_MARSH]: 1, [HARBORVIEW]: -2 });
+  });
+
   it('shows the away goals rule for a two-legged tie only', async () => {
     await openPlayoffs(seasonWrapper());
     await userEvent.click(screen.getByRole('button', { name: '+ New playoff' }));

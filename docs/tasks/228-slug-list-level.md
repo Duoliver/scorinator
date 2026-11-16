@@ -1,6 +1,6 @@
 # Task 228: the slug list with the level
 
-**Status:** Refactor
+**Status:** Done
 
 ## Goal
 
@@ -24,6 +24,8 @@ The slug list `.txt` file carries the condition level of each team (US-14.4). Th
 - **2026-11-16:** The user agreed the criteria and six choices: (1) the reader takes `-2` to `+2`, also `1` and `2` with no plus. The writer always writes the plus. (2) A line with three parts or more stops the import with the "is not a slug" line error. (3) A line with two parts and a bad level imports the team at level 0, and reports the line. (4) The reader gives `{ entries, badLevels }`. (5) The level of the first copy of a slug counts. (6) `planSlugListImport` gives a `levels` map of the teams it adds.
 - **2026-11-16:** Tests first: 28 tests failed before the code, the new ones and the old ones with the old shape. `features/` cannot import `adapters/`, so `app/data/slugListTxt.ts` re-exports the `SlugListFile` type for the wizard. Three tests outside the plan changed for the new shape: the wizard import mocks in `TeamsStep.test.tsx` give a `SlugListFile`, and the smoke test of Task 151 expects `harborview-sc 0` and `salt-marsh-united 0`.
 - **2026-11-16:** The user agreed the review. Commit 1, then the refactor pass.
+- **2026-11-16:** Refactor pass done: no change. The refactor review waits for the user.
+- **2026-11-16:** The user agreed the refactor review: Done.
 
 ## Report
 
@@ -31,4 +33,4 @@ The slug list `.txt` file carries the condition level of each team (US-14.4). Th
 - **Test approach:** unit tests in `adapters/txt/slugList.test.ts`: 7 new for the levels (a level, no level, no plus and tabs, -0, bad levels with their line, a level of 1.5, a bad slug with a level), and the old tests on `slugsOf`. The writer tests write the level and read it back. `app/data`: the import gives the file shape, and the export writes `+2` for a team at +2. `app/state`: 3 new `planSlugListImport` tests for the levels. 11 new tests in all. Full suite: 2429 tests pass. Lint, the format check, and the type check pass.
 - **Decisions made:** the six choices above. They are in the `PROGRESS.md` Decisions log.
 - **What is left, what is next:** Task 229 puts `plan.levels` in the wizard team list, and shows `badLevels` in an alert, as the slugs that are not found. A comment in `useTeamsStep.ts` marks the place.
-- **Refactor:** waits for the review.
+- **Refactor:** no change. The diff meets the checklist: verb-first names (`readLevel`, `formatLevel`), no `features/` import of `adapters/` (the wizard gets `SlugListFile` from `app/data`), comments that say why, and the tests first. The comment in `useTeamsStep.ts` on the unused levels stays until Task 229 uses them. Lint, the format check, the type check, and the full suite (2429 tests) pass.

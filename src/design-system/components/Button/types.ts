@@ -27,8 +27,7 @@ interface ButtonBaseProps {
   /** The id of the element that describes the button, for example a
    * `Tooltip` (Task 111). */
   'aria-describedby'?: string;
-  /** For a button that opens a menu, as the `DropdownMenu` trigger (Task
-   * 127), or a panel, as the `Popover` trigger (Task 268). */
+  /** For a button that opens a menu or a panel (Tasks 127, 268). */
   'aria-haspopup'?: 'menu' | 'dialog';
   /** Whether the menu or the panel of the button is open (Task 127). */
   'aria-expanded'?: boolean;

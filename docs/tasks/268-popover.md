@@ -1,6 +1,6 @@
 # Task 268: the Popover primitive
 
-**Status:** Refactor
+**Status:** Done
 
 ## Goal
 
@@ -24,6 +24,8 @@ A `Popover` in `design-system/`: a square icon button that opens a small panel n
 - **2026-11-16:** The user agreed the criteria and six choices: (1) the props `label`, `icon`, `panelLabel`, `align` (`start`, `center`, `end`, default `center`), and `children` as a function of `close`. (2) The square icon `Button` trigger, with `aria-haspopup="dialog"` and `aria-expanded`. (3) A non-modal `role="dialog"` panel, not a native `<dialog>`. (4) `restingBox` and the placement move to `src/design-system/placement.ts`, with a centred line. (5) One line in `DESIGN_SYSTEM.md`: a popup next to its trigger is not a dialog. (6) Escape closes only the `Popover` inside a `Modal`.
 - **2026-11-16:** Tests first: the new test file failed before the code. `Button` typed `aria-haspopup` as `'menu'` only, so it takes `'menu' | 'dialog'` now. `Button` gives no `title`, so the trigger has no mouse tooltip, and the choices did not ask for one. Tab inside the panel keeps it open: a focus that leaves the panel for an element outside the `Popover` closes it. A temporary Vite page with headless Chromium showed the open panel below the icon, centred on it, with the condition control, as the Task 223 demo. The page was deleted after the check.
 - **2026-11-16:** The user agreed the review. Commit 1, then the refactor pass.
+- **2026-11-16:** Refactor pass done: three comments. The refactor review waits for the user.
+- **2026-11-16:** The user agreed the refactor review: Done.
 
 ## Report
 
@@ -31,4 +33,4 @@ A `Popover` in `design-system/`: a square icon button that opens a small panel n
 - **Test approach:** 17 Testing Library tests in `Popover.test.tsx`: the trigger, open and close by click, not modal, the focus on open, a close from the content, a click inside, Escape, a click outside, a scroll, Tab inside and out, Escape inside a `Modal`, and the placement (centred, start, end, above, the window edge). The 26 `DropdownMenu` tests pass with no change. Full suite: 2446 tests pass. Lint, the format check, and the type check pass.
 - **Decisions made:** the six choices above. They are in the `PROGRESS.md` Decisions log.
 - **What is left, what is next:** Task 229 uses the `Popover` for the condition overlay, and can start after this task is Done.
-- **Refactor:** waits for the review.
+- **Refactor:** three comments, no change in code. Each one named its callers, against the comments rule of `coding-standards.md`: the `placePopup` comment ("`DropdownMenu` and `Popover` share it"), the `aria-haspopup` comment of `Button` (the two triggers), and the `Popover` comment ("the condition overlay of the wizard Teams step"). They now say what the code is for. No markup or CSS change. Lint, the format check, the type check, and the full suite (2446 tests) pass.

@@ -51,8 +51,7 @@ export function getRestingBox(element: Element): PopupBox {
 /** Below the trigger, or above it when the window has no room below. On
  * the start edge, the middle, or the end edge of the trigger. The popup
  * keeps that line, also near the window edge. It moves in, `EDGE` px from
- * the window edge, only when it would go out of the window. `DropdownMenu`
- * (Task 127) and `Popover` (Task 268) share it. */
+ * the window edge, only when it would go out of the window. */
 export function placePopup(
   trigger: PopupBox,
   popup: DOMRect,

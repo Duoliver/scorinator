@@ -15,9 +15,9 @@ const FOCUSABLE =
 
 /**
  * A square icon button that opens a small panel next to it, with any
- * content (Task 268): the condition overlay of the wizard Teams step
- * (US-14.2). It is a popup, not a modal dialog: the page stays usable, as
- * with `DropdownMenu`.
+ * content (Task 268), for a short choice that opens from a row, such as a
+ * condition level (US-14.2). It is a popup, not a modal dialog: the page
+ * stays usable.
  *
  * The panel opens below the trigger, or above it with no room below
  * (`placePopup`), and the focus goes to its first element that takes it.

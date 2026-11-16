@@ -113,7 +113,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 265 | The Seed List drag, the "Back to the draw" button, and the header text | `features/bracket` | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M6. US-17.1, US-17.3. Depends on 261, 264. |
 | 266 | The drag on the bracket tree | `features/bracket` | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M6. US-17.2. Depends on 261, 264. |
 | 267 | Smoke check M6 | — | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M6. Depends on 265, 266. |
-| 268 | `Popover`: a popup panel next to its trigger, with the placement and the close rules of `DropdownMenu` | `design-system/` | 🟦 Refactor | 2026-11-16 |  | [268](/docs/tasks/268-popover.md) | Task created by User - 2026-11-16. M3, from Task 229 (option A). `Popover`, shared `placement.ts`. 17 tests. Refactor pass next. |
+| 268 | `Popover`: a popup panel next to its trigger, with the placement and the close rules of `DropdownMenu` | `design-system/` | ✅ Done | 2026-11-16 | 2026-11-16 | [268](/docs/tasks/268-popover.md) | Task created by User - 2026-11-16. M3, from Task 229 (option A). `Popover`, shared `placement.ts`. 17 tests. Refactor: three comments. |
 
 **Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input, see Open Questions) · 🟩 Review · 🟦 Refactor (the pass, or its review: the Notes say which) · ✅ Done · ❌ Cancelled (the reason is in the Notes column)
 

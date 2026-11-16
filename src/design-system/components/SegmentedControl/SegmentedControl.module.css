@@ -15,6 +15,21 @@
   color: var(--color-fg);
 }
 
+/* The end labels and the options, in one line (Task 227). */
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* The text at the two ends, such as "Crisis" and "Peak" (US-14.1), as in
+ * the Task 223 demo. */
+.endLabel {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  color: var(--color-fg-muted);
+}
+
 /* The options share one border, with a line between two options. */
 .group {
   display: flex;
@@ -38,6 +53,20 @@
 
 .option:last-child {
   border-right: none;
+}
+
+/* A square option for one icon character (Task 227). After `.option`, so
+ * its padding and font win. The icon sits in the centre of the square. */
+.iconOption {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xl);
+  text-transform: none;
 }
 
 .optionChecked {

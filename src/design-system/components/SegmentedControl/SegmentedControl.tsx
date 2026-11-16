@@ -28,7 +28,7 @@ function moveIndex(key: string, current: number, count: number): number | undefi
   }
 }
 
-function SegmentedControlBase<T extends string>(
+function SegmentedControlBase<T extends string | number>(
   {
     label,
     options,
@@ -36,6 +36,9 @@ function SegmentedControlBase<T extends string>(
     onChange,
     hideLabel,
     disabled,
+    startLabel,
+    endLabel,
+    iconOptions,
   }: SegmentedControlProps<T>,
   ref: Ref<FieldHandle<T>>
 ): VNode {
@@ -67,34 +70,52 @@ function SegmentedControlBase<T extends string>(
           {label}
         </span>
       )}
-      <div
-        role="radiogroup"
-        aria-labelledby={hideLabel ? undefined : labelId}
-        aria-label={hideLabel ? label : undefined}
-        class={styles.group}
-        onKeyDown={onKeyDown}
-      >
-        {options.map((option) => {
-          const checked = option.value === value;
-          return (
-            <button
-              key={option.value}
-              ref={(el) => {
-                if (el) buttons.current.set(option.value, el);
-                else buttons.current.delete(option.value);
-              }}
-              type="button"
-              role="radio"
-              aria-checked={checked}
-              tabIndex={checked ? 0 : -1}
-              disabled={disabled}
-              class={`${styles.option} ${checked ? styles.optionChecked : ''}`}
-              onClick={() => select(option.value)}
-            >
-              {option.label}
-            </button>
-          );
-        })}
+      <div class={styles.row}>
+        {startLabel && (
+          <span aria-hidden="true" class={styles.endLabel}>
+            {startLabel}
+          </span>
+        )}
+        <div
+          role="radiogroup"
+          aria-labelledby={hideLabel ? undefined : labelId}
+          aria-label={hideLabel ? label : undefined}
+          class={styles.group}
+          onKeyDown={onKeyDown}
+        >
+          {options.map((option) => {
+            const checked = option.value === value;
+            return (
+              <button
+                key={option.value}
+                ref={(el) => {
+                  if (el) buttons.current.set(option.value, el);
+                  else buttons.current.delete(option.value);
+                }}
+                type="button"
+                role="radio"
+                aria-checked={checked}
+                tabIndex={checked ? 0 : -1}
+                aria-label={option.ariaLabel}
+                title={option.ariaLabel}
+                disabled={disabled}
+                class={[
+                  styles.option,
+                  iconOptions ? styles.iconOption : '',
+                  checked ? styles.optionChecked : '',
+                ].join(' ')}
+                onClick={() => select(option.value)}
+              >
+                {option.label}
+              </button>
+            );
+          })}
+        </div>
+        {endLabel && (
+          <span aria-hidden="true" class={styles.endLabel}>
+            {endLabel}
+          </span>
+        )}
       </div>
     </div>
   );
@@ -104,7 +125,7 @@ function SegmentedControlBase<T extends string>(
  * one Tab stop, where the arrow keys move and select. `FieldHandle<T>` gives
  * the selected value, as for `Select` and `Tabs`. */
 export const SegmentedControl = forwardRef(SegmentedControlBase) as unknown as (<
-  T extends string,
+  T extends string | number,
 >(
   props: SegmentedControlProps<T> & { ref?: Ref<FieldHandle<T>> }
 ) => VNode) & { displayName?: string };

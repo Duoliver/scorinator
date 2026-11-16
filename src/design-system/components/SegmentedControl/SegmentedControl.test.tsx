@@ -189,4 +189,92 @@ describe('SegmentedControl', () => {
       for (const el of screen.getAllByRole('radio')) expect(el).toBeEnabled();
     });
   });
+
+  describe('icon options with number values and end labels (Task 227)', () => {
+    type Level = -2 | -1 | 0 | 1 | 2;
+    const LEVELS: { value: Level; label: string; ariaLabel: string }[] = [
+      { value: -2, label: '↓', ariaLabel: 'Crisis, level -2' },
+      { value: -1, label: '↘', ariaLabel: 'Level -1' },
+      { value: 0, label: '–', ariaLabel: 'Level 0' },
+      { value: 1, label: '↗', ariaLabel: 'Level +1' },
+      { value: 2, label: '↑', ariaLabel: 'Peak, level +2' },
+    ];
+
+    function renderLevels(
+      props: Partial<Parameters<typeof SegmentedControl<Level>>[0]> = {}
+    ): RenderResult {
+      return render(
+        <SegmentedControl<Level>
+          label="Condition"
+          hideLabel
+          options={LEVELS}
+          defaultValue={0}
+          iconOptions
+          startLabel="Crisis"
+          endLabel="Peak"
+          {...props}
+        />
+      );
+    }
+
+    it('names each option by its ariaLabel, and shows its icon', () => {
+      renderLevels();
+      expect(screen.getAllByRole('radio').map((el) => el.textContent)).toEqual([
+        '↓',
+        '↘',
+        '–',
+        '↗',
+        '↑',
+      ]);
+      expect(radio('Level +1')).toHaveTextContent('↗');
+      expect(radio('Crisis, level -2')).toBeInTheDocument();
+    });
+
+    it('gives each option with an ariaLabel the same mouse tooltip', () => {
+      renderLevels();
+      expect(radio('Level -1')).toHaveAttribute('title', 'Level -1');
+    });
+
+    it('gives an option with no ariaLabel no tooltip', () => {
+      renderControl();
+      expect(radio('Mixed')).not.toHaveAttribute('title');
+    });
+
+    it('shows the start and end labels, hidden from a screen reader', () => {
+      renderLevels();
+      expect(screen.getByText('Crisis')).toBeVisible();
+      expect(screen.getByText('Peak')).toBeVisible();
+      expect(screen.getByText('Crisis')).toHaveAttribute('aria-hidden', 'true');
+      expect(screen.getByText('Peak')).toHaveAttribute('aria-hidden', 'true');
+      expect(screen.getByRole('radiogroup', { name: 'Condition' })).toBeInTheDocument();
+    });
+
+    it('shows no end labels without the props', () => {
+      renderLevels({ startLabel: undefined, endLabel: undefined });
+      expect(screen.queryByText('Crisis')).not.toBeInTheDocument();
+      expect(screen.queryByText('Peak')).not.toBeInTheDocument();
+    });
+
+    it('checks, clicks, and keys with number values', async () => {
+      const onChange = vi.fn();
+      const ref: { current: FieldHandle<Level> | null } = { current: null };
+      renderLevels({ defaultValue: 1, onChange, ref });
+      expect(radio('Level +1')).toHaveAttribute('aria-checked', 'true');
+      await userEvent.click(radio('Crisis, level -2'));
+      expect(onChange).toHaveBeenLastCalledWith(-2);
+      expect(ref.current?.getValue()).toBe(-2);
+      await userEvent.keyboard('{End}');
+      expect(radio('Peak, level +2')).toHaveFocus();
+      expect(ref.current?.getValue()).toBe(2);
+      ref.current?.setValue(0);
+      expect(
+        await screen.findByRole('radio', { name: 'Level 0', checked: true })
+      ).toBeInTheDocument();
+    });
+
+    it('disables each icon option', () => {
+      renderLevels({ disabled: true });
+      for (const el of screen.getAllByRole('radio')) expect(el).toBeDisabled();
+    });
+  });
 });

@@ -17,10 +17,11 @@ Earlier logs are archived and read only. Read them when a task needs history: a 
 - Team condition (C10): US-14.1 to US-14.4.
 - Teams module (C44): US-15.6 and US-15.8.
 - League and Season lists (C21, C45, C46): US-16.1 to US-16.5.
+- Brackets (C29): US-17.1 to US-17.3, manual seeding of a first-phase bracket.
 
-Not approved for the build: the MVP3 Should items (US-13.10, US-15.1 to US-15.5, US-15.7, C23, C36, and epics 17 to 19), the MVP3 Could items, and MVP4. Their refinement stays allowed. Do not build anything from them. This line is the single source of truth for scope. If it does not name an item, treat the item as not approved, even when a task description elsewhere seems to imply more.
+Not approved for the build: the MVP3 Should items (US-13.10, US-15.1 to US-15.5, US-15.7, C23, C25, C27, C36, and epics 18 and 19), the MVP3 Could items, and MVP4. Their refinement stays allowed. Do not build anything from them. This line is the single source of truth for scope. If it does not name an item, treat the item as not approved, even when a task description elsewhere seems to imply more.
 
-*(Changed on 2026-11-16, Task 259. Collections (C36, US-15.1 to US-15.5) moved from Must to Should, out of the build.)*
+*(Changed on 2026-11-16, Task 259. Collections (C36, US-15.1 to US-15.5) moved from Must to Should, out of the build. Changed on 2026-11-16, Task 260: C29 moved from Should to Must, into the build, as manual seeding.)*
 
 ---
 
@@ -44,7 +45,7 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 197 | Refine epic 14, Team condition: refined stories in `docs/user-stories/mvp3/14-team-condition.md` | `docs/user-stories` | ✅ Done | 2026-11-12 | 2026-11-12 | [197](/docs/tasks/197-refine-team-condition.md) | From Task 195. US-14.1 to 14.4 Agreed. The user reviewed the task. The display place stays open. |
 | 198 | Refine epic 15, Teams module: refined stories in `docs/user-stories/mvp3/15-teams-module.md` | `docs/user-stories` | ✅ Done | 2026-11-12 | 2026-11-12 | [198](/docs/tasks/198-refine-teams-module.md) | From Task 195. US-15.1 to 15.8 Agreed. The user reviewed the task. |
 | 199 | Refine epic 16, League and Season lists: refined stories in `docs/user-stories/mvp3/16-league-season-lists.md` | `docs/user-stories` | ✅ Done | 2026-11-12 | 2026-11-12 | [199](/docs/tasks/199-refine-league-season-lists.md) | From Task 195. US-16.1 to 16.5 Agreed. C23 waits. The user reviewed the task. |
-| 200 | Refine epic 17, Brackets and phases: refined stories in `docs/user-stories/mvp3/17-brackets-phases.md` | `docs/user-stories` | ⬜ Not started |  |  |  | From Task 195. C25, C27, C29 (Should). The user answers questions, Claude does not propose. |
+| 200 | Refine epic 17, Brackets and phases: refined stories in `docs/user-stories/mvp3/17-brackets-phases.md` | `docs/user-stories` | ⬜ Not started |  |  |  | From Task 195. C25, C27 (Should). C29 went to Task 260. The user answers questions, Claude does not propose. |
 | 201 | Refine epic 18, Debug mode: refined stories in `docs/user-stories/mvp3/18-debug-mode.md` | `docs/user-stories` | ⬜ Not started |  |  |  | From Task 195. C16 (Should). The user answers questions, Claude does not propose. |
 | 202 | Refine epic 19, Fixes and polish: refined stories in `docs/user-stories/mvp3/19-fixes-polish.md` | `docs/user-stories` | ⬜ Not started |  |  |  | From Task 195. C19 (Should). The user answers questions, Claude does not propose. |
 | 203 | Revise epic 14, Team condition, with the user's notes of 2026-11-13 | `docs/user-stories` | ✅ Done | 2026-11-13 | 2026-11-13 | [203](/docs/tasks/203-revise-team-condition.md) | Task created by User - 2026-11-13. US-14.1 to 14.4 and US-13.8 Agreed. The user reviewed the task. |
@@ -104,10 +105,18 @@ Do not mark a task as Done until the user gives feedback and agrees with what wa
 | 257 | The Season Teams tab on a narrow screen: one card for each roster team, as Task 255 | `features/seasons` | ✅ Done | 2026-11-15 | 2026-11-15 | [257](/docs/tasks/257-season-roster-mobile.md) | Task created by User - 2026-11-15. Layout tweak before M3. Refactor: no change. Shared-CSS note in the task file. |
 | 258 | Tighter spacing on the league cards, standalone and in a Season: padding `--space-3`, gap `--space-2` | `features/components/`, `design-system/` | ✅ Done | 2026-11-15 | 2026-11-15 | [258](/docs/tasks/258-league-card-spacing.md) | Task created by User - 2026-11-15. The user's Card padding scale change only. The user closed it. |
 | 259 | Take collections out of M4, and park them with the MVP3 Should and Could items | `PROGRESS.md`, `docs/` | ✅ Done | 2026-11-16 | 2026-11-16 | [259](/docs/tasks/259-park-collections.md) | Task created by User - 2026-11-16. C36 is Should now. Tasks 234, 235, 239, 240 cancelled. The user reviewed it. |
+| 260 | Approve manual bracket seeding (C29), refine it, and plan its build | `docs/`, `PROGRESS.md` | ✅ Done | 2026-11-16 | 2026-11-16 | [260](/docs/tasks/260-manual-bracket-seeding.md) | Task created by User - 2026-11-16. US-17.1 to 17.3 Agreed. M6: Tasks 261 to 267. The user reviewed it. |
+| 261 | Demo: the drag in the Seed List and on the bracket tree, "Back to the draw", and the header | `docs/design-reference/MVP3/` | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M6. US-17.1 to 17.3. Depends on 248. |
+| 262 | The team moves: a Seed List move and a tree move give the new seeds and byes | `engine/bracket` | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M6. US-17.1, US-17.2. No dependency. |
+| 263 | The stored draw of a first-phase bracket: the field, parse and write, an old file | `domain/`, `adapters/json-io` | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M6. US-17.3. No dependency. |
+| 264 | Seeding actions: move a team, back to the draw, the lock at the first result, the read-only guard | `app/state` | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M6. US-17.1 to 17.3. Depends on 262, 263. |
+| 265 | The Seed List drag, the "Back to the draw" button, and the header text | `features/bracket` | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M6. US-17.1, US-17.3. Depends on 261, 264. |
+| 266 | The drag on the bracket tree | `features/bracket` | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M6. US-17.2. Depends on 261, 264. |
+| 267 | Smoke check M6 | — | ⬜ Not started |  |  | [205](/docs/tasks/205-mvp3-build-tasks.md) | M6. Depends on 265, 266. |
 
 **Status legend:** ⬜ Not started · 🟨 In progress · 🟧 Blocked (needs input, see Open Questions) · 🟩 Review · 🟦 Refactor (the pass, or its review: the Notes say which) · ✅ Done · ❌ Cancelled (the reason is in the Notes column)
 
-**Note on the MVP3 build milestones:** Tasks 206 to 248 build the MVP3 Must items in five milestones, M1 to M5. The map in [`docs/tasks/205-mvp3-build-tasks.md`](/docs/tasks/205-mvp3-build-tasks.md) gives each task its stories, layer, and dependencies. A task starts only when the tasks it depends on are Done. The first task of each milestone is a demo HTML file of its new screens: the screen tasks wait for the review of the demo. The last task of each milestone is a smoke check: the user tries the app before the next milestone starts. Each build task creates its own task file when it starts, and its Task file column then links to it.
+**Note on the MVP3 build milestones:** Tasks 206 to 248 build the MVP3 Must items in five milestones, M1 to M5. The map in [`docs/tasks/205-mvp3-build-tasks.md`](/docs/tasks/205-mvp3-build-tasks.md) gives each task its stories, layer, and dependencies. M6, manual bracket seeding (Tasks 261 to 267), comes after M5 (Task 260). A task starts only when the tasks it depends on are Done. The first task of each milestone is a demo HTML file of its new screens: the screen tasks wait for the review of the demo. The last task of each milestone is a smoke check: the user tries the app before the next milestone starts. Each build task creates its own task file when it starts, and its Task file column then links to it.
 
 **Note on numbering:** task numbers continue across all logs: MVP1 ends at Task 73, and MVP2 at Task 191. Code comments and docs name tasks by number, for example "(Task 30)", so each number must stay unique. A task number below 192 is in an archive.
 
@@ -148,6 +157,8 @@ A short record of resolved judgment calls. This stops a later session from silen
 **MVP1 and MVP2 decisions still apply.** They are in [`docs/archive/mvp1/PROGRESS.md`](/docs/archive/mvp1/PROGRESS.md), [`docs/archive/mvp1/decisions-log/`](/docs/archive/mvp1/decisions-log/), and [`docs/archive/mvp2/PROGRESS.md`](/docs/archive/mvp2/PROGRESS.md). An entry here changes an earlier decision only when it says so.
 
 **START BELOW, LAST ON TOP:**
+
+- **2026-11-16 (Task 260 — manual bracket seeding):** The user widened C29 to manual seeding, and moved it from Should to Must. US-17.1 to US-17.3 are Agreed: drag and drop in the Seed List (a move) and on the first round of the tree (a swap, or a drop on a bye side). A first-phase bracket only. The league stores the random draw, and "Back to the draw" restores it, with its byes. No change after the first result. The bye stars stay as today. The header says "Seeded by random draw, then by hand". The tree stays unstored. New milestone M6, after M5: Tasks 261 to 267. Parked: the pick of a tree slot with the team picker (future features §43). Detail: [Task 260](/docs/tasks/260-manual-bracket-seeding.md).
 
 - **2026-11-16 (Task 259 — collections out of the build):** The user took collections out of M4. C36 moves from Must to Should. US-15.1 to US-15.5 are not approved, and keep the status Agreed. US-15.3 goes with them: the Teams screen gets no tabs. Tasks 234, 235, 239, and 240 are cancelled. Task 233 demos the search and the pages only. Task 238 builds them on the Teams screen. Task 241 waits for 238. Detail: [Task 259](/docs/tasks/259-park-collections.md).
 

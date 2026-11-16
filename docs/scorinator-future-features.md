@@ -122,6 +122,8 @@ In MVP2, a bracket after a Groups phase seeds by place, then stats (Task 78), wi
 
 *Raised during: MVP2, Task 142 review, 2026-11-03.*
 
+*(Changed on 2026-11-16, Task 260: MVP3 builds manual seeding of a first-phase bracket with drag and drop, US-17.1 to US-17.3. The method choice, and manual seeding after another phase, stay here.)*
+
 ## 24. Titles for the tie cards of the earlier rounds
 In MVP2, only the final and the third-place tie cards show a title (Tasks 187, 188). The ties of the earlier rounds keep a blank first cell in the score header row. A single-match tie has no header row, so a title needs a title row of its own. A title row on each single-match tie of each round adds height to the whole tree. Later, choose the title text, for example "SF 1" or "QF 2", and how a single-match tie shows it, before or after a replay. Decide also what a bye card shows.
 
@@ -216,3 +218,8 @@ In MVP3, a played playoff keeps its result: `playPlayoff` throws for a playoff w
 In MVP3, Team 1 of a playoff plays the first leg of a two-legged tie at home. A single match is at a neutral venue, as in a bracket: Team 1 takes the home slot with no home boost, and the "Home advantage" switch acts on the two legs only (Task 217 choice 3, option A). Later, the user chooses which team plays at home first, and whether a single match has a home advantage. A single match with a home boost needs a new option in `engine/tiebreak`, so the brackets do not change.
 
 *Raised during: MVP3, Task 217 (playoffs in the store), 2026-11-14. The user parked it.*
+
+## 43. Pick the team of a bracket slot
+In MVP3, the user seeds a first-phase bracket by hand with drag and drop (C29), and the standard placement builds the tree from the seeds. Later, the user picks the team of one tree slot directly, with the team picker modal, as for a Season playoff. A free tree needs a stored slot order in the bracket phase and a file format change, because today the tree is not stored: `buildBracketTree` makes it from the seeds and the bye teams. The seed of a team also decides the host of the second leg (Task 79), so a free slot needs a rule for the seed. Refine it before any build.
+
+*Raised during: MVP3, Task 260 (manual bracket seeding), 2026-11-16. The user parked it.*

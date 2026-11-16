@@ -30,6 +30,7 @@ Turn the 26 approved MVP3 Must stories into build task rows on the `PROGRESS.md`
 - **2026-11-13:** The user agreed the map and the recommendations for Q1 to Q3. Claude added rows 206 to 248 to the status board, and a note on the MVP3 build milestones. Each row links to this file until its task file exists.
 - **2026-11-13:** The user agreed the review: Done.
 - **2026-11-16 (Task 259):** The user took collections (C36) out of the build. US-15.1 to US-15.5 are not approved now. M4 cancels Tasks 234, 235, 239, and 240. Tasks 233, 238, and 241 lose their collection parts. The approved Must stories go from 26 to 21. US-15.6 maps to Tasks 237 and 238 (it named Task 240 too).
+- **2026-11-16 (Task 260):** The user moved C29 to Must, as manual seeding of a first-phase bracket (US-17.1 to US-17.3). A new milestone M6, after M5: Tasks 261 to 267. The approved Must stories go from 21 to 24.
 
 ## Build map (Agreed)
 
@@ -102,6 +103,20 @@ Each milestone starts with a demo task and ends with a smoke check task. The scr
 | 246 | Rename and delete on the league card and in League Detail. The dashboard search | `features/leagues` | US-16.2, US-16.3, US-16.4 | 242, 244 |
 | 247 | The Season export and import on the File screen: "Skip" or "Import as new", the numbered name. The export menu of a Season league. "Export all leagues" for standalone leagues only | `app/data`, `app/state`, `features/file` | US-13.11 | 242, 245 |
 | 248 | Smoke check M5, and the end of the MVP3 Must items | — | — | 243, 246, 247 |
+
+### M6: Manual bracket seeding (added 2026-11-16, Task 260)
+
+Runs after M5.
+
+| # | Task | Layer | Stories | Depends on |
+|---|---|---|---|---|
+| 261 | Demo: the drag in the Seed List and on the bracket tree, "Back to the draw", and the header | `docs/design-reference/MVP3/` | US-17.1 to 17.3 | 248 |
+| 262 | The team moves: a Seed List move and a tree move give the new seeds and byes | `engine/bracket` | US-17.1, US-17.2 | — |
+| 263 | The stored draw of a first-phase bracket: the field, parse and write, an old file | `domain/`, `adapters/json-io` | US-17.3 | — |
+| 264 | Seeding actions: move a team, back to the draw, the lock at the first result, the read-only guard | `app/state` | US-17.1 to 17.3 | 262, 263 |
+| 265 | The Seed List drag, the "Back to the draw" button, and the header text | `features/bracket` | US-17.1, US-17.3 | 261, 264 |
+| 266 | The drag on the bracket tree | `features/bracket` | US-17.2 | 261, 264 |
+| 267 | Smoke check M6 | — | — | 265, 266 |
 
 ### Module questions (settled 2026-11-13)
 

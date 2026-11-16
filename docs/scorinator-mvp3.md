@@ -16,7 +16,7 @@ The epic numbers go on from MVP2, which ends at epic 12, so the story IDs stay u
 | 14. Team condition | C10 (Must) |
 | 15. Teams module | C44 (Must), C36, C7 (Should), C11, C12 (Could) |
 | 16. League and Season lists | C21, C45, C46 (Must), C23 (Should), C22 (Could) |
-| 17. Brackets and phases | C25, C27, C29 (Should) |
+| 17. Brackets and phases | C29 (Must), C25, C27 (Should) |
 | 18. Debug mode | C16 (Should) |
 | 19. Fixes and polish | C19 (Should), C17, C43 (Could) |
 
@@ -58,7 +58,7 @@ The epic numbers go on from MVP2, which ends at epic 12, so the story IDs stay u
 
 - Should: a qualifiers list for a round-robin or Groups phase (C25, future features §10).
 - Should: a toggle for the host of the second leg (C27, future features §6).
-- Should: a choice of bracket seeding before the bracket starts (C29, future features §23).
+- Must: manual seeding of a first-phase bracket, with drag and drop in the Seed List and on the tree, before the first result (C29, US-17.1 to US-17.3). A seeding method such as World Cup pairs stays in future features §23. *(Changed on 2026-11-16, Task 260, with the user's approval. It said: Should, a choice of bracket seeding before the bracket starts.)*
 - A replay stays at a neutral venue in MVP3.
 
 ### Debug mode

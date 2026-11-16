@@ -13,7 +13,7 @@ const CONDITION_PERCENT: Readonly<Record<ConditionLevel, number>> = {
   2: 20,
 };
 
-/** True for one of the five condition levels. A file reader uses it. */
+/** True for one of the five condition levels. */
 export function isConditionLevel(value: unknown): value is ConditionLevel {
   return (CONDITION_LEVELS as readonly unknown[]).includes(value);
 }

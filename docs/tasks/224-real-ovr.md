@@ -1,6 +1,6 @@
 # Task 224: the real OVR function
 
-**Status:** Refactor
+**Status:** Done
 
 ## Goal
 
@@ -23,6 +23,8 @@ One pure function in `engine/tier-ovr` gives the real OVR of a team from its bas
 - **2026-11-16:** The user agreed the criteria and five choices: (1) `applyCondition(baseOvr, level)`. (2) A `ConditionLevel` type of -2 to 2, with `CONDITION_LEVELS` and `isConditionLevel`, as `TIER_ORDER` and `isTier`. (3) A new `condition.ts` in `engine/tier-ovr`. (4) Multiply first, then one division by 100. (5) A `RangeError` for a bad base OVR or an unknown level.
 - **2026-11-16:** Tests first: 26 of 27 new tests failed before the code. The export guard of `tierOvr.test.ts` ("no direct setter") lists each export of the module. Claude added the three new names, with a comment: the real OVR is a match value, and it does not set the base OVR.
 - **2026-11-16:** The user agreed the review. Commit 1, then the refactor pass.
+- **2026-11-16:** Refactor pass done. One comment changed. The refactor review waits for the user.
+- **2026-11-16:** The user agreed the refactor review: Done.
 
 ## Report
 
@@ -30,4 +32,4 @@ One pure function in `engine/tier-ovr` gives the real OVR of a team from its bas
 - **Test approach:** 27 unit tests in `condition.test.ts`. A table of the 14 Tier range ends at each of the five levels, worked out by hand, and a test that the table covers each range end. The story examples, the rounding of each sign, the whole-percentage cases (50 at +1 is 55), out of range results, a base OVR of 0, and the errors. The export guard test of `tierOvr.test.ts` lists the new names. Full suite: 2363 tests pass. Lint, the format check, and the type check pass.
 - **Decisions made:** the five choices above. They are in the `PROGRESS.md` Decisions log.
 - **What is left, what is next:** Task 225 (the condition data) depends on this task.
-- **Refactor:** waits for the review.
+- **Refactor:** one comment. The `isConditionLevel` comment named its user ("A file reader uses it"), against the comments rule of `coding-standards.md`. It now says only what the function gives. The other checklist sections had no gap: no import across layers, no RNG, verb-first names, tests first. Lint, the format check, the type check, and the full suite (2363 tests) pass.

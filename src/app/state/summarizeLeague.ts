@@ -65,6 +65,13 @@ function bracketProgressOf(
     : { kind: PhaseFormat.BRACKET, phase, round: last.teams };
 }
 
+/** True when the league has ended: the last planned phase is complete, as
+ * the dashboard "completed" progress says. The levels of its teams then
+ * stay as they are (US-14.2). */
+export function isLeagueComplete(wrapper: LeagueWrapper): boolean {
+  return progressOf(wrapper).kind === 'completed';
+}
+
 /** The manifest row of one league, for its dashboard card (Task 76 d). The
  * one place that builds a row: nothing sets a row by hand. */
 export function summarizeLeague(wrapper: LeagueWrapper): WrapperSummary {

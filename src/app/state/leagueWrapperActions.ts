@@ -7,6 +7,7 @@ import {
   PhaseFormat,
 } from '@/engine/phases';
 import { createSeededRng } from '@/engine/rng';
+import type { ConditionLevel } from '@/engine/tier-ovr';
 import {
   findPhaseResult,
   moveToGroup,
@@ -31,6 +32,11 @@ import type {
 } from '@/domain';
 import { cryptoRandomBytes, freshSeed } from '@/app/random';
 import { bracketRulesFor, bracketTreeOf, leagueOvrOf } from './bracket';
+import {
+  checkConditionLevel,
+  getTeamCondition,
+  replaceTeamCondition,
+} from './condition';
 import { findCurrentPhase } from './currentPhase';
 import {
   canChangeCurrentGroups,
@@ -38,6 +44,7 @@ import {
   leagueLotOf,
   phaseStandings,
 } from './phases';
+import { isLeagueComplete } from './summarizeLeague';
 import { pickTeamTrigrams } from './teamInstances';
 import {
   buildLeagueContent,
@@ -557,6 +564,46 @@ export function setPhaseZones(
       plans: wrapper.content.plans.map((candidate, i) =>
         i === phaseIndex ? zoned : candidate
       ),
+    },
+    installationUuid
+  );
+}
+
+/**
+ * Sets the condition level of one team in an open league, standalone or in
+ * a Season (US-14.2, Task 226). Each league of a Season keeps its own level
+ * for the same team. The level counts from the next match played or played
+ * again: a played match keeps its score. The same level again changes
+ * nothing. A change stamps the league.
+ *
+ * Throws a `RangeError`, and changes nothing, for a league that is not
+ * open, a league of a finished Season (US-13.9), a value that is not a
+ * level, a team that is not in the league, and a league that is complete:
+ * its levels then stay as they are.
+ */
+export function setTeamCondition(
+  ref: LeagueRef,
+  blueprintUuid: string,
+  level: ConditionLevel
+): void {
+  const { wrapper, installationUuid } = requireLeague(ref);
+  checkConditionLevel(level);
+  if (!wrapper.teams.some((team) => team.blueprintUuid === blueprintUuid)) {
+    throw new RangeError(`The league has no team with the UUID ${blueprintUuid}.`);
+  }
+  if (isLeagueComplete(wrapper)) {
+    throw new RangeError(
+      `The league "${wrapper.content.name}" is complete. Its conditions cannot change.`
+    );
+  }
+  if (getTeamCondition(wrapper.content.conditions, blueprintUuid) === level) return;
+
+  storeLeague(
+    ref,
+    wrapper,
+    {
+      ...replaceTeamCondition(wrapper.content, blueprintUuid, level),
+      lastModifiedByInstallation: installationUuid,
     },
     installationUuid
   );

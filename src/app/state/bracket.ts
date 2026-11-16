@@ -5,6 +5,7 @@ import {
 } from '@/engine/bracket';
 import { bracketRulesOf, PhaseFormat } from '@/engine/phases';
 import type { BracketPhase, LeagueWrapper } from '@/domain';
+import { getRealOvr } from './condition';
 
 function findBracket(
   wrapper: LeagueWrapper,
@@ -65,12 +66,15 @@ function groupsBefore(
   );
 }
 
-/** The stored OVR of each team of the league, by Blueprint UUID. */
+/** The real OVR of each team of the league, by Blueprint UUID: the stored
+ * OVR with the level of the team in this league (US-14.1, US-14.2). Every
+ * league match takes its OVR from here, so a match played or played again
+ * after a level change uses the new level (Task 226 choice 3). */
 export function leagueOvrOf(wrapper: LeagueWrapper): (uuid: string) => number {
   return (uuid) => {
     const team = wrapper.teams.find((candidate) => candidate.blueprintUuid === uuid);
     if (!team) throw new RangeError(`The league has no team with the UUID ${uuid}.`);
-    return team.ovr;
+    return getRealOvr(team.ovr, wrapper.content.conditions, uuid);
   };
 }
 

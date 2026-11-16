@@ -9,8 +9,9 @@ import {
 } from '@/engine/phases';
 import { createSeededRng } from '@/engine/rng';
 import type { PointsConfig } from '@/engine/standings';
-import type { League, Phase, TeamInstance } from '@/domain';
+import type { ConditionLevels, League, Phase, TeamInstance } from '@/domain';
 import { freshSeed } from '@/app/random';
+import { pickConditions } from './condition';
 
 /** What it takes to create a league (US-08.8). `teams` is the team list of
  * the wizard: each Instance got its OVR when it was added (Task 81). */
@@ -27,6 +28,9 @@ export interface CreateLeagueInput {
   /** The phase-1 draw of a Groups plan, as Blueprint UUIDs (US-02.1). Each
    * team of `teams` is in one group. Without it, a Groups phase 1 draws. */
   groups?: readonly (readonly string[])[];
+  /** The condition levels of the Teams step, by Blueprint UUID (US-14.2).
+   * A team with no entry starts at level 0. */
+  conditions?: Readonly<ConditionLevels>;
 }
 
 const DEFAULT_PLANS: readonly PhasePlan[] = [
@@ -102,13 +106,14 @@ export function checkTeamList(teams: readonly TeamInstance[]): void {
  * Blueprint UUID.
  *
  * Throws a `RangeError` for a chain or fit problem of the plans (fewer than
- * 2 teams too, Task 128 choice 2), and for `groups` that do not hold each
- * team once.
+ * 2 teams too, Task 128 choice 2), for `groups` that do not hold each
+ * team once, and for a condition level of a team that is not in the list
+ * or a value that is not a level (Task 226).
  */
 export function buildLeagueContent(
   input: Pick<
     CreateLeagueInput,
-    'name' | 'homeAdvantage' | 'points' | 'plans' | 'groups'
+    'name' | 'homeAdvantage' | 'points' | 'plans' | 'groups' | 'conditions'
   >,
   teamUuids: readonly string[],
   uuid: string,
@@ -119,6 +124,11 @@ export function buildLeagueContent(
   const groups = firstPlan?.format === PhaseFormat.GROUPS ? input.groups : undefined;
   checkPlans(plans, teamUuids.length, groups);
   if (groups) checkDraw(groups, teamUuids);
+  const conditions = pickConditions(
+    input.conditions,
+    new Set(teamUuids),
+    'The team list'
+  );
   const rng = createSeededRng(freshSeed());
   const phaseOne = startedPhase(buildPhase(firstPlan, 1, [...teamUuids], rng, groups));
   return {
@@ -130,5 +140,6 @@ export function buildLeagueContent(
     lastModifiedByInstallation: installationUuid,
     plans: structuredClone([...plans]),
     phases: [phaseOne],
+    ...conditions,
   };
 }

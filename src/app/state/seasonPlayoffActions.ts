@@ -1,7 +1,7 @@
 import { uuidV4, type RandomBytes } from '@/engine/identity';
 import type { Rng } from '@/engine/rng';
 import { playTie, TieFormat, type TieRules, type TieTeam } from '@/engine/tiebreak';
-import type { Playoff, SeasonWrapper } from '@/domain';
+import type { ConditionLevels, Playoff, SeasonWrapper } from '@/domain';
 import { cryptoRandomBytes, freshRng } from '@/app/random';
 import {
   isPlayoffNameTaken,
@@ -9,6 +9,7 @@ import {
   requireRunningOpenSeason,
   useDatabaseStore,
 } from './databaseStore';
+import { getRealOvr, pickConditions } from './condition';
 
 /** A new playoff as the user sets it (US-13.7): a name, two Season teams, and
  * the rules of the tie. */
@@ -17,6 +18,9 @@ export interface PlayoffInput {
   team1Uuid: string;
   team2Uuid: string;
   rules: TieRules;
+  /** The condition levels of the dialog, by Blueprint UUID (US-14.3). A
+   * team with no entry plays at level 0. */
+  conditions?: Readonly<ConditionLevels>;
 }
 
 /** Puts the new playoff list in the store, with the Season stamped. */
@@ -44,9 +48,10 @@ function storePlayoffs(
  * no away goals, so its rule is stored as off (Task 217 choice 2).
  *
  * Throws a `RangeError`, and changes nothing, for a blank or taken name,
- * one team twice, a team that is not in the roster, a Season that is not
- * open, and a finished Season. The dialog checks the same rules first, so
- * the throw is a guard.
+ * one team twice, a team that is not in the roster, a condition level of a
+ * team that is not in the playoff or a value that is not a level, a Season
+ * that is not open, and a finished Season. The dialog checks the same rules
+ * first, so the throw is a guard.
  */
 export function createPlayoff(
   seasonUuid: string,
@@ -71,6 +76,12 @@ export function createPlayoff(
     }
   }
 
+  const conditions = pickConditions(
+    input.conditions,
+    new Set([input.team1Uuid, input.team2Uuid]),
+    'The playoff'
+  );
+
   const isSingle = input.rules.format === TieFormat.SINGLE_MATCH;
   const playoff: Playoff = {
     uuid: uuidV4(randomBytes),
@@ -78,6 +89,7 @@ export function createPlayoff(
     team1Uuid: input.team1Uuid,
     team2Uuid: input.team2Uuid,
     rules: { ...input.rules, awayGoals: isSingle ? false : input.rules.awayGoals },
+    ...conditions,
   };
   storePlayoffs(season, [...season.content.playoffs, playoff], installationUuid);
   return playoff;
@@ -86,7 +98,7 @@ export function createPlayoff(
 /**
  * Plays a playoff of an open, running Season with `playTie`, and keeps the
  * result (US-13.7). Each team plays with the current base OVR of its Season
- * team.
+ * team, with its level in this playoff (US-14.3).
  *
  * The engine puts its "higher seed" in the home slot of a single match, at
  * a neutral venue, and at home in the second leg. So Team 1 is the higher
@@ -120,7 +132,7 @@ export function playPlayoff(
     const team = season.teams.find((candidate) => candidate.blueprintUuid === uuid);
     if (!team)
       throw new RangeError(`The Season has no team with the Blueprint UUID ${uuid}.`);
-    return { id: uuid, ovr: team.ovr };
+    return { id: uuid, ovr: getRealOvr(team.ovr, playoff.conditions, uuid) };
   };
   const team1 = getTieTeam(playoff.team1Uuid);
   const team2 = getTieTeam(playoff.team2Uuid);

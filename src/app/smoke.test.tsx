@@ -638,7 +638,11 @@ describe('smoke: M5 files, imports, and conflicts (Task 151)', () => {
     expect(disk.get(RESULTS_PATH)).toContain('Coastal Premier');
     const slugLines = disk.get(SLUGS_PATH)!.trimEnd().split('\n');
     expect(slugLines[0]).toMatch(/^# Coastal Premier — final ranking, /);
-    expect(slugLines.slice(1).sort()).toEqual(['harborview-sc', 'salt-marsh-united']);
+    // Each line ends with the condition level, 0 here (US-14.4, Task 228).
+    expect(slugLines.slice(1).sort()).toEqual([
+      'harborview-sc 0',
+      'salt-marsh-united 0',
+    ]);
 
     // 3. The File screen writes the database `.zip`.
     await openFileScreen();

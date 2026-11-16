@@ -61,9 +61,16 @@ describe('newTeamInstances (Task 81, US-08.1)', () => {
 
 describe('planSlugListImport (US-08.7)', () => {
   const blueprints = [saltMarsh, harborview, town];
+  /** The lines of a file with no levels. */
+  const at0 = (slugs: string[]): { slug: string; level: 0 }[] =>
+    slugs.map((slug) => ({ slug, level: 0 }));
 
   it('finds the Blueprints of the slugs, in file order, with no regard to case', () => {
-    const plan = planSlugListImport(['OLD-TOWN', 'Salt-Marsh-United'], blueprints, []);
+    const plan = planSlugListImport(
+      at0(['OLD-TOWN', 'Salt-Marsh-United']),
+      blueprints,
+      []
+    );
     expect(plan.add.map((b) => b.uuid)).toEqual([TOWN, SALT_MARSH]);
     expect(plan.alreadyInList).toBe(0);
     expect(plan.notFound).toEqual([]);
@@ -72,7 +79,7 @@ describe('planSlugListImport (US-08.7)', () => {
   it('counts a slug of the list and a second copy in the file as already in the list', () => {
     const list = [instance()];
     const plan = planSlugListImport(
-      ['salt-marsh-united', 'old-town', 'OLD-TOWN', 'old-town'],
+      at0(['salt-marsh-united', 'old-town', 'OLD-TOWN', 'old-town']),
       blueprints,
       list
     );
@@ -82,7 +89,7 @@ describe('planSlugListImport (US-08.7)', () => {
 
   it('lists the slugs it does not find, as typed, once each, and still adds the found ones', () => {
     const plan = planSlugListImport(
-      ['north-fc', 'harborview-sc', 'Rivertown', 'north-fc'],
+      at0(['north-fc', 'harborview-sc', 'Rivertown', 'north-fc']),
       blueprints,
       []
     );
@@ -93,9 +100,43 @@ describe('planSlugListImport (US-08.7)', () => {
   it('matches an Instance in the list by its Blueprint UUID, not by its slug', () => {
     // A regenerated Blueprint slug: the Instance keeps the old copy (US-09.2).
     const list = [instance({ slug: 'old-slug' })];
-    const plan = planSlugListImport(['salt-marsh-united'], blueprints, list);
+    const plan = planSlugListImport(at0(['salt-marsh-united']), blueprints, list);
     expect(plan.add).toEqual([]);
     expect(plan.alreadyInList).toBe(1);
+  });
+
+  it('gives the level of each Blueprint it adds, with no level 0 (Task 228)', () => {
+    const plan = planSlugListImport(
+      [
+        { slug: 'salt-marsh-united', level: 2 },
+        { slug: 'harborview-sc', level: 0 },
+        { slug: 'old-town', level: -1 },
+      ],
+      blueprints,
+      []
+    );
+    expect(plan.levels).toEqual({ [SALT_MARSH]: 2, [TOWN]: -1 });
+  });
+
+  it('keeps the level of the first copy of a slug (choice 5)', () => {
+    const plan = planSlugListImport(
+      [
+        { slug: 'old-town', level: 1 },
+        { slug: 'OLD-TOWN', level: -2 },
+      ],
+      blueprints,
+      []
+    );
+    expect(plan.levels).toEqual({ [TOWN]: 1 });
+  });
+
+  it('gives no level for a team that is in the list already', () => {
+    const plan = planSlugListImport(
+      [{ slug: 'salt-marsh-united', level: 2 }],
+      blueprints,
+      [instance()]
+    );
+    expect(plan.levels).toEqual({});
   });
 });
 

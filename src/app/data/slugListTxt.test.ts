@@ -31,17 +31,21 @@ describe('importSlugListTxt (US-08.7)', () => {
     ]);
   });
 
-  it('gives the slugs of the chosen file', async () => {
-    const text = '# Coastal Premier\nash-town\n\nnorthgate-fc\n';
-    expect(await importSlugListTxt(fakeFs(text), fakeDialog('/roster.txt'))).toEqual([
-      'ash-town',
-      'northgate-fc',
-    ]);
+  it('gives the slugs and levels of the chosen file, and the bad levels', async () => {
+    const text = '# Coastal Premier\nash-town +1\n\nnorthgate-fc\nriver-fc 7\n';
+    expect(await importSlugListTxt(fakeFs(text), fakeDialog('/roster.txt'))).toEqual({
+      entries: [
+        { slug: 'ash-town', level: 1 },
+        { slug: 'northgate-fc', level: 0 },
+        { slug: 'river-fc', level: 0 },
+      ],
+      badLevels: [{ line: 5, text: 'river-fc 7' }],
+    });
   });
 
   it('rejects with the line error of a bad line', async () => {
     await expect(
-      importSlugListTxt(fakeFs('ash-town\nnorth fc'), fakeDialog('/roster.txt'))
-    ).rejects.toThrow('Slug list line 2, "north fc", is not a slug.');
+      importSlugListTxt(fakeFs('ash-town\nnorth fc +1'), fakeDialog('/roster.txt'))
+    ).rejects.toThrow('Slug list line 2, "north fc +1", is not a slug.');
   });
 });

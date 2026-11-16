@@ -186,13 +186,14 @@ export function useTeamsStep({
 
   const importSlugList = async (): Promise<void> => {
     try {
-      const slugs = await importSlugListTxt();
-      if (slugs === null) return;
-      if (slugs.length === 0) {
+      const file = await importSlugListTxt();
+      if (file === null) return;
+      if (file.entries.length === 0) {
         setStatusLine({ tone: 'error', message: NO_SLUGS });
         return;
       }
-      const plan = planSlugListImport(slugs, blueprints, teams);
+      // Task 229 puts the levels and the bad level lines in the wizard.
+      const plan = planSlugListImport(file.entries, blueprints, teams);
       onAddTeams(plan.add);
       setStatusLine({
         tone: 'info',

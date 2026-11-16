@@ -4,8 +4,9 @@ import {
   tauriDialog,
   tauriFileSystem,
 } from '@/adapters/tauri-fs';
-import { parseSlugList, serializeSlugList } from '@/adapters/txt';
+import { parseSlugList, serializeSlugList, type SlugListFile } from '@/adapters/txt';
 import { slug } from '@/engine/identity';
+import { getTeamCondition } from '@/app/state/condition';
 import { leagueFinalRanking } from '@/app/state/finalRanking';
 import type { LeagueWrapper } from '@/domain';
 import type { FileFilter, FileSystem, SaveFileDialog } from '@/persistence/types';
@@ -14,6 +15,8 @@ import { getLocalDate } from './localDate';
 /** The thin `app/` → `adapters/` data layer for "Import slug list"
  * (US-08.7), so `features/` never imports `adapters/` directly. */
 
+export type { SlugListFile };
+
 const SLUG_LIST_FILTERS: readonly FileFilter[] = [
   { name: 'Slug list', extensions: ['txt'] },
 ];
@@ -21,12 +24,13 @@ const SLUG_LIST_FILTERS: readonly FileFilter[] = [
 /** The save dialog filter of the export, as `resultsTxt.ts` has it. */
 const TXT_FILTERS: readonly FileFilter[] = [{ name: 'Text file', extensions: ['txt'] }];
 
-/** The slugs of a `.txt` file the user picks, or `null` on Cancel. Rejects
+/** The slugs and the levels of a `.txt` file the user picks, with the
+ * lines whose level is not valid, or `null` on Cancel (US-14.4). Rejects
  * with the line error of `parseSlugList` (Task 118). */
 export async function importSlugListTxt(
   fs: FileSystem = tauriFileSystem,
   dialog: SaveFileDialog = tauriDialog
-): Promise<string[] | null> {
+): Promise<SlugListFile | null> {
   const opened = await openTextFileWithDialog(fs, dialog, SLUG_LIST_FILTERS);
   if (opened === null) return null;
   return parseSlugList(opened.contents);
@@ -34,8 +38,9 @@ export async function importSlugListTxt(
 
 /**
  * "Export slug list (.txt)" (US-10.5, Task 148): asks where to write the
- * Instance slugs of a league in its final ranking (Task 147), then writes
- * them with the comment line. The default name is `<league slug>-ranking.txt`
+ * Instance slugs of a league in its final ranking (Task 147), each with
+ * its condition level in the league (US-14.4), then writes them with the
+ * comment line. The default name is `<league slug>-ranking.txt`
  * (choice 4). An Instance keeps its slug after its Blueprint is deleted, so
  * every team is in the file (US-09.4). Returns the path written, or `null`
  * if the user cancels the dialog.
@@ -50,7 +55,10 @@ export async function exportSlugListTxt(
   const contents = serializeSlugList({
     leagueName: wrapper.content.name,
     date: getLocalDate(today),
-    slugs: leagueFinalRanking(wrapper).map((uuid) => slugOf.get(uuid) ?? uuid),
+    teams: leagueFinalRanking(wrapper).map((uuid) => ({
+      slug: slugOf.get(uuid) ?? uuid,
+      level: getTeamCondition(wrapper.content.conditions, uuid),
+    })),
   });
   return saveTextFileWithDialog(
     fs,

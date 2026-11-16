@@ -1,7 +1,7 @@
 import { pickTrigrams, type TrigramPick } from '@/engine/identity';
-import { rollOVR } from '@/engine/tier-ovr';
+import { rollOVR, type ConditionLevel } from '@/engine/tier-ovr';
 import type { Rng } from '@/engine/rng';
-import type { TeamBlueprint, TeamInstance } from '@/domain';
+import type { ConditionLevels, TeamBlueprint, TeamInstance } from '@/domain';
 import { freshRng } from '@/app/random';
 
 /** One Instance for each Blueprint, in the given order, for the team list
@@ -31,22 +31,26 @@ export interface SlugListPlan {
   alreadyInList: number;
   /** The slugs with no Blueprint, as typed, once each. */
   notFound: string[];
+  /** The level of each Blueprint to add, by UUID, with no level 0 (US-14.4,
+   * Task 228 choice 6). */
+  levels: ConditionLevels;
 }
 
-/** Matches the slugs of a slug list file with the Blueprints, with no
+/** Matches the lines of a slug list file with the Blueprints, with no
  * regard to case. A team of the list is matched by its Blueprint UUID, so a
- * regenerated slug does not add it again. */
+ * regenerated slug does not add it again. A second copy of a slug adds
+ * nothing, so the level of the first copy counts (Task 228 choice 5). */
 export function planSlugListImport(
-  slugs: readonly string[],
+  lines: readonly { slug: string; level: ConditionLevel }[],
   blueprints: readonly TeamBlueprint[],
   list: readonly TeamInstance[]
 ): SlugListPlan {
   const bySlug = new Map(blueprints.map((b) => [b.slug.toLowerCase(), b]));
   const inList = new Set(list.map((team) => team.blueprintUuid));
-  const plan: SlugListPlan = { add: [], alreadyInList: 0, notFound: [] };
+  const plan: SlugListPlan = { add: [], alreadyInList: 0, notFound: [], levels: {} };
   const missing = new Set<string>();
 
-  for (const slug of slugs) {
+  for (const { slug, level } of lines) {
     const found = bySlug.get(slug.toLowerCase());
     if (!found) {
       if (!missing.has(slug.toLowerCase())) plan.notFound.push(slug);
@@ -56,6 +60,7 @@ export function planSlugListImport(
     } else {
       inList.add(found.uuid);
       plan.add.push(found);
+      if (level !== 0) plan.levels[found.uuid] = level;
     }
   }
   return plan;

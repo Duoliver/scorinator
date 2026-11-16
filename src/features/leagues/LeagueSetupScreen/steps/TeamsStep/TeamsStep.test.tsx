@@ -288,14 +288,16 @@ describe('TeamsStep, Load them all (US-08.2)', () => {
 });
 
 describe('TeamsStep, Import slug list (US-08.7)', () => {
+  /** A slug list file with these slugs, all at level 0 (Task 228). */
+  const slugFile = (slugs: string[]): slugListTxt.SlugListFile => ({
+    entries: slugs.map((slug) => ({ slug, level: 0 })),
+    badLevels: [],
+  });
+
   it('adds the found teams in file order, gives the counts, and lists the slugs not found', async () => {
-    vi.spyOn(slugListTxt, 'importSlugListTxt').mockResolvedValue([
-      'OLD-TOWN',
-      'north-fc',
-      'old-town',
-      'ashfield-rovers',
-      'rivertown',
-    ]);
+    vi.spyOn(slugListTxt, 'importSlugListTxt').mockResolvedValue(
+      slugFile(['OLD-TOWN', 'north-fc', 'old-town', 'ashfield-rovers', 'rivertown'])
+    );
     render(<Harness onTeams={track} />);
     await userEvent.click(screen.getByRole('button', { name: 'Import slug list' }));
 
@@ -312,7 +314,9 @@ describe('TeamsStep, Import slug list (US-08.7)', () => {
   });
 
   it('uses the singular, and shows no "already" part or notice when it does not apply', async () => {
-    vi.spyOn(slugListTxt, 'importSlugListTxt').mockResolvedValue(['old-town']);
+    vi.spyOn(slugListTxt, 'importSlugListTxt').mockResolvedValue(
+      slugFile(['old-town'])
+    );
     render(<Harness />);
     await userEvent.click(screen.getByRole('button', { name: 'Import slug list' }));
     expect(useStatusLineStore.getState().status?.message).toBe('1 team added.');
@@ -320,14 +324,16 @@ describe('TeamsStep, Import slug list (US-08.7)', () => {
   });
 
   it('shows one slug not found in the singular', async () => {
-    vi.spyOn(slugListTxt, 'importSlugListTxt').mockResolvedValue(['north-fc']);
+    vi.spyOn(slugListTxt, 'importSlugListTxt').mockResolvedValue(
+      slugFile(['north-fc'])
+    );
     render(<Harness />);
     await userEvent.click(screen.getByRole('button', { name: 'Import slug list' }));
     expect(screen.getByRole('alert')).toHaveTextContent('1 slug not found: north-fc');
   });
 
   it('shows an error and adds nothing for a file with no slug', async () => {
-    vi.spyOn(slugListTxt, 'importSlugListTxt').mockResolvedValue([]);
+    vi.spyOn(slugListTxt, 'importSlugListTxt').mockResolvedValue(slugFile([]));
     render(<Harness onTeams={track} />);
     await userEvent.click(screen.getByRole('button', { name: 'Import slug list' }));
     expect(latest).toEqual([]);

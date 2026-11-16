@@ -54,7 +54,24 @@ describe('exportSlugListTxt (US-10.5, Task 148)', () => {
     );
     expect(path).toBe('/ranking.txt');
     expect(writeTextFile.mock.calls[0][1]).toBe(
-      '# Coastal Premier — final ranking, 2026-10-28\nharborview-sc\nsalt-marsh-united\n'
+      '# Coastal Premier — final ranking, 2026-10-28\nharborview-sc 0\nsalt-marsh-united 0\n'
+    );
+  });
+
+  it('writes the condition level of each team (US-14.4, Task 228)', async () => {
+    const writeTextFile = vi.fn();
+    const withLevels = {
+      ...played,
+      content: { ...played.content, conditions: { [SALT_MARSH]: 2 as const } },
+    };
+    await exportSlugListTxt(
+      withLevels,
+      new Date(2026, 9, 28),
+      fakeFs(writeTextFile),
+      dialogTo('/ranking.txt')
+    );
+    expect(writeTextFile.mock.calls[0][1]).toBe(
+      '# Coastal Premier — final ranking, 2026-10-28\nharborview-sc 0\nsalt-marsh-united +2\n'
     );
   });
 
